@@ -44,3 +44,5 @@ Thumbs.db
 
 # Netlify 설정
 .netlify/
+assets/img/logo2.png
+assets/img/temp-favicon.png
