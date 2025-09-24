@@ -670,36 +670,40 @@ https://templatemo.com/tm-559-aether
         // 로고 오버레이 추가 함수
         function addLogoOverlay() {
             console.log('🔍 addLogoOverlay 함수 시작');
-            const qrContainer = document.getElementById('qr-code-container');
-            console.log('🔍 qrContainer:', qrContainer);
+            const modalBody = document.querySelector('#qr-code-modal .modal-body');
+            console.log('🔍 modalBody:', modalBody);
             
-            if (!qrContainer) {
-                console.error('❌ qr-code-container를 찾을 수 없습니다');
+            if (!modalBody) {
+                console.error('❌ modal-body를 찾을 수 없습니다');
                 return;
             }
             
             // 기존 로고 오버레이 제거
-            const existingOverlay = qrContainer.querySelector('.aether-logo-overlay');
+            const existingOverlay = modalBody.querySelector('.aether-logo-overlay');
             if (existingOverlay) {
                 console.log('🗑️ 기존 로고 오버레이 제거');
                 existingOverlay.remove();
             }
             
-            // 새 로고 오버레이 생성
+            // 새 로고 오버레이 생성 (QR 코드 위쪽에 배치)
             const logoOverlay = document.createElement('div');
             logoOverlay.className = 'aether-logo-overlay';
             logoOverlay.style.cssText = `
-                position: absolute;
-                top: 10px;
+                position: relative;
+                top: 0;
                 left: 50%;
                 transform: translateX(-50%);
-                background: transparent;
+                background: white;
+                border-radius: 8px;
+                padding: 8px 16px;
                 width: auto;
                 height: auto;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 z-index: 1000;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+                margin-bottom: 20px;
                 border: 2px solid blue;
             `;
             
@@ -719,11 +723,13 @@ https://templatemo.com/tm-559-aether
             };
             
             logoOverlay.appendChild(logoImg);
-            qrContainer.appendChild(logoOverlay);
             
-            console.log('✅ 로고 오버레이 DOM에 추가 완료');
+            // QR 코드 컨테이너 앞에 로고 삽입
+            const qrContainer = document.getElementById('qr-code-container');
+            modalBody.insertBefore(logoOverlay, qrContainer);
+            
+            console.log('✅ 로고 오버레이 DOM에 추가 완료 (QR 코드 위쪽)');
             console.log('🔍 추가된 오버레이:', logoOverlay);
-            console.log('🔍 컨테이너 자식 요소들:', qrContainer.children.length);
         }
 
         // QR 코드 표시 함수
