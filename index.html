@@ -669,12 +669,19 @@ https://templatemo.com/tm-559-aether
 
         // 로고 오버레이 추가 함수
         function addLogoOverlay() {
+            console.log('🔍 addLogoOverlay 함수 시작');
             const qrContainer = document.getElementById('qr-code-container');
-            if (!qrContainer) return;
+            console.log('🔍 qrContainer:', qrContainer);
+            
+            if (!qrContainer) {
+                console.error('❌ qr-code-container를 찾을 수 없습니다');
+                return;
+            }
             
             // 기존 로고 오버레이 제거
             const existingOverlay = qrContainer.querySelector('.aether-logo-overlay');
             if (existingOverlay) {
+                console.log('🗑️ 기존 로고 오버레이 제거');
                 existingOverlay.remove();
             }
             
@@ -693,14 +700,20 @@ https://templatemo.com/tm-559-aether
                 align-items: center;
                 justify-content: center;
                 z-index: 1000;
+                border: 2px solid blue;
             `;
             
             const logoImg = document.createElement('img');
             logoImg.src = 'assets/img/logo.png';
             logoImg.alt = 'Aether';
-            logoImg.style.cssText = 'width: 80px; height: auto; max-height: 60px;';
+            logoImg.style.cssText = 'width: 80px; height: auto; max-height: 60px; border: 1px solid green;';
+            
+            logoImg.onload = function() {
+                console.log('✅ 로고 이미지 로드 성공');
+            };
             
             logoImg.onerror = function() {
+                console.error('❌ 로고 이미지 로드 실패');
                 logoImg.style.display = 'none';
                 logoOverlay.innerHTML = '<span style="color: red; font-size: 12px;">LOGO ERROR</span>';
             };
@@ -708,7 +721,9 @@ https://templatemo.com/tm-559-aether
             logoOverlay.appendChild(logoImg);
             qrContainer.appendChild(logoOverlay);
             
-            console.log('로고 오버레이 추가 완료');
+            console.log('✅ 로고 오버레이 DOM에 추가 완료');
+            console.log('🔍 추가된 오버레이:', logoOverlay);
+            console.log('🔍 컨테이너 자식 요소들:', qrContainer.children.length);
         }
 
         // QR 코드 표시 함수
