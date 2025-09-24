@@ -273,19 +273,31 @@
           color: #6c757d;
       }
       
-      /* 리얼 탭 디자인 - 겹치는 탭 스타일 */
-      .nav-tabs {
+      /* 리얼 탭 디자인 - 겹치는 탭 스타일 - Bootstrap 강제 덮어쓰기 */
+      .nav-tabs, 
+      ul.nav.nav-tabs, 
+      #profileTabs.nav-tabs {
           border-bottom: 1px solid #dee2e6 !important;
           margin-bottom: 0 !important;
           padding-left: 0 !important;
+          display: flex !important;
+          flex-wrap: nowrap !important;
       }
       
-      .nav-tabs .nav-item {
+      .nav-tabs .nav-item, 
+      ul.nav.nav-tabs .nav-item, 
+      #profileTabs .nav-item {
           margin-bottom: -1px !important;
           margin-right: -2px !important;
+          flex: 1 !important;
       }
       
-      .nav-tabs .nav-link {
+      .nav-tabs .nav-link, 
+      ul.nav.nav-tabs .nav-link, 
+      #profileTabs .nav-link,
+      .nav-tabs .nav-link button,
+      ul.nav.nav-tabs .nav-link button,
+      #profileTabs .nav-link button {
           color: #6c757d !important;
           border: 1px solid #dee2e6 !important;
           border-radius: 0 !important;
@@ -296,22 +308,39 @@
           background-color: #f8f9fa !important;
           position: relative !important;
           z-index: 1 !important;
+          width: 100% !important;
+          text-align: center !important;
       }
       
       /* 첫 번째 탭 - 왼쪽 둥근 모서리 */
-      .nav-tabs .nav-item:first-child .nav-link {
+      .nav-tabs .nav-item:first-child .nav-link,
+      ul.nav.nav-tabs .nav-item:first-child .nav-link,
+      #profileTabs .nav-item:first-child .nav-link,
+      .nav-tabs .nav-item:first-child .nav-link button,
+      ul.nav.nav-tabs .nav-item:first-child .nav-link button,
+      #profileTabs .nav-item:first-child .nav-link button {
           border-top-left-radius: 8px !important;
           border-bottom-left-radius: 0 !important;
       }
       
       /* 마지막 탭 - 오른쪽 둥근 모서리 */
-      .nav-tabs .nav-item:last-child .nav-link {
+      .nav-tabs .nav-item:last-child .nav-link,
+      ul.nav.nav-tabs .nav-item:last-child .nav-link,
+      #profileTabs .nav-item:last-child .nav-link,
+      .nav-tabs .nav-item:last-child .nav-link button,
+      ul.nav.nav-tabs .nav-item:last-child .nav-link button,
+      #profileTabs .nav-item:last-child .nav-link button {
           border-top-right-radius: 8px !important;
           border-bottom-right-radius: 0 !important;
       }
       
       /* 호버 효과 */
-      .nav-tabs .nav-link:hover {
+      .nav-tabs .nav-link:hover,
+      ul.nav.nav-tabs .nav-link:hover,
+      #profileTabs .nav-link:hover,
+      .nav-tabs .nav-link button:hover,
+      ul.nav.nav-tabs .nav-link button:hover,
+      #profileTabs .nav-link button:hover {
           color: #495057 !important;
           background-color: #e9ecef !important;
           border-color: #dee2e6 #dee2e6 #dee2e6 !important;
@@ -319,7 +348,12 @@
       }
       
       /* 활성 탭 - 앞으로 나와서 연결됨 */
-      .nav-tabs .nav-link.active {
+      .nav-tabs .nav-link.active,
+      ul.nav.nav-tabs .nav-link.active,
+      #profileTabs .nav-link.active,
+      .nav-tabs .nav-link.active button,
+      ul.nav.nav-tabs .nav-link.active button,
+      #profileTabs .nav-link.active button {
           color: #212529 !important;
           background-color: #ffffff !important;
           border-color: #dee2e6 #dee2e6 #ffffff !important;
@@ -328,7 +362,12 @@
           box-shadow: 0 -2px 4px rgba(0,0,0,0.1) !important;
       }
       
-      .nav-tabs .nav-link.active:hover {
+      .nav-tabs .nav-link.active:hover,
+      ul.nav.nav-tabs .nav-link.active:hover,
+      #profileTabs .nav-link.active:hover,
+      .nav-tabs .nav-link.active button:hover,
+      ul.nav.nav-tabs .nav-link.active button:hover,
+      #profileTabs .nav-link.active button:hover {
           color: #212529 !important;
           background-color: #ffffff !important;
           border-color: #dee2e6 #dee2e6 #ffffff !important;
@@ -336,21 +375,31 @@
       
       /* 모바일에서 리얼 탭 디자인 유지 */
       @media (max-width: 768px) {
-          .nav-tabs {
+          .nav-tabs, 
+          ul.nav.nav-tabs, 
+          #profileTabs.nav-tabs {
               flex-wrap: nowrap !important;
               border-bottom: 1px solid #dee2e6 !important;
               margin-bottom: 0 !important;
               padding-left: 0 !important;
+              display: flex !important;
           }
           
-          .nav-tabs .nav-item {
-              flex: 1;
+          .nav-tabs .nav-item, 
+          ul.nav.nav-tabs .nav-item, 
+          #profileTabs .nav-item {
+              flex: 1 !important;
               min-width: 0;
               margin-bottom: -1px !important;
               margin-right: -2px !important;
           }
           
-          .nav-tabs .nav-link {
+          .nav-tabs .nav-link, 
+          ul.nav.nav-tabs .nav-link, 
+          #profileTabs .nav-link,
+          .nav-tabs .nav-link button,
+          ul.nav.nav-tabs .nav-link button,
+          #profileTabs .nav-link button {
               font-size: 14px !important;
               padding: 12px 8px !important;
               text-align: center;
@@ -364,6 +413,7 @@
               background-color: #f8f9fa !important;
               position: relative !important;
               z-index: 1 !important;
+              width: 100% !important;
           }
           
           .nav-tabs .nav-item:first-child .nav-link {
