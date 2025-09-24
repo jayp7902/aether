@@ -164,6 +164,30 @@
         section + * {
             background-color: #000000 !important;
         }
+        
+        /* QR 모달 스타일 */
+        .qr-modal-content {
+            background: white;
+            border: 8px solid #000000 !important;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.05) !important;
+            backdrop-filter: blur(10px);
+        }
+        
+        #qr-code-container {
+            position: relative;
+        }
+        
+        /* 모바일에서 QR 모달 중앙 정렬 강화 */
+        @media (max-width: 768px) {
+            .modal-dialog.modal-dialog-centered {
+                margin: 0 auto !important;
+                max-width: 90vw !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                min-height: 100vh !important;
+            }
+        }
     </style>
 
     <!-- Load map styles -->
@@ -438,18 +462,18 @@
 
     <!-- QR Code Modal -->
     <div class="modal fade" id="qr-code-modal" tabindex="-1" aria-labelledby="qr-code-modal-label" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg" style="max-width: 320px; border-radius: 20px;">
-                <div class="modal-body text-center p-4">
-                    <div id="qr-code-container" class="qr-code-container mx-auto mb-3" style="width: 200px; height: 200px;">
+        <div class="modal-dialog modal-dialog-centered d-flex justify-content-center align-items-center">
+            <div class="modal-content qr-modal-content" style="max-width: 340px; border-radius: 24px;">
+                <div class="modal-body text-center p-5">
+                    <div id="qr-code-container" class="qr-code-container mx-auto mb-4" style="width: 220px; height: 220px; position: relative;">
                         <div class="d-flex justify-content-center align-items-center h-100">
                             <div class="spinner-border text-secondary" role="status">
                                 <span class="visually-hidden">読み込み中...</span>
                             </div>
                         </div>
                     </div>
-                    <button type="button" class="btn btn-dark rounded-circle d-block mx-auto" data-bs-dismiss="modal" aria-label="Close" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
-                        <i class="fas fa-times text-white" style="font-weight: 900; font-size: 16px;"></i>
+                    <button type="button" class="btn btn-dark rounded-circle d-block mx-auto" data-bs-dismiss="modal" aria-label="Close" style="width: 53px; height: 53px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-times text-white" style="font-weight: 900; font-size: 20px;"></i>
                     </button>
                 </div>
             </div>
@@ -541,6 +565,13 @@
                 // Canvas를 컨테이너에 추가
                 container.appendChild(canvas);
 
+                // 로고 오버레이 추가 (QR 코드 모달인 경우에만)
+                if (containerId === 'qr-code-container') {
+                    setTimeout(() => {
+                        addLogoOverlay();
+                    }, 100);
+                }
+
                 console.log('QR코드 생성 성공');
             } catch (error) {
                 console.error('QR코드 생성 오류:', error);
@@ -549,6 +580,53 @@
                     container.innerHTML = '<div class="text-danger">QR코드 생성 실패</div>';
                 }
             }
+        }
+
+        // 로고 오버레이 추가 함수
+        function addLogoOverlay() {
+            console.log('🔍 addLogoOverlay 함수 시작');
+            const modalBody = document.querySelector('#qr-code-modal .modal-body');
+            console.log('🔍 modalBody:', modalBody);
+            
+            if (!modalBody) {
+                console.error('❌ modal-body를 찾을 수 없습니다');
+                return;
+            }
+            
+            // 기존 로고 텍스트 제거
+            const existingOverlay = modalBody.querySelector('.aether-logo-overlay');
+            const existingText = modalBody.querySelector('.aether-logo-text');
+            if (existingOverlay) {
+                console.log('🗑️ 기존 로고 오버레이 제거');
+                existingOverlay.remove();
+            }
+            if (existingText) {
+                console.log('🗑️ 기존 로고 텍스트 제거');
+                existingText.remove();
+            }
+            
+            // 새 로고 텍스트 생성 (QR 코드 위쪽에 배치)
+            const logoText = document.createElement('span');
+            logoText.className = 'aether-logo-text';
+            logoText.textContent = 'Aether';
+            logoText.style.cssText = `
+                font-family: 'Montserrat', sans-serif;
+                font-size: 34px;
+                font-weight: 550;
+                color: #000;
+                letter-spacing: 2px;
+                text-transform: uppercase;
+                display: block;
+                text-align: center;
+                margin-bottom: 20px;
+            `;
+            
+            // QR 코드 컨테이너 앞에 로고 텍스트 삽입
+            const qrContainer = document.getElementById('qr-code-container');
+            modalBody.insertBefore(logoText, qrContainer);
+            
+            console.log('✅ 로고 텍스트 DOM에 추가 완료 (QR 코드 위쪽)');
+            console.log('🔍 추가된 텍스트:', logoText);
         }
 
         // QR 코드 버튼 이벤트 리스너 설정
