@@ -557,7 +557,7 @@ https://templatemo.com/tm-559-aether
                             </div>
                         </div>
                         <!-- Aether 로고 오버레이 -->
-                        <div class="aether-logo-overlay" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 10; border: 2px solid red;">
+                        <div class="aether-logo-overlay" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 1000; border: 2px solid red;">
                             <img src="assets/img/logo.png" alt="Aether" style="width: 30px; height: 30px;" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=&quot;color: red; font-size: 12px;&quot;>LOGO ERROR</span>';">
                         </div>
                     </div>
@@ -654,6 +654,13 @@ https://templatemo.com/tm-559-aether
                 // Canvas를 컨테이너에 추가
                 container.appendChild(canvas);
 
+                // 로고 오버레이 추가 (QR 코드 모달인 경우에만)
+                if (containerId === 'qr-code-container') {
+                    setTimeout(() => {
+                        addLogoOverlay();
+                    }, 100);
+                }
+
                 console.log('QR코드 생성 성공');
             } catch (error) {
                 console.error('QR코드 생성 오류:', error);
@@ -662,6 +669,53 @@ https://templatemo.com/tm-559-aether
                     container.innerHTML = '<div class="text-danger">QR코드 생성 실패</div>';
                 }
             }
+        }
+
+        // 로고 오버레이 추가 함수
+        function addLogoOverlay() {
+            const qrContainer = document.getElementById('qr-code-container');
+            if (!qrContainer) return;
+            
+            // 기존 로고 오버레이 제거
+            const existingOverlay = qrContainer.querySelector('.aether-logo-overlay');
+            if (existingOverlay) {
+                existingOverlay.remove();
+            }
+            
+            // 새 로고 오버레이 생성
+            const logoOverlay = document.createElement('div');
+            logoOverlay.className = 'aether-logo-overlay';
+            logoOverlay.style.cssText = `
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                border-radius: 50%;
+                width: 50px;
+                height: 50px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+                z-index: 1000;
+                border: 2px solid red;
+            `;
+            
+            const logoImg = document.createElement('img');
+            logoImg.src = 'assets/img/logo.png';
+            logoImg.alt = 'Aether';
+            logoImg.style.cssText = 'width: 30px; height: 30px;';
+            
+            logoImg.onerror = function() {
+                logoImg.style.display = 'none';
+                logoOverlay.innerHTML = '<span style="color: red; font-size: 12px;">LOGO ERROR</span>';
+            };
+            
+            logoOverlay.appendChild(logoImg);
+            qrContainer.appendChild(logoOverlay);
+            
+            console.log('로고 오버레이 추가 완료');
         }
 
         // QR 코드 표시 함수
