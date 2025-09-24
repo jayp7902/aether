@@ -253,6 +253,16 @@
             margin-bottom: 0 !important;
         }
         
+        /* 두 카드 사이 간격 추가 */
+        .profile-container .row {
+            margin-bottom: 3rem !important;
+        }
+        
+        .profile-container .col-md-4,
+        .profile-container .col-md-8 {
+            margin-bottom: 2rem !important;
+        }
+        
         /* 모바일에서 여백 조정 */
         @media (max-width: 768px) {
             .profile-card .card-body,
@@ -266,6 +276,15 @@
             .tab-pane {
                 margin-top: 1.5rem !important;
                 padding-top: 0.5rem !important;
+            }
+            
+            .profile-container .row {
+                margin-bottom: 2rem !important;
+            }
+            
+            .profile-container .col-md-4,
+            .profile-container .col-md-8 {
+                margin-bottom: 1.5rem !important;
             }
         }
         
@@ -281,6 +300,15 @@
             .tab-pane {
                 margin-top: 1rem !important;
                 padding-top: 0.5rem !important;
+            }
+            
+            .profile-container .row {
+                margin-bottom: 1.5rem !important;
+            }
+            
+            .profile-container .col-md-4,
+            .profile-container .col-md-8 {
+                margin-bottom: 1rem !important;
             }
         }
       /* User dropdown hover fix */
@@ -2856,6 +2884,9 @@
                 setTimeout(() => {
                     const tabContent = document.getElementById('profileTabContent');
                     const cardBody = document.querySelector('.col-md-8 .card.profile-card .card-body');
+                    const profileRow = document.querySelector('.profile-container .row');
+                    const colLeft = document.querySelector('.profile-container .col-md-4');
+                    const colRight = document.querySelector('.profile-container .col-md-8');
                     
                     if (tabContent) {
                         tabContent.style.marginTop = '2rem';
@@ -2866,6 +2897,21 @@
                     if (cardBody) {
                         cardBody.style.padding = '2rem 1.5rem';
                         console.log('카드 바디 여백 적용 완료');
+                    }
+                    
+                    if (profileRow) {
+                        profileRow.style.marginBottom = '3rem';
+                        console.log('프로필 행 여백 적용 완료');
+                    }
+                    
+                    if (colLeft) {
+                        colLeft.style.marginBottom = '2rem';
+                        console.log('왼쪽 컬럼 여백 적용 완료');
+                    }
+                    
+                    if (colRight) {
+                        colRight.style.marginBottom = '2rem';
+                        console.log('오른쪽 컬럼 여백 적용 완료');
                     }
                 }, 100);
                 console.log('custom.js 로드 확인:', typeof setupMobileQRCodeControl);
