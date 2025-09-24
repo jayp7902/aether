@@ -67,11 +67,13 @@
             display: flex;
             justify-content: center;
             margin-bottom: 2rem;
+            flex-wrap: wrap;
         }
         .step {
             display: flex;
             align-items: center;
-            margin: 0 1rem;
+            margin: 0.5rem;
+            min-width: 120px;
         }
         .step-number {
             width: 30px;
@@ -89,6 +91,47 @@
         }
                  .step.completed .step-number {
              background-color: #343a40;
+         }
+         
+         /* 모바일에서 2열 레이아웃 */
+         @media (max-width: 768px) {
+             .step-indicator {
+                 flex-direction: column;
+                 align-items: center;
+                 gap: 1rem;
+             }
+             
+             .step {
+                 width: 100%;
+                 max-width: 200px;
+                 justify-content: center;
+                 margin: 0.25rem;
+             }
+             
+             .step span {
+                 font-size: 0.9rem;
+             }
+         }
+         
+         /* 매우 작은 화면에서 */
+         @media (max-width: 480px) {
+             .step-indicator {
+                 flex-direction: row;
+                 flex-wrap: wrap;
+                 justify-content: space-between;
+                 gap: 0.5rem;
+             }
+             
+             .step {
+                 width: 48%;
+                 max-width: none;
+                 margin: 0.25rem 0;
+                 justify-content: center;
+             }
+             
+             .step span {
+                 font-size: 0.8rem;
+             }
          }
         .order-summary {
             background-color: #f8f9fa;
