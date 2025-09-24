@@ -93,44 +93,62 @@
              background-color: #343a40;
          }
          
-         /* 모바일에서 2열 레이아웃 */
-         @media (max-width: 768px) {
+         /* 모바일에서 2열 레이아웃 - 순서대로 정렬 */
+         @media (max-width: 768px) and (min-width: 481px) {
              .step-indicator {
-                 flex-direction: column;
-                 align-items: center;
+                 display: grid;
+                 grid-template-columns: 1fr 1fr;
+                 grid-template-rows: 1fr 1fr;
                  gap: 1rem;
+                 justify-items: center;
+                 align-items: center;
              }
              
              .step {
                  width: 100%;
-                 max-width: 200px;
+                 max-width: 160px;
                  justify-content: center;
-                 margin: 0.25rem;
+                 margin: 0;
              }
+             
+             /* 각 단계별 순서 지정 */
+             .step:nth-child(1) { order: 1; } /* 1 カート */
+             .step:nth-child(2) { order: 2; } /* 2 配送情報 */
+             .step:nth-child(3) { order: 3; } /* 3 お支払い */
+             .step:nth-child(4) { order: 4; } /* 4 完了 */
              
              .step span {
                  font-size: 0.9rem;
              }
          }
          
-         /* 매우 작은 화면에서 */
+         /* 매우 작은 화면에서 - 순서대로 정렬 */
          @media (max-width: 480px) {
              .step-indicator {
-                 flex-direction: row;
-                 flex-wrap: wrap;
-                 justify-content: space-between;
+                 display: grid;
+                 grid-template-columns: 1fr 1fr;
+                 grid-template-rows: 1fr 1fr;
                  gap: 0.5rem;
+                 justify-items: center;
+                 align-items: center;
              }
              
              .step {
-                 width: 48%;
-                 max-width: none;
-                 margin: 0.25rem 0;
+                 width: 100%;
+                 max-width: 140px;
+                 margin: 0;
                  justify-content: center;
+                 order: 0; /* 기본 순서 */
              }
              
+             /* 각 단계별 순서 지정 */
+             .step:nth-child(1) { order: 1; } /* 1 カート */
+             .step:nth-child(2) { order: 2; } /* 2 配送情報 */
+             .step:nth-child(3) { order: 3; } /* 3 お支払い */
+             .step:nth-child(4) { order: 4; } /* 4 完了 */
+             
              .step span {
-                 font-size: 0.8rem;
+                 font-size: 0.75rem;
              }
          }
         .order-summary {
