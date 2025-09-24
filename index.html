@@ -556,10 +556,6 @@ https://templatemo.com/tm-559-aether
                                 <span class="visually-hidden">読み込み中...</span>
                             </div>
                         </div>
-                        <!-- Aether 로고 오버레이 -->
-                        <div class="aether-logo-overlay" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 1000; border: 2px solid red;">
-                            <img src="assets/img/logo.png" alt="Aether" style="width: 30px; height: 30px;" onerror="this.style.display='none'; this.parentElement.innerHTML='<span style=&quot;color: red; font-size: 12px;&quot;>LOGO ERROR</span>';">
-                        </div>
                     </div>
                     <button type="button" class="btn btn-dark rounded-circle d-block mx-auto" data-bs-dismiss="modal" aria-label="Close" style="width: 53px; height: 53px; display: flex; align-items: center; justify-content: center;">
                         <i class="fas fa-times text-white" style="font-weight: 900; font-size: 20px;"></i>
@@ -687,9 +683,9 @@ https://templatemo.com/tm-559-aether
             logoOverlay.className = 'aether-logo-overlay';
             logoOverlay.style.cssText = `
                 position: absolute;
-                top: 50%;
+                top: 20px;
                 left: 50%;
-                transform: translate(-50%, -50%);
+                transform: translateX(-50%);
                 background: white;
                 border-radius: 50%;
                 width: 50px;
@@ -699,7 +695,6 @@ https://templatemo.com/tm-559-aether
                 justify-content: center;
                 box-shadow: 0 2px 8px rgba(0,0,0,0.15);
                 z-index: 1000;
-                border: 2px solid red;
             `;
             
             const logoImg = document.createElement('img');
