@@ -482,6 +482,13 @@
                         
                         console.log('Firebase에서 포인트 정보 로드 (최신):', currentPoints);
                         console.log('사용자 데이터:', userData);
+                        console.log('🔍 포인트 페이지 포인트 상세 분석:');
+                        console.log('  - userData.points:', userData.points);
+                        console.log('  - typeof userData.points:', typeof userData.points);
+                        console.log('  - userData.points === undefined:', userData.points === undefined);
+                        console.log('  - userData.points === null:', userData.points === null);
+                        console.log('  - userData.points === 0:', userData.points === 0);
+                        console.log('  - userData 전체 키:', Object.keys(userData));
                         } else {
                         console.log('사용자 문서가 존재하지 않습니다, 새로 생성');
                         // 사용자 문서가 없으면 새로 생성
