@@ -273,47 +273,59 @@
           color: #6c757d;
       }
       
-      /* 탭 메뉴 모노톤 색상 적용 - 연결된 디자인 */
+      /* 리얼 탭 디자인 - 겹치는 탭 스타일 */
       .nav-tabs {
           border-bottom: 1px solid #dee2e6 !important;
           margin-bottom: 0 !important;
+          padding-left: 0 !important;
       }
       
       .nav-tabs .nav-item {
           margin-bottom: -1px !important;
+          margin-right: -1px !important;
       }
       
       .nav-tabs .nav-link {
           color: #6c757d !important;
-          border: 1px solid transparent !important;
+          border: 1px solid #dee2e6 !important;
           border-radius: 0 !important;
           margin-right: 0 !important;
-          border-right: none !important;
           border-bottom: 1px solid #dee2e6 !important;
           padding: 12px 20px !important;
           font-size: 14px !important;
+          background-color: #f8f9fa !important;
+          position: relative !important;
+          z-index: 1 !important;
       }
       
+      /* 첫 번째 탭 - 왼쪽 둥근 모서리 */
       .nav-tabs .nav-item:first-child .nav-link {
-          border-top-left-radius: 4px !important;
+          border-top-left-radius: 8px !important;
+          border-bottom-left-radius: 0 !important;
       }
       
+      /* 마지막 탭 - 오른쪽 둥근 모서리 */
       .nav-tabs .nav-item:last-child .nav-link {
-          border-top-right-radius: 4px !important;
-          border-right: 1px solid #dee2e6 !important;
+          border-top-right-radius: 8px !important;
+          border-bottom-right-radius: 0 !important;
       }
       
+      /* 호버 효과 */
       .nav-tabs .nav-link:hover {
           color: #495057 !important;
-          background-color: #f8f9fa !important;
+          background-color: #e9ecef !important;
           border-color: #dee2e6 #dee2e6 #dee2e6 !important;
+          z-index: 2 !important;
       }
       
+      /* 활성 탭 - 앞으로 나와서 연결됨 */
       .nav-tabs .nav-link.active {
           color: #212529 !important;
           background-color: #ffffff !important;
           border-color: #dee2e6 #dee2e6 #ffffff !important;
           border-bottom: 1px solid #ffffff !important;
+          z-index: 3 !important;
+          box-shadow: 0 -2px 4px rgba(0,0,0,0.1) !important;
       }
       
       .nav-tabs .nav-link.active:hover {
@@ -322,18 +334,20 @@
           border-color: #dee2e6 #dee2e6 #ffffff !important;
       }
       
-      /* 모바일에서 탭 메뉴 한 줄로 표시 - 연결된 디자인 유지 */
+      /* 모바일에서 리얼 탭 디자인 유지 */
       @media (max-width: 768px) {
           .nav-tabs {
               flex-wrap: nowrap !important;
               border-bottom: 1px solid #dee2e6 !important;
               margin-bottom: 0 !important;
+              padding-left: 0 !important;
           }
           
           .nav-tabs .nav-item {
               flex: 1;
               min-width: 0;
               margin-bottom: -1px !important;
+              margin-right: -1px !important;
           }
           
           .nav-tabs .nav-link {
@@ -343,31 +357,37 @@
               white-space: nowrap;
               overflow: hidden;
               text-overflow: ellipsis;
-              border: 1px solid transparent !important;
+              border: 1px solid #dee2e6 !important;
               border-radius: 0 !important;
               margin-right: 0 !important;
-              border-right: none !important;
               border-bottom: 1px solid #dee2e6 !important;
+              background-color: #f8f9fa !important;
+              position: relative !important;
+              z-index: 1 !important;
           }
           
           .nav-tabs .nav-item:first-child .nav-link {
-              border-top-left-radius: 4px !important;
+              border-top-left-radius: 8px !important;
+              border-bottom-left-radius: 0 !important;
           }
           
           .nav-tabs .nav-item:last-child .nav-link {
-              border-top-right-radius: 4px !important;
-              border-right: 1px solid #dee2e6 !important;
+              border-top-right-radius: 8px !important;
+              border-bottom-right-radius: 0 !important;
           }
           
           .nav-tabs .nav-link:hover {
-              background-color: #f8f9fa !important;
+              background-color: #e9ecef !important;
               border-color: #dee2e6 #dee2e6 #dee2e6 !important;
+              z-index: 2 !important;
           }
           
           .nav-tabs .nav-link.active {
               background-color: #ffffff !important;
               border-color: #dee2e6 #dee2e6 #ffffff !important;
               border-bottom: 1px solid #ffffff !important;
+              z-index: 3 !important;
+              box-shadow: 0 -2px 4px rgba(0,0,0,0.1) !important;
           }
           
           .nav-tabs .nav-link i {
@@ -376,36 +396,42 @@
           }
       }
       
-      /* 더 작은 화면에서 추가 조정 */
+      /* 더 작은 화면에서 리얼 탭 디자인 유지 */
       @media (max-width: 480px) {
           .nav-tabs .nav-link {
               font-size: 12px !important;
               padding: 10px 4px !important;
-              border: 1px solid transparent !important;
+              border: 1px solid #dee2e6 !important;
               border-radius: 0 !important;
               margin-right: 0 !important;
-              border-right: none !important;
               border-bottom: 1px solid #dee2e6 !important;
+              background-color: #f8f9fa !important;
+              position: relative !important;
+              z-index: 1 !important;
           }
           
           .nav-tabs .nav-item:first-child .nav-link {
-              border-top-left-radius: 4px !important;
+              border-top-left-radius: 8px !important;
+              border-bottom-left-radius: 0 !important;
           }
           
           .nav-tabs .nav-item:last-child .nav-link {
-              border-top-right-radius: 4px !important;
-              border-right: 1px solid #dee2e6 !important;
+              border-top-right-radius: 8px !important;
+              border-bottom-right-radius: 0 !important;
           }
           
           .nav-tabs .nav-link:hover {
-              background-color: #f8f9fa !important;
+              background-color: #e9ecef !important;
               border-color: #dee2e6 #dee2e6 #dee2e6 !important;
+              z-index: 2 !important;
           }
           
           .nav-tabs .nav-link.active {
               background-color: #ffffff !important;
               border-color: #dee2e6 #dee2e6 #ffffff !important;
               border-bottom: 1px solid #ffffff !important;
+              z-index: 3 !important;
+              box-shadow: 0 -2px 4px rgba(0,0,0,0.1) !important;
           }
           
           .nav-tabs .nav-link i {
