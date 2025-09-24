@@ -2310,8 +2310,14 @@
         // 포인트 관리 함수들
         // =============
         
-        // 사용자 포인트 로드 (Firebase) - 이메일 기반 개선 버전
+        // 사용자 포인트 로드 (포인트 페이지와 동일한 방식)
         async function loadUserPoints() {
+            // loadPointsLikePointsPage와 동일한 함수 호출
+            await loadPointsLikePointsPage();
+        }
+        
+        // 사용자 포인트 로드 (Firebase) - 이메일 기반 개선 버전 (OLD)
+        async function loadUserPointsOLD() {
             try {
                 const user = firebase.auth().currentUser;
                 if (!user) {
@@ -2390,7 +2396,7 @@
             }
         }
         
-        // 포인트 페이지와 동일한 포인트 로딩 함수
+        // 포인트 페이지와 정확히 동일한 포인트 로딩 함수 (단일 함수로 통합)
         async function loadPointsLikePointsPage() {
             try {
                 console.log('🔄 포인트 페이지 방식 포인트 로딩 시작');
@@ -2401,6 +2407,8 @@
                     showPointSection();
                     return;
                 }
+                
+                currentUser = user;
                 
                 // 포인트 페이지와 동일한 사용자 객체 생성
                 const checkoutPageUser = {
@@ -2449,6 +2457,13 @@
                         
                         console.log('Firebase에서 포인트 정보 로드 (최신):', currentUserPoints);
                         console.log('사용자 데이터:', userData);
+                        console.log('🔍 포인트 상세 분석:');
+                        console.log('  - userData.points:', userData.points);
+                        console.log('  - typeof userData.points:', typeof userData.points);
+                        console.log('  - userData.points === undefined:', userData.points === undefined);
+                        console.log('  - userData.points === null:', userData.points === null);
+                        console.log('  - userData.points === 0:', userData.points === 0);
+                        console.log('  - userData 전체 키:', Object.keys(userData));
                         showPointSection();
                     } else {
                         console.log('사용자 문서가 존재하지 않습니다');
