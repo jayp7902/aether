@@ -693,23 +693,20 @@ https://templatemo.com/tm-559-aether
                 top: 0;
                 left: 50%;
                 transform: translateX(-50%);
-                background: white;
-                border-radius: 8px;
-                padding: 12px 20px;
+                background: transparent;
                 width: auto;
                 height: auto;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 z-index: 1000;
-                box-shadow: 0 2px 8px rgba(0,0,0,0.15);
                 margin-bottom: 20px;
             `;
             
             const logoImg = document.createElement('img');
             logoImg.src = 'assets/img/logo.png';
             logoImg.alt = 'Aether';
-            logoImg.style.cssText = 'width: 120px; height: auto; max-height: 80px;';
+            logoImg.style.cssText = 'width: 360px; height: auto; object-fit: contain;';
             
             logoImg.onload = function() {
                 console.log('✅ 로고 이미지 로드 성공');
