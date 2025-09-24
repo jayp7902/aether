@@ -228,8 +228,42 @@
             padding: 0.5rem;
         }
         .tab-content {
-                      margin-top: 1rem;
-      }
+            margin-top: 2rem !important;
+            padding-top: 1rem !important;
+        }
+        
+        /* 프로필 카드 바디 여백 추가 */
+        .profile-card .card-body {
+            padding: 2rem 1.5rem !important;
+        }
+        
+        /* 탭 네비게이션과 콘텐츠 사이 여백 */
+        .nav-tabs {
+            margin-bottom: 0 !important;
+        }
+        
+        /* 모바일에서 여백 조정 */
+        @media (max-width: 768px) {
+            .profile-card .card-body {
+                padding: 1.5rem 1rem !important;
+            }
+            
+            .tab-content {
+                margin-top: 1.5rem !important;
+                padding-top: 0.5rem !important;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .profile-card .card-body {
+                padding: 1rem 0.75rem !important;
+            }
+            
+            .tab-content {
+                margin-top: 1rem !important;
+                padding-top: 0.5rem !important;
+            }
+        }
       /* User dropdown hover fix */
       .dropdown-toggle:hover,
       .dropdown-toggle:focus,
