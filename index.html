@@ -549,7 +549,7 @@ https://templatemo.com/tm-559-aether
     <div class="modal fade" id="qr-code-modal" tabindex="-1" aria-labelledby="qr-code-modal-label" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered d-flex justify-content-center align-items-center">
             <div class="modal-content qr-modal-content" style="max-width: 450px; border-radius: 24px;">
-                <div class="modal-body text-center p-5">
+                <div class="modal-body text-center p-5" style="display: flex; flex-direction: column; align-items: center;">
                     <div id="qr-code-container" class="qr-code-container mb-4" style="width: 280px; height: 280px; position: relative; margin: 0 auto; display: flex; justify-content: center; align-items: center;">
                         <div class="d-flex justify-content-center align-items-center h-100">
                             <div class="spinner-border text-secondary" role="status">
@@ -708,7 +708,7 @@ https://templatemo.com/tm-559-aether
             const logoImg = document.createElement('img');
             logoImg.src = 'assets/img/logo.png';
             logoImg.alt = 'Aether';
-            logoImg.style.cssText = 'width: 300px; height: auto; object-fit: contain;';
+            logoImg.style.cssText = 'width: 250px; height: auto; object-fit: contain;';
             
             logoImg.onload = function() {
                 console.log('✅ 로고 이미지 로드 성공');
