@@ -1,0 +1,24 @@
+{
+  "name": "Aether Points",
+  "short_name": "AetherPt",
+  "description": "Aether 화장품 포인트 관리 시스템",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#f8f9fa",
+  "theme_color": "#343a40",
+  "icons": [
+    {
+      "src": "assets/img/aether-icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/img/aether-icon.png", 
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "lang": "ja",
+  "scope": "/",
+  "orientation": "portrait-primary"
+}

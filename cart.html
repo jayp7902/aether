@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Aether - Cart</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="msapplication-config" content="none">
+    <meta name="theme-color" content="#ffffff">
+
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/img/aether-icon.png?t=1750992166">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/img/aether-icon.png?t=1750992166">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/img/aether-icon.png?t=1750992166">
+    <link rel="apple-touch-icon" sizes="192x192" href="assets/img/aether-icon.png?t=1750992166">
+    <link rel="apple-touch-icon-precomposed" href="assets/img/aether-icon.png?t=1750992166">
+
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/templatemo.css">
+    <link rel="stylesheet" href="assets/css/custom.css">
+
+    <!-- Load fonts style after rendering the layout styles -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100;200;300;400;500;600;700;800;900&display=swap">
+    <style>
+        body {
+            font-family: "Montserrat", sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+            font-family: "Montserrat", sans-serif;
+            font-weight: 600;
+        }
+        .japanese-text {
+            font-family: "Noto Sans JP", sans-serif;
+            font-weight: 400;
+            line-height: 1.6;
+        }
+        .japanese-heading {
+            font-family: "Noto Sans JP", sans-serif;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+    </style>
+    <link rel="stylesheet" href="assets/css/fontawesome.min.css">
+    <style>
+        /* User dropdown hover fix */
+        .dropdown-toggle:hover,
+        .dropdown-toggle:focus,
+        #user-name:hover {
+            color: #343a40 !important;
+            text-decoration: none !important;
+        }
+        .nav-link:hover {
+            color: #343a40 !important;
+        }
+        
+        /* 네비게이션바 텍스트 thin 서체 통일 */
+        .navbar-nav .nav-link {
+            font-family: "Montserrat", sans-serif !important;
+            font-weight: 300 !important;
+            font-size: 1rem !important;
+        }
+        
+        .navbar-brand {
+            font-family: "Montserrat", sans-serif !important;
+            font-weight: 300 !important;
+        }
+        
+        #user-name {
+            font-family: "Montserrat", sans-serif !important;
+            font-weight: 300 !important;
+        }
+        
+        /* 카트 페이지 전용 스타일 */
+        .cart-item { 
+            border-bottom: 1px solid #dee2e6; 
+            padding: 1rem 1.5rem; 
+            margin: 0 0.5rem;
+        }
+        
+        /* 상품 이미지 컨테이너 - 데스크톱 */
+        .product-image-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 80px;
+        }
+        .empty-cart { 
+            text-align: center; 
+            padding: 3rem 0; 
+        }
+        
+        /* 상품 이미지 스타일 */
+        .product-image-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        .product-image-container:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+        .product-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+            display: block;
+            margin: 0 auto;
+        }
+        .product-image:hover {
+            transform: scale(1.05);
+        }
+        .product-image-container::after {
+            content: '商品を見る';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(52, 58, 64, 0.8);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 500;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            font-family: "Noto Sans JP", sans-serif;
+        }
+        .product-image-container:hover::after {
+            opacity: 1;
+        }
+        
+        /* 카트 아이템 반응형 스타일 */
+        @media (max-width: 768px) {
+            .cart-item {
+                padding: 0.75rem 1rem;
+                border-bottom: 1px solid #dee2e6;
+                margin: 0 0.5rem;
+            }
+            
+            .cart-item .row {
+                margin-bottom: 0;
+                align-items: center;
+            }
+            
+            /* 모바일에서 가로 레이아웃 유지 */
+            .cart-item .col-md-2,
+            .cart-item .col-md-4,
+            .cart-item .col-md-3,
+            .cart-item .col-md-1 {
+                padding: 0.25rem;
+            }
+            
+            /* 상품 이미지 컨테이너 */
+            .product-image-container {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 60px;
+            }
+            
+            /* 상품 이미지 */
+            .product-image {
+                height: 60px;
+                width: 60px;
+                object-fit: cover;
+                border-radius: 8px;
+                display: block;
+                margin: 0 auto;
+            }
+            
+            /* 상품 정보 */
+            .cart-item .col-md-4 {
+                padding-left: 0.5rem;
+            }
+            
+            .cart-item h5 {
+                font-size: 0.9rem;
+                margin-bottom: 0.25rem;
+                line-height: 1.2;
+            }
+            
+            .cart-item p {
+                font-size: 0.8rem;
+                margin-bottom: 0.25rem;
+            }
+            
+            /* 수량 조절 버튼 */
+            .cart-item .btn-sm {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.8rem;
+            }
+            
+            /* 총액 */
+            .cart-item .col-md-2 {
+                font-size: 0.9rem;
+                font-weight: bold;
+            }
+            
+            /* 삭제 버튼 */
+            .cart-item .col-md-1 .btn {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.7rem;
+                writing-mode: vertical-rl;
+                text-orientation: mixed;
+                height: auto;
+                min-height: 60px;
+            }
+        }
+        
+        /* 더 작은 모바일 화면 */
+        @media (max-width: 576px) {
+            .cart-item {
+                padding: 0.75rem 0.75rem;
+                margin: 0 0.25rem;
+            }
+            
+            .cart-item .row {
+                flex-wrap: nowrap;
+            }
+            
+            .product-image-container {
+                height: 50px;
+            }
+            
+            .product-image {
+                height: 50px;
+                width: 50px;
+            }
+            
+            .cart-item h5 {
+                font-size: 0.85rem;
+            }
+            
+            .cart-item p {
+                font-size: 0.75rem;
+            }
+            
+            .cart-item .btn-sm {
+                padding: 0.2rem 0.4rem;
+                font-size: 0.75rem;
+            }
+            
+            .cart-item .col-md-1 .btn {
+                font-size: 0.65rem;
+                min-height: 50px;
+            }
+        }
+        
+        /* 매우 작은 모바일 화면 */
+        @media (max-width: 480px) {
+            .cart-item {
+                padding: 0.5rem 0.5rem;
+                margin: 0 0.15rem;
+            }
+            
+            .cart-item .row {
+                margin: 0;
+            }
+            
+            .cart-item .col-md-2,
+            .cart-item .col-md-4,
+            .cart-item .col-md-3,
+            .cart-item .col-md-1 {
+                padding: 0.15rem;
+            }
+            
+            .product-image-container {
+                height: 45px;
+            }
+            
+            .product-image {
+                height: 45px;
+                width: 45px;
+            }
+            
+            .cart-item h5 {
+                font-size: 0.8rem;
+                margin-bottom: 0.2rem;
+            }
+            
+            .cart-item p {
+                font-size: 0.7rem;
+                margin-bottom: 0.2rem;
+            }
+            
+            .cart-item .btn-sm {
+                padding: 0.15rem 0.3rem;
+                font-size: 0.7rem;
+            }
+            
+            .cart-item .col-md-1 .btn {
+                font-size: 0.6rem;
+                min-height: 45px;
+                padding: 0.15rem 0.3rem;
+            }
+            
+            .cart-item .col-md-2 {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Start Top Nav -->
+    <nav class="navbar navbar-expand-lg navbar-light" id="templatemo_nav_top" style="min-height: 20px; background-color: #000000 !important;">
+        <div class="container text-light">
+            <div class="w-100 d-flex justify-content-between">
+                <div>
+                    <!-- 빈 공간으로 블랙 바 유지 -->
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- Close Top Nav -->
+
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg navbar-light shadow">
+        <div class="container d-flex justify-content-between align-items-center">
+
+            <a class="navbar-brand text-success logo align-self-center" href="index.html">
+                <img src="assets/img/logo.png" alt="Logo" class="img-fluid" style="max-height: 50px;">
+            </a>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#templatemo_main_nav" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="align-self-center collapse navbar-collapse flex-fill  d-lg-flex justify-content-lg-between" id="templatemo_main_nav">
+                <!-- 모바일 메뉴 레이아웃 -->
+                <div class="d-lg-none w-100">
+                    <!-- 영문 메뉴 - 가로 정렬 -->
+                    <div class="d-flex justify-content-center mb-4">
+                        <ul class="nav navbar-nav d-flex flex-row gap-4">
+                            <li class="nav-item">
+                                <a class="nav-link" href="index.html">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="shop.html">Brand</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="info.html">Info</a>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- 아이콘들 - 가로 정렬, 좌우 여백 추가 -->
+                    <div class="d-flex justify-content-center align-items-center gap-4 px-4">
+                        <a href="cart.html" class="nav-link text-decoration-none">
+                            <i class="fas fa-shopping-cart text-dark" style="font-size: 1.5rem;"></i>
+                            <span class="badge bg-secondary ms-1" id="cart-count-mobile">0</span>
+                        </a>
+                        <div class="dropdown">
+                            <a href="#" class="nav-link dropdown-toggle text-decoration-none" id="userDropdownMobile" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user text-dark" style="font-size: 1.5rem;"></i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-center" aria-labelledby="userDropdownMobile">
+                                <li id="login-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="login.html">
+                                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                                    </a>
+                                </li>
+                                <li id="register-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="register.html">
+                                        <i class="fas fa-user-plus me-2"></i>Register
+                                    </a>
+                                </li>
+                                <li id="profile-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="profile.html">
+                                        <i class="fas fa-user-circle me-2"></i>Profile
+                                    </a>
+                                </li>
+                                <li id="points-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="points.html">
+                                        <i class="fas fa-coins me-2"></i>Points
+                                    </a>
+                                </li>
+                                <li id="admin-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="admin-dashboard.html">
+                                        <i class="fas fa-cog me-2"></i>管理ダッシュボード
+                                    </a>
+                                </li>
+                                <li id="logout-menu-mobile" style="display: none;">
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li id="logout-menu-item-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="#" onclick="logout()">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 데스크톱 메뉴 레이아웃 -->
+                <div class="flex-fill d-none d-lg-block">
+                    <ul class="nav navbar-nav d-flex justify-content-between mx-lg-auto" style="max-width: 400px; margin: 0 auto;">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="shop.html">Brand</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="info.html">Info</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="navbar align-self-center d-flex d-none d-lg-flex">
+                    <a href="cart.html" class="nav-link text-decoration-none me-3">
+                        <i class="fas fa-shopping-cart text-dark"></i>
+                        <span class="badge bg-secondary" id="cart-count">0</span>
+                    </a>
+                    <div class="dropdown">
+                        <a href="#" class="nav-link dropdown-toggle text-decoration-none" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user text-dark"></i>
+                            <span id="user-name" class="d-none d-lg-inline ms-1"></span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li id="login-menu" style="display: none;">
+                                <a class="dropdown-item" href="login.html">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                                </a>
+                            </li>
+                            <li id="register-menu" style="display: none;">
+                                <a class="dropdown-item" href="register.html">
+                                    <i class="fas fa-user-plus me-2"></i>Register
+                                </a>
+                            </li>
+                            <li id="profile-menu" style="display: none;">
+                                <a class="dropdown-item" href="profile.html">
+                                    <i class="fas fa-user-circle me-2"></i>Profile
+                                </a>
+                            </li>
+                            <li id="points-menu" style="display: none;">
+                                <a class="dropdown-item" href="points.html">
+                                    <i class="fas fa-coins me-2"></i>Points
+                                </a>
+                            </li>
+                            <li id="admin-menu" style="display: none;">
+                                <a class="dropdown-item" href="admin-dashboard.html">
+                                    <i class="fas fa-cog me-2"></i>管理ダッシュボード
+                                </a>
+                            </li>
+                            <li id="logout-menu" style="display: none;">
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li id="logout-menu-item" style="display: none;">
+                                <a class="dropdown-item" href="#" onclick="logout()">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- Close Header -->
+
+
+    <div class="container-fluid bg-light py-5">
+        <div class="col-md-6 m-auto text-center">
+            <h1 class="h1 japanese-heading">ショッピングカート</h1>
+        </div>
+    </div>
+
+    <div class="container py-5">
+        <div class="row">
+            <div class="col-lg-8">
+                <div id="cart-items" style="margin: 0 -0.5rem;"></div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="japanese-heading">ご注文内容</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="japanese-text">小計:</span>
+                            <span id="subtotal">¥0</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-3">
+                            <strong class="japanese-text">合計:</strong>
+                            <strong id="total">¥0</strong>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button onclick="proceedToCheckout()" class="btn btn-secondary btn-lg japanese-text" id="checkout-btn" style="display: none;">
+                                <i class="fas fa-credit-card me-2"></i>ご注文手続きへ
+                            </button>
+                            <a href="shop.html" class="btn btn-outline-secondary japanese-text">お買い物を続ける</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Start Script -->
+    <script src="assets/js/jquery-1.11.0.min.js"></script>
+    <script src="assets/js/jquery-migrate-1.2.1.min.js"></script>
+    <script src="assets/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/templatemo.js"></script>
+    
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
+    <!-- 애플리케이션 스크립트 -->
+    <script src="assets/js/firebase-config.js"></script>
+    <script src="assets/js/auth-utils.js"></script>
+    <script src="assets/js/custom.js"></script>
+    
+    
+    <script>
+        function getCart() { return JSON.parse(localStorage.getItem('aetherCart') || '[]'); }
+        function saveCart(cart) { localStorage.setItem('aetherCart', JSON.stringify(cart)); }
+
+        function renderCart() {
+            const cart = getCart();
+            const container = document.getElementById('cart-items');
+
+            console.log('카트 렌더링 시작, 총 상품 수:', cart.length);
+            console.log('카트 데이터:', cart);
+
+            if (cart.length === 0) {
+                container.innerHTML = '<div class="empty-cart"><h3 class="japanese-heading">カートは空です</h3><a href="shop.html" class="btn btn-secondary japanese-text">お買い物を始める</a></div>';
+                updateTotals();
+                return;
+            }
+
+            container.innerHTML = cart.map((item, index) => {
+                // 브랜드 템플릿 페이지와 호환성을 위한 필드명 정규화
+                const itemName = item.nameJp || item.nameKr || item.name || '상품명 없음';
+                const itemBrand = item.brandName || item.brand || '브랜드 없음';
+                const itemPrice = item.price || 0;
+                const itemQuantity = item.quantity || 1;
+                const itemImage = item.image || 'assets/img/product-placeholder.jpg';
+                
+                // 상품 페이지 URL 생성 (브랜드 코드 사용)
+                const productUrl = generateProductUrl(itemBrand, itemName);
+                
+                console.log('카트 아이템 렌더링:', {
+                    index: index,
+                    name: itemName,
+                    brand: itemBrand,
+                    price: itemPrice,
+                    quantity: itemQuantity,
+                    image: itemImage
+                });
+                
+                // 옵션 정보 표시
+                let optionInfo = '';
+                if (item.isOptionProduct && item.selectedColors && item.selectedColors.length > 0) {
+                    // 새로운 옵션 시스템
+                    optionInfo = '<div class="option-info mt-1">' +
+                        '<small class="text-muted japanese-text">' + 
+                        item.selectedColors.map(option => `${option.type}: ${option.name} x${option.quantity}`).join(', ') +
+                        '</small>' +
+                        '</div>';
+                } else if (item.colorSummary && item.colorSummary.trim() !== '') {
+                    // 기존 색상 옵션 시스템
+                    optionInfo = '<div class="option-info mt-1">' +
+                        '<small class="text-muted japanese-text">' + item.colorSummary + '</small>' +
+                        '</div>';
+                }
+                
+                return '<div class="cart-item">' +
+                    '<div class="row align-items-center">' +
+                    '<div class="col-md-2 col-2">' +
+                    '<div class="product-image-container">' +
+                    '<img src="' + itemImage + '" alt="' + itemName + '" class="img-fluid rounded product-image" ' +
+                    'onclick="goToProduct(\'' + productUrl + '\')" style="cursor: pointer; max-height: 80px; object-fit: cover;">' +
+                    '</div>' +
+                    '</div>' +
+                    '<div class="col-md-4 col-4">' +
+                    '<h5 class="japanese-heading mb-1">' + itemName + '</h5>' +
+                    '<p class="text-muted japanese-text mb-1">' + itemBrand + '</p>' +
+                    '<p class="japanese-text mb-0">¥' + itemPrice.toLocaleString() + '</p>' +
+                    optionInfo +
+                    '</div>' +
+                    '<div class="col-md-3 col-3">' +
+                    '<div class="d-flex align-items-center justify-content-center">' +
+                    '<button class="btn btn-outline-secondary btn-sm" onclick="updateQuantity(' + index + ', -1)">-</button>' +
+                    '<span class="mx-2 fw-bold">' + itemQuantity + '</span>' +
+                    '<button class="btn btn-outline-secondary btn-sm" onclick="updateQuantity(' + index + ', 1)">+</button>' +
+                    '</div>' +
+                    '</div>' +
+                    '<div class="col-md-2 col-2 text-center">' +
+                    '<span class="japanese-text fw-bold">¥' + (itemPrice * itemQuantity).toLocaleString() + '</span>' +
+                    '</div>' +
+                    '<div class="col-md-1 col-1 text-center">' +
+                    '<button class="btn btn-outline-secondary btn-sm" onclick="removeItem(' + index + ')">削除</button>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>';
+            }).join('');
+
+            updateTotals();
+        }
+
+        // 상품 페이지 URL 생성 함수
+        function generateProductUrl(brand, productName) {
+            // 브랜드 이름 정규화
+            const normalizedBrand = brand.toUpperCase();
+            
+            // 상품 이름 정규화 (공백을 %20으로 인코딩)
+            const normalizedProductName = productName.trim();
+            
+            // URL 구성 (공백을 %20으로 인코딩)
+            const productUrl = `PRODUCTS%20PAGE/${normalizedBrand}/${encodeURIComponent(normalizedProductName)}.html`;
+            
+            return productUrl;
+        }
+
+        // 상품 페이지로 이동하는 함수
+        function goToProduct(url) {
+            window.location.href = url;
+        }
+
+        // 테스트용 상품 추가 함수 제거됨 - 실제 상품만 사용
+
+        function updateQuantity(index, change) {
+            const cart = getCart();
+            cart[index].quantity += change;
+            if (cart[index].quantity <= 0) cart.splice(index, 1);
+            else if (cart[index].quantity > 10) cart[index].quantity = 10;
+            saveCart(cart);
+            renderCart();
+            // 카트 개수 업데이트
+            if (typeof window.updateCartCount === 'function') {
+                window.updateCartCount();
+            }
+        }
+
+        function removeItem(index) {
+            if (confirm('この商品をカートから削除しますか？')) {
+                const cart = getCart();
+                cart.splice(index, 1);
+                saveCart(cart);
+                renderCart();
+                // 카트 개수 업데이트
+                if (typeof window.updateCartCount === 'function') {
+                    window.updateCartCount();
+                }
+            }
+        }
+
+        function updateTotals() {
+            const cart = getCart();
+            const subtotal = cart.reduce((total, item) => {
+                const itemPrice = item.price || 0;
+                const itemQuantity = item.quantity || 1;
+                return total + (itemPrice * itemQuantity);
+            }, 0);
+            
+            document.getElementById('subtotal').textContent = '¥' + subtotal.toLocaleString();
+            document.getElementById('total').textContent = '¥' + subtotal.toLocaleString();
+            
+            const checkoutBtn = document.getElementById('checkout-btn');
+            if (cart.length === 0) {
+                checkoutBtn.style.display = 'none';
+            } else {
+                checkoutBtn.style.display = 'block';
+            }
+            
+            console.log('카트 총액 업데이트:', subtotal, '원, 상품 수:', cart.length);
+        }
+
+        async function proceedToCheckout() {
+            const cart = getCart();
+            if (cart.length === 0) {
+                alert('카트가 비어있습니다.');
+                return;
+            }
+            
+            // 버튼 로딩 상태로 변경
+            const checkoutBtn = document.getElementById('checkout-btn');
+            const originalText = checkoutBtn.innerHTML;
+            checkoutBtn.disabled = true;
+            checkoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>처리중...';
+            
+            console.log('🚀 주문수속 시작 - 체크아웃으로 바로 이동');
+            
+            try {
+                // 안전한 Firebase 로그인 상태 확인
+                let isLoggedIn = false;
+                
+                if (typeof firebase !== 'undefined' && 
+                    firebase.auth && 
+                    firebase.apps && 
+                    firebase.apps.length > 0 &&
+                    firebase.apps[0].name === '[DEFAULT]') {
+                    
+                    const currentUser = firebase.auth().currentUser;
+                    if (currentUser && currentUser.email) {
+                        console.log('✅ Firebase 로그인 확인됨:', currentUser.email);
+                        isLoggedIn = true;
+                    } else {
+                        console.log('❌ Firebase에 로그인된 사용자 없음');
+                        isLoggedIn = false;
+                    }
+                } else {
+                    console.log('❌ Firebase가 완전히 초기화되지 않음');
+                    isLoggedIn = false;
+                }
+                
+                if (isLoggedIn) {
+                    console.log('✅ 로그인 확인됨 - 체크아웃으로 이동');
+                    checkoutBtn.disabled = false;
+                    checkoutBtn.innerHTML = originalText;
+                    
+                    // 체크아웃 페이지로 이동
+                    window.location.href = 'checkout.html';
+                    return;
+                } else {
+                    console.log('❌ 로그인되지 않음 - 로그인 페이지로 이동');
+                    checkoutBtn.disabled = false;
+                    checkoutBtn.innerHTML = originalText;
+                    
+                    // 로그인 페이지로 이동 (체크아웃으로 리다이렉트)
+                    const checkoutUrl = encodeURIComponent(window.location.origin + '/checkout.html');
+                    window.location.href = `login.html?redirect=${checkoutUrl}`;
+                    return;
+                }
+                
+            } catch (error) {
+                console.error('❌ 주문수속 처리 중 오류:', error);
+                checkoutBtn.disabled = false;
+                checkoutBtn.innerHTML = originalText;
+                
+                // 오류 발생 시에도 체크아웃으로 이동 시도
+                console.log('🔄 오류 발생 - 체크아웃으로 이동 시도');
+                window.location.href = 'checkout.html';
+            }
+        }
+        
+        // 간단한 Firebase 로그인 상태 확인 함수
+        async function checkLoginStatus() {
+            try {
+                console.log('🔍 Firebase 로그인 상태 확인 시작');
+                
+                // Firebase가 로드될 때까지 대기
+                let attempts = 0;
+                const maxAttempts = 20; // 2초 대기
+                
+                while (attempts < maxAttempts) {
+                    if (typeof firebase !== 'undefined' && firebase.auth) {
+                        console.log('✅ Firebase Auth 객체 확인됨');
+                        break;
+                    }
+                    console.log(`⏳ Firebase 대기 중... (${attempts + 1}/${maxAttempts})`);
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                }
+                
+                if (attempts >= maxAttempts) {
+                    console.log('❌ Firebase 로드 타임아웃');
+                    return false;
+                }
+                
+                // 현재 사용자 확인
+                const currentUser = firebase.auth().currentUser;
+                console.log('🔍 Firebase currentUser:', currentUser ? currentUser.email : 'null');
+                
+                if (currentUser) {
+                    console.log('✅ Firebase 로그인 상태 확인됨:', currentUser.email);
+                    return true;
+                } else {
+                    console.log('❌ Firebase에 로그인된 사용자 없음');
+                    return false;
+                }
+                
+            } catch (error) {
+                console.error('❌ 로그인 상태 확인 중 오류 발생:', error);
+                return false;
+            }
+        }
+
+        // auth-utils.js에서 제공하는 함수들을 사용합니다
+
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('=== cart.html DOMContentLoaded 시작 ===');
+            
+            // Firebase 초기화 완료 대기
+            let firebaseReady = false;
+            let attempts = 0;
+            const maxAttempts = 50; // 5초 대기
+            
+            const checkFirebase = async () => {
+                while (!firebaseReady && attempts < maxAttempts) {
+                    if (typeof firebase !== 'undefined' && firebase.auth && firebase.firestore) {
+                        firebaseReady = true;
+                        console.log('Firebase 초기화 완료');
+                        break;
+                    } else {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        attempts++;
+                    }
+                }
+                
+                if (!firebaseReady) {
+                    console.warn('Firebase 초기화 시간 초과, 기본 모드로 진행');
+                }
+                
+                // Firebase 초기화 완료 후 사용자 정보 로드 (지연)
+                setTimeout(() => {
+                    loadUserInfo();
+                }, 1000);
+                
+                // 카트 렌더링
+                renderCart();
+                
+                // 사용자 메뉴 업데이트
+                if (typeof window.updateUserMenu === 'function') {
+                    console.log('auth-utils.js updateUserMenu 함수 호출');
+                    window.updateUserMenu();
+                } else {
+                    console.warn('auth-utils.js updateUserMenu 함수를 찾을 수 없습니다');
+                }
+                
+                // 장바구니 카운트 업데이트
+                if (typeof window.updateCartCount === 'function') {
+                    window.updateCartCount();
+                }
+            };
+            
+            checkFirebase();
+        });
+
+        // 사용자 정보 관리
+        let pointsPageUser = null;
+
+        // 사용자 정보 로드
+        function loadUserInfo() {
+            try {
+                console.log('사용자 정보 로드 시작');
+                
+                // 1. Firebase에서 로드 시도 (더 안전한 확인)
+                let userData = null;
+                
+                try {
+                    // Firebase가 완전히 초기화되었는지 확인
+                    if (typeof firebase !== 'undefined' && 
+                        firebase.auth && 
+                        firebase.apps && 
+                        firebase.apps.length > 0 &&
+                        firebase.apps[0].name === '[DEFAULT]') {
+                        
+                        console.log('Firebase 앱 초기화 확인됨');
+                        
+                        const currentUser = firebase.auth().currentUser;
+                        if (currentUser && currentUser.email) {
+                            userData = {
+                                name: currentUser.displayName || currentUser.email.split('@')[0],
+                                email: currentUser.email,
+                                uid: currentUser.uid,
+                                points: 0
+                            };
+                            console.log('Firebase에서 사용자 정보 로드 성공:', userData);
+                        } else {
+                            console.log('Firebase에 로그인된 사용자 없음');
+                        }
+                    } else {
+                        console.log('Firebase가 아직 완전히 초기화되지 않음');
+                        console.log('Firebase 상태:', {
+                            firebase: typeof firebase !== 'undefined',
+                            auth: firebase && firebase.auth ? '있음' : '없음',
+                            apps: firebase && firebase.apps ? firebase.apps.length : '없음'
+                        });
+                    }
+                } catch (firebaseError) {
+                    console.warn('Firebase 사용자 정보 로드 실패:', firebaseError);
+                }
+                
+                // 2. Firebase 전용 - localStorage 폴백 제거됨
+                if (!userData) {
+                    console.log('Firebase에서 사용자 정보를 찾을 수 없음');
+                }
+                
+                // 3. 사용자 정보 설정
+                if (userData) {
+                    pointsPageUser = userData;
+                    console.log('최종 사용자 정보 설정:', pointsPageUser);
+                } else {
+                    console.log('사용자 데이터를 찾을 수 없음');
+                }
+                
+            } catch (error) {
+                console.error('사용자 정보 로드 실패:', error);
+            }
+        }
+    </script>
+    
+    <!-- Firebase Configuration -->
+    <!-- firebase-config.js는 이미 위에서 로드됨 -->
+</body>
+</html>

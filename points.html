@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Aether - Points</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="msapplication-config" content="none">
+    <meta name="theme-color" content="#ffffff">
+
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/img/aether-icon.png?t=1750992166">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/img/aether-icon.png?t=1750992166">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/img/aether-icon.png?t=1750992166">
+    <link rel="apple-touch-icon" sizes="192x192" href="assets/img/aether-icon.png?t=1750992166">
+    <link rel="apple-touch-icon-precomposed" href="assets/img/aether-icon.png?t=1750992166">
+    
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/templatemo.css">
+    <link rel="stylesheet" href="assets/css/custom.css">
+
+    <!-- Load fonts style after rendering the layout styles -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100;200;300;400;500;600;700;800;900&display=swap">
+    <style>
+        body {
+            font-family: "Montserrat", sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+            font-family: "Montserrat", sans-serif;
+            font-weight: 600;
+        }
+        .japanese-text {
+            font-family: "Noto Sans JP", sans-serif;
+            font-weight: 400;
+            line-height: 1.6;
+        }
+        .japanese-heading {
+            font-family: "Noto Sans JP", sans-serif;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+    </style>
+    <link rel="stylesheet" href="assets/css/fontawesome.min.css">
+    <style>
+        /* User dropdown hover fix */
+        .dropdown-toggle:hover,
+        .dropdown-toggle:focus,
+        #user-name:hover {
+            color: #343a40 !important;
+            text-decoration: none !important;
+        }
+        .nav-link:hover {
+            color: #343a40 !important;
+        }
+        
+        /* 네비게이션바 텍스트 thin 서체 통일 */
+        .navbar-nav .nav-link {
+            font-family: "Montserrat", sans-serif !important;
+            font-weight: 300 !important;
+            font-size: 1rem !important;
+        }
+        
+        .navbar-brand {
+            font-family: "Montserrat", sans-serif !important;
+            font-weight: 300 !important;
+        }
+        
+        #user-name {
+            font-family: "Montserrat", sans-serif !important;
+            font-weight: 300 !important;
+        }
+        
+        /* 포인트 페이지 전용 스타일 */
+        .point-card {
+            background: #fff;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .point-number {
+            font-size: 4rem;
+            font-weight: 700;
+            color: #343a40;
+            text-align: center;
+            line-height: 1.2;
+        }
+        
+        .point-number strong {
+            font-size: 4rem;
+            font-weight: 700;
+        }
+        
+        .point-number span {
+            font-size: 2rem;
+            font-weight: normal;
+            color: #6c757d;
+        }
+        
+        .qr-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        
+        .qr-code-container {
+            text-align: center;
+            margin: 20px auto;
+            width: 200px;
+            height: 200px;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .qr-code-container canvas {
+            margin: 0 auto;
+            border-radius: 4px;
+        }
+        
+        .history-section {
+            background: #fff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Start Top Nav -->
+    <nav class="navbar navbar-expand-lg bg-black navbar-light d-none d-lg-block" id="templatemo_nav_top" style="min-height: 20px;">
+        <div class="container text-light">
+            <div class="w-100 d-flex justify-content-between">
+                <div>
+                    <!-- 빈 공간으로 블랙 바 유지 -->
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- Close Top Nav -->
+
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg navbar-light shadow">
+        <div class="container d-flex justify-content-between align-items-center">
+            <!-- QR 코드 아이콘 제거됨 - 중간 섹션에서만 사용 -->
+
+            <a class="navbar-brand text-success logo align-self-center" href="index.html">
+                <img src="assets/img/logo.png" alt="Logo" class="img-fluid" style="max-height: 50px;">
+            </a>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#templatemo_main_nav" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="align-self-center collapse navbar-collapse flex-fill  d-lg-flex justify-content-lg-between" id="templatemo_main_nav">
+                <!-- 모바일 메뉴 레이아웃 -->
+                <div class="d-lg-none w-100">
+                    <!-- 영문 메뉴 - 가로 정렬 -->
+                    <div class="d-flex justify-content-center mb-4">
+                        <ul class="nav navbar-nav d-flex flex-row gap-4">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="shop.html">Brand</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="info.html">Info</a>
+                        </li>
+                    </ul>
+                </div>
+                    
+                    <!-- 아이콘들 - 가로 정렬, 좌우 여백 추가 -->
+                    <div class="d-flex justify-content-center align-items-center gap-4 px-4">
+                        <a href="cart.html" class="nav-link text-decoration-none">
+                            <i class="fas fa-shopping-cart text-dark" style="font-size: 1.5rem;"></i>
+                            <span class="badge bg-secondary ms-1" id="cart-count-mobile">0</span>
+                        </a>
+                        <div class="dropdown">
+                            <a href="#" class="nav-link dropdown-toggle text-decoration-none" id="userDropdownMobile" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user text-dark" style="font-size: 1.5rem;"></i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-center" aria-labelledby="userDropdownMobile">
+                                <li id="login-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="login.html">
+                                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                                    </a>
+                                </li>
+                                <li id="register-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="register.html">
+                                        <i class="fas fa-user-plus me-2"></i>Register
+                                    </a>
+                                </li>
+                                <li id="profile-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="profile.html">
+                                        <i class="fas fa-user-circle me-2"></i>Profile
+                                    </a>
+                                </li>
+                                <li id="points-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="points.html">
+                                        <i class="fas fa-coins me-2"></i>Points
+                                    </a>
+                                </li>
+                                <li id="admin-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="admin-dashboard.html">
+                                        <i class="fas fa-cog me-2"></i>管理ダッシュボード
+                                    </a>
+                                </li>
+                                <li id="logout-menu-mobile" style="display: none;">
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li id="logout-menu-item-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="#" onclick="logout()">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                    </a>
+                                </li>
+                            </ul>
+                            </div>
+                        </div>
+                    </div>
+                
+                <!-- 데스크톱 메뉴 레이아웃 -->
+                <div class="flex-fill d-none d-lg-block">
+                    <ul class="nav navbar-nav d-flex justify-content-between mx-lg-auto" style="max-width: 400px; margin: 0 auto;">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="shop.html">Brand</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="info.html">Info</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="navbar align-self-center d-flex d-none d-lg-flex">
+                    <!-- QR 코드 아이콘 제거됨 - 중간 섹션에서만 사용 -->
+                    <a href="cart.html" class="nav-link text-decoration-none me-3">
+                        <i class="fas fa-shopping-cart text-dark"></i>
+                        <span class="badge bg-secondary" id="cart-count">0</span>
+                    </a>
+                    <div class="dropdown">
+                        <a href="#" class="nav-link dropdown-toggle text-decoration-none" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user text-dark"></i>
+                            <span id="user-name" class="d-none d-lg-inline ms-1"></span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li id="login-menu" style="display: none;">
+                                <a class="dropdown-item" href="login.html">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                                </a>
+                            </li>
+                            <li id="register-menu" style="display: none;">
+                                <a class="dropdown-item" href="register.html">
+                                    <i class="fas fa-user-plus me-2"></i>Register
+                                </a>
+                            </li>
+                            <li id="profile-menu" style="display: none;">
+                                <a class="dropdown-item" href="profile.html">
+                                    <i class="fas fa-user-circle me-2"></i>Profile
+                                </a>
+                            </li>
+                            <li id="points-menu" style="display: none;">
+                                <a class="dropdown-item" href="points.html">
+                                    <i class="fas fa-coins me-2"></i>Points
+                                </a>
+                            </li>
+                            <li id="admin-menu" style="display: none;">
+                                <a class="dropdown-item" href="admin-dashboard.html">
+                                    <i class="fas fa-cog me-2"></i>管理ダッシュボード
+                                </a>
+                            </li>
+                            <li id="logout-menu" style="display: none;">
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li id="logout-menu-item" style="display: none;">
+                                <a class="dropdown-item" href="#" onclick="logout()">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </nav>
+    <!-- Close Header -->
+
+    <!-- Modal -->
+    <div class="modal fade bg-white" id="templatemo_search" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="w-100 pt-1 mb-5 text-right">
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+            <form action="" method="get" class="modal-content modal-body border-0 p-0">
+                <div class="input-group mb-2">
+                    <input type="text" class="form-control" id="inputModalSearch" name="q" placeholder="Search ...">
+                    <button type="submit" class="input-group-text bg-success text-light">
+                        <i class="fa fa-fw fa-search text-white"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Start Banner Hero -->
+    <div class="py-3 bg-light">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-12">
+                    <h1 class="h2 japanese-heading text-center mb-2">
+                <i class="fas fa-coins me-2"></i>ポイント管理
+            </h1>
+                    <p class="japanese-text text-center text-muted mb-3">
+                        あなたのポイント残高と履歴を確認できます
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Banner Hero -->
+
+    <!-- Start Points Section -->
+    <div class="container py-5">
+        <div class="row">
+            <!-- 포인트 카드 -->
+            <div class="col-lg-4 mb-4">
+                <div class="point-card">
+                    <h3 class="japanese-heading text-center mb-4">
+                        <i class="fas fa-coins me-2"></i>現在のポイント
+                    </h3>
+                    <div class="point-number">
+                        <strong id="current-points">-</strong>
+                        <span>pt</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- QR 코드 섹션 -->
+            <div class="col-lg-8 mb-4">
+                <div class="qr-section">
+                    <h3 class="japanese-heading mb-4">
+                        <i class="fas fa-qrcode me-2"></i>店舗用QRコード
+                    </h3>
+                    <div class="qr-code-container" id="qr-code-container">
+                        <div class="spinner-border text-secondary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <!-- 포인트 이력 섹션 -->
+        <div class="row">
+            <div class="col-12">
+                <div class="history-section">
+                <h3 class="japanese-heading mb-4">
+                    <i class="fas fa-history me-2"></i>ポイント履歴
+                </h3>
+                    <div id="point-history-container">
+                        <div class="text-center text-muted">
+                            <i class="fas fa-inbox fa-3x mb-3"></i>
+                            <p class="japanese-text">ポイント履歴がありません</p>
+                </div>
+            </div>
+            </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Points Section -->
+
+    <!-- QR Code Modal 제거됨 - 페이지에 직접 표시 -->
+
+    <!-- Start Script -->
+    <script src="assets/js/jquery-1.11.0.min.js"></script>
+    <script src="assets/js/jquery-migrate-1.2.1.min.js"></script>
+    <script src="assets/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/templatemo.js"></script>
+    
+    <!-- QR Code Generator Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
+    <!-- 애플리케이션 스크립트 -->
+    <script src="assets/js/firebase-config.js"></script>
+    <script src="assets/js/auth-utils.js"></script>
+    <script src="assets/js/common-qr-code.js?v=2.1"></script>
+    <script src="assets/js/custom.js"></script>
+    
+    <!-- 포인트 페이지 전용 스크립트 -->
+    <script>
+        // 포인트 페이지 전용 변수들
+        let pointsPageUser = null;
+        let currentPoints = null; // 하드코딩 제거, Firebase에서 로드
+        let pointHistory = [];
+        let qrToken = null;
+        let qrCodeGenerated = false;
+        
+        // Firebase 전용 QR 토큰 관리 - localStorage 사용 안함
+
+        // QR 코드 관련 함수들은 모두 common-qr-code.js에서 처리
+
+
+        // 포인트 표시 업데이트 함수
+        function updatePointsDisplay() {
+            const pointsElement = document.getElementById('current-points');
+            if (pointsElement) {
+                pointsElement.textContent = currentPoints.toLocaleString();
+                console.log('포인트 표시 업데이트 완료:', currentPoints);
+            } else {
+                console.error('포인트 표시 요소를 찾을 수 없습니다');
+            }
+        }
+
+        // 포인트 정보 로드
+        async function loadPointInfo() {
+            try {
+                console.log('=== 포인트 정보 로드 시작 ===');
+            
+            if (!pointsPageUser) {
+                    console.log('❌ 사용자 정보가 없어 포인트 정보를 로드할 수 없습니다');
+                return;
+            }
+
+                console.log('포인트 정보 로드 - 사용자:', pointsPageUser);
+                console.log('Firebase 상태 확인:', {
+                    firebase: typeof firebase !== 'undefined',
+                    firestore: typeof firebase !== 'undefined' && firebase.firestore,
+                    apps: typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length
+                });
+
+                // Firebase에서 포인트 정보 가져오기
+                if (typeof firebase !== 'undefined' && firebase.firestore) {
+                    const db = firebase.firestore();
+                    
+                    // 먼저 사용자 ID로 검색 (캐시 무시하고 서버에서 직접 가져오기)
+                    let userDoc = await db.collection('users').doc(pointsPageUser.uid).get({ source: 'server' });
+                    console.log('사용자 ID로 검색 결과 (서버에서):', userDoc.exists);
+                    
+                    if (!userDoc.exists) {
+                        // 사용자 ID로 찾지 못한 경우 이메일로 검색
+                        console.log('사용자 ID로 찾지 못함, 이메일로 검색 시도');
+                        const emailQuery = await db.collection('users')
+                            .where('email', '==', pointsPageUser.email)
+                            .limit(1)
+                            .get({ source: 'server' });
+                        
+                        if (!emailQuery.empty) {
+                            userDoc = emailQuery.docs[0];
+                            console.log('이메일로 사용자 찾음:', userDoc.id);
+                        }
+                    }
+                    
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        const newPoints = userData.points || 0;
+                        
+                        // 포인트가 변경되었는지 확인
+                        if (currentPoints !== newPoints) {
+                            console.log(`포인트 변경 감지: ${currentPoints} → ${newPoints}`);
+                            currentPoints = newPoints;
+                            pointsPageUser.points = currentPoints; // 사용자 정보도 업데이트
+                            
+                            // UI 업데이트
+                            updatePointsDisplay();
+                } else {
+                            console.log('포인트 변경 없음:', currentPoints);
+                        }
+                        
+                        console.log('Firebase에서 포인트 정보 로드 (최신):', currentPoints);
+                        console.log('사용자 데이터:', userData);
+                        } else {
+                        console.log('사용자 문서가 존재하지 않습니다, 새로 생성');
+                        // 사용자 문서가 없으면 새로 생성
+                        await db.collection('users').doc(pointsPageUser.uid).set({
+                            name: pointsPageUser.name,
+                            email: pointsPageUser.email,
+                            points: 0,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        // currentPoints는 Firebase에서 로드된 값 사용
+                        }
+                } else {
+                    console.log('Firebase가 사용 불가능합니다');
+                    // currentPoints는 Firebase에서 로드된 값 사용
+                }
+
+                // 포인트 표시 업데이트 (currentPoints가 null이 아닐 때만)
+                if (currentPoints !== null) {
+                    const pointsElement = document.getElementById('current-points');
+                    if (pointsElement) {
+                        pointsElement.textContent = currentPoints.toLocaleString();
+                        console.log('포인트 표시 업데이트 완료:', currentPoints);
+                    } else {
+                        console.error('포인트 표시 요소를 찾을 수 없습니다');
+                    }
+                }
+                        
+                        // 포인트 이력 로드가 완료되면 자동으로 포인트가 계산되고 업데이트됩니다
+
+            } catch (error) {
+                console.error('포인트 정보 로드 오류:', error);
+                // currentPoints는 Firebase에서 로드된 값 사용
+                const pointsElement = document.getElementById('current-points');
+                if (pointsElement) {
+                    pointsElement.textContent = '-';
+                }
+            }
+        }
+
+        // 포인트 이력 로드
+        async function loadPointHistory() {
+            try {
+                console.log('=== 포인트 이력 로드 시작 ===');
+                
+                if (!pointsPageUser) {
+                    console.log('❌ 사용자 정보가 없어 포인트 이력을 로드할 수 없습니다');
+                    return;
+                }
+                
+                console.log('포인트 이력 검색 대상:', {
+                    uid: pointsPageUser.uid,
+                    email: pointsPageUser.email
+                });
+                
+                console.log('Firebase 상태 확인:', {
+                    firebase: typeof firebase !== 'undefined',
+                    firestore: typeof firebase !== 'undefined' && firebase.firestore,
+                    apps: typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length
+                });
+                
+                // Firebase에서 포인트 이력 가져오기
+                if (typeof firebase !== 'undefined' && firebase.firestore) {
+                    const db = firebase.firestore();
+                    
+                    // 사용자별 포인트 이력 검색
+                    let historySnapshot = null;
+                    let earnedPoints = 0;
+                    let usedPoints = 0;
+                    let filteredDocs = [];
+                    
+                    try {
+                        // 인덱스 없이도 작동하도록 단순 쿼리 사용 (서버에서 직접 가져오기)
+                        console.log('단순 쿼리로 포인트 이력 검색 시작 (서버에서)');
+                        // 캐시 무효화를 위해 강제로 서버에서 가져오기
+                        historySnapshot = await db.collection('pointHistory').get({ 
+                            source: 'server',
+                            cache: false 
+                        });
+                        console.log('전체 포인트 이력 문서 수:', historySnapshot.size, '건');
+                        
+                        historySnapshot.forEach(doc => {
+                            const data = doc.data();
+                            console.log('이력 문서 확인:', {
+                                docId: doc.id,
+                                userId: data.userId,
+                                userEmail: data.userEmail,
+                                type: data.type,
+                                points: data.points,
+                                reason: data.reason,
+                                currentUserUid: pointsPageUser.uid,
+                                currentUserEmail: pointsPageUser.email
+                            });
+                            
+                            if (data.userId === pointsPageUser.uid || 
+                                data.userEmail === pointsPageUser.email ||
+                                data.userId === pointsPageUser.email) {
+                                filteredDocs.push({ id: doc.id, ...data });
+                                
+                                // 포인트 계산
+                                if (data.type === 'earn' || data.type === 'admin_add' || data.type === 'welcome_bonus') {
+                                    earnedPoints += data.points || 0;
+                                    console.log('적립 포인트 추가:', data.points, '총 적립:', earnedPoints);
+                                } else if (data.type === 'use' || data.type === 'admin_subtract') {
+                                    usedPoints += data.points || 0;
+                                    console.log('사용 포인트 추가:', data.points, '총 사용:', usedPoints);
+                                }
+                            }
+                        });
+                        
+                        // 시간순 정렬 (최신순)
+                        filteredDocs.sort((a, b) => {
+                            const timeA = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp);
+                            const timeB = b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp);
+                            return timeB - timeA;
+                        });
+                        
+                        // 최대 10개만 선택
+                        const limitedDocs = filteredDocs.slice(0, 10);
+                        console.log('필터링된 포인트 이력:', limitedDocs.length, '건');
+                        
+                        // Firestore 스냅샷 형태로 변환
+                        historySnapshot = {
+                            empty: limitedDocs.length === 0,
+                            size: limitedDocs.length,
+                            forEach: (callback) => {
+                                limitedDocs.forEach((doc, index) => {
+                                    callback({
+                                        id: doc.id,
+                                        data: () => doc
+                                    });
+                                });
+                            }
+                        };
+                        
+                    } catch (queryError) {
+                        console.warn('포인트 이력 쿼리 실패:', queryError);
+                        historySnapshot = null;
+                    }
+                    
+                    // pointHistory 배열을 filteredDocs로 설정
+                    pointHistory = filteredDocs;
+                    console.log('포인트 이력 배열 설정 완료:', pointHistory.length, '건');
+                    
+                    // 포인트 계산 및 업데이트
+                    if (pointHistory.length > 0) {
+                        pointHistory.forEach(item => {
+                            console.log('✅ 사용자 이력 확인:', item.type, item.points, item.reason);
+                        });
+                        
+                        // 포인트 계산 및 업데이트
+                        const calculatedPoints = earnedPoints - usedPoints;
+                        console.log('포인트 이력 기반 계산:', {
+                            earnedPoints,
+                            usedPoints,
+                            calculatedPoints,
+                            currentDisplayPoints: pointsPageUser.points
+                        });
+                        
+                        // 계산된 포인트가 다르면 업데이트 (단, 0보다 작으면 안됨)
+                        if (calculatedPoints !== pointsPageUser.points && calculatedPoints >= 0) {
+                            console.log('포인트 불일치 감지, 업데이트 중...');
+                            pointsPageUser.points = calculatedPoints;
+                            currentPoints = calculatedPoints;
+                            
+                            // 포인트 표시 업데이트
+                            const pointsElement = document.getElementById('current-points');
+                            if (pointsElement) {
+                                pointsElement.textContent = calculatedPoints.toLocaleString();
+                                console.log('✅ 포인트 표시 업데이트 완료:', calculatedPoints);
+                            }
+                            
+                            // Firebase에 포인트 업데이트 (이메일을 문서 ID로 사용)
+                            if (typeof firebase !== 'undefined' && firebase.firestore) {
+                                const db = firebase.firestore();
+                                db.collection('users').doc(pointsPageUser.email).update({
+                                    points: calculatedPoints
+                                }).then(() => {
+                                    console.log('✅ Firebase 포인트 업데이트 완료:', calculatedPoints);
+                                }).catch(error => {
+                                    console.error('Firebase 포인트 업데이트 실패:', error);
+                                });
+                            }
+                        } else if (calculatedPoints < 0) {
+                            console.log('⚠️ 계산된 포인트가 음수입니다. 원본 포인트 유지:', pointsPageUser.points);
+                        }
+                        
+                        // pointHistory 배열을 전역 변수에 저장
+                        window.pointHistory = pointHistory;
+                        console.log('✅ pointHistory 전역 저장 완료:', pointHistory.length, '건');
+                        
+                        // 최신 10건만 유지
+                        pointHistory = pointHistory
+                            .sort((a, b) => {
+                                // 안전한 타임스탬프 처리
+                                const getTimestamp = (item) => {
+                                    if (!item || !item.timestamp) return new Date(0);
+                                    
+                                    // Firestore Timestamp 객체인 경우
+                                    if (item.timestamp.toDate && typeof item.timestamp.toDate === 'function') {
+                                        return item.timestamp.toDate();
+                                    }
+                                    
+                                    // 일반 Date 객체나 문자열인 경우
+                                    return new Date(item.timestamp);
+                                };
+                                
+                                const aTime = getTimestamp(a);
+                                const bTime = getTimestamp(b);
+                                return bTime - aTime;
+                            })
+                            .slice(0, 10);
+                    }
+
+                    console.log('Firebase에서 포인트 이력 로드 완료:', pointHistory.length, '건');
+                } else {
+                    console.log('Firebase가 사용 불가능합니다');
+                    pointHistory = [];
+                }
+
+                // 이력 표시 업데이트
+                updatePointHistoryDisplay();
+                
+            } catch (error) {
+                console.error('포인트 이력 로드 오류:', error);
+                pointHistory = [];
+                updatePointHistoryDisplay();
+            }
+        }
+
+        // 페이지 포커스 시 데이터 새로고침 설정
+        function setupPageRefresh() {
+            console.log('🔄 페이지 포커스 새로고침 설정');
+            
+            // 페이지 포커스 시 포인트 데이터 새로고침
+            window.addEventListener('focus', async () => {
+                console.log('📱 페이지 포커스 감지 - 포인트 데이터 새로고침');
+                try {
+                    await loadPointInfo();
+                    await loadPointHistory();
+                } catch (error) {
+                    console.error('포커스 새로고침 오류:', error);
+                }
+            });
+            
+            // 페이지 가시성 변경 시 새로고침
+            document.addEventListener('visibilitychange', async () => {
+                if (!document.hidden) {
+                    console.log('👁️ 페이지 가시성 변경 - 포인트 데이터 새로고침');
+                    try {
+                        await loadPointInfo();
+                        await loadPointHistory();
+                    } catch (error) {
+                        console.error('가시성 새로고침 오류:', error);
+                    }
+                }
+            });
+        }
+
+        // 포인트 이력 표시 업데이트
+        function updatePointHistoryDisplay() {
+            const container = document.getElementById('point-history-container');
+            
+            console.log('포인트 이력 표시 업데이트 시작:', pointHistory.length, '건');
+            
+            if (pointHistory.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-muted">
+                        <i class="fas fa-inbox fa-3x mb-3"></i>
+                        <p class="japanese-text">ポイント履歴がありません</p>
+                        <small class="text-muted japanese-text">商品購入時にポイント履歴が表示されます</small>
+                            </div>
+                `;
+                return;
+            }
+
+            let historyHTML = '<div class="table-responsive"><table class="table table-hover">';
+            historyHTML += '<thead><tr><th class="japanese-text">日付</th><th class="japanese-text">内容</th><th class="japanese-text">ポイント</th></tr></thead><tbody>';
+            
+            pointHistory.forEach((item, index) => {
+                console.log(`이력 ${index + 1}:`, item);
+                
+                let date;
+                try {
+                    if (item.timestamp && item.timestamp.toDate) {
+                        date = item.timestamp.toDate();
+                    } else if (item.timestamp) {
+                        date = new Date(item.timestamp);
+                    } else {
+                        date = new Date();
+                    }
+                } catch (dateError) {
+                    console.warn('날짜 파싱 오류:', dateError, item.timestamp);
+                    date = new Date();
+                }
+                
+                const dateStr = date.toLocaleDateString('ja-JP');
+                
+                // 포인트 표시 로직 개선 (type에 따라 표시)
+                let pointsStr, pointsClass;
+                if (item.type === 'use' || item.type === 'admin_subtract') {
+                    // 포인트 사용/차감인 경우 음수로 표시
+                    pointsStr = `-${item.points}`;
+                    pointsClass = 'text-danger';
+                } else if (item.type === 'earn' || item.type === 'admin_add') {
+                    // 포인트 적립인 경우 양수로 표시
+                    pointsStr = `+${item.points}`;
+                    pointsClass = 'text-success';
+                } else {
+                    // 기존 로직 (호환성)
+                    pointsStr = item.points > 0 ? `+${item.points}` : item.points;
+                    pointsClass = item.points > 0 ? 'text-success' : 'text-danger';
+                }
+                
+                // 이력 내용 결정
+                let description = 'ポイント取引';
+                if (item.reason) {
+                    // 한국어 reason을 일본어로 변환
+                    if (item.reason.includes('신규 가입 웰컴 보너스') || item.reason.includes('신규 가입')) {
+                        description = '新規登録ウェルカムボーナス';
+                    } else if (item.reason.includes('웰컴 보너스')) {
+                        description = 'ウェルカムボーナス';
+                    } else if (item.reason.includes('포인트 적립')) {
+                        description = 'ポイント還元';
+                    } else if (item.reason.includes('포인트 사용')) {
+                        description = 'ポイント使用';
+                    } else if (item.reason.includes('관리자')) {
+                        description = '管理者操作';
+                    } else {
+                        description = item.reason;
+                    }
+                } else if (item.type === 'earn') {
+                    description = '商品購入';
+                } else if (item.type === 'use') {
+                    description = '商品購入時使用';
+                } else if (item.type === 'admin_add') {
+                    description = '管理者付与';
+                } else if (item.type === 'admin_subtract') {
+                    description = '管理者差引';
+                } else if (item.type === 'welcome_bonus') {
+                    description = '新規登録ウェルカムボーナス';
+                } else if (item.description) {
+                    description = item.description;
+                }
+                
+                historyHTML += `
+                    <tr>
+                        <td class="japanese-text">${dateStr}</td>
+                        <td class="japanese-text">${description}</td>
+                        <td class="${pointsClass} japanese-text">${pointsStr}</td>
+                    </tr>
+                `;
+            });
+            
+            historyHTML += '</tbody></table></div>';
+            container.innerHTML = historyHTML;
+            
+            console.log('포인트 이력 표시 업데이트 완료');
+        }
+
+        // Firebase Auth 상태를 기다리는 함수
+        async function waitForFirebaseAuth() {
+            return new Promise((resolve) => {
+                if (typeof firebase === 'undefined' || !firebase.auth) {
+                    console.log('Firebase가 아직 로드되지 않음, 대기 중...');
+                    const checkFirebase = setInterval(() => {
+                        if (typeof firebase !== 'undefined' && firebase.auth) {
+                            clearInterval(checkFirebase);
+                            waitForAuthState();
+                        }
+                    }, 100);
+                    return;
+                }
+                
+                waitForAuthState();
+                
+                function waitForAuthState() {
+                    // 이미 로그인된 사용자가 있는지 확인
+                    const currentUser = firebase.auth().currentUser;
+                    if (currentUser) {
+                        console.log('이미 로그인된 사용자 발견:', currentUser.email);
+                        resolve(currentUser);
+                        return;
+                    }
+                    
+                    // Auth 상태 변화를 기다림 (최대 5초)
+                    let timeoutId = setTimeout(() => {
+                        console.log('Firebase Auth 상태 확인 시간 초과');
+                        resolve(null);
+                    }, 5000);
+                    
+                    const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
+                        clearTimeout(timeoutId);
+                        unsubscribe();
+                        if (user) {
+                            console.log('Firebase Auth 상태 확인 완료:', user.email);
+                            resolve(user);
+                        } else {
+                            console.log('Firebase Auth에서 사용자를 찾을 수 없음');
+                            resolve(null);
+                        }
+                    });
+                }
+            });
+        }
+
+        // 로그인 상태 확인 함수 (프로필 페이지와 동일)
+        function getLoginStatus() {
+            try {
+                // Firebase Auth에서 현재 사용자 정보 가져오기
+                const user = firebase.auth().currentUser;
+                if (user) {
+                    return {
+                        uid: user.uid,
+                        email: user.email,
+                        name: user.displayName || user.email.split('@')[0]
+                    };
+                }
+                
+                // Firebase 사용자가 없으면 null 반환
+                return null;
+            } catch (error) {
+                console.error('로그인 상태 확인 중 오류:', error);
+                return null;
+            }
+        }
+
+        // 페이지 초기화
+        async function initializePointsPage() {
+            console.log('=== 포인트 페이지 초기화 시작 ===');
+            
+            // 현재 사용자 정보 가져오기
+            let userData = null;
+            let userPoints = 0;
+            
+            try {
+                // Firebase Auth 사용자 확인 (더 안전한 방식)
+                console.log('Firebase 상태 확인:', {
+                    firebase: typeof firebase !== 'undefined',
+                    auth: typeof firebase !== 'undefined' && firebase.auth,
+                    currentUser: typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser
+                });
+                
+                if (typeof firebase !== 'undefined' && firebase.auth) {
+                    const user = firebase.auth().currentUser;
+                    console.log('Firebase Auth currentUser:', user);
+                    
+                    if (user) {
+                        console.log('Firebase Auth 사용자 발견:', user.email);
+                        
+                        // Firestore에서 사용자 정보 가져오기
+                        if (firebase.firestore) {
+                    const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+                    
+                    if (userDoc.exists) {
+                        userData = {
+                            name: userDoc.data().name || user.displayName || user.email.split('@')[0],
+                            email: user.email,
+                            uid: user.uid,
+                            points: userDoc.data().points || 0
+                        };
+                        userPoints = userData.points;
+                        console.log('Firebase에서 사용자 정보 로드 성공:', userData);
+                            } else {
+                                console.log('사용자 문서가 존재하지 않음, 새로 생성');
+                                // 사용자 문서가 없으면 새로 생성
+                                await firebase.firestore().collection('users').doc(user.uid).set({
+                                    name: user.displayName || user.email.split('@')[0],
+                                    email: user.email,
+                                    points: 0,
+                                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                                });
+                                
+                            userData = {
+                                    name: user.displayName || user.email.split('@')[0],
+                                    email: user.email,
+                                    uid: user.uid,
+                                points: 0
+                            };
+                                userPoints = 0;
+                            }
+                        } else {
+                            console.log('Firestore가 사용 불가능');
+                        }
+                    } else {
+                        console.log('Firebase Auth에서 사용자를 찾을 수 없음');
+                    }
+                } else {
+                    console.log('Firebase 또는 Auth가 사용 불가능');
+                }
+            } catch (firebaseError) {
+                console.warn('Firebase 사용자 정보 로드 실패:', firebaseError);
+            }
+            
+            // Firebase 사용자 정보가 없으면 로그인 페이지로 리다이렉트
+            if (!userData) {
+                console.log('Firebase에서 사용자 데이터를 찾을 수 없음, 로그인 페이지로 이동');
+                window.location.href = 'login.html?redirect=points.html';
+                return;
+            }
+            
+            // 3. 사용자 정보 설정
+            if (userData) {
+                pointsPageUser = userData;
+                currentPoints = userPoints;
+                console.log('최종 사용자 정보 설정:', pointsPageUser);
+                console.log('현재 포인트:', currentPoints);
+            } else {
+                console.log('사용자 데이터를 찾을 수 없음');
+                window.location.href = 'login.html?redirect=points.html';
+                    return;
+                }
+                
+            // 포인트 정보 및 이력 로드
+            await loadPointInfo();
+            await loadPointHistory();
+            
+            // Firebase 전용 QR 코드 시스템 - Firebase 초기화 완료 후 자동 생성
+            console.log('QR 코드는 Firebase 초기화 완료 후 자동 생성됩니다');
+            
+            // QR 코드 생성 강제 실행 (더 긴 지연 시간)
+            setTimeout(() => {
+                if (typeof window.unifiedQRCodeManager !== 'undefined' && window.unifiedQRCodeManager) {
+                    console.log('QR 코드 매니저가 존재함, 강제 QR 코드 생성 시도');
+                    window.unifiedQRCodeManager.autoGenerateQRCode();
+                } else {
+                    console.log('QR 코드 매니저가 아직 초기화되지 않음');
+                }
+            }, 3000);
+
+            // 페이지 새로고침 기능 설정
+            setupPageRefresh();
+
+            console.log('포인트 페이지 초기화 완료');
+        }
+
+        // 네비게이션 바 사용자 상태 업데이트
+        function updateNavigationUserState(user) {
+            try {
+                console.log('네비게이션 바 사용자 상태 업데이트:', user.email);
+                
+                // 데스크톱 사용자 드롭다운 업데이트
+                const userDropdown = document.getElementById('userDropdown');
+                const userName = document.getElementById('user-name');
+                
+                if (userDropdown && userName) {
+                    // 사용자 이름 표시
+                    userName.textContent = user.displayName || user.email.split('@')[0];
+                    
+                    // 로그인/회원가입 메뉴 숨기기
+                    const loginMenu = document.getElementById('login-menu');
+                    const registerMenu = document.getElementById('register-menu');
+                    if (loginMenu) loginMenu.style.display = 'none';
+                    if (registerMenu) registerMenu.style.display = 'none';
+                    
+                    // 프로필/포인트 메뉴 표시
+                    const profileMenu = document.getElementById('profile-menu');
+                    const pointsMenu = document.getElementById('points-menu');
+                    if (profileMenu) profileMenu.style.display = 'block';
+                    if (pointsMenu) pointsMenu.style.display = 'block';
+                    
+                    // 로그아웃 메뉴 표시
+                    const logoutMenu = document.getElementById('logout-menu');
+                    const logoutMenuItem = document.getElementById('logout-menu-item');
+                    if (logoutMenu) logoutMenu.style.display = 'block';
+                    if (logoutMenuItem) logoutMenuItem.style.display = 'block';
+                }
+                
+                // 모바일 사용자 드롭다운 업데이트
+                const userDropdownMobile = document.getElementById('userDropdownMobile');
+                if (userDropdownMobile) {
+                    // 로그인/회원가입 메뉴 숨기기
+                    const loginMenuMobile = document.getElementById('login-menu-mobile');
+                    const registerMenuMobile = document.getElementById('register-menu-mobile');
+                    if (loginMenuMobile) loginMenuMobile.style.display = 'none';
+                    if (registerMenuMobile) registerMenuMobile.style.display = 'none';
+                    
+                    // 프로필/포인트 메뉴 표시
+                    const profileMenuMobile = document.getElementById('profile-menu-mobile');
+                    const pointsMenuMobile = document.getElementById('points-menu-mobile');
+                    if (profileMenuMobile) profileMenuMobile.style.display = 'block';
+                    if (pointsMenuMobile) pointsMenuMobile.style.display = 'block';
+                    
+                    // 로그아웃 메뉴 표시
+                    const logoutMenuMobile = document.getElementById('logout-menu-mobile');
+                    const logoutMenuItemMobile = document.getElementById('logout-menu-item-mobile');
+                    if (logoutMenuMobile) logoutMenuMobile.style.display = 'block';
+                    if (logoutMenuItemMobile) logoutMenuItemMobile.style.display = 'block';
+                }
+                
+                console.log('✅ 네비게이션 바 사용자 상태 업데이트 완료');
+            } catch (error) {
+                console.error('네비게이션 바 사용자 상태 업데이트 오류:', error);
+            }
+        }
+
+        // 로그아웃 함수
+        function logout() {
+            try {
+                console.log('로그아웃 시작');
+                
+                // Firebase 로그아웃
+                if (typeof firebase !== 'undefined' && firebase.auth) {
+                    firebase.auth().signOut().then(() => {
+                        console.log('Firebase 로그아웃 완료');
+                        
+                        // Firebase 전용 로그아웃 완료
+                        
+                        // 로그인 페이지로 이동
+                        window.location.href = 'login.html';
+                    }).catch((error) => {
+                        console.error('Firebase 로그아웃 오류:', error);
+                        // 오류가 있어도 로그인 페이지로 이동
+                        window.location.href = 'login.html';
+                    });
+                } else {
+                    // Firebase가 없는 경우 로그인 페이지로 이동
+                    window.location.href = 'login.html';
+                }
+            } catch (error) {
+                console.error('로그아웃 오류:', error);
+                window.location.href = 'login.html';
+            }
+        }
+
+        // 페이지 포커스 시 포인트 정보 새로고침
+        function setupPageRefresh() {
+            // 페이지가 포커스를 받을 때마다 포인트 정보 새로고침
+            window.addEventListener('focus', async () => {
+                console.log('페이지 포커스 감지 - 포인트 정보 새로고침');
+                if (pointsPageUser) {
+                    await loadPointInfo();
+                    await loadPointHistory();
+                }
+            });
+            
+            // 페이지 가시성 변경 시에도 새로고침
+            document.addEventListener('visibilitychange', async () => {
+                if (!document.hidden && pointsPageUser) {
+                    console.log('페이지 가시성 변경 감지 - 포인트 정보 새로고침');
+                    await loadPointInfo();
+                    await loadPointHistory();
+                }
+            });
+        }
+
+        // Firebase 초기화 완료 후 포인트 이력 및 QR 코드 다시 로드
+        async function reloadPointHistoryAfterFirebase() {
+            console.log('Firebase 초기화 완료 후 포인트 이력 및 QR 코드 다시 로드');
+            if (pointsPageUser) {
+                try {
+                    // 포인트 이력 다시 로드
+                    setTimeout(() => {
+                        loadPointHistory();
+                    }, 500);
+                    
+                    // QR 코드는 common-qr-code.js에서 자동으로 처리
+                } catch (error) {
+                    console.error('Firebase 초기화 후 데이터 로드 실패:', error);
+                }
+            }
+        }
+        
+                // QR 코드 생성은 common-qr-code.js에서 자동으로 처리
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('=== points.html DOMContentLoaded 시작 ===');
+            
+            // Firebase 전용 초기화 - localStorage 정리 제거됨
+            console.log('🔄 Firebase 전용 포인트 페이지 초기화 시작');
+            
+            // 간단하고 직접적인 초기화 방식
+            const initializePointsPageSimple = async () => {
+                console.log('포인트 페이지 간단 초기화 시작');
+                
+                // 1. 기본 포인트 페이지 표시
+                const pointsElement = document.getElementById('current-points');
+                if (pointsElement) {
+                    pointsElement.textContent = '-';
+                }
+                
+                const historyContainer = document.getElementById('point-history-container');
+                if (historyContainer) {
+                    historyContainer.innerHTML = '<p class="text-muted japanese-text">ポイント履歴を読み込み中...</p>';
+                }
+                
+                // QR 코드 컨테이너는 스피너만 표시 (문구 제거됨)
+                
+                // 2. Firebase 초기화 대기
+                let attempts = 0;
+                while (attempts < 100) { // 10초 대기
+                    if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0) {
+                        console.log('✅ Firebase 준비 완료');
+                        break;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                }
+                
+                if (attempts >= 100) {
+                    console.warn('Firebase 초기화 시간 초과');
+                    return;
+                }
+                
+                // 3. Firebase Auth 완전 로드 대기 후 사용자 정보 확인
+                try {
+                    // Firebase Auth가 완전히 로드될 때까지 대기
+                    let user = null;
+                    await new Promise((resolve) => {
+                        const unsubscribe = firebase.auth().onAuthStateChanged((authUser) => {
+                            unsubscribe(); // 한 번만 실행되도록 구독 해제
+                            user = authUser;
+                            resolve(authUser);
+                        });
+                    });
+                    
+                    // 사용자 정보 확인
+                    console.log('Firebase Auth 사용자:', user);
+                    
+                    // currentUser도 확인 (백업)
+                    if (!user) {
+                        user = firebase.auth().currentUser;
+                        console.log('currentUser 백업 확인:', user);
+                    }
+                    
+                    if (user) {
+                        console.log('✅ 로그인된 사용자 확인:', user.email);
+                        
+                        // 사용자 정보 설정
+                        pointsPageUser = {
+                            uid: user.uid,
+                            email: user.email,
+                            name: user.displayName || user.email.split('@')[0],
+                            points: 0
+                        };
+                        
+                        // 네비게이션 바 사용자 상태 업데이트
+                        updateNavigationUserState(user);
+                        
+                        // 데이터 로드 (비동기 처리)
+                        loadPointInfo().then(() => {
+                            console.log('포인트 정보 로드 완료');
+                            return loadPointHistory();
+                        }).then(() => {
+                            console.log('포인트 이력 로드 완료');
+                            // QR코드는 common-qr-code.js에서 자동으로 처리
+                            console.log('페이지 로드 완료');
+                            
+                            // 페이지 포커스 시 데이터 새로고침 설정
+                            setupPageRefresh();
+                        }).catch(error => {
+                            console.error('데이터 로드 오류:', error);
+                            // 오류가 있어도 QR코드는 표시
+                            console.log('데이터 로드 오류 무시하고 QR코드 표시');
+                            // common-qr-code.js가 자동으로 처리
+                        });
+                        
+                        console.log('포인트 페이지 초기화 완료');
+                    } else {
+                        console.log('❌ 로그인된 사용자가 없음');
+                        // Firebase 전용 - localStorage 폴백 제거됨
+                    }
+                } catch (error) {
+                    console.error('포인트 페이지 초기화 오류:', error);
+                }
+            };
+            
+            // 초기화 실행
+            initializePointsPageSimple();
+        });
+        
+        // QR 코드 버튼 이벤트 리스너는 common-qr-code.js에서 자동으로 처리
+        
+        // 모달 관련 함수들은 common-qr-code.js에서 처리
+
+        // QR 코드 관련 함수들은 common-qr-code.js에서 처리
+        
+        // 테스트 함수들 제거됨 - common-qr-code.js에서 자동 처리
+        
+        // 전역 함수는 common-qr-code.js에서 처리
+    </script>
+    
+    <!-- End Script -->
+</body>
+
+</html>
+ 
+ 

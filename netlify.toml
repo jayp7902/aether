@@ -1,0 +1,54 @@
+[build]
+  # 빌드 명령어 (정적 사이트이므로 빌드 불필요)
+  command = "echo 'Static site - no build required'"
+  
+  # 배포할 디렉토리 (루트 디렉토리)
+  publish = "."
+
+[build.environment]
+  # Node.js 버전 (필요시)
+  NODE_VERSION = "18"
+
+# 리다이렉션 규칙
+[[redirects]]
+  # SPA 라우팅을 위한 fallback
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# 헤더 설정
+[[headers]]
+  for = "/*"
+  [headers.values]
+    # 보안 헤더
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    
+    # 캐시 설정
+    Cache-Control = "public, max-age=31536000"
+
+# HTML 파일에 대한 캐시 설정
+[[headers]]
+  for = "*.html"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# CSS/JS 파일에 대한 캐시 설정
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+# 이미지 파일에 대한 캐시 설정
+[[headers]]
+  for = "/assets/img/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+# Firebase 설정 파일에 대한 캐시 설정
+[[headers]]
+  for = "firebase.json"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"

@@ -1,0 +1,1095 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Aether - Register</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="msapplication-config" content="none">
+    <meta name="theme-color" content="#ffffff">
+
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/img/aether-icon.png?t=1750992166">
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/img/aether-icon.png?t=1750992166">
+    <link rel="icon" type="image/png" sizes="16x16" href="assets/img/aether-icon.png?t=1750992166">
+    <link rel="apple-touch-icon" sizes="192x192" href="assets/img/aether-icon.png?t=1750992166">
+    <link rel="apple-touch-icon-precomposed" href="assets/img/aether-icon.png?t=1750992166">
+
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/templatemo.css">
+    <link rel="stylesheet" href="assets/css/custom.css">
+
+    <!-- Google Fonts - Noto Sans JP (小塚 기반) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap&v=3" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap&v=3" rel="stylesheet"></noscript>
+    
+    <!-- Load fonts style after rendering the layout styles -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap">
+    <style>
+        body {
+            font-family: "Montserrat", sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+            font-family: "Montserrat", sans-serif;
+            font-weight: 600;
+        }
+        .japanese-text {
+            font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif !important;
+            font-weight: 400;
+            line-height: 1.6;
+            font-display: swap;
+        }
+        .japanese-heading {
+            font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif !important;
+            font-weight: 600;
+            line-height: 1.4;
+            font-display: swap;
+        }
+        
+        /* 영문 서체 보호 - 전역 폰트 적용 제거 */
+        h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+            font-family: "Montserrat", sans-serif !important;
+            font-weight: 600;
+        }
+        
+        /* FontAwesome 아이콘 보호 */
+        .fas, .far, .fab, .fa {
+            font-family: "Font Awesome 5 Free" !important;
+        }
+        
+        /* 모달 내 일본어 서체 강제 적용 */
+        .modal .japanese-text,
+        .modal .japanese-heading,
+        .modal-body,
+        .modal-body p,
+        .modal-body li,
+        .modal-body h6,
+        .modal-title {
+            font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif !important;
+        }
+        
+        .modal .japanese-heading,
+        .modal-body h6,
+        .modal-title {
+            font-weight: 600 !important;
+            font-size: 0.8em !important; /* 20% 감소 */
+        }
+        
+        .modal .japanese-text,
+        .modal-body p,
+        .modal-body li {
+            font-weight: 400 !important;
+            font-size: 0.8em !important; /* 20% 감소 */
+        }
+    </style>
+    <link rel="stylesheet" href="assets/css/fontawesome.min.css">
+    <style>
+        /* User dropdown hover fix */
+        .dropdown-toggle:hover,
+        .dropdown-toggle:focus,
+        #user-name:hover {
+            color: #343a40 !important;
+            text-decoration: none !important;
+        }
+        .nav-link:hover {
+            color: #343a40 !important;
+        }
+        
+        /* 네비게이션바 텍스트 thin 서체 통일 */
+        .navbar-nav .nav-link {
+            font-family: "Montserrat", sans-serif !important;
+            font-weight: 300 !important;
+            font-size: 1rem !important;
+        }
+        
+        .navbar-brand {
+            font-family: "Montserrat", sans-serif !important;
+            font-weight: 300 !important;
+        }
+        
+        #user-name {
+            font-family: "Montserrat", sans-serif !important;
+            font-weight: 300 !important;
+        }
+        
+        /* 회원가입 페이지 전용 스타일 */
+        body {
+            background-color: #f8f9fa;
+        }
+        .register-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .register-card {
+            max-width: 450px;
+            width: 100%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+            border-radius: 10px;
+        }
+        .register-header {
+            background-color: #000000;
+            color: white;
+            border-radius: 10px 10px 0 0;
+            padding: 2rem;
+            text-align: center;
+        }
+        .register-body {
+            padding: 2rem;
+        }
+        .form-control:focus {
+            border-color: #6c757d;
+            box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.25);
+        }
+        .btn-register {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+        .btn-register:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+        }
+        .password-strength {
+            margin-top: 0.5rem;
+        }
+        .strength-bar {
+            height: 4px;
+            border-radius: 2px;
+            background-color: #e9ecef;
+            overflow: hidden;
+        }
+        .strength-fill {
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+        .strength-weak { background-color: #6c757d; }
+        .strength-medium { background-color: #495057; }
+        .strength-strong { background-color: #343a40; }
+        
+        /* 링크 호버 효과 - 모노톤 색상 */
+        .register-body a,
+        .register-body a:link,
+        .register-body a:visited {
+            color: #343a40 !important;
+            text-decoration: none !important;
+        }
+        
+        .register-body a:hover,
+        .register-body a:active {
+            color: #6c757d !important;
+            text-decoration: none !important;
+            transition: color 0.3s ease;
+        }
+        
+        /* 로그인 링크 특별 지정 */
+        a[href="login.html"],
+        a[href="login.html"]:link,
+        a[href="login.html"]:visited {
+            color: #343a40 !important;
+        }
+        
+        a[href="login.html"]:hover,
+        a[href="login.html"]:active {
+            color: #6c757d !important;
+            transition: color 0.3s ease;
+        }
+        
+        /* 체크박스 모노톤 스타일 */
+        .form-check-input {
+            background-color: #fff;
+            border-color: #6c757d;
+        }
+        
+        .form-check-input:checked {
+            background-color: #343a40 !important;
+            border-color: #343a40 !important;
+        }
+        
+        .form-check-input:focus {
+            border-color: #6c757d;
+            box-shadow: 0 0 0 0.25rem rgba(108, 117, 125, 0.25);
+        }
+        
+        /* 모바일 최적화 */
+        @media (max-width: 767.98px) {
+            .register-container {
+                padding: 0.5rem;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .register-card {
+                max-width: 100%;
+                margin: 0 auto;
+            }
+            
+            .register-header {
+                padding: 1.5rem;
+            }
+            
+            .register-body {
+                padding: 1.5rem;
+            }
+        }
+        
+        .form-check-input:checked:focus {
+            border-color: #343a40;
+            box-shadow: 0 0 0 0.25rem rgba(52, 58, 64, 0.25);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Start Top Nav -->
+    <nav class="navbar navbar-expand-lg navbar-light" id="templatemo_nav_top" style="min-height: 20px; background-color: #000000 !important;">
+        <div class="container text-light">
+            <div class="w-100 d-flex justify-content-between">
+                <div>
+                    <i class="fa fa-envelope mx-2"></i>
+                    <a class="navbar-sm-brand text-light text-decoration-none" href="mailto:aether7info@gmail.com">aether7info@gmail.com</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- Close Top Nav -->
+
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg navbar-light shadow">
+        <div class="container d-flex justify-content-between align-items-center">
+
+            <a class="navbar-brand text-success logo align-self-center" href="index.html">
+                <img src="assets/img/logo.png" alt="Logo" class="img-fluid" style="max-height: 50px;">
+            </a>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#templatemo_main_nav" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="align-self-center collapse navbar-collapse flex-fill  d-lg-flex justify-content-lg-between" id="templatemo_main_nav">
+                <!-- 모바일 메뉴 레이아웃 -->
+                <div class="d-lg-none w-100">
+                    <!-- 영문 메뉴 - 가로 정렬 -->
+                    <div class="d-flex justify-content-center mb-4">
+                        <ul class="nav navbar-nav d-flex flex-row gap-4">
+                            <li class="nav-item">
+                                <a class="nav-link" href="index.html">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="shop.html">Brand</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="info.html">Info</a>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- 아이콘들 - 가로 정렬, 좌우 여백 추가 -->
+                    <div class="d-flex justify-content-center align-items-center gap-4 px-4">
+                        <a href="cart.html" class="nav-link text-decoration-none">
+                            <i class="fas fa-shopping-cart text-dark" style="font-size: 1.5rem;"></i>
+                            <span class="badge bg-secondary ms-1" id="cart-count-mobile">0</span>
+                        </a>
+                        <div class="dropdown">
+                            <a href="#" class="nav-link dropdown-toggle text-decoration-none" id="userDropdownMobile" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user text-dark" style="font-size: 1.5rem;"></i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-center" aria-labelledby="userDropdownMobile">
+                                <li id="login-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="login.html">
+                                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                                    </a>
+                                </li>
+                                <li id="register-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="register.html">
+                                        <i class="fas fa-user-plus me-2"></i>Register
+                                    </a>
+                                </li>
+                                <li id="profile-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="profile.html">
+                                        <i class="fas fa-user-circle me-2"></i>Profile
+                                    </a>
+                                </li>
+                                <li id="points-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="points.html">
+                                        <i class="fas fa-coins me-2"></i>Points
+                                    </a>
+                                </li>
+                                <li id="logout-menu-mobile" style="display: none;">
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li id="logout-menu-item-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="#" onclick="logout()">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 데스크톱 메뉴 레이아웃 -->
+                <div class="flex-fill d-none d-lg-block">
+                    <ul class="nav navbar-nav d-flex justify-content-between mx-lg-auto" style="max-width: 400px; margin: 0 auto;">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="shop.html">Brand</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="info.html">Info</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="navbar align-self-center d-flex d-none d-lg-flex">
+                    <a href="cart.html" class="nav-link text-decoration-none me-3">
+                        <i class="fas fa-shopping-cart text-dark"></i>
+                        <span class="badge bg-secondary" id="cart-count">0</span>
+                    </a>
+                    <div class="dropdown">
+                        <a href="#" class="nav-link dropdown-toggle text-decoration-none" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user text-dark"></i>
+                            <span id="user-name" class="d-none d-lg-inline ms-1"></span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li id="login-menu" style="display: none;">
+                                <a class="dropdown-item" href="login.html">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                                </a>
+                            </li>
+                            <li id="register-menu" style="display: none;">
+                                <a class="dropdown-item" href="register.html">
+                                    <i class="fas fa-user-plus me-2"></i>Register
+                                </a>
+                            </li>
+                            <li id="profile-menu" style="display: none;">
+                                <a class="dropdown-item" href="profile.html">
+                                    <i class="fas fa-user-circle me-2"></i>Profile
+                                </a>
+                            </li>
+                            <li id="points-menu" style="display: none;">
+                                <a class="dropdown-item" href="points.html">
+                                    <i class="fas fa-coins me-2"></i>Points
+                                </a>
+                            </li>
+                            <li id="logout-menu" style="display: none;">
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li id="logout-menu-item" style="display: none;">
+                                <a class="dropdown-item" href="#" onclick="logout()">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- Close Header -->
+
+    <!-- Register Container -->
+    <div class="register-container">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-5">
+                    <div class="card register-card">
+                        <div class="register-header">
+                            <h2 class="japanese-heading mb-0">新規登録</h2>
+                            <p class="japanese-text mb-0 mt-2">アカウントを作成</p>
+                        </div>
+                        <div class="register-body">
+                            <div id="register-alert" class="alert" style="display: none;"></div>
+
+                            <form id="register-form">
+
+                                <div class="mb-3">
+                                    <label for="email" class="form-label japanese-text">メールアドレス</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-envelope text-muted"></i></span>
+                                        <input type="email" class="form-control" id="email" placeholder="example@email.com" required>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="password" class="form-label japanese-text">パスワード</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-lock text-muted"></i></span>
+                                        <input type="password" class="form-control" id="password" placeholder="8文字以上のパスワード" required minlength="8">
+                                        <button class="btn btn-outline-secondary" type="button" id="toggle-password">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <div class="password-strength">
+                                        <div class="strength-bar">
+                                            <div class="strength-fill" id="strength-fill" style="width: 0%;"></div>
+                                        </div>
+                                        <small class="text-muted japanese-text" id="strength-text">パスワード強度</small>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="confirm-password" class="form-label japanese-text">パスワード確認</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-lock text-muted"></i></span>
+                                        <input type="password" class="form-control" id="confirm-password" placeholder="パスワードを再入力" required>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="agree-terms" required>
+                                    <label class="form-check-label japanese-text" for="agree-terms">
+                                        <a href="#" class="text-decoration-none text-dark fw-bold" onclick="showTermsModal()">利用規約</a>および<a href="#" class="text-decoration-none text-dark fw-bold" onclick="showPrivacyModal()">プライバシーポリシー</a>に同意します
+                                    </label>
+                                </div>
+
+                                <button type="submit" class="btn btn-register btn-dark w-100 japanese-text">
+                                    <i class="fas fa-user-plus me-2"></i>アカウント作成
+                                </button>
+                            </form>
+
+                            <hr class="my-4">
+
+                            <div class="text-center">
+                                <p class="japanese-text mb-0">すでにアカウントをお持ちの方は</p>
+                                <a href="login.html" class="text-decoration-none text-dark japanese-text fw-bold">ログイン</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 利用規約 Modal -->
+    <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title japanese-heading" id="termsModalLabel">利用規約</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body japanese-text" style="max-height: 400px; overflow-y: auto;">
+                    <h6 class="japanese-heading">第1条（適用）</h6>
+                    <p class="japanese-text">本規約は、当社が提供するオンラインショッピングサービス（以下「本サービス」）の利用に関して、当社と利用者との間の権利義務関係を定めることを目的とし、利用者と当社との間の本サービスの利用に関わる一切の関係に適用されます。</p>
+                    
+                    <h6 class="japanese-heading">第2条（利用登録）</h6>
+                    <p class="japanese-text">利用者は、当社の定める方法によって利用登録を申請し、当社がこれを承認することによって、利用登録が完了するものとします。</p>
+                    
+                    <h6 class="japanese-heading">第3条（禁止事項）</h6>
+                    <p class="japanese-text">利用者は、本サービスの利用にあたり、以下の行為をしてはなりません。</p>
+                    <ul class="japanese-text">
+                        <li class="japanese-text">法令または公序良俗に違反する行為</li>
+                        <li class="japanese-text">犯罪行為に関連する行為</li>
+                        <li class="japanese-text">当社のサーバーまたはネットワークの機能を破壊したり、妨害したりする行為</li>
+                        <li class="japanese-text">当社のサービスの運営を妨害するおそれのある行為</li>
+                        <li class="japanese-text">他の利用者に関する個人情報等を収集または蓄積する行為</li>
+                        <li class="japanese-text">その他、当社が不適切と判断する行為</li>
+                    </ul>
+                    
+                    <h6 class="japanese-heading">第4条（本サービスの提供の停止等）</h6>
+                    <p class="japanese-text">当社は、以下のいずれかの事由があると判断した場合、利用者に事前に通知することなく本サービスの全部または一部の提供を停止または中断することができるものとします。</p>
+                    
+                    <h6 class="japanese-heading">第5条（利用制限および登録抹消）</h6>
+                    <p class="japanese-text">当社は、利用者が本規約のいずれかの条項に違反した場合には、事前の通知なく、利用者に対して、本サービスの全部もしくは一部の利用を制限し、または利用者としての登録を抹消することができるものとします。</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary japanese-text" data-bs-dismiss="modal">閉じる</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- プライバシーポリシー Modal -->
+    <div class="modal fade" id="privacyModal" tabindex="-1" aria-labelledby="privacyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title japanese-heading" id="privacyModalLabel">プライバシーポリシー</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body japanese-text" style="max-height: 400px; overflow-y: auto;">
+                    <h6 class="japanese-heading">第1条（個人情報の収集）</h6>
+                    <p class="japanese-text">当社は、以下の場合に個人情報を収集することがあります。</p>
+                    <ul class="japanese-text">
+                        <li class="japanese-text">ユーザー登録を行う際</li>
+                        <li class="japanese-text">商品やサービスを購入する際</li>
+                        <li class="japanese-text">お問い合わせをいただく際</li>
+                        <li class="japanese-text">キャンペーンに応募いただく際</li>
+                    </ul>
+                    
+                    <h6 class="japanese-heading">第2条（個人情報の利用目的）</h6>
+                    <p class="japanese-text">収集した個人情報は、以下の目的で利用いたします。</p>
+                    <ul class="japanese-text">
+                        <li class="japanese-text">商品やサービスの提供</li>
+                        <li class="japanese-text">お客様からのお問い合わせへの対応</li>
+                        <li class="japanese-text">商品やサービスの改善・開発</li>
+                        <li class="japanese-text">マーケティング活動</li>
+                        <li class="japanese-text">法令に基づく対応</li>
+                    </ul>
+                    
+                    <h6 class="japanese-heading">第3条（個人情報の第三者提供）</h6>
+                    <p class="japanese-text">当社は、以下の場合を除き、個人情報を第三者に提供することはありません。</p>
+                    <ul class="japanese-text">
+                        <li class="japanese-text">ご本人の同意がある場合</li>
+                        <li class="japanese-text">法令に基づく場合</li>
+                        <li class="japanese-text">人の生命、身体または財産の保護のために必要がある場合</li>
+                    </ul>
+                    
+                    <h6 class="japanese-heading">第4条（個人情報の管理）</h6>
+                    <p class="japanese-text">当社は、個人情報の正確性を保ち、これを安全に管理いたします。個人情報の漏洩、滅失、毀損等を防止するため、適切な情報セキュリティ対策を実施いたします。</p>
+                    
+                    <h6 class="japanese-heading">第5条（個人情報の開示・訂正等）</h6>
+                    <p class="japanese-text">ご本人から個人情報の開示・訂正・削除等の申し出があった場合には、本人確認を行った上で、合理的な期間内に対応いたします。</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary japanese-text" data-bs-dismiss="modal">閉じる</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Start Script -->
+    <script src="assets/js/jquery-1.11.0.min.js"></script>
+    <script src="assets/js/jquery-migrate-1.2.1.min.js"></script>
+    <script src="assets/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/templatemo.js"></script>
+    
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
+    <!-- 애플리케이션 스크립트 -->
+    <script src="assets/js/firebase-config.js"></script>
+    <script src="assets/js/auth-utils.js"></script>
+    <script src="assets/js/custom.js"></script>
+    
+    <script>
+        // 알림 메시지 표시 함수 (전역)
+        function showAlert(message, type = 'danger') {
+            const alertDiv = document.getElementById('register-alert');
+            if (!alertDiv) {
+                console.error('register-alert 요소를 찾을 수 없습니다.');
+                console.log('알림:', message);
+                return;
+            }
+            
+            alertDiv.className = 'alert alert-' + type;
+            alertDiv.innerHTML = '<div class="japanese-text">' + message + '</div>';
+            alertDiv.style.display = 'block';
+            
+            // 5초 후 자동 숨김
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 5000);
+            
+            // 페이지 상단으로 스크롤
+            alertDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // 비밀번호 강도 체크 함수
+        function checkPasswordStrength(password) {
+            let strength = 0;
+            let text = '';
+            let className = '';
+
+            if (password.length >= 8) strength += 1;
+            if (/[a-z]/.test(password)) strength += 1;
+            if (/[A-Z]/.test(password)) strength += 1;
+            if (/[0-9]/.test(password)) strength += 1;
+            if (/[^A-Za-z0-9]/.test(password)) strength += 1;
+
+            if (strength <= 2) {
+                text = '弱い';
+                className = 'strength-weak';
+            } else if (strength <= 3) {
+                text = '普通';
+                className = 'strength-medium';
+            } else {
+                text = '強い';
+                className = 'strength-strong';
+            }
+
+            const fillElement = document.getElementById('strength-fill');
+            const textElement = document.getElementById('strength-text');
+            
+            fillElement.style.width = (strength * 20) + '%';
+            fillElement.className = 'strength-fill ' + className;
+            textElement.textContent = 'パスワード強度: ' + text;
+        }
+
+        // 패스워드 토글
+        document.getElementById('toggle-password').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const icon = this.querySelector('i');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                passwordInput.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        });
+
+        // 패스워드 강도 실시간 체크
+        document.getElementById('password').addEventListener('input', function() {
+            checkPasswordStrength(this.value);
+        });
+
+
+
+        // 팝업 모달 함수들
+        function showTermsModal() {
+            const termsModal = new bootstrap.Modal(document.getElementById('termsModal'));
+            termsModal.show();
+        }
+
+        function showPrivacyModal() {
+            const privacyModal = new bootstrap.Modal(document.getElementById('privacyModal'));
+            privacyModal.show();
+        }
+
+        // Firebase 서비스 상태 체크
+        function checkFirebaseStatus() {
+            console.log('=== Firebase 상태 체크 ===');
+            console.log('- firebase 객체:', typeof firebase !== 'undefined' ? 'OK' : 'MISSING');
+            console.log('- FirebaseService 클래스:', typeof FirebaseService !== 'undefined' ? 'OK' : 'MISSING');
+            console.log('- firebase.auth:', typeof firebase !== 'undefined' && firebase.auth ? 'OK' : 'MISSING');
+            console.log('- firebase.firestore:', typeof firebase !== 'undefined' && firebase.firestore ? 'OK' : 'MISSING');
+            
+            // Firebase 설정 확인
+            if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0) {
+                const app = firebase.apps[0];
+                console.log('- Firebase 앱 이름:', app.name);
+                console.log('- Firebase 앱 옵션:', app.options);
+            }
+            
+            // FirebaseService 사용 가능 여부 확인
+            if (typeof FirebaseService !== 'undefined') {
+                console.log('- FirebaseService.isFirebaseAvailable():', FirebaseService.isFirebaseAvailable());
+            }
+            
+            console.log('=== Firebase 상태 체크 완료 ===');
+        }
+
+        // 페이지 로드 시 실행
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('=== register.html DOMContentLoaded 시작 ===');
+            
+            // 네트워크 상태 확인
+            if (!navigator.onLine) {
+                console.warn('⚠️ 오프라인 상태입니다. 인터넷 연결을 확인해주세요.');
+                alert('인터넷 연결을 확인해주세요.');
+                return;
+            }
+            
+            // Firebase 초기화 완료 대기
+            let firebaseReady = false;
+            let attempts = 0;
+            const maxAttempts = 50; // 5초 대기
+            
+            const checkFirebase = async () => {
+                while (!firebaseReady && attempts < maxAttempts) {
+                    attempts++;
+                    console.log(`Firebase 초기화 대기 중... (${attempts}/${maxAttempts})`);
+                    
+                    // 네트워크 상태 재확인
+                    if (!navigator.onLine) {
+                        console.error('❌ 네트워크 연결이 끊어졌습니다.');
+                        alert('네트워크 연결이 끊어졌습니다. 인터넷 연결을 확인해주세요.');
+                        return;
+                    }
+                    
+                    if (typeof firebase !== 'undefined' && firebase.auth && firebase.firestore) {
+                        firebaseReady = true;
+                        console.log('✅ Firebase 초기화 완료');
+                        break;
+                    } else {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                    }
+                }
+                
+                if (!firebaseReady) {
+                    console.error('❌ Firebase 초기화 시간 초과');
+                    console.error('네트워크 상태:', navigator.onLine ? '온라인' : '오프라인');
+                    alert('Firebase 연결에 실패했습니다. 인터넷 연결을 확인하고 페이지를 새로고침해주세요.');
+                    return;
+                }
+                
+                // FirebaseService 로드 확인
+                if (typeof FirebaseService !== 'undefined') {
+                    console.log('✅ FirebaseService 로드 완료');
+                    console.log('FirebaseService.isFirebaseAvailable():', FirebaseService.isFirebaseAvailable());
+                } else {
+                    console.warn('⚠️ FirebaseService가 로드되지 않았습니다');
+                }
+                
+                // 사용자 메뉴 업데이트
+                if (typeof window.updateUserMenu === 'function') {
+                    console.log('auth-utils.js updateUserMenu 함수 호출');
+                    window.updateUserMenu();
+                } else {
+                    console.warn('auth-utils.js updateUserMenu 함수를 찾을 수 없습니다');
+                }
+                
+                // 모바일 QR코드 제어 초기화
+                if (typeof setupMobileQRCodeControl === 'function') {
+                    setupMobileQRCodeControl();
+                }
+                
+                // 장바구니 카운트 업데이트
+                if (typeof window.updateCartCount === 'function') {
+                    window.updateCartCount();
+                }
+                
+                // Firebase 상태 체크 (기존 기능 유지)
+                setTimeout(checkFirebaseStatus, 1000);
+            };
+            
+            checkFirebase();
+        });
+
+
+        // 이전 페이지 URL 관리
+        function getReturnUrl() {
+            const returnUrl = localStorage.getItem('aetherReturnUrl') || 'index.html';
+            localStorage.removeItem('aetherReturnUrl'); // 사용 후 삭제
+            return returnUrl;
+        }
+        
+        // 페이지 로드 시 이전 페이지 정보 저장
+        document.addEventListener('DOMContentLoaded', function() {
+            const referrer = document.referrer;
+            if (referrer && !referrer.includes('register.html') && !referrer.includes('login.html')) {
+                localStorage.setItem('aetherReturnUrl', referrer);
+            } else {
+                // 기본값 설정
+                localStorage.setItem('aetherReturnUrl', 'index.html');
+            }
+        });
+        
+        // 새로운 회원가입 처리 (Firebase 직접 저장)
+        console.log('🔧 새로운 회원가입 처리 시스템 초기화');
+        
+        // 폼 기본 제출 동작 차단
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 DOM 로드 완료, 폼 기본 동작 차단 시작');
+            
+            // 폼 기본 제출 동작 차단
+            const registerForm = document.getElementById('register-form');
+            if (registerForm) {
+                registerForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    console.log('🚫 폼 기본 제출 동작 차단됨');
+                    return false;
+                });
+                console.log('✅ 폼 기본 제출 동작 차단 완료');
+            }
+        });
+
+        // 웰컴 보너스 모달 표시 함수
+        function showWelcomeBonusModal() {
+            const modalHTML = `
+                <div class="modal fade" id="welcomeBonusModal" tabindex="-1" aria-labelledby="welcomeBonusModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 shadow-lg" style="max-width: 500px; border-radius: 20px;">
+                            <div class="modal-header border-0 pb-0">
+                                <button type="button" class="btn-close" onclick="closeWelcomeBonusModal()" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body text-center px-5 pt-0 pb-5">
+                                <div class="mb-4">
+                                    <!-- 선물 아이콘 -->
+                                    <div class="mx-auto mb-3" style="width: 100px; height: 100px; background: linear-gradient(135deg, #6c757d 0%, #495057 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-gift text-white" style="font-size: 48px;"></i>
+                                    </div>
+                                    
+                                    <!-- 웰컴 메시지 -->
+                                    <h3 class="japanese-heading text-dark mb-3" style="font-weight: 600;">🎉 ウェルカムボーナス！</h3>
+                                    <p class="japanese-text text-muted mb-4" style="line-height: 1.6;">
+                                        Aetherにご登録いただき、ありがとうございます！<br>
+                                        <strong class="text-dark">300ポイント</strong>をプレゼントいたします。
+                                    </p>
+                                    
+                                    <!-- 포인트 표시 -->
+                                    <div class="bg-light rounded-pill p-3 mb-4">
+                                        <div class="d-flex align-items-center justify-content-center">
+                                            <i class="fas fa-coins text-secondary me-2" style="font-size: 24px;"></i>
+                                            <span class="h4 mb-0 text-dark fw-bold">300 pt</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <p class="japanese-text text-muted small mb-4">
+                                        ポイントはお買い物時にご利用いただけます。<br>
+                                        お買い物金額の3%がポイントとして還元されます。
+                                    </p>
+                                </div>
+                                
+                                <div class="d-grid gap-2">
+                                    <button type="button" class="btn btn-secondary rounded-pill py-3 mb-2" onclick="goToPointsPage()" style="font-weight: 500; font-size: 16px;">
+                                        <i class="fas fa-coins me-2"></i>ポイントページで確認する
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary rounded-pill py-2" onclick="goToPreviousPage()" style="font-weight: 500;">
+                                        <i class="fas fa-check me-2"></i>ありがとうございます！
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 기존 모달이 있으면 제거
+            const existingModal = document.getElementById('welcomeBonusModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // 모달 HTML 추가
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+            
+            // 모달 표시 (자동 닫힘 방지 설정)
+            const modal = new bootstrap.Modal(document.getElementById('welcomeBonusModal'), {
+                backdrop: 'static',    // 배경 클릭으로 닫기 방지
+                keyboard: false        // ESC 키로 닫기 방지
+            });
+            modal.show();
+            
+            // 모달이 닫힐 때 제거
+            document.getElementById('welcomeBonusModal').addEventListener('hidden.bs.modal', function() {
+                this.remove();
+            });
+        }
+
+        // 포인트 페이지로 이동하는 함수
+        function goToPointsPage() {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('welcomeBonusModal'));
+            if (modal) {
+                modal.hide();
+            }
+            // 회원가입 성공 후 포인트 페이지로 이동
+            setTimeout(() => {
+                window.location.href = 'points.html';
+            }, 300);
+        }
+
+        // 이전 페이지로 돌아가는 함수
+        function goToPreviousPage() {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('welcomeBonusModal'));
+            if (modal) {
+                modal.hide();
+            }
+            // 모달이 완전히 닫힌 후 메인 페이지로 이동 (신규가입 완료)
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 300);
+        }
+
+        // 웰컴 보너스 모달 닫기 함수 (X 버튼용)
+        function closeWelcomeBonusModal() {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('welcomeBonusModal'));
+            if (modal) {
+                modal.hide();
+            }
+            // 모달이 완전히 닫힌 후 메인 페이지로 이동
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 300);
+        }
+
+        // 새로운 회원가입 처리 (Firebase 직접 저장)
+        console.log('🔧 새로운 회원가입 처리 시스템 시작');
+        
+        // 회원가입 버튼에 새로운 이벤트 리스너 추가
+        const registerButton = document.querySelector('button[type="submit"]');
+        if (registerButton) {
+            console.log('✅ 회원가입 버튼 발견, 새로운 이벤트 리스너 등록');
+            
+            // 새로운 이벤트 리스너 등록 (기본 동작 차단 포함)
+            registerButton.addEventListener('click', async function(e) {
+                console.log('🚀 새로운 회원가입 처리 시작!');
+                
+                // 모든 기본 동작 차단
+                e.preventDefault();
+                e.stopPropagation();
+                e.stopImmediatePropagation();
+                
+                const email = document.getElementById('email').value.trim();
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirm-password').value;
+                const agreeTerms = document.getElementById('agree-terms').checked;
+                
+                console.log('📝 회원가입 데이터:', { email, password: '***', confirmPassword: '***', agreeTerms });
+                
+                // 유효성 검사
+                if (!email || !password || !confirmPassword) {
+                    showAlert('すべての項目を入力してください。');
+                    return;
+                }
+
+                if (password !== confirmPassword) {
+                    showAlert('パスワードが一致しません。');
+                    return;
+                }
+
+                if (password.length < 8) {
+                    showAlert('パスワードは8文字以上で入力してください。');
+                    return;
+                }
+
+                if (!agreeTerms) {
+                    showAlert('利用規約に同意してください。');
+                    return;
+                }
+
+                // 이메일에서 이름 추출
+                const name = email.split('@')[0] || 'ユーザー';
+
+                // 버튼 비활성화
+                const submitBtn = this;
+                const originalText = submitBtn.innerHTML;
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>アカウント作成中...';
+
+                try {
+                    console.log('🔥 새로운 Firebase 회원가입 처리 시작:', email);
+                    
+                    // 네트워크 상태 확인
+                    if (!navigator.onLine) {
+                        throw new Error('네트워크 연결이 끊어졌습니다. 인터넷 연결을 확인해주세요.');
+                    }
+                    
+                    // Firebase 초기화 상태 확인
+                    if (typeof FirebaseService === 'undefined') {
+                        throw new Error('Firebase 서비스가 로드되지 않았습니다. 페이지를 새로고침해주세요.');
+                    }
+                    
+                    // Firebase 사용 가능 여부 확인
+                    if (!FirebaseService.isFirebaseAvailable()) {
+                        console.warn('⚠️ Firebase 사용 불가, 재시도 중...');
+                        // Firebase 초기화 대기
+                        let attempts = 0;
+                        while (!FirebaseService.isFirebaseAvailable() && attempts < 10) {
+                            await new Promise(resolve => setTimeout(resolve, 500));
+                            attempts++;
+                        }
+                        
+                        if (!FirebaseService.isFirebaseAvailable()) {
+                            throw new Error('Firebase 연결에 실패했습니다. 인터넷 연결을 확인하고 페이지를 새로고침해주세요.');
+                        }
+                    }
+                    
+                    console.log('✅ Firebase 사용 가능, 회원가입 진행');
+                    
+                    const userData = {
+                        name: name,
+                        firstName: name.split(' ')[0] || name,
+                        lastName: name.split(' ').slice(1).join(' ') || '',
+                        phone: '',
+                        address: ''
+                    };
+                    
+                    // Firebase 회원가입 처리 (재시도 메커니즘 포함)
+                    const result = await FirebaseService.registerUser(email, password, userData);
+                    console.log('🔥 새로운 Firebase 회원가입 결과:', result);
+                    
+                    if (result.success) {
+                        console.log('✅ 새로운 Firebase 회원가입 성공');
+                        
+                        // Firestore에 사용자 데이터가 실제로 저장되었는지 확인
+                        try {
+                            console.log('🔍 Firestore 저장 확인 중...');
+                            const db = firebase.firestore();
+                            const userDoc = await db.collection('users').doc(result.user.uid).get();
+                            
+                            if (userDoc.exists) {
+                                const userData = userDoc.data();
+                                console.log('✅ Firestore 저장 확인 성공:', userData);
+                                showAlert('✅ アカウントが正常に作成されました！(Firebase に保存済み)', 'success');
+                            } else {
+                                console.warn('⚠️ Firestore에 사용자 데이터가 없습니다');
+                                showAlert('⚠️ アカウントは作成されましたが、データの保存に問題があります。', 'warning');
+                            }
+                        } catch (verifyError) {
+                            console.warn('⚠️ Firestore 저장 확인 실패:', verifyError);
+                            showAlert('⚠️ アカウントは作成されましたが、データの確認に失敗しました。', 'warning');
+                        }
+                        
+                        // 자동 로그인
+                        try {
+                            const loginResult = await FirebaseService.loginUser(email, password);
+                            if (loginResult.success) {
+                                console.log('✅ 자동 로그인 성공');
+                                
+                                // 로그인 상태를 localStorage에 저장
+                                const loginStatus = {
+                                    uid: loginResult.user.uid,
+                                    email: loginResult.user.email,
+                                    name: loginResult.user.name || loginResult.user.displayName,
+                                    loginTime: new Date().toISOString(),
+                                    isFirebase: true
+                                };
+                                localStorage.setItem('aetherLoginStatus', JSON.stringify(loginStatus));
+                                
+                                // 웰컴 보너스 모달 표시 (자동 리다이렉트 대신)
+                                showWelcomeBonusModal();
+                            } else {
+                                throw new Error(loginResult.error || '자동 로그인 실패');
+                            }
+                        } catch (loginError) {
+                            console.warn('⚠️ 자동 로그인 실패:', loginError);
+                            showAlert('アカウントは作成されましたが、自動ログインに失敗しました。手動でログインしてください。', 'warning');
+                            setTimeout(() => window.location.href = 'login.html', 2000);
+                        }
+                        return;
+                    } else {
+                        // FirebaseService에서 이미 구체적인 에러 메시지를 제공하므로 그대로 사용
+                        throw new Error(result.error || 'Firebase 회원가입 실패');
+                    }
+                    
+                } catch (error) {
+                    console.error('❌ 새로운 회원가입 처리 중 오류:', error);
+                    console.error('❌ 오류 상세 정보:', {
+                        name: error.name,
+                        message: error.message,
+                        stack: error.stack
+                    });
+                    
+                    // FirebaseService에서 이미 구체적인 에러 메시지를 제공하므로 그대로 사용
+                    let errorMessage = error.message || '회원가입에 실패했습니다. 다시 시도해주세요.';
+                    
+                    // 네트워크 관련 에러인 경우 추가 안내
+                    if (error.message && (
+                        error.message.includes('network') || 
+                        error.message.includes('connection') || 
+                        error.message.includes('timeout') ||
+                        error.message.includes('Firebase 연결이 필요합니다')
+                    )) {
+                        errorMessage += '\n\n인터넷 연결을 확인하고 페이지를 새로고침한 후 다시 시도해주세요.';
+                    }
+                    
+                    showAlert('❌ ' + errorMessage, 'danger');
+                    
+                    // 버튼 복원
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }
+            });
+        } else {
+            console.error('❌ 회원가입 버튼 요소를 찾을 수 없음');
+        }
+
+    </script>
+</body>
+</html>

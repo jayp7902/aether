@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <title>ご注文完了 - Aether</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="assets/img/aether-icon.png?t=1750992166">
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/templatemo.css">
+    <link rel="stylesheet" href="assets/css/custom.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100;200;300;400;500;600;700;800;900&display=swap">
+    <link rel="stylesheet" href="assets/css/fontawesome.min.css">
+    <style>
+        body {
+            font-family: "Montserrat", sans-serif;
+            background-color: #f8f9fa;
+        }
+        .japanese-text {
+            font-family: "Noto Sans JP", sans-serif;
+            font-weight: 400;
+            line-height: 1.6;
+        }
+        .japanese-heading {
+            font-family: "Noto Sans JP", sans-serif;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+        .order-complete-container {
+            min-height: 100vh;
+            padding: 4rem 0;
+        }
+        .success-card {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+                 .success-header {
+             background: linear-gradient(135deg, #343a40 0%, #6c757d 100%);
+             color: white;
+             padding: 3rem 2rem;
+             text-align: center;
+         }
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+        }
+        .order-summary-card {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+        .order-summary-header {
+            background-color: #343a40;
+            color: white;
+            border-radius: 10px 10px 0 0;
+            padding: 1.5rem;
+        }
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .order-item:last-child {
+            border-bottom: none;
+        }
+        .order-total {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+        .shipping-info {
+            background-color: #e9ecef;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        .btn-primary-custom {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+        .btn-primary-custom:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+        }
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+        .timeline-item {
+            position: relative;
+            padding-bottom: 1.5rem;
+        }
+        .timeline-item:not(:last-child):before {
+            content: '';
+            position: absolute;
+            left: -1.75rem;
+            top: 1.5rem;
+            width: 2px;
+            height: calc(100% - 1rem);
+            background-color: #dee2e6;
+        }
+                 .timeline-marker {
+             position: absolute;
+             left: -2rem;
+             top: 0.25rem;
+             width: 12px;
+             height: 12px;
+             border-radius: 50%;
+             background-color: #343a40;
+         }
+        .timeline-marker.pending {
+            background-color: #6c757d;
+        }
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 3rem;
+        }
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 0 1rem;
+        }
+                 .step-number {
+             width: 30px;
+             height: 30px;
+             border-radius: 50%;
+             background-color: #343a40;
+             color: white;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             margin-right: 0.5rem;
+             font-weight: bold;
+         }
+        .progress-bar {
+            height: 4px;
+            background-color: #dee2e6;
+            border-radius: 2px;
+            margin-bottom: 2rem;
+        }
+                 .progress-fill {
+             height: 100%;
+             background-color: #343a40;
+             border-radius: 2px;
+             width: 100%;
+             transition: width 0.3s ease;
+         }
+                 @media (max-width: 768px) {
+             .action-buttons {
+                 flex-direction: column;
+             }
+         }
+         /* User dropdown hover fix */
+         .dropdown-toggle:hover,
+         .dropdown-toggle:focus,
+         #user-name:hover {
+             color: #343a40 !important;
+             text-decoration: none !important;
+         }
+         .nav-link:hover {
+             color: #343a40 !important;
+         }
+     </style>
+</head>
+
+<body>
+    <!-- Start Top Nav -->
+    <nav class="navbar navbar-expand-lg bg-dark navbar-light d-none d-lg-block" id="templatemo_nav_top">
+        <div class="container text-light">
+            <div class="w-100 d-flex justify-content-between">
+                <div>
+                    <i class="fa fa-envelope mx-2"></i>
+                    <a class="navbar-sm-brand text-light text-decoration-none" href="mailto:aether7info@gmail.com">aether7info@gmail.com</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- Close Top Nav -->
+
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg navbar-light shadow">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a class="navbar-brand text-success logo align-self-center" href="index.html">
+                <img src="assets/img/logo.png" alt="Logo" class="img-fluid" style="max-height: 50px;">
+            </a>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#templatemo_main_nav" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="align-self-center collapse navbar-collapse flex-fill d-lg-flex justify-content-lg-between" id="templatemo_main_nav">
+                <div class="flex-fill">
+                    <ul class="nav navbar-nav d-flex justify-content-between mx-lg-auto">
+                        <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" href="shop.html">Brand</a></li>
+                        <li class="nav-item"><a class="nav-link" href="about.html">About</a></li>
+                        <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="navbar align-self-center d-flex">
+                    <a href="cart.html" class="nav-link text-decoration-none me-3">
+                        <i class="fas fa-shopping-cart text-dark"></i>
+                        <span class="badge bg-secondary" id="cart-count">0</span>
+                    </a>
+                    <div class="dropdown">
+                        <a href="#" class="nav-link dropdown-toggle text-decoration-none" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user text-dark"></i>
+                            <span id="user-name" class="d-none d-lg-inline ms-1"></span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li id="login-menu" style="display: none;">
+                                <a class="dropdown-item japanese-text" href="login.html">
+                                    <i class="fas fa-sign-in-alt me-2"></i>ログイン
+                                </a>
+                            </li>
+                            <li id="register-menu" style="display: none;">
+                                <a class="dropdown-item japanese-text" href="register.html">
+                                    <i class="fas fa-user-plus me-2"></i>新規登録
+                                </a>
+                            </li>
+                            <li id="profile-menu" style="display: none;">
+                                <a class="dropdown-item japanese-text" href="profile.html">
+                                    <i class="fas fa-user-circle me-2"></i>プロフィール
+                                </a>
+                            </li>
+                            <li id="points-menu" style="display: none;">
+                                <a class="dropdown-item japanese-text" href="points.html">
+                                    <i class="fas fa-coins me-2"></i>ポイント
+                                </a>
+                            </li>
+                            <li id="logout-menu" style="display: none;">
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li id="logout-menu-item" style="display: none;">
+                                <a class="dropdown-item japanese-text" href="#" onclick="logout()">
+                                    <i class="fas fa-sign-out-alt me-2"></i>ログアウト
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- Close Header -->
+
+    <!-- Order Complete Container -->
+    <div class="order-complete-container">
+        <div class="container">
+            <!-- Progress Bar -->
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <span class="japanese-text">カート</span>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <span class="japanese-text">配送情報</span>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <span class="japanese-text">お支払い</span>
+                </div>
+                <div class="step">
+                    <div class="step-number">✓</div>
+                    <span class="japanese-text">完了</span>
+                </div>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <!-- Success Message -->
+                    <div class="card success-card">
+                        <div class="success-header">
+                            <div class="success-icon">
+                                <i class="fas fa-check fa-3x"></i>
+                            </div>
+                            <h2 class="japanese-heading mb-3">ご注文ありがとうございます！</h2>
+                            <p class="japanese-text mb-0">
+                                お客様のご注文を正常に受け付けました。<br>
+                                注文確認メールをお送りしましたので、ご確認ください。
+                            </p>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="japanese-heading text-muted mb-2">注文番号</h6>
+                                    <p class="japanese-text mb-3" id="order-id">#ORDER-123456789</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="japanese-heading text-muted mb-2">注文日時</h6>
+                                    <p class="japanese-text mb-3" id="order-date">2024年1月15日 14:30</p>
+                                </div>
+                            </div>
+                            
+                            <div class="shipping-info">
+                                <h6 class="japanese-heading mb-3">
+                                    <i class="fas fa-shipping-fast me-2"></i>配送先情報
+                                </h6>
+                                <div id="shipping-details">
+                                    <p class="japanese-text mb-1" id="shipping-name">山田 太郎</p>
+                                    <p class="japanese-text mb-1" id="shipping-phone">080-1234-5678</p>
+                                    <p class="japanese-text mb-0" id="shipping-address">
+                                        〒123-4567<br>
+                                        東京都新宿区百人町2丁目1-2<br>
+                                        K-PLAZAⅡ 2F
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Delivery Timeline -->
+                            <div class="mt-4">
+                                <h6 class="japanese-heading mb-3">
+                                    <i class="fas fa-truck me-2"></i>配送状況
+                                </h6>
+                                <div class="timeline">
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker"></div>
+                                        <div>
+                                            <strong class="japanese-text">注文受付完了</strong>
+                                            <p class="japanese-text text-muted mb-0" id="timeline-order">2024年1月15日 14:30</p>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker pending"></div>
+                                        <div>
+                                            <strong class="japanese-text">商品準備中</strong>
+                                            <p class="japanese-text text-muted mb-0">1-2営業日以内</p>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker pending"></div>
+                                        <div>
+                                            <strong class="japanese-text">発送準備完了</strong>
+                                            <p class="japanese-text text-muted mb-0">2-3営業日以内</p>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker pending"></div>
+                                        <div>
+                                            <strong class="japanese-text">配送中</strong>
+                                            <p class="japanese-text text-muted mb-0">3-5営業日以内</p>
+                                        </div>
+                                    </div>
+                                    <div class="timeline-item">
+                                        <div class="timeline-marker pending"></div>
+                                        <div>
+                                            <strong class="japanese-text">配送完了</strong>
+                                            <p class="japanese-text text-muted mb-0">5-7営業日以内</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Order Summary -->
+                    <div class="card order-summary-card">
+                        <div class="order-summary-header">
+                            <h5 class="japanese-heading mb-0">
+                                <i class="fas fa-receipt me-2"></i>ご注文内容
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="order-items"></div>
+                            
+                            <div class="order-total">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="japanese-text">商品合計:</span>
+                                    <span id="subtotal">¥0</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="japanese-text">配送料:</span>
+                                    <span id="shipping-fee">¥500</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="japanese-text">消費税:</span>
+                                    <span id="tax">¥0</span>
+                                </div>
+                                <hr>
+                                <div class="d-flex justify-content-between mb-3">
+                                    <strong class="japanese-text">合計:</strong>
+                                    <strong id="total">¥0</strong>
+                                </div>
+                                <div class="text-center">
+                                    <small class="japanese-text text-muted">
+                                        <i class="fas fa-credit-card me-1"></i>
+                                        <span id="payment-method">クレジットカード</span>でお支払い
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Important Information -->
+                    <div class="card order-summary-card">
+                        <div class="card-body">
+                            <h6 class="japanese-heading mb-3">
+                                <i class="fas fa-info-circle me-2"></i>重要なお知らせ
+                            </h6>
+                            <ul class="list-unstyled japanese-text">
+                                <li class="mb-2">
+                                    <i class="fas fa-envelope text-muted me-2"></i>
+                                    注文確認メールをお送りしました
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-truck text-muted me-2"></i>
+                                    配送状況はマイページで確認できます
+                                </li>
+                                <li class="mb-2">
+                                    <i class="fas fa-phone text-muted me-2"></i>
+                                    ご不明な点はお気軽にお問い合わせください
+                                </li>
+                                <li class="mb-0">
+                                    <i class="fas fa-shield-alt text-muted me-2"></i>
+                                    30日間の返品・交換保証
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="row justify-content-center mt-4">
+                <div class="col-lg-8">
+                    <div class="action-buttons">
+                        <a href="profile.html" class="btn btn-primary-custom btn-lg japanese-text flex-fill">
+                            <i class="fas fa-user-circle me-2"></i>マイページで確認
+                        </a>
+                        <a href="index.html" class="btn btn-outline-secondary btn-lg japanese-text flex-fill">
+                            <i class="fas fa-home me-2"></i>ホームに戻る
+                        </a>
+                        <a href="shop.html" class="btn btn-outline-dark btn-lg japanese-text flex-fill">
+                            <i class="fas fa-shopping-bag me-2"></i>お買い物を続ける
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/jquery-1.11.0.min.js"></script>
+    <script src="assets/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/templatemo.js"></script>
+    <script src="assets/js/custom.js"></script>
+    <script src="assets/js/auth-utils.js"></script>
+
+    <!-- Order Complete Management Script -->
+    <script>
+        // auth-utils.js에서 제공하는 함수들을 사용합니다
+
+        // 주문 정보 표시
+        function displayOrderInfo() {
+            let orderData = JSON.parse(sessionStorage.getItem('lastOrder') || 'null');
+            
+            // 테스트 모드: 주문 데이터가 없을 때 더미 데이터 생성
+            if (!orderData) {
+                console.log('주문 데이터가 없습니다. 테스트 데이터를 생성합니다.');
+                orderData = {
+                    id: 'ORDER-TEST-' + Date.now(),
+                    items: [
+                        {
+                            name: 'BAKUCHINOL EYE CREAM',
+                            brand: 'LALARECIPE',
+                            price: 2980,
+                            quantity: 1
+                        },
+                        {
+                            name: 'GREEN PAPAYA PDRN PORE AMPOULE',
+                            brand: 'COSCELL',
+                            price: 3500,
+                            quantity: 2
+                        }
+                    ],
+                    shipping: {
+                        name: '田中太郎',
+                        phone: '090-1234-5678',
+                        postal: '179-0072',
+                        prefecture: '東京都',
+                        city: '練馬区',
+                        address1: '光が丘1-1-1',
+                        address2: 'アパートA 101号室'
+                    },
+                    payment: {
+                        method: 'credit',
+                        total: '¥10,460'
+                    },
+                    orderDate: new Date().toISOString(),
+                    status: 'processing'
+                };
+                
+                // 테스트 데이터를 sessionStorage에 저장
+                sessionStorage.setItem('lastOrder', JSON.stringify(orderData));
+            }
+
+            // 주문 번호와 날짜
+            document.getElementById('order-id').textContent = orderData.id;
+            
+            const orderDate = new Date(orderData.orderDate);
+            const formattedDate = orderDate.toLocaleDateString('ja-JP', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('order-date').textContent = formattedDate;
+            document.getElementById('timeline-order').textContent = formattedDate;
+
+            // 배송 정보
+            const shipping = orderData.shipping;
+            document.getElementById('shipping-name').textContent = shipping.name;
+            document.getElementById('shipping-phone').textContent = shipping.phone;
+            
+            let addressText = '〒' + shipping.postal + '<br>';
+            addressText += shipping.prefecture + shipping.city + shipping.address1;
+            if (shipping.address2) {
+                addressText += '<br>' + shipping.address2;
+            }
+            document.getElementById('shipping-address').innerHTML = addressText;
+
+            // 주문 상품
+            const container = document.getElementById('order-items');
+            container.innerHTML = orderData.items.map(item => 
+                '<div class="order-item">' +
+                '<div>' +
+                '<div class="japanese-heading">' + item.name + '</div>' +
+                '<small class="text-muted japanese-text">' + item.brand + ' × ' + item.quantity + '</small>' +
+                '</div>' +
+                '<div class="japanese-text">¥' + (item.price * item.quantity).toLocaleString() + '</div>' +
+                '</div>'
+            ).join('');
+
+            // 주문 요약 (상품 가격은 이미 소비세 포함)
+            const totalWithTax = orderData.items.reduce((total, item) => total + (item.price * item.quantity), 0);
+            const subtotal = Math.floor(totalWithTax / 1.1); // 세전 가격
+            const tax = totalWithTax - subtotal; // 소비세
+            const shippingFee = totalWithTax >= 3000 ? 0 : 500; // 세포함 가격 기준
+
+            const total = totalWithTax + shippingFee;
+            
+            document.getElementById('subtotal').textContent = '¥' + subtotal.toLocaleString();
+            document.getElementById('shipping-fee').textContent = shippingFee === 0 ? '無料' : '¥' + shippingFee.toLocaleString();
+            document.getElementById('tax').textContent = '¥' + tax.toLocaleString();
+            document.getElementById('total').textContent = '¥' + total.toLocaleString();
+
+            // 결제 방법
+            const paymentMethodText = orderData.payment.method === 'credit' ? 'クレジットカード' : 'PayPal';
+            document.getElementById('payment-method').textContent = paymentMethodText;
+
+            // 실제 주문이 아닌 테스트 데이터인 경우 세션에서 제거하지 않음
+            if (!orderData.id.includes('TEST')) {
+                sessionStorage.removeItem('lastOrder');
+            }
+        }
+
+        // 페이지 로드시 실행
+        document.addEventListener('DOMContentLoaded', function() {
+            // auth-utils.js의 updateUserMenu 함수 호출
+            if (typeof window.updateUserMenu === 'function') {
+                window.updateUserMenu();
+            }
+            updateCartCount();
+            displayOrderInfo();
+        });
+    </script>
+</body>
+</html> 

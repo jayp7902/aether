@@ -1,0 +1,2701 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <title>ご注文手続き - Aether</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/png" href="assets/img/aether-icon.png?t=1750992166">
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/templatemo.css">
+    <link rel="stylesheet" href="assets/css/custom.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100;200;300;400;500;600;700;800;900&display=swap">
+    <link rel="stylesheet" href="assets/css/fontawesome.min.css">
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
+    
+    <!-- QR Code Generator -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: "Montserrat", sans-serif;
+            background-color: #f8f9fa;
+        }
+        .japanese-text {
+            font-family: "Noto Sans JP", sans-serif;
+            font-weight: 400;
+            line-height: 1.6;
+        }
+        .japanese-heading {
+            font-family: "Noto Sans JP", sans-serif;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+        .checkout-container {
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+        .checkout-card {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+        .checkout-header {
+            background-color: #343a40;
+            color: white;
+            border-radius: 10px 10px 0 0;
+            padding: 1.5rem;
+        }
+        .form-control:focus {
+            border-color: #6c757d;
+            box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.25);
+        }
+        .btn-checkout {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+        .btn-checkout:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+        }
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        .step {
+            display: flex;
+            align-items: center;
+            margin: 0 1rem;
+        }
+        .step-number {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: #6c757d;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 0.5rem;
+        }
+        .step.active .step-number {
+            background-color: #343a40;
+        }
+                 .step.completed .step-number {
+             background-color: #343a40;
+         }
+        .order-summary {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 1rem 0;
+            border-bottom: 1px solid #dee2e6;
+            flex-wrap: wrap;
+        }
+        .order-item:last-child {
+            border-bottom: none;
+        }
+        .order-item-info {
+            flex: 1;
+            min-width: 200px;
+        }
+        .order-item-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        /* 태블릿 반응형 */
+        @media (max-width: 992px) {
+            .order-item-controls {
+                gap: 0.5rem;
+            }
+        }
+        
+        /* 모바일 반응형 */
+        @media (max-width: 768px) {
+            .order-item {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.75rem;
+            }
+            .order-item-controls {
+                justify-content: space-between;
+                width: 100%;
+                flex-wrap: nowrap;
+            }
+            .order-item-price {
+                order: 1;
+                font-size: 1.1rem;
+                font-weight: bold;
+                text-align: right;
+                flex: 1;
+            }
+            .order-item-actions {
+                order: 2;
+                display: flex;
+                gap: 0.5rem;
+                align-items: center;
+            }
+        }
+
+        /* 작은 모바일 */
+        @media (max-width: 480px) {
+            .order-item-controls {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.75rem;
+            }
+            .order-item-price {
+                order: 1;
+                text-align: center;
+                padding: 0.5rem;
+                background: #f8f9fa;
+                border-radius: 4px;
+            }
+            .order-item-actions {
+                order: 2;
+                justify-content: center;
+            }
+            .quantity-controls {
+                justify-content: center;
+            }
+        }
+        .quantity-controls {
+            background: #f8f9fa;
+            border-radius: 4px;
+            padding: 0.15rem;
+            align-items: center;
+        }
+        .quantity-controls .btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #6c757d;
+            font-size: 0.75rem;
+            padding: 0;
+        }
+        .quantity-controls .btn:hover {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: white;
+        }
+        .quantity-display {
+            min-width: 35px;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        /* 삭제 버튼도 모노톤으로 */
+        .btn-delete-item {
+            width: 28px;
+            height: 28px;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #6c757d;
+            background-color: #ffffff;
+            color: #6c757d;
+            font-size: 0.75rem;
+            padding: 0;
+        }
+        .btn-delete-item:hover {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: white;
+        }
+        .payment-methods {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .payment-method {
+            flex: 1;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .payment-method.selected {
+            border-color: #6c757d;
+            background-color: #f8f9fa;
+        }
+        .payment-method:hover {
+            border-color: #6c757d;
+        }
+        .card-icons {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .card-icon {
+            width: 30px;
+            height: 20px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .security-info {
+            background-color: #e9ecef;
+            border-radius: 8px;
+        }
+        
+        /* 네비게이션바 텍스트 thin 서체 통일 */
+        .navbar-nav .nav-link {
+            font-family: "Montserrat", sans-serif !important;
+            font-weight: 300 !important;
+            font-size: 1rem !important;
+        }
+        
+        .navbar-brand {
+            font-family: "Montserrat", sans-serif !important;
+            font-weight: 300 !important;
+        }
+        
+        #user-name {
+            font-family: "Montserrat", sans-serif !important;
+            font-weight: 300 !important;
+        }
+        .progress-bar {
+            height: 4px;
+            background-color: #dee2e6;
+            border-radius: 2px;
+            margin-bottom: 2rem;
+        }
+                 .progress-fill {
+             height: 100%;
+             background-color: #6c757d;
+             border-radius: 2px;
+             width: 75%;
+             transition: width 0.3s ease;
+         }
+         /* User dropdown hover fix */
+         .dropdown-toggle:hover,
+         .dropdown-toggle:focus,
+         #user-name:hover {
+             color: #343a40 !important;
+             text-decoration: none !important;
+         }
+         .nav-link:hover {
+             color: #343a40 !important;
+         }
+     </style>
+</head>
+
+<body>
+    <!-- Start Top Nav -->
+    <nav class="navbar navbar-expand-lg navbar-light" id="templatemo_nav_top" style="min-height: 20px; background-color: #000000 !important;">
+        <div class="container text-light">
+            <div class="w-100 d-flex justify-content-between">
+                <div>
+                    <!-- 빈 공간으로 블랙 바 유지 -->
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- Close Top Nav -->
+
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg navbar-light shadow">
+        <div class="container d-flex justify-content-between align-items-center">
+
+            <a class="navbar-brand text-success logo align-self-center" href="index.html">
+                <img src="assets/img/logo.png" alt="Logo" class="img-fluid" style="max-height: 50px;">
+            </a>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#templatemo_main_nav" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="align-self-center collapse navbar-collapse flex-fill  d-lg-flex justify-content-lg-between" id="templatemo_main_nav">
+                <!-- 모바일 메뉴 레이아웃 -->
+                <div class="d-lg-none w-100">
+                    <!-- 영문 메뉴 - 가로 정렬 -->
+                    <div class="d-flex justify-content-center mb-4">
+                        <ul class="nav navbar-nav d-flex flex-row gap-4">
+                            <li class="nav-item">
+                                <a class="nav-link" href="index.html">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="shop.html">Brand</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="info.html">Info</a>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <!-- 아이콘들 - 가로 정렬, 좌우 여백 추가 -->
+                    <div class="d-flex justify-content-center align-items-center gap-4 px-4">
+                        <a href="cart.html" class="nav-link text-decoration-none">
+                            <i class="fas fa-shopping-cart text-dark" style="font-size: 1.5rem;"></i>
+                            <span class="badge bg-secondary ms-1" id="cart-count-mobile">0</span>
+                        </a>
+                        <div class="dropdown">
+                            <a href="#" class="nav-link dropdown-toggle text-decoration-none" id="userDropdownMobile" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user text-dark" style="font-size: 1.5rem;"></i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-center" aria-labelledby="userDropdownMobile">
+                                <li id="login-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="login.html">
+                                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                                    </a>
+                                </li>
+                                <li id="register-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="register.html">
+                                        <i class="fas fa-user-plus me-2"></i>Register
+                                    </a>
+                                </li>
+                                <li id="profile-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="profile.html">
+                                        <i class="fas fa-user-circle me-2"></i>Profile
+                                    </a>
+                                </li>
+                                <li id="points-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="points.html">
+                                        <i class="fas fa-coins me-2"></i>Points
+                                    </a>
+                                </li>
+                                <li id="admin-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="admin-dashboard.html">
+                                        <i class="fas fa-cog me-2"></i>管理ダッシュボード
+                                    </a>
+                                </li>
+                                <li id="logout-menu-mobile" style="display: none;">
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li id="logout-menu-item-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="#" onclick="logout()">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 데스크톱 메뉴 레이아웃 -->
+                <div class="flex-fill d-none d-lg-block">
+                    <ul class="nav navbar-nav d-flex justify-content-between mx-lg-auto" style="max-width: 400px; margin: 0 auto;">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="shop.html">Brand</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="info.html">Info</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="navbar align-self-center d-flex d-none d-lg-flex">
+                    <a href="cart.html" class="nav-link text-decoration-none me-3">
+                        <i class="fas fa-shopping-cart text-dark"></i>
+                        <span class="badge bg-secondary" id="cart-count">0</span>
+                    </a>
+                    <div class="dropdown">
+                        <a href="#" class="nav-link dropdown-toggle text-decoration-none" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user text-dark"></i>
+                            <span id="user-name" class="d-none d-lg-inline ms-1"></span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li id="login-menu" style="display: none;">
+                                <a class="dropdown-item" href="login.html">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                                </a>
+                            </li>
+                            <li id="register-menu" style="display: none;">
+                                <a class="dropdown-item" href="register.html">
+                                    <i class="fas fa-user-plus me-2"></i>Register
+                                </a>
+                            </li>
+                            <li id="profile-menu" style="display: none;">
+                                <a class="dropdown-item" href="profile.html">
+                                    <i class="fas fa-user-circle me-2"></i>Profile
+                                </a>
+                            </li>
+                            <li id="points-menu" style="display: none;">
+                                <a class="dropdown-item" href="points.html">
+                                    <i class="fas fa-coins me-2"></i>Points
+                                </a>
+                            </li>
+                            <li id="admin-menu" style="display: none;">
+                                <a class="dropdown-item" href="admin-dashboard.html">
+                                    <i class="fas fa-cog me-2"></i>管理ダッシュボード
+                                </a>
+                            </li>
+                            <li id="logout-menu" style="display: none;">
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li id="logout-menu-item" style="display: none;">
+                                <a class="dropdown-item" href="#" onclick="logout()">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- Close Header -->
+
+    <!-- QR Code Modal -->
+    <div class="modal fade" id="qrModal" tabindex="-1" aria-labelledby="qrModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="qrModalLabel">QR Code</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="qrCodeContainer"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Checkout Container -->
+    <div class="checkout-container">
+        <div class="container">
+            <!-- Progress Bar -->
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step completed">
+                    <div class="step-number">1</div>
+                    <span class="japanese-text">カート</span>
+                </div>
+                <div class="step active">
+                    <div class="step-number">2</div>
+                    <span class="japanese-text">配送情報</span>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <span class="japanese-text">お支払い</span>
+                </div>
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <span class="japanese-text">完了</span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8">
+                    <!-- Shipping Information -->
+                    <div class="card checkout-card">
+                        <div class="checkout-header">
+                            <h5 class="japanese-heading mb-0">
+                                <i class="fas fa-shipping-fast me-2"></i>配送先情報
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info japanese-text d-none" id="shipping-alert"></div>
+                            <form id="shipping-form" class="needs-validation" novalidate>
+                                <div class="row g-3">
+                                    <!-- Name -->
+                                    <div class="col-12">
+                                        <label for="shipping-name" class="form-label japanese-text">お名前 <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="shipping-name" required>
+                                        <div class="invalid-feedback">お名前を入力してください</div>
+                                    </div>
+
+                                    <!-- Phone -->
+                                    <div class="col-12">
+                                        <label for="shipping-phone" class="form-label japanese-text">電話番号 <span class="text-danger">*</span></label>
+                                        <input type="tel" class="form-control" id="shipping-phone" required>
+                                        <div class="invalid-feedback">電話番号を入力してください</div>
+                                    </div>
+
+                                    <!-- Postal Code -->
+                                    <div class="col-md-4">
+                                        <label for="shipping-postal" class="form-label japanese-text">郵便番号 <span class="text-danger">*</span></label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="shipping-postal" placeholder="例：123-4567" maxlength="8" required>
+                                            <button class="btn btn-outline-secondary" type="button" id="search-address-btn" onclick="searchAddress()">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                    </div>
+                                        <div class="form-text japanese-text" id="postal-feedback"></div>
+                                        <div class="invalid-feedback">郵便番号を入力してください</div>
+                                    </div>
+
+                                    <!-- Prefecture -->
+                                    <div class="col-md-4">
+                                        <label for="shipping-prefecture" class="form-label japanese-text">都道府県 <span class="text-danger">*</span></label>
+                                        <select class="form-select" id="shipping-prefecture" required>
+                                            <option value="">選択してください</option>
+                                            <option value="北海道">北海道</option>
+                                            <option value="青森県">青森県</option>
+                                            <option value="岩手県">岩手県</option>
+                                            <option value="宮城県">宮城県</option>
+                                            <option value="秋田県">秋田県</option>
+                                            <option value="山形県">山形県</option>
+                                            <option value="福島県">福島県</option>
+                                            <option value="茨城県">茨城県</option>
+                                            <option value="栃木県">栃木県</option>
+                                            <option value="群馬県">群馬県</option>
+                                            <option value="埼玉県">埼玉県</option>
+                                            <option value="千葉県">千葉県</option>
+                                            <option value="東京都">東京都</option>
+                                            <option value="神奈川県">神奈川県</option>
+                                            <option value="新潟県">新潟県</option>
+                                            <option value="富山県">富山県</option>
+                                            <option value="石川県">石川県</option>
+                                            <option value="福井県">福井県</option>
+                                            <option value="山梨県">山梨県</option>
+                                            <option value="長野県">長野県</option>
+                                            <option value="岐阜県">岐阜県</option>
+                                            <option value="静岡県">静岡県</option>
+                                            <option value="愛知県">愛知県</option>
+                                            <option value="三重県">三重県</option>
+                                            <option value="滋賀県">滋賀県</option>
+                                            <option value="京都府">京都府</option>
+                                            <option value="大阪府">大阪府</option>
+                                            <option value="兵庫県">兵庫県</option>
+                                            <option value="奈良県">奈良県</option>
+                                            <option value="和歌山県">和歌山県</option>
+                                            <option value="鳥取県">鳥取県</option>
+                                            <option value="島根県">島根県</option>
+                                            <option value="岡山県">岡山県</option>
+                                            <option value="広島県">広島県</option>
+                                            <option value="山口県">山口県</option>
+                                            <option value="徳島県">徳島県</option>
+                                            <option value="香川県">香川県</option>
+                                            <option value="愛媛県">愛媛県</option>
+                                            <option value="高知県">高知県</option>
+                                            <option value="福岡県">福岡県</option>
+                                            <option value="佐賀県">佐賀県</option>
+                                            <option value="長崎県">長崎県</option>
+                                            <option value="熊本県">熊本県</option>
+                                            <option value="大分県">大分県</option>
+                                            <option value="宮崎県">宮崎県</option>
+                                            <option value="鹿児島県">鹿児島県</option>
+                                            <option value="沖縄県">沖縄県</option>
+                                        </select>
+                                        <div class="invalid-feedback">都道府県を選択してください</div>
+                                    </div>
+
+                                    <!-- City -->
+                                    <div class="col-md-4">
+                                    <label for="shipping-city" class="form-label japanese-text">市区町村 <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="shipping-city" required>
+                                        <div class="invalid-feedback">市区町村を入力してください</div>
+                                </div>
+
+                                    <!-- Address Line 1 -->
+                                    <div class="col-12">
+                                        <label for="shipping-address1" class="form-label japanese-text">住所1 <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="shipping-address1" required>
+                                        <div class="invalid-feedback">住所を入力してください</div>
+                                </div>
+
+                                    <!-- Address Line 2 -->
+                                    <div class="col-12">
+                                        <label for="shipping-address2" class="form-label japanese-text">住所2 (建物名・部屋番号など)</label>
+                                        <input type="text" class="form-control" id="shipping-address2">
+                                </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Payment Information -->
+                    <div class="card checkout-card">
+                        <div class="checkout-header">
+                            <h5 class="japanese-heading mb-0">
+                                <i class="fas fa-credit-card me-2"></i>お支払い方法
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="alert alert-info japanese-text d-none" id="payment-alert"></div>
+                            
+                            <!-- Payment Methods -->
+                            <div class="payment-methods">
+                                <div class="payment-method selected" data-method="credit">
+                                    <i class="fas fa-credit-card fa-2x text-muted mb-2"></i>
+                                    <div class="japanese-text">クレジットカード</div>
+                                    <div class="card-icons">
+                                        <div class="card-icon" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAzMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMwIiBoZWlnaHQ9IjIwIiByeD0iNCIgZmlsbD0iIzAwNTFBNSIvPgo8dGV4dCB4PSI1IiB5PSIxNCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjgiIGZpbGw9IndoaXRlIj5WSVNBPC90ZXh0Pgo8L3N2Zz4K')"></div>
+                                        <div class="card-icon" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAzMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMwIiBoZWlnaHQ9IjIwIiByeD0iNCIgZmlsbD0iI0VCMDAxQiIvPgo8Y2lyY2xlIGN4PSIxMCIgY3k9IjEwIiByPSI2IiBmaWxsPSIjRkY1RjAwIi8+CjxjaXJjbGUgY3g9IjIwIiBjeT0iMTAiIHI9IjYiIGZpbGw9IiNGRkY1RjAiLz4KPC9zdmc+')"></div>
+                                        <div class="card-icon" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAzMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMwIiBoZWlnaHQ9IjIwIiByeD0iNCIgZmlsbD0iIzAwNkZDRiIvPgo8dGV4dCB4PSI0IiB5PSIxNCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjciIGZpbGw9IndoaXRlIj5BTUVYPC90ZXh0Pgo8L3N2Zz4K')"></div>
+                                    </div>
+                                </div>
+                                <div class="payment-method" data-method="paypal">
+                                    <i class="fab fa-paypal fa-2x text-muted mb-2"></i>
+                                    <div class="japanese-text">PayPal</div>
+                                </div>
+                            </div>
+
+                            <!-- Credit Card Form -->
+                            <div id="credit-card-form">
+                                <form id="payment-form">
+                                    <div class="mb-3">
+                                        <label for="card-number" class="form-label japanese-text">カード番号 <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="card-number" maxlength="19" required>
+                                        <div class="form-text japanese-text">16桁のカード番号を入力してください</div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <label for="card-expiry" class="form-label japanese-text">有効期限 <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="card-expiry" placeholder="MM/YY" maxlength="5" required>
+                                            <div class="form-text japanese-text">例：12/25</div>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <label for="card-cvv" class="form-label japanese-text">
+                                                セキュリティコード <span class="text-danger">*</span>
+                                                <i class="fas fa-question-circle text-muted ms-1" 
+                                                   data-bs-toggle="tooltip" 
+                                                   data-bs-placement="top" 
+                                                   data-bs-trigger="hover focus"
+                                                   title="カード裏面の署名欄にある3桁の数字です。American Expressの場合は表面の4桁の数字です。"
+                                                   style="cursor: help;"></i>
+                                            </label>
+                                            <input type="text" class="form-control" id="card-cvv" maxlength="4" placeholder="例：123" required>
+                                            <div class="form-text japanese-text">カード裏面の3桁または4桁の番号</div>
+                                        </div>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="card-name" class="form-label japanese-text">カード名義人 <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="card-name" required>
+                                        <div class="form-text japanese-text">カードに記載されている名前をローマ字で入力</div>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- PayPal Form (Hidden) -->
+                            <div id="paypal-form" style="display: none;">
+                                <div class="text-center py-4">
+                                    <i class="fab fa-paypal fa-3x text-dark mb-3"></i>
+                                    <p class="japanese-text">PayPalでのお支払いを選択されました。</p>
+                                    <p class="japanese-text text-muted">注文確定後、PayPalのサイトにリダイレクトされます。</p>
+                                </div>
+                            </div>
+
+                            <!-- Security Info -->
+                            <div class="security-info">
+                                <div class="d-flex align-items-center mb-2">
+                                    <i class="fas fa-shield-alt text-dark me-2"></i>
+                                    <strong class="japanese-text">安全な決済</strong>
+                                </div>
+                                <small class="japanese-text text-muted">
+                                    お客様のクレジットカード情報は、SSL暗号化技術により安全に保護されています。
+                                    カード情報は当社サーバーに保存されることはありません。
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-4">
+                    <!-- Order Summary -->
+                    <div class="card checkout-card">
+                        <div class="checkout-header">
+                            <h5 class="japanese-heading mb-0">
+                                <i class="fas fa-receipt me-2"></i>ご注文内容
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="order-items"></div>
+                            
+                            <hr>
+                            
+                            <div class="order-summary">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="japanese-text">商品合計:</span>
+                                    <span id="subtotal">¥0</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="japanese-text">配送料:</span>
+                                    <span id="shipping-fee">¥500</span>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="japanese-text">消費税:</span>
+                                    <span id="tax">¥0</span>
+                                </div>
+                                
+                                <!-- 포인트 사용 섹션 - 간단 버전 -->
+                                <div class="point-use-section" id="point-use-section" style="display: block;">
+                                    <hr>
+                                    <div class="mb-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-3">
+                                            <span class="japanese-text">保有ポイント:</span>
+                                            <span id="available-points" class="fw-bold">0pt</span>
+                                        </div>
+                                        
+                                        <div class="input-group mb-3">
+                                            <input type="number" class="form-control" id="points-to-use" placeholder="使用ポイント数を入力" min="0" max="0">
+                                            <span class="input-group-text">pt</span>
+                                            <button class="btn btn-outline-secondary" type="button" onclick="useMaxPoints()" title="全ポイント使用">
+                                                <i class="fas fa-coins"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="small text-muted mb-2">
+                                            1ポイント = 1円 (最大 <span id="max-points-display">0</span>pt まで使用可能)
+                                        </div>
+                                        
+                                        <div id="point-feedback" class="small"></div>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="japanese-text">ポイント割引:</span>
+                                        <span id="point-discount" class="fw-bold">-¥0</span>
+                                    </div>
+                                </div>
+                                
+                                <hr>
+                                <div class="d-flex justify-content-between mb-3">
+                                    <strong class="japanese-text">合計:</strong>
+                                    <strong id="total">¥0</strong>
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-checkout btn-dark btn-lg japanese-text" id="place-order-btn">
+                                    <i class="fas fa-lock me-2"></i>注文を確定する
+                                </button>
+                                <a href="cart.html" class="btn btn-outline-secondary japanese-text">
+                                    <i class="fas fa-arrow-left me-2"></i>カートに戻る
+                                </a>
+                            </div>
+
+                            <div class="text-center mt-3">
+                                <small class="japanese-text text-muted">
+                                    注文確定により、<a href="#" class="text-decoration-none text-dark fw-bold" onclick="showTermsModal()">利用規約</a>および<a href="#" class="text-decoration-none text-dark fw-bold" onclick="showPrivacyModal()">プライバシーポリシー</a>に同意したものとします。
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 利用規約 Modal -->
+    <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title japanese-heading" id="termsModalLabel">利用規約</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body japanese-text">
+                    <h6>第1条（適用）</h6>
+                    <p>本規約は、株式会社Aether（以下「当社」）が運営するオンラインショップ「Aether」（以下「本サービス」）の利用に関して、当社とお客様との間の権利義務関係を定めるものです。</p>
+                    
+                    <h6>第2条（利用登録）</h6>
+                    <p>1. 本サービスの利用を希望する方は、本規約に同意の上、所定の方法によって利用登録を申請し、当社がこれを承認することによって利用登録が完了します。</p>
+                    <p>2. 当社は、利用登録の申請者に以下の事由があると判断した場合、利用登録の申請を承認しないことがあります。</p>
+                    <ul>
+                        <li>利用登録の申請に際して虚偽の事項を届け出た場合</li>
+                        <li>本規約に違反したことがある者からの申請である場合</li>
+                        <li>その他、当社が利用登録を相当でないと判断した場合</li>
+                    </ul>
+                    
+                    <h6>第3条（商品の注文・購入）</h6>
+                    <p>1. お客様は、本サービスにおいて当社が販売する商品を注文し、購入することができます。</p>
+                    <p>2. 商品の注文は、お客様が本サービス上で所定の手続きを完了し、当社がこれを承諾した時点で確定します。</p>
+                    <p>3. 商品の価格は、本サービス上に表示された価格とします。ただし、システムエラー等により明らかに不適切な価格が表示された場合、当社は注文を取り消すことができます。</p>
+                    
+                    <h6>第4条（支払い）</h6>
+                    <p>1. 商品代金の支払いは、クレジットカード、銀行振込、代金引換等、当社が指定する方法によって行うものとします。</p>
+                    <p>2. 支払期限は、注文確定日から7日以内とします。期限内にお支払いが確認できない場合、注文をキャンセルすることがあります。</p>
+                    
+                    <h6>第5条（配送）</h6>
+                    <p>1. 商品の配送は、お客様が指定した配送先住所に対して行います。</p>
+                    <p>2. 配送料は、配送地域および商品の種類・数量に応じて決定し、注文時に表示します。</p>
+                    <p>3. 配送期間は、ご注文確定後3～7営業日を目安としますが、商品の在庫状況等により遅延する場合があります。</p>
+                    
+                    <h6>第6条（返品・交換）</h6>
+                    <p>1. 商品に不具合がある場合、商品到着後7日以内にご連絡いただければ、返品・交換に応じます。</p>
+                    <p>2. お客様都合による返品・交換は、未開封・未使用の商品に限り、商品到着後7日以内であれば承ります。この場合の送料はお客様負担となります。</p>
+                    
+                    <h6>第7条（禁止事項）</h6>
+                    <p>お客様は、本サービスの利用にあたり、以下の行為をしてはなりません。</p>
+                    <ul>
+                        <li>法令または公序良俗に違反する行為</li>
+                        <li>犯罪行為に関連する行為</li>
+                        <li>当社のサーバーまたはネットワークの機能を破壊したり、妨害したりする行為</li>
+                        <li>当社のサービスの運営を妨害するおそれのある行為</li>
+                        <li>他のお客様に関する個人情報等を収集または蓄積する行為</li>
+                        <li>その他、当社が不適切と判断する行為</li>
+                    </ul>
+                    
+                    <h6>第8条（利用制限・登録抹消）</h6>
+                    <p>当社は、お客様が以下のいずれかに該当する場合、事前の通知なく、お客様に対して本サービスの全部または一部の利用を制限し、または利用登録を抹消することができます。</p>
+                    <ul>
+                        <li>本規約のいずれかの条項に違反した場合</li>
+                        <li>登録事項に虚偽の事実があることが判明した場合</li>
+                        <li>その他、当社が本サービスの利用を適当でないと判断した場合</li>
+                    </ul>
+                    
+                    <h6>第9条（免責事項）</h6>
+                    <p>1. 当社は、本サービスに事実上または法律上の瑕疵がないことを明示的にも黙示的にも保証しておりません。</p>
+                    <p>2. 当社は、本サービスに起因してお客様に生じたあらゆる損害について一切の責任を負いません。</p>
+                    
+                    <h6>第10条（規約の変更）</h6>
+                    <p>当社は、必要と判断した場合には、お客様に通知することなく本規約を変更することができます。変更後の規約は、本サービス上に表示した時点から効力を生じるものとします。</p>
+                    
+                    <h6>第11条（準拠法・裁判管轄）</h6>
+                    <p>本規約の解釈にあたっては、日本法を準拠法とします。本サービスに関して紛争が生じた場合には、東京地方裁判所を専属的合意管轄とします。</p>
+                    
+                    <p class="mt-4"><small>制定日：2024年1月1日</small></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary japanese-text" data-bs-dismiss="modal">閉じる</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- プライバシーポリシー Modal -->
+    <div class="modal fade" id="privacyModal" tabindex="-1" aria-labelledby="privacyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title japanese-heading" id="privacyModalLabel">プライバシーポリシー</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body japanese-text">
+                    <h6>1. 個人情報の収集について</h6>
+                    <p>当社は、お客様から以下の個人情報を収集する場合があります。</p>
+                    <ul>
+                        <li>氏名、住所、電話番号、メールアドレス</li>
+                        <li>クレジットカード情報等の決済に関する情報</li>
+                        <li>商品の購入履歴、閲覧履歴</li>
+                        <li>お問い合わせ内容</li>
+                        <li>その他、サービス提供に必要な情報</li>
+                    </ul>
+                    
+                    <h6>2. 個人情報の利用目的</h6>
+                    <p>当社は、収集した個人情報を以下の目的で利用します。</p>
+                    <ul>
+                        <li>商品の販売、配送、代金決済</li>
+                        <li>お客様からのお問い合わせへの対応</li>
+                        <li>新商品やキャンペーン等の情報提供</li>
+                        <li>商品やサービスの改善・開発</li>
+                        <li>利用規約違反の調査</li>
+                        <li>その他、上記に付随する目的</li>
+                    </ul>
+                    
+                    <h6>3. 個人情報の第三者提供</h6>
+                    <p>当社は、以下の場合を除き、お客様の同意なく個人情報を第三者に提供することはありません。</p>
+                    <ul>
+                        <li>法令に基づく場合</li>
+                        <li>人の生命、身体または財産の保護のために必要がある場合</li>
+                        <li>公衆衛生の向上または児童の健全な育成の推進のために特に必要がある場合</li>
+                        <li>国の機関もしくは地方公共団体またはその委託を受けた者が法令の定める事務を遂行することに対して協力する必要がある場合</li>
+                    </ul>
+                    
+                    <h6>4. 個人情報の委託</h6>
+                    <p>当社は、個人情報の取扱いの全部または一部を第三者に委託する場合があります。この場合、委託先に対して適切な監督を行います。</p>
+                    
+                    <h6>5. 個人情報の保存期間</h6>
+                    <p>当社は、個人情報を利用目的の達成に必要な期間のみ保存し、不要になった個人情報は適切に廃棄します。</p>
+                    
+                    <h6>6. 個人情報の開示・訂正・削除</h6>
+                    <p>お客様は、当社が保有する個人情報について、開示、訂正、削除を求めることができます。ご希望の場合は、当社までお問い合わせください。</p>
+                    
+                    <h6>7. Cookie（クッキー）について</h6>
+                    <p>当社のウェブサイトでは、より良いサービス提供のためにCookieを使用する場合があります。Cookieの使用を希望されない場合は、ブラウザの設定で無効にすることができます。</p>
+                    
+                    <h6>8. SSL（暗号化通信）について</h6>
+                    <p>当社では、お客様の個人情報を安全に送信するため、SSL（Secure Socket Layer）による暗号化通信を採用しています。</p>
+                    
+                    <h6>9. アクセス解析ツールについて</h6>
+                    <p>当社のウェブサイトでは、Googleアナリティクス等のアクセス解析ツールを使用する場合があります。これらのツールはCookieを使用してお客様の行動データを収集しますが、個人を特定する情報は含まれません。</p>
+                    
+                    <h6>10. お問い合わせ窓口</h6>
+                    <p>個人情報の取扱いに関するお問い合わせは、以下までご連絡ください。</p>
+                    <p>
+                        株式会社Aether<br>
+                        〒169-0072 東京都新宿区大久保2丁目21-10 ジュネス大久保 102号<br>
+                        メール：aether7info@gmail.com
+                    </p>
+                    
+                    <h6>11. プライバシーポリシーの変更</h6>
+                    <p>当社は、必要に応じて本プライバシーポリシーを変更することがあります。変更後のプライバシーポリシーは、当社ウェブサイトに掲載した時点から効力を生じるものとします。</p>
+                    
+                    <p class="mt-4"><small>制定日：2024年1月1日</small></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary japanese-text" data-bs-dismiss="modal">閉じる</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/jquery-1.11.0.min.js"></script>
+    <script src="assets/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/templatemo.js"></script>
+    <script src="assets/js/custom.js"></script>
+    
+    <!-- Firebase SDK -->
+    <!-- Firebase SDK - 중복 로드 방지 -->
+    <script>
+        if (typeof firebase === 'undefined') {
+            // Firebase가 로드되지 않은 경우에만 로드
+            document.write('<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"><\/script>');
+            document.write('<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"><\/script>');
+            document.write('<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"><\/script>');
+        }
+    </script>
+    <script src="assets/js/firebase-config.js"></script>
+    <script src="assets/js/auth-utils.js"></script>
+
+    <!-- Checkout Management Script -->
+    <script>
+        // 전역 변수
+        let currentUserPoints = 0;
+        let pointsToUse = 0;
+        let maxUsablePoints = 0;
+        let currentUser = null;
+        
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🚀 체크아웃 페이지 초기화 시작');
+            
+            // Firebase 전용 초기화 - localStorage 정리 제거됨
+            console.log('🔄 Firebase 전용 체크아웃 초기화 시작');
+            
+            try {
+                // 1단계: 카트 확인 (가장 먼저)
+                let cart = getCart();
+                console.log('1️⃣ 카트 확인 - 현재 카트 상태:', cart);
+                
+                if (!cart || cart.length === 0) {
+                    console.log('⚠️ 카트가 비어있습니다. cart.html로 리디렉션합니다.');
+                    window.location.href = 'cart.html';
+                    return;
+                }
+                console.log('✅ 카트 데이터 확인 완료:', cart.length, '개 상품');
+
+                // 2단계: 기본 UI 업데이트
+                console.log('2️⃣ 기본 UI 업데이트 시작');
+                updateUserMenu();
+                updateCartCount();
+
+                // 3단계: 카트 상품 렌더링 (Firebase 초기화 전에)
+                console.log('3️⃣ 카트 상품 렌더링 시작');
+                renderOrderItems();
+
+                // 4단계: Firebase 초기화 (선택사항)
+                console.log('4️⃣ Firebase 초기화 시도');
+                try {
+                    await window.waitForFirebaseComplete();
+                    console.log('✅ Firebase 초기화 완료');
+                    
+                    // Firebase 인증 상태 확인
+                    firebase.auth().onAuthStateChanged(async (user) => {
+                        if (user) {
+                            console.log('👤 Firebase 로그인 사용자 확인:', user.email);
+                            currentUser = user; // 현재 사용자 설정
+                            await loadProfileAddress();
+                            await loadUserPoints(); // 포인트 정보 로드
+                        } else {
+                            console.log('👤 Firebase 비로그인 상태');
+                            
+                            // Firebase 전용 정책 - 로그인 필수
+                            console.log('🚫 로그인이 필요합니다. Firebase 전용 시스템입니다.');
+                            showAlert('payment-alert', 'ログインが必要です。注文するにはアカウントにログインしてください。', 'warning');
+                            
+                            // 로그인 페이지로 리다이렉트
+                            setTimeout(() => {
+                                window.location.href = 'login.html?redirect=checkout';
+                            }, 2000);
+                            return;
+                        }
+                    });
+                } catch (error) {
+                    console.log('⚠️ Firebase 초기화 실패:', error);
+                    console.log('❌ Firebase가 필요합니다. 페이지를 새로고침해주세요.');
+                }
+
+                // 5단계: 기타 UI 설정
+                console.log('5️⃣ 기타 UI 설정');
+                
+                // 페이지 로드 완료 후 포인트 섹션 확실히 표시
+                setTimeout(() => {
+                    console.log('🔧 페이지 로드 후 포인트 섹션 강제 표시');
+                    if (typeof currentUserPoints === 'undefined') {
+                        currentUserPoints = 0;
+                    }
+                    showPointSection();
+                }, 500);
+                
+                // 카드 번호 입력 필드 이벤트 리스너
+                const cardNumberInput = document.getElementById('card-number');
+                if (cardNumberInput) {
+                    cardNumberInput.addEventListener('input', function(e) {
+                        this.value = formatCardNumber(this.value);
+                    });
+                }
+
+                // 주문 폼 제출 이벤트 처리
+                const orderForm = document.getElementById('shipping-form');
+                if (orderForm) {
+                    orderForm.addEventListener('submit', processOrder);
+                }
+                
+                console.log('🎉 체크아웃 페이지 초기화 완료!');
+                
+                // 최종 보장: 모든 초기화 완료 후 포인트 섹션 표시
+                setTimeout(() => {
+                    console.log('🛡️ 최종 포인트 섹션 보장 표시');
+                    
+                    // Firebase 전용 시스템 디버깅
+                    console.log('=== Firebase 전용 포인트 시스템 ===');
+                    console.log('currentUserPoints:', currentUserPoints);
+                    console.log('Firebase 사용자:', firebase.auth().currentUser?.email || '없음');
+                    
+                    const pointSection = document.getElementById('point-use-section');
+                    if (pointSection) {
+                        pointSection.style.display = 'block';
+                        console.log('✅ 포인트 섹션 최종 확인 완료');
+                        
+                        // 포인트 재로드 시도
+                        loadUserPointsOffline();
+                    }
+                }, 1000);
+
+                // 유효기한 입력 필드 이벤트 리스너
+                const cardExpiryInput = document.getElementById('card-expiry');
+                if (cardExpiryInput) {
+                    cardExpiryInput.addEventListener('input', function(e) {
+                        this.value = formatExpiry(this.value);
+                    });
+                }
+
+                // CVV 숫자만 입력 및 마스킹 처리
+                const cardCvvInput = document.getElementById('card-cvv');
+                if (cardCvvInput) {
+                    // 첫 번째 클릭 시 별표 지우기
+                    cardCvvInput.addEventListener('focus', function(e) {
+                        if (this.value.includes('*')) {
+                            console.log('CVC 필드 포커스: 별표 지움');
+                            this.value = '';
+                        }
+                    });
+                    
+                    // 입력 시 숫자만 허용
+                    cardCvvInput.addEventListener('input', function(e) {
+                        let value = this.value.replace(/\D/g, '');
+                        
+                        // 최대 4자리로 제한
+                        if (value.length > 4) {
+                            value = value.substring(0, 4);
+                        }
+                        
+                        this.value = value;
+                        
+                        // 원본 값 저장 (사용자가 입력한 경우)
+                        if (value && !this.dataset.originalCvc) {
+                            this.dataset.originalCvc = value;
+                        }
+                    });
+                    
+                    // 포커스 아웃 시 별표로 마스킹
+                    cardCvvInput.addEventListener('blur', function(e) {
+                        if (this.value && this.value.length >= 3) {
+                            const originalValue = this.value;
+                            this.dataset.originalCvc = originalValue;
+                            
+                            // 1초 후 별표로 변경
+                            setTimeout(() => {
+                                if (this.value === originalValue) {
+                                    this.value = '*'.repeat(originalValue.length);
+                                    console.log('CVC 별표 마스킹 적용');
+                                }
+                            }, 1000);
+                        }
+                    });
+                }
+
+                // 결제 방법 선택
+                const paymentMethods = document.querySelectorAll('.payment-method');
+                paymentMethods.forEach(method => {
+                    method.addEventListener('click', function() {
+                        selectPaymentMethod(this.dataset.method);
+                    });
+                });
+
+                // 주문 확정 버튼
+                const orderButton = document.getElementById('place-order-btn');
+                if (orderButton) {
+                    orderButton.addEventListener('click', async function(e) {
+                        e.preventDefault(); // 기본 이벤트 방지
+                        
+                        // 이미 처리 중인 경우 중복 클릭 방지
+                        if (this.disabled) {
+                            return;
+                        }
+                        
+                        try {
+                            // 버튼 비활성화 및 로딩 상태 표시
+                            this.disabled = true;
+                            this.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>処理中...';
+                            
+                            await processOrder();
+                            
+                        } catch (error) {
+                            console.error('주문 처리 중 오류:', error);
+                            
+                            // 사용자에게 오류가 표시되지 않은 경우에만 일반 오류 메시지 표시
+                            if (!error.message || error.message.includes('Error')) {
+                                showAlert('payment-alert', '注文処理中にエラーが発生しました。入力内容を確認してください。', 'danger');
+                            }
+                            
+                        } finally {
+                            // 버튼 상태 복구 (성공/실패 관계없이)
+                            this.disabled = false;
+                            this.innerHTML = '<i class="fas fa-lock me-2"></i>注文を確定する';
+                        }
+                    });
+                }
+                
+                // Bootstrap 툴팁 초기화
+                var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+                var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+                    return new bootstrap.Tooltip(tooltipTriggerEl);
+                });
+
+                // 우편번호 입력 필드 자동 포맷팅 및 자동 검색
+                const postalInput = document.getElementById('shipping-postal');
+                if (postalInput) {
+                    postalInput.addEventListener('input', function(e) {
+                        let value = e.target.value.replace(/[^\d]/g, '');
+                        if (value.length > 3) {
+                            value = value.slice(0, 3) + '-' + value.slice(3);
+                        }
+                        e.target.value = value;
+                        
+                        // 7자리가 되면 자동으로 주소 검색
+                        const cleanValue = value.replace(/[^\d]/g, '');
+                        if (cleanValue.length === 7) {
+                            setTimeout(() => searchAddress(), 500); // 약간의 딜레이 후 검색
+                        }
+                    });
+
+                    // Enter 키로 검색 실행
+                    postalInput.addEventListener('keypress', function(e) {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            searchAddress();
+                        }
+                    });
+                }
+                
+                // 6단계: Firebase 전용 로그인 상태 확인 완료
+                console.log('6️⃣ Firebase 전용 로그인 상태 확인 완료');
+
+            } catch (error) {
+                console.error('체크아웃 페이지 초기화 실패:', error);
+                showAlert('payment-alert', 'ページの読み込みに失敗しました。', 'danger');
+            }
+        });
+
+        // 알림 표시 함수 - 모노톤 색상 사용
+        function showAlert(elementId, message, type = 'info') {
+            const alertElement = document.getElementById(elementId);
+            if (alertElement) {
+                // 모든 알림을 모노톤 색상으로 통일
+                let alertClass = 'alert japanese-text';
+                if (type === 'danger' || type === 'error') {
+                    alertClass += ' alert-warning border border-secondary'; // 경고용으로 회색 테두리 사용
+                } else {
+                    alertClass += ' alert-light border border-secondary'; // 일반 정보용
+                }
+                
+                alertElement.className = alertClass;
+                alertElement.innerHTML = `<i class="fas fa-exclamation-circle me-2"></i>${message}`;
+            alertElement.classList.remove('d-none');
+            
+                // 5초 후 알림 숨기기 (에러의 경우 더 오래 표시)
+                const hideDelay = (type === 'danger' || type === 'error') ? 5000 : 3000;
+            setTimeout(() => {
+                alertElement.classList.add('d-none');
+                }, hideDelay);
+            } else {
+                console.error('알림 요소를 찾을 수 없음:', elementId);
+            }
+        }
+
+        // 에러 표시 함수
+        function showError(message) {
+            showAlert('payment-alert', message, 'danger');
+        }
+
+        // 로딩 상태 표시
+        function showLoading(show) {
+            const loadingEl = document.getElementById('loading');
+            const mainContent = document.getElementById('main-content');
+            
+            if (show) {
+                if (loadingEl) loadingEl.style.display = 'block';
+                if (mainContent) mainContent.style.display = 'none';
+            } else {
+                if (loadingEl) loadingEl.style.display = 'none';
+                if (mainContent) mainContent.style.display = 'block';
+            }
+        }
+
+        // 메인 콘텐츠 표시
+        function showMainContent() {
+            const mainContent = document.getElementById('main-content');
+            const loadingEl = document.getElementById('loading');
+            
+            if (loadingEl) loadingEl.style.display = 'none';
+            if (mainContent) mainContent.style.display = 'block';
+        }
+
+        // 카트 아이템 로드
+        async function loadCartItems() {
+            console.log('loadCartItems 함수 호출됨');
+            const cart = getCart();
+            console.log('로드된 카트 데이터:', cart);
+            
+            if (!cart || cart.length === 0) {
+                console.log('⚠️ 카트가 비어있습니다. cart.html로 리디렉션합니다.');
+                window.location.href = 'cart.html';
+                return;
+            }
+            
+            // 카트 아이템 렌더링
+            renderOrderItems();
+        }
+
+        // 카트 관리
+        function getCart() {
+            return JSON.parse(localStorage.getItem('aetherCart') || '[]');
+        }
+
+        function clearCart() {
+            localStorage.removeItem('aetherCart');
+        }
+
+        // 수량 업데이트 함수
+        function updateQuantity(index, change) {
+            const cart = getCart();
+            if (index < 0 || index >= cart.length) return;
+            
+            const newQuantity = (cart[index].quantity || 1) + change;
+            
+            if (newQuantity <= 0) {
+                // 수량이 0 이하가 되면 상품 제거
+                removeItem(index);
+                return;
+            }
+            
+            if (newQuantity > 99) {
+                // 최대 수량 제한
+                alert('最大99個まで注文可能です。');
+                return;
+            }
+            
+            cart[index].quantity = newQuantity;
+            localStorage.setItem('aetherCart', JSON.stringify(cart));
+            
+            console.log('수량 업데이트:', cart[index].name, '→', newQuantity);
+            
+            // UI 업데이트
+            renderOrderItems();
+            updateCartCount();
+        }
+
+        // 상품 제거 함수
+        function removeItem(index) {
+            const cart = getCart();
+            if (index < 0 || index >= cart.length) return;
+            
+            const removedItem = cart[index];
+            if (confirm(`${removedItem.name}を注文から削除しますか？`)) {
+                cart.splice(index, 1);
+                localStorage.setItem('aetherCart', JSON.stringify(cart));
+                
+                console.log('상품 제거:', removedItem.name);
+                
+                // UI 업데이트
+                renderOrderItems();
+                updateCartCount();
+                
+                // 카트가 비어있으면 카트 페이지로 이동
+                if (cart.length === 0) {
+                    alert('カートが空です。商品を追加してください。');
+                    window.location.href = 'cart.html';
+                }
+            }
+        }
+
+        // 전역 함수로 노출
+        window.updateQuantity = updateQuantity;
+        window.removeItem = removeItem;
+
+        // getCurrentUser는 auth-utils.js에서 제공됩니다
+
+        // 주문 내용 렌더링
+        function renderOrderItems() {
+            const cart = getCart();
+            const container = document.getElementById('order-items');
+            
+            console.log('renderOrderItems 호출됨');
+            console.log('카트 데이터:', cart);
+            console.log('컨테이너 요소:', container);
+            
+            if (!container) {
+                console.error('order-items 컨테이너를 찾을 수 없습니다');
+                return;
+            }
+            
+            if (cart.length === 0) {
+                console.log('⚠️ renderOrderItems: 카트가 비어있어서 cart.html로 리디렉션');
+                setTimeout(() => {
+                window.location.href = 'cart.html';
+                }, 100);
+                return;
+            }
+
+            const itemsHtml = cart.map((item, index) => {
+                // 옵션 정보 표시
+                let optionInfo = '';
+                if (item.isOptionProduct && item.selectedColors && item.selectedColors.length > 0) {
+                    // 새로운 옵션 시스템
+                    optionInfo = '<div class="option-info mt-1">' +
+                        '<small class="text-muted japanese-text">' + 
+                        item.selectedColors.map(option => `${option.type}: ${option.name} x${option.quantity}`).join(', ') +
+                        '</small>' +
+                        '</div>';
+                } else if (item.colorSummary && item.colorSummary.trim() !== '') {
+                    // 기존 색상 옵션 시스템
+                    optionInfo = '<div class="option-info mt-1">' +
+                        '<small class="text-muted japanese-text">' + item.colorSummary + '</small>' +
+                        '</div>';
+                }
+                
+                return '<div class="order-item">' +
+                    '<div class="order-item-info">' +
+                    '<div class="japanese-heading">' + (item.name || '상품명 없음') + '</div>' +
+                    '<small class="text-muted japanese-text">' + (item.brand || '브랜드 없음') + '</small>' +
+                    optionInfo +
+                    '</div>' +
+                    '<div class="order-item-controls">' +
+                    '<div class="order-item-price japanese-text fw-bold">¥' + ((item.price || 0) * (item.quantity || 1)).toLocaleString() + '</div>' +
+                    '<div class="order-item-actions">' +
+                    '<div class="quantity-controls d-flex align-items-center gap-1">' +
+                    '<button type="button" class="btn btn-sm btn-outline-secondary" onclick="updateQuantity(' + index + ', -1)">' +
+                    '<i class="fas fa-minus"></i>' +
+                    '</button>' +
+                    '<span class="quantity-display fw-bold mx-1">' + (item.quantity || 1) + '</span>' +
+                    '<button type="button" class="btn btn-sm btn-outline-secondary" onclick="updateQuantity(' + index + ', 1)">' +
+                    '<i class="fas fa-plus"></i>' +
+                    '</button>' +
+                    '<button type="button" class="btn-delete-item ms-1" onclick="removeItem(' + index + ')" title="削除">' +
+                    '<i class="fas fa-trash"></i>' +
+                    '</button>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>' +
+                    '</div>';
+            }).join('');
+            
+            console.log('생성된 HTML:', itemsHtml);
+            container.innerHTML = itemsHtml;
+
+            updateOrderSummary();
+        }
+
+        // 주문 요약 업데이트 (포인트 할인 포함)
+        function updateOrderSummary() {
+            const cart = getCart();
+            console.log('updateOrderSummary 호출됨, 카트:', cart);
+            
+            // 상품 가격은 이미 소비세 포함 가격
+            const totalWithTax = cart.reduce((total, item) => total + ((item.price || 0) * (item.quantity || 1)), 0);
+            const subtotal = Math.floor(totalWithTax / 1.1); // 세전 가격
+            const tax = totalWithTax - subtotal; // 소비세
+            const shippingFee = totalWithTax >= 3000 ? 0 : 500; // 3000엔 이상 무료배송
+            
+            // 포인트 할인 적용
+            const pointDiscount = pointsToUse || 0;
+            const finalTotal = Math.max(0, totalWithTax + shippingFee - pointDiscount);
+
+            console.log('계산된 금액 - 소계:', subtotal, '배송비:', shippingFee, '세금:', tax, '포인트할인:', pointDiscount, '총액:', finalTotal);
+            
+            // 포인트 정보 업데이트 (사용자가 로그인한 경우)
+            if (currentUserPoints > 0) {
+                updateMaxUsablePoints();
+            }
+
+            const subtotalEl = document.getElementById('subtotal');
+            const shippingEl = document.getElementById('shipping-fee');
+            const taxEl = document.getElementById('tax');
+            const totalEl = document.getElementById('total');
+            
+            if (subtotalEl) subtotalEl.textContent = '¥' + subtotal.toLocaleString();
+            if (shippingEl) shippingEl.textContent = shippingFee === 0 ? '無料' : '¥' + shippingFee.toLocaleString();
+            if (taxEl) taxEl.textContent = '¥' + tax.toLocaleString();
+            if (totalEl) totalEl.textContent = '¥' + finalTotal.toLocaleString();
+        }
+
+        // 우편번호 검색 기능
+        async function searchAddress() {
+            const postalInput = document.getElementById('shipping-postal');
+            const feedback = document.getElementById('postal-feedback');
+            const postalCode = postalInput.value.replace(/[^\d]/g, '');
+            
+            if (postalCode.length !== 7) {
+                feedback.innerHTML = '<span class="text-danger">7桁の郵便番号を入力してください</span>';
+                return;
+            }
+            
+            // 로딩 표시
+            feedback.innerHTML = '<div class="spinner-border spinner-border-sm text-secondary" role="status"><span class="visually-hidden">Loading...</span></div> <span class="text-muted">住所を検索中...</span>';
+            
+            try {
+                const response = await fetch(`https://zipcloud.ibsnet.co.jp/api/search?zipcode=${postalCode}`);
+                const data = await response.json();
+                
+                if (data.status === 200 && data.results && data.results.length > 0) {
+                    const result = data.results[0];
+                    
+                    // 주소 자동 입력
+                    document.getElementById('shipping-prefecture').value = result.address1;
+                    document.getElementById('shipping-city').value = result.address2;
+                    document.getElementById('shipping-address1').value = result.address3;
+                    
+                    // 피드백 메시지 숨김
+                    feedback.innerHTML = '';
+                    
+                    // 주소1로 포커스 이동
+                    document.getElementById('shipping-address1').focus();
+                } else {
+                    feedback.innerHTML = '<span class="text-danger">該当する郵便番号의住所が見つかりませんでした</span>';
+                }
+            } catch (error) {
+                console.error('우편번호 검색 실패:', error);
+                feedback.innerHTML = '<span class="text-danger">住所の検索中にエラーが発生しました</span>';
+            }
+        }
+
+
+
+        // 우편번호 포맷팅 (000-0000 형태)
+        function formatPostalCode(value) {
+            const cleaned = value.replace(/\D/g, '');
+            if (cleaned.length >= 4) {
+                return cleaned.substring(0, 3) + '-' + cleaned.substring(3, 7);
+            }
+            return cleaned;
+        }
+
+        // 프로필 주소 로드
+        async function loadProfileAddress() {
+            try {
+                console.log('=== 주소 자동 입력 시작 ===');
+                
+                // 현재 로그인 상태 디버깅
+                const loginStatus = JSON.parse(localStorage.getItem('aetherLoginStatus') || '{}');
+                const aetherUsers = JSON.parse(localStorage.getItem('aetherUsers') || '[]');
+                console.log('로그인 상태:', loginStatus);
+                console.log('저장된 사용자 수:', aetherUsers.length);
+                console.log('Firebase 사용자:', firebase?.auth?.()?.currentUser?.email || '없음');
+                
+                let userData = null;
+                let addressData = null;
+                
+                // Firebase 사용자 확인
+                const user = firebase.auth && firebase.auth().currentUser;
+                if (user) {
+                    try {
+                        const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+                        if (userDoc.exists) {
+                            userData = userDoc.data();
+                            addressData = userData.lastUsedAddress || userData;
+                            console.log('Firebase에서 주소 정보 로드 성공');
+                        }
+                    } catch (firebaseError) {
+                        console.warn('Firebase 주소 로드 실패:', firebaseError);
+                    }
+                }
+                
+                // Firebase 전용 - localStorage 폴백 제거됨
+                if (!userData) {
+                    console.log('Firebase에서 사용자 정보를 찾을 수 없음');
+                }
+                
+                // 주소 정보 자동 입력
+                if (userData && addressData) {
+                    const userName = userData.name || userData.email?.split('@')[0] || '';
+                    
+                    const fields = {
+                        'shipping-name': userName,
+                        'shipping-phone': addressData.phone || userData.phone || '',
+                        'shipping-postal': addressData.postal || '',
+                        'shipping-prefecture': addressData.prefecture || '',
+                        'shipping-city': addressData.city || '',
+                        'shipping-address1': addressData.address1 || '',
+                        'shipping-address2': addressData.address2 || ''
+                    };
+                    
+                    // 비어있는 필드만 자동 입력
+                    Object.entries(fields).forEach(([fieldId, value]) => {
+                        const field = document.getElementById(fieldId);
+                        if (field && !field.value && value) {
+                            field.value = value;
+                            console.log(`${fieldId} 자동 입력:`, value);
+                        }
+                    });
+                    
+                    // 카드 정보도 로드
+                    await loadSavedCardInfo(userData);
+                    
+                    showAlert('shipping-alert', '保存された情報を自動入力しました。', 'success');
+                } else {
+                    console.log('저장된 주소 정보가 없음');
+                    showAlert('shipping-alert', 'ログインして保存された情報を使用してください。', 'info');
+                }
+            } catch (error) {
+                console.error('주소 자동 입력 오류:', error);
+                showAlert('shipping-alert', '住所情報の読み込みに失敗しました。', 'warning');
+            }
+        }
+        
+        // 저장된 카드 정보 로드
+        async function loadSavedCardInfo(userData) {
+            try {
+                console.log('=== 카드 정보 로드 시작 ===');
+                console.log('사용자 데이터:', userData);
+                
+                let cardInfo = null;
+                
+                // 사용자 데이터에서 카드 정보 찾기
+                if (userData.savedCardInfo) {
+                    cardInfo = userData.savedCardInfo;
+                    console.log('savedCardInfo에서 카드 정보 발견:', cardInfo);
+                } else if (userData.paymentInfo) {
+                    cardInfo = userData.paymentInfo;
+                    console.log('paymentInfo에서 카드 정보 발견:', cardInfo);
+                } else {
+                    console.log('저장된 카드 정보가 없음');
+                }
+                
+                if (cardInfo) {
+                    // 카드 정보 자동 입력
+                    const cardFields = {
+                        'card-number': cardInfo.cardNumber || '',
+                        'card-expiry': cardInfo.cardExpiry || '',
+                        'card-name': cardInfo.cardName || userData.name || ''
+                    };
+                    
+                    Object.entries(cardFields).forEach(([fieldId, value]) => {
+                        const field = document.getElementById(fieldId);
+                        if (field && !field.value && value) {
+                            field.value = value;
+                            console.log(`${fieldId} 자동 입력:`, value);
+                        }
+                    });
+                    
+                    // CVC는 보안상 별표로 표시
+                    const cvcField = document.getElementById('card-cvv');
+                    if (cvcField && !cvcField.value && cardInfo.cardCvc) {
+                        const maskedCvc = '*'.repeat(cardInfo.cardCvc.length);
+                        cvcField.value = maskedCvc;
+                        cvcField.dataset.originalCvc = cardInfo.cardCvc; // 원본 값 저장
+                        console.log('CVC 별표 마스킹 적용');
+                    }
+                    
+                    console.log('카드 정보 자동 입력 완료');
+                } else {
+                    console.log('저장된 카드 정보가 없음');
+                }
+            } catch (error) {
+                console.error('카드 정보 로드 오류:', error);
+            }
+        }
+        
+        // 카드 정보 저장
+        async function saveCardInfo(cardData) {
+            try {
+                // Firebase에서 현재 로그인된 사용자 확인
+                if (typeof firebase !== 'undefined' && 
+                    firebase.auth && 
+                    firebase.apps && 
+                    firebase.apps.length > 0 &&
+                    firebase.apps[0].name === '[DEFAULT]') {
+                    
+                    const user = firebase.auth().currentUser;
+                    if (user && user.email) {
+                        try {
+                            await firebase.firestore().collection('users').doc(user.email).update({
+                                savedCardInfo: cardData,
+                                cardInfoUpdatedAt: new Date().toISOString()
+                            });
+                            console.log('Firebase에 카드 정보 저장 성공');
+                        } catch (firebaseError) {
+                            console.warn('Firebase 카드 정보 저장 실패:', firebaseError);
+                        }
+                    } else {
+                        console.log('로그인되지 않은 사용자는 카드 정보를 저장하지 않음');
+                    }
+                } else {
+                    console.log('Firebase가 초기화되지 않음');
+                }
+                
+            } catch (error) {
+                console.error('카드 정보 저장 오류:', error);
+            }
+        }
+
+        // 유효기한 포맷팅
+        function formatExpiry(value) {
+            // 숫자만 추출
+            let numbers = value.replace(/\D/g, '');
+            
+            // 최대 4자리까지만 유지
+            numbers = numbers.substring(0, 4);
+            
+            // MM/YY 형식으로 포맷팅
+            if (numbers.length >= 2) {
+                return numbers.substring(0, 2) + '/' + numbers.substring(2);
+            }
+            
+            return numbers;
+        }
+
+        // 카드 번호 유효성 검사 (Luhn 알고리즘)
+        function validateCardNumber(number) {
+            const cleanNumber = number.replace(/\s+/g, '');
+            if (cleanNumber.length < 13 || cleanNumber.length > 19) return false;
+            
+            let sum = 0;
+            let isEven = false;
+            
+            for (let i = cleanNumber.length - 1; i >= 0; i--) {
+                let digit = parseInt(cleanNumber[i]);
+                
+                if (isEven) {
+                    digit *= 2;
+                    if (digit > 9) digit -= 9;
+                }
+                
+                sum += digit;
+                isEven = !isEven;
+            }
+            
+            return sum % 10 === 0;
+        }
+
+        // 결제 방법 선택
+        function selectPaymentMethod(method) {
+            document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
+            document.querySelector('[data-method="' + method + '"]').classList.add('selected');
+            
+            if (method === 'credit') {
+                document.getElementById('credit-card-form').style.display = 'block';
+                document.getElementById('paypal-form').style.display = 'none';
+            } else {
+                document.getElementById('credit-card-form').style.display = 'none';
+                document.getElementById('paypal-form').style.display = 'block';
+            }
+        }
+
+        // 주문 처리
+        async function processOrder() {
+            try {
+                // 결제 방법 선택 확인
+                const selectedMethodElement = document.querySelector('.payment-method.selected');
+                if (!selectedMethodElement) {
+                    showAlert('payment-alert', '決済方法を選択してください。', 'danger');
+                    throw new Error('결제 방법이 선택되지 않음');
+                }
+                
+                const selectedMethod = selectedMethodElement.dataset.method;
+                console.log('선택된 결제 방법:', selectedMethod);
+                
+                // 배송 정보 세부 검증
+                const requiredFields = [
+                    { id: 'shipping-name', name: 'お名前' },
+                    { id: 'shipping-phone', name: '電話番号' },
+                    { id: 'shipping-postal', name: '郵便番号' },
+                    { id: 'shipping-prefecture', name: '都道府県' },
+                    { id: 'shipping-city', name: '市区町村' },
+                    { id: 'shipping-address1', name: '番地・建物名' }
+                ];
+                
+                let missingFields = [];
+                for (let field of requiredFields) {
+                    const element = document.getElementById(field.id);
+                    if (!element || !element.value.trim()) {
+                        missingFields.push(field.name);
+                    }
+                }
+                
+                if (missingFields.length > 0) {
+                    showAlert('shipping-alert', `以下の項目を入力してください：${missingFields.join('、')}`, 'danger');
+                    throw new Error('필수 배송 정보가 누락됨: ' + missingFields.join(', '));
+                }
+                
+                // 전화번호 형식 검증
+                const phone = document.getElementById('shipping-phone').value;
+                if (!/^[\d\-\+\(\)\s]+$/.test(phone) || phone.length < 10) {
+                    showAlert('shipping-alert', '正しい電話番号を入力してください。', 'danger');
+                    throw new Error('전화번호 형식이 잘못됨');
+                }
+                
+                // 우편번호 형식 검증 (일본 우편번호: 123-4567 또는 1234567)
+                const postal = document.getElementById('shipping-postal').value;
+                if (!/^\d{3}-?\d{4}$/.test(postal)) {
+                    showAlert('shipping-alert', '正しい郵便番号を入力してください（例：123-4567）。', 'danger');
+                    throw new Error('우편번호 형식이 잘못됨');
+            }
+
+            // 결제 정보 검증
+                let paymentData = null;
+            if (selectedMethod === 'credit') {
+                    const cardNumberInput = document.getElementById('card-number');
+                    const cardExpiryInput = document.getElementById('card-expiry');
+                    const cardCvvInput = document.getElementById('card-cvv');
+                    const cardNameInput = document.getElementById('card-name');
+                    
+                    const cardNumber = cardNumberInput.value;
+                    const cardExpiry = cardExpiryInput.value;
+                    // CVC는 마스킹된 경우 원본 값 사용
+                    const cardCvv = cardCvvInput.dataset.originalCvc || cardCvvInput.value;
+                    const cardName = cardNameInput.value;
+
+                if (!cardNumber || !cardExpiry || !cardCvv || !cardName) {
+                        showAlert('payment-alert', 'クレジットカード情報をすべて入力してください。', 'danger');
+                        throw new Error('카드 정보가 누락됨');
+                }
+
+                if (!validateCardNumber(cardNumber)) {
+                    showAlert('payment-alert', 'カード番号が正しくありません。', 'danger');
+                        throw new Error('카드 번호가 유효하지 않음');
+                }
+
+                if (!/^\d{2}\/\d{2}$/.test(cardExpiry)) {
+                        showAlert('payment-alert', '有効期限の形式が正しくありません（MM/YY）。', 'danger');
+                        throw new Error('카드 유효기간 형식이 잘못됨');
+                }
+
+                if (!/^\d{3,4}$/.test(cardCvv)) {
+                        showAlert('payment-alert', 'セキュリティコードが正しくありません（3-4桁）。', 'danger');
+                        throw new Error('CVV가 유효하지 않음');
+                    }
+                    
+                    // 카드 정보 저장용 데이터 준비
+                    paymentData = {
+                        cardNumber: cardNumber,
+                        cardExpiry: cardExpiry,
+                        cardCvc: cardCvv,
+                        cardName: cardName,
+                        paymentMethod: 'credit'
+                    };
+                    
+                    console.log('카드 정보 수집 완료 (저장 준비)');
+                }
+
+                // 주문 데이터 준비
+                const shippingInfo = {
+                    name: document.getElementById('shipping-name').value,
+                    phone: document.getElementById('shipping-phone').value,
+                    postal: document.getElementById('shipping-postal').value,
+                    prefecture: document.getElementById('shipping-prefecture').value,
+                    city: document.getElementById('shipping-city').value,
+                    address1: document.getElementById('shipping-address1').value,
+                    address2: document.getElementById('shipping-address2').value
+                };
+
+                const cart = getCart();
+                if (!cart || cart.length === 0) {
+                    showAlert('payment-alert', 'カートが空です。商品を追加してから注文してください。', 'danger');
+                    throw new Error('카트가 비어있음');
+                }
+
+                // 현재 사용자 정보 가져오기
+                let currentUser = null;
+                try {
+                    if (firebase.auth && firebase.auth().currentUser) {
+                        currentUser = firebase.auth().currentUser;
+                    } else {
+                        // localStorage에서 로그인 상태 확인
+                        const loginStatus = JSON.parse(localStorage.getItem('aetherLoginStatus') || '{}');
+                        if (loginStatus.email) {
+                            currentUser = {
+                                uid: loginStatus.email,
+                                email: loginStatus.email,
+                                displayName: loginStatus.name || 'Guest'
+                            };
+                        }
+                    }
+                } catch (error) {
+                    console.log('사용자 정보 가져오기 실패:', error);
+                }
+
+                // 주문 처리 (Firebase 또는 로컬 저장)
+                const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+                const earnedPoints = Math.floor(subtotal * 0.03);
+                
+                // 포인트 사용량 재확인 (주문 처리 직전)
+                const pointsInput = document.getElementById('points-to-use');
+                const inputValue = pointsInput ? parseInt(pointsInput.value) || 0 : 0;
+                const usedPoints = Math.max(inputValue, pointsToUse || 0);
+                
+                // 포인트 사용 정보 계산
+                const finalTotal = subtotal - usedPoints;
+                const pointDiscount = usedPoints;
+                
+                const orderData = {
+                    id: 'ORDER-' + Date.now(),
+                    items: cart,
+                    shipping: shippingInfo,
+                    payment: {
+                        method: selectedMethod,
+                        total: document.getElementById('total').textContent
+                    },
+                    orderDate: firebase.firestore.Timestamp.now(),
+                    status: 'processing',
+                    // 포인트 정보 추가
+                    earnedPoints: earnedPoints,
+                    subtotal: subtotal,
+                    totalAmount: finalTotal, // 포인트 할인 적용된 최종 금액
+                    pointDiscount: pointDiscount, // 사용한 포인트
+                    usedPoints: usedPoints, // 사용한 포인트 (호환성)
+                    originalAmount: subtotal, // 포인트 할인 전 원래 금액
+                    // 사용자 정보 추가
+                    userId: currentUser ? currentUser.uid : null,
+                    userEmail: currentUser ? currentUser.email : null,
+                    userName: currentUser ? currentUser.displayName : shippingInfo.name,
+                    customerEmail: currentUser ? currentUser.email : null,
+                    customer: {
+                        name: currentUser ? currentUser.displayName : shippingInfo.name,
+                        email: currentUser ? currentUser.email : null,
+                        phone: shippingInfo.phone
+                    }
+                };
+
+                console.log('주문 데이터:', orderData);
+                
+                // 포인트 관련 변수 초기화 (Firebase 전용)
+                let newPoints = null; // Firebase에서 계산될 포인트
+                
+                console.log('주문 처리 시 포인트 확인:', {
+                    pointsToUse: pointsToUse,
+                    inputValue: inputValue,
+                    usedPoints: usedPoints,
+                    currentUserPoints: currentUserPoints
+                });
+                
+                // 포인트 사용 검증
+                if (usedPoints > 0) {
+                    if (usedPoints > currentUserPoints) {
+                        showAlert('payment-alert', '保有ポイントが不足です。ページを更新して再度お試しください。', 'danger');
+                        throw new Error('포인트가 부족함');
+                    }
+                    
+                    const totalAmount = subtotal + (subtotal >= 3000 ? 0 : 500);
+                    if (usedPoints > totalAmount) {
+                        showAlert('payment-alert', '使用ポイントが注文金額を超えています。', 'danger');
+                        throw new Error('포인트 사용량이 주문 금액을 초과함');
+                    }
+                    
+                    console.log('포인트 사용 검증 통과:', usedPoints, '포인트');
+                }
+                
+                console.log('포인트 사용:', usedPoints, '포인트 적립:', earnedPoints);
+                let orderId = null;
+                
+                try {
+                    // Firebase 사용자가 있으면 Firebase에 저장
+                    const user = firebase.auth && firebase.auth().currentUser;
+                    if (user) {
+                        console.log('🚀 Firebase 주문 처리 시작 - 사용자:', user.uid);
+                        console.log('Firebase 사용자로 주문 처리:', user.uid);
+                        console.log('🔍 Firebase 상태 확인:', {
+                            firebase: !!firebase,
+                            firestore: !!firebase.firestore,
+                            auth: !!firebase.auth,
+                            currentUser: !!user
+                        });
+                        
+                        // 주문 정보를 Firestore에 저장 (이메일 기반 문서 ID 사용)
+                        console.log('📝 Firebase 주문 저장 시작...');
+                        try {
+                            const timestamp = Date.now();
+                            const orderDocId = `${user.email.replace('@', '_at_').replace('.', '_dot_')}_${timestamp}`;
+                            
+                            const orderRef = firebase.firestore().collection('orders').doc(orderDocId);
+                            await orderRef.set({
+                                ...orderData,
+                                userId: user.uid,
+                                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                            });
+                            orderId = orderDocId;
+                            console.log('✅ Firebase 주문 저장 완료:', orderId);
+                        } catch (orderError) {
+                            console.error('❌ Firebase 주문 저장 실패:', orderError);
+                            throw orderError;
+                        }
+
+                        // 현재 사용자의 포인트 정보 가져오기
+                        console.log('👤 사용자 포인트 정보 조회 중...');
+                        try {
+                            const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+                            const currentPoints = userDoc.exists ? (userDoc.data().points || 0) : 0;
+                            console.log('📊 현재 포인트:', currentPoints);
+                            
+                            // 포인트 사용 및 적립 계산 (finalUsedPoints 사용)
+                            const finalUsedPoints = Math.max(usedPoints, pointsToUse || 0);
+                            newPoints = currentPoints - finalUsedPoints + earnedPoints;
+                            console.log(`💰 포인트 변화: ${currentPoints} - ${finalUsedPoints} + ${earnedPoints} = ${newPoints}`);
+                            
+                            // Firestore에 포인트 업데이트
+                            console.log('💾 Firebase 포인트 업데이트 시작...');
+                            await firebase.firestore().collection('users').doc(user.uid).update({
+                                points: newPoints,
+                                pointsUpdatedAt: new Date()
+                            });
+                            console.log('✅ Firebase 포인트 업데이트 완료:', newPoints);
+                        } catch (pointError) {
+                            console.error('❌ Firebase 포인트 업데이트 실패:', pointError);
+                            throw pointError;
+                        }
+                        
+                        // 포인트 사용 이력 저장 (사용한 경우)
+                        // usedPoints 재확인 및 강제 설정
+                        const finalUsedPoints = Math.max(usedPoints, pointsToUse || 0);
+                        console.log('🔍 최종 포인트 사용량 확인:', {
+                            usedPoints: usedPoints,
+                            pointsToUse: pointsToUse,
+                            finalUsedPoints: finalUsedPoints,
+                            subtotal: subtotal
+                        });
+                        
+                        if (finalUsedPoints > 0) {
+                            console.log('🔥 포인트 사용 이력 저장 시작:', finalUsedPoints, 'pt');
+                            console.log('📝 저장할 포인트 사용 이력 데이터:', {
+                                userId: user.uid,
+                                orderId: orderId,
+                                points: finalUsedPoints,
+                                type: 'use',
+                                reason: '商品購入に使用',
+                                orderAmount: subtotal || 0
+                            });
+                            try {
+                                const pointHistoryRef = await firebase.firestore().collection('pointHistory').add({
+                                    userId: user.uid,
+                                    orderId: orderId,
+                                    points: finalUsedPoints,
+                                    type: 'use',
+                                    reason: '商品購入に使用',
+                                    timestamp: new Date(),
+                                    orderAmount: subtotal || 0, // subtotal이 undefined인 경우 0으로 설정
+                                    createdAt: new Date()
+                                });
+                                console.log('✅ Firebase 포인트 사용 이력 저장 완료:', finalUsedPoints, 'pt, 문서ID:', pointHistoryRef.id);
+                            } catch (useHistoryError) {
+                                console.error('❌ Firebase 포인트 사용 이력 저장 실패:', useHistoryError);
+                                console.error('❌ 에러 상세 정보:', {
+                                    name: useHistoryError.name,
+                                    message: useHistoryError.message,
+                                    code: useHistoryError.code
+                                });
+                                throw useHistoryError;
+                            }
+                        } else {
+                            console.log('ℹ️ 포인트 사용 없음 - 사용 이력 저장 건너뜀');
+                        }
+                        
+                        // 포인트 적립 이력 저장
+                        if (earnedPoints > 0) {
+                            console.log('🔥 포인트 적립 이력 저장 시작:', earnedPoints, 'pt');
+                            console.log('📝 저장할 포인트 적립 이력 데이터:', {
+                                userId: user.uid,
+                                orderId: orderId,
+                                points: earnedPoints,
+                                type: 'earn',
+                                reason: '商品購入',
+                                orderAmount: subtotal || 0
+                            });
+                            try {
+                                const earnHistoryRef = await firebase.firestore().collection('pointHistory').add({
+                                    userId: user.uid,
+                                    orderId: orderId,
+                                    points: earnedPoints,
+                                    type: 'earn',
+                                    reason: '商品購入',
+                                    timestamp: new Date(),
+                                    orderAmount: subtotal || 0,
+                                    createdAt: new Date()
+                                });
+                                console.log('✅ Firebase 포인트 적립 이력 저장 완료:', earnedPoints, 'pt, 문서ID:', earnHistoryRef.id);
+                            } catch (earnHistoryError) {
+                                console.error('❌ Firebase 포인트 적립 이력 저장 실패:', earnHistoryError);
+                                console.error('❌ 에러 상세 정보:', {
+                                    name: earnHistoryError.name,
+                                    message: earnHistoryError.message,
+                                    code: earnHistoryError.code
+                                });
+                                throw earnHistoryError;
+                            }
+                        } else {
+                            console.log('ℹ️ 포인트 적립 없음 - 적립 이력 저장 건너뜀');
+                        }
+
+                        // Firebase 전용 사용 - localStorage 사용 안함
+                        console.log('✅ Firebase 전용 주문 처리 완료:', {
+                            orderId: orderId,
+                            userId: user.uid,
+                            userEmail: user.email
+                        });
+
+                        // 사용자 프로필 정보 업데이트 (자동 저장)
+                        const profileUpdateData = {
+                            // 기본 프로필 정보 (비어있을 때만 업데이트)
+                            name: shippingInfo.name,
+                            phone: shippingInfo.phone,
+                            
+                            // 주소 정보
+                            address: {
+                                postal: shippingInfo.postal,
+                                prefecture: shippingInfo.prefecture,
+                                city: shippingInfo.city,
+                                address1: shippingInfo.address1,
+                                address2: shippingInfo.address2,
+                                updatedAt: new Date().toISOString()
+                            },
+                            
+                            // 최근 사용 주소 (호환성)
+                            lastUsedAddress: {
+                                ...shippingInfo,
+                                updatedAt: new Date().toISOString()
+                            },
+                            
+                            // 마지막 주문 날짜
+                            lastOrderDate: new Date().toISOString(),
+                            
+                            // 전체 주문 횟수 증가
+                            totalOrders: firebase.firestore.FieldValue.increment(1)
+                        };
+                        
+                        // Firebase 프로필 업데이트
+                        await firebase.firestore().collection('users').doc(user.uid).update(profileUpdateData);
+                        console.log('프로필 정보 자동 업데이트 완료:', profileUpdateData);
+                    } else {
+                        // Firebase 전용 사용 - 로그인이 필요함
+                        throw new Error('로그인이 필요합니다. Firebase 사용자만 주문할 수 있습니다.');
+                    }
+                } catch (firebaseError) {
+                    console.error('❌ Firebase 저장 실패 - 포인트는 Firebase 전용으로만 관리됩니다:', firebaseError);
+                    showAlert('payment-alert', '주문 처리 중 오류가 발생했습니다. 다시 시도해주세요.', 'danger');
+                    throw firebaseError; // 에러를 다시 던져서 처리 중단
+                }
+                
+                // 카드 정보 저장 (로그인된 사용자에게만)
+                if (paymentData && paymentData.paymentMethod === 'credit') {
+                    try {
+                        await saveCardInfo(paymentData);
+                        console.log('카드 정보 저장 완료');
+                    } catch (cardSaveError) {
+                        console.warn('카드 정보 저장 실패:', cardSaveError);
+                        // 주문은 성공했으므로 카드 저장 실패로 인해 전체 실패하지 않음
+                    }
+                }
+                
+                // 카트 비우기
+                clearCart();
+                
+                // 포인트 사용 이력 저장 완료 확인을 위한 대기
+                console.log('✅ 주문 처리 완료 - 포인트 페이지로 이동 준비');
+                console.log('📊 최종 포인트 상태:', {
+                    orderId: orderId,
+                    usedPoints: usedPoints,
+                    earnedPoints: earnedPoints,
+                    newPoints: newPoints !== null ? newPoints : 'Firebase에서 계산됨'
+                });
+                
+                // 포인트 페이지로 이동 (포인트 적립 안내와 함께)
+                setTimeout(() => {
+                    window.location.href = `points.html?newOrder=${orderId}&earnedPoints=${earnedPoints}`;
+                }, 1000); // 1초 대기
+                
+            } catch (error) {
+                console.error('❌ 주문 처리 중 오류 발생:', error);
+                console.error('오류 상세 정보:', {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                });
+                showAlert('payment-alert', '注文処理中にエラーが発生しました。', 'danger');
+                throw error; // 에러를 상위로 전파하여 버튼 상태 복구
+            }
+        }
+
+        // 카트 개수 업데이트
+        function updateCartCount() {
+            const cart = getCart();
+            const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+            const cartCountElement = document.getElementById('cart-count');
+            if (cartCountElement) {
+                cartCountElement.textContent = totalItems;
+            }
+        }
+
+        // 팝업 모달 함수들
+        function showTermsModal() {
+            const termsModal = new bootstrap.Modal(document.getElementById('termsModal'));
+            termsModal.show();
+        }
+
+        function showPrivacyModal() {
+            const privacyModal = new bootstrap.Modal(document.getElementById('privacyModal'));
+            privacyModal.show();
+        }
+
+        // 사용자 프로필 정보 로드
+        async function loadUserProfile() {
+            try {
+                const user = firebase.auth().currentUser;
+                if (!user) {
+                    console.warn('사용자가 로그인되어 있지 않습니다');
+                    return;
+                }
+
+                const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+                if (!userDoc.exists) {
+                    console.log('사용자 프로필이 없습니다');
+                    return;
+                }
+
+                const userData = userDoc.data();
+                
+                // 배송 정보 필드에 프로필 정보 설정
+                if (userData.shippingAddress) {
+                    document.getElementById('shipping-name').value = userData.shippingAddress.name || '';
+                    document.getElementById('shipping-phone').value = userData.shippingAddress.phone || '';
+                    document.getElementById('shipping-postal').value = userData.shippingAddress.postal || '';
+                    document.getElementById('shipping-prefecture').value = userData.shippingAddress.prefecture || '';
+                    document.getElementById('shipping-city').value = userData.shippingAddress.city || '';
+                    document.getElementById('shipping-address1').value = userData.shippingAddress.address || '';
+                    document.getElementById('shipping-address2').value = userData.shippingAddress.addressDetail || '';
+                }
+
+                console.log('프로필 정보 로드 완료');
+            } catch (error) {
+                console.error('프로필 정보 로드 실패:', error);
+            }
+        }
+
+        // 이 함수는 메인 DOMContentLoaded 내부로 통합됨
+
+        // 배송 정보 유효성 검사
+        function validateShippingInfo(info) {
+            return (
+                info.name.trim() !== '' &&
+                info.postalCode.trim() !== '' &&
+                info.address.trim() !== '' &&
+                info.phone.trim() !== '' &&
+                info.email.trim() !== ''
+            );
+        }
+
+        // 이 DOMContentLoaded는 위의 메인 DOMContentLoaded와 통합됨 (중복 제거)
+
+        // 카드 번호 포맷팅
+        function formatCardNumber(value) {
+            // 숫자만 추출
+            const numbers = value.replace(/\D/g, '');
+            
+            // 4자리씩 그룹화하여 공백 추가
+            const formatted = numbers.replace(/(\d{4})(?=\d)/g, '$1 ');
+            
+            return formatted;
+        }
+
+        // =============
+        // 포인트 관리 함수들
+        // =============
+        
+        // 사용자 포인트 로드 (Firebase) - 이메일 기반 개선 버전
+        async function loadUserPoints() {
+            try {
+                const user = firebase.auth().currentUser;
+                if (!user) {
+                    console.log('Firebase 사용자 없음, 오프라인 포인트 확인');
+                    await loadUserPointsOffline();
+                    return;
+                }
+                
+                currentUser = user;
+                console.log('🔥 Firebase 포인트 정보 로드 시작:', user.email);
+                
+                // 1. UID 기반으로 사용자 문서 확인
+                let userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+                let userData = null;
+                
+                if (userDoc.exists) {
+                    userData = userDoc.data();
+                    console.log('✅ UID 기반 사용자 문서 발견:', userData);
+                } else {
+                    console.log('⚠️ UID 기반 문서 없음, 이메일 기반 검색 시도');
+                    
+                    // 2. 이메일 기반으로 사용자 검색
+                    const emailQuery = await firebase.firestore().collection('users')
+                        .where('email', '==', user.email)
+                        .limit(1)
+                        .get();
+                    
+                    if (!emailQuery.empty) {
+                        const emailDoc = emailQuery.docs[0];
+                        userData = emailDoc.data();
+                        console.log('✅ 이메일 기반 사용자 데이터 발견:', userData);
+                        
+                        // 이메일 기반으로 찾은 데이터를 UID 기반으로 복사
+                        await firebase.firestore().collection('users').doc(user.uid).set({
+                            ...userData,
+                            uid: user.uid,
+                            lastSync: firebase.firestore.Timestamp.now()
+                        });
+                        console.log('✅ UID 기반 문서로 동기화 완료');
+                    }
+                }
+                
+                if (userData) {
+                    currentUserPoints = userData.points || 0;
+                    console.log('🔥 Firebase에서 로드한 포인트:', currentUserPoints, '(이메일:', user.email, ')');
+                    
+                    // 포인트는 Firebase에서만 관리 (로컬스토리지 동기화 안함)
+                    console.log('✅ Firebase 포인트 로드 완료 (로컬스토리지 사용 안함)');
+                    showPointSection();
+                    
+                } else {
+                    console.log('⚠️ 사용자 데이터가 전혀 없습니다. 새 사용자 생성');
+                    currentUserPoints = 0;
+                    
+                    // 새 사용자 데이터 생성
+                    const newUserData = {
+                        email: user.email,
+                        points: 0,
+                        createdAt: firebase.firestore.Timestamp.now(),
+                        uid: user.uid
+                    };
+                    
+                    await firebase.firestore().collection('users').doc(user.uid).set(newUserData);
+                    console.log('✅ 새 사용자 문서 생성 완료');
+                    
+                    showPointSection();
+                }
+            } catch (error) {
+                console.error('❌ Firebase 포인트 정보 로드 실패:', error);
+                console.log('⚠️ Firebase 전용 시스템 - localStorage 폴백 사용 안함');
+                currentUserPoints = 0;
+                showPointSection();
+            }
+        }
+        
+        // 사용자 포인트 로드 (Firebase 전용) - localStorage 사용 안함
+        async function loadUserPointsOffline() {
+            try {
+                console.log('🔍 Firebase 전용 포인트 시스템 - localStorage 사용 안함');
+                console.log('ℹ️ 포인트는 Firebase에서만 로드됩니다');
+                
+                // Firebase에서 이미 로드된 포인트 사용
+                if (window.currentUserPoints && window.currentUserPoints > 0) {
+                    console.log('✅ Firebase 포인트 사용:', window.currentUserPoints);
+                    return window.currentUserPoints;
+                }
+                
+                console.log('⚠️ Firebase 포인트가 로드되지 않았습니다');
+                return 0;
+            } catch (error) {
+                console.error('❌ 포인트 로드 실패:', error);
+                return 0;
+            }
+        }
+        
+        // 포인트 섹션 표시 - 간단하고 확실한 버전
+        function showPointSection() {
+            console.log('🔍 showPointSection 호출됨 - currentUserPoints:', currentUserPoints);
+            
+            const pointSection = document.getElementById('point-use-section');
+            if (!pointSection) {
+                console.error('❌ point-use-section 요소를 찾을 수 없음');
+                return;
+            }
+            
+            // 무조건 포인트 섹션 표시 (간단하게)
+            pointSection.style.display = 'block';
+            console.log('✅ 포인트 섹션 강제 표시');
+            
+            // currentUserPoints가 undefined나 null이면 0으로 설정
+            if (typeof currentUserPoints !== 'number' || isNaN(currentUserPoints)) {
+                currentUserPoints = 0;
+            }
+            
+            // 포인트 표시
+            const availablePointsEl = document.getElementById('available-points');
+            if (availablePointsEl) {
+                availablePointsEl.textContent = currentUserPoints.toLocaleString() + 'pt';
+            }
+            
+            // 포인트 입력 필드 설정
+            const pointsInput = document.getElementById('points-to-use');
+            if (pointsInput) {
+                pointsInput.max = Math.max(0, currentUserPoints);
+                pointsInput.removeEventListener('input', calculatePointDiscount);
+                pointsInput.addEventListener('input', calculatePointDiscount);
+            }
+            
+            // 최대 사용 가능 포인트 표시
+            updateMaxUsablePoints();
+            
+            console.log('✅ 포인트 섹션 설정 완료 - 표시 포인트:', currentUserPoints);
+        }
+        
+        // 최대 사용 가능 포인트 업데이트 - 안전한 버전
+        function updateMaxUsablePoints() {
+            try {
+                const cart = getCart();
+                if (!cart || cart.length === 0) {
+                    const maxPointsDisplay = document.getElementById('max-points-display');
+                    if (maxPointsDisplay) {
+                        maxPointsDisplay.textContent = '0';
+                    }
+                    return;
+                }
+                
+                const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+                const totalWithTax = Math.floor(subtotal / 1.1) + Math.floor(subtotal / 1.1 * 0.1);
+                const shippingFee = subtotal >= 3000 ? 0 : 500;
+                const maxUsable = Math.min(currentUserPoints || 0, totalWithTax + shippingFee);
+                
+                const maxPointsDisplay = document.getElementById('max-points-display');
+                if (maxPointsDisplay) {
+                    maxPointsDisplay.textContent = maxUsable.toLocaleString();
+                }
+                
+                // 입력 필드 최대값 업데이트
+                const pointsInput = document.getElementById('points-to-use');
+                if (pointsInput) {
+                    pointsInput.max = Math.max(0, maxUsable);
+                }
+                
+                console.log('최대 사용 가능 포인트 업데이트:', maxUsable);
+            } catch (error) {
+                console.error('최대 포인트 업데이트 오류:', error);
+            }
+        }
+        
+
+        
+        // 포인트 할인 계산 (향상된 에러 처리)
+        function calculatePointDiscount() {
+            try {
+                const pointsInput = document.getElementById('points-to-use');
+                if (!pointsInput) return;
+                
+                const inputValue = parseInt(pointsInput.value) || 0;
+                
+                // 가용성 검사 - 포인트가 0일 때는 에러 메시지만 표시
+                if (currentUserPoints <= 0 && inputValue > 0) {
+                    pointsToUse = 0;
+                    pointsInput.value = 0;
+                    showPointError('使用可能なポイントがありません（現在: 0pt）');
+                    return;
+                }
+                
+                // 최대 사용 가능 포인트 계산
+                const cart = getCart();
+                if (!cart || cart.length === 0) {
+                    pointsToUse = 0;
+                    pointsInput.value = 0;
+                    return;
+                }
+                
+                const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+                const totalWithTax = Math.floor(subtotal / 1.1) + Math.floor(subtotal / 1.1 * 0.1);
+                const shippingFee = subtotal >= 3000 ? 0 : 500;
+                const maxUsable = Math.min(currentUserPoints, totalWithTax + shippingFee);
+                
+                // 입력값 검증 및 제한
+                if (inputValue > maxUsable) {
+                    pointsToUse = maxUsable;
+                    pointsInput.value = pointsToUse;
+                    
+                    if (inputValue > currentUserPoints) {
+                        showPointError(`保有ポイントは${currentUserPoints.toLocaleString()}ポイントです`);
+                    } else {
+                        showPointError(`最大${maxUsable.toLocaleString()}ポイントまで使用可能です`);
+                    }
+                } else if (inputValue < 0) {
+                    pointsToUse = 0;
+                    pointsInput.value = 0;
+                } else {
+                    pointsToUse = inputValue;
+                    clearPointError();
+                    
+                    // 간단한 피드백
+                    if (pointsToUse > 0) {
+                        showPointSuccess(`${pointsToUse.toLocaleString()}ポイント使用中`);
+                    } else {
+                        clearPointError();
+                    }
+                }
+                
+                // UI 업데이트
+                document.getElementById('point-discount').textContent = `-¥${pointsToUse.toLocaleString()}`;
+                
+                // 주문 요약 업데이트
+                updateOrderSummary();
+                
+                // 사용자에게 하이라이트 효과
+                if (pointsToUse > 0) {
+                    pointsInput.classList.add('border-success');
+                    pointsInput.classList.remove('border-danger');
+                } else {
+                    pointsInput.classList.remove('border-success', 'border-danger');
+                }
+                
+            } catch (error) {
+                console.error('포인트 할인 계산 오류:', error);
+                showPointError('ポイント 計算中にエラーが発生しました');
+            }
+        }
+        
+        // 전체 포인트 사용 - 간단 버전
+        function useMaxPoints() {
+            try {
+                if (currentUserPoints <= 0) {
+                    showPointError('使用可能なポイントがありません（現在: 0pt）');
+                    return;
+                }
+                
+                const cart = getCart();
+                if (!cart || cart.length === 0) {
+                    showPointError('カートが空です');
+                    return;
+                }
+                
+                const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+                const totalWithTax = Math.floor(subtotal / 1.1) + Math.floor(subtotal / 1.1 * 0.1);
+                const shippingFee = subtotal >= 3000 ? 0 : 500;
+                const maxUsable = Math.min(currentUserPoints, totalWithTax + shippingFee);
+                
+                if (maxUsable <= 0) {
+                    showPointError('使用可能なポイントがありません（現在: ' + currentUserPoints + 'pt）');
+                    return;
+                }
+                
+                document.getElementById('points-to-use').value = maxUsable;
+                calculatePointDiscount();
+                
+                showPointSuccess(`${maxUsable.toLocaleString()}ポイント使用`);
+                
+            } catch (error) {
+                console.error('전체 포인트 사용 오류:', error);
+                showPointError('エラーが発生しました');
+            }
+        }
+        
+        // 포인트 에러 메시지 표시
+        function showPointError(message) {
+            const feedbackElement = document.getElementById('point-feedback');
+            if (feedbackElement) {
+                feedbackElement.innerHTML = `<div class="alert alert-warning alert-sm py-2">
+                    <i class="fas fa-exclamation-triangle me-1"></i>${message}
+                </div>`;
+            }
+            
+            // 5초 후 자동 제거
+            setTimeout(clearPointError, 5000);
+        }
+        
+        // 포인트 성공 메시지 표시
+        function showPointSuccess(message) {
+            const feedbackElement = document.getElementById('point-feedback');
+            if (feedbackElement) {
+                feedbackElement.innerHTML = `<div class="alert alert-light border py-2">
+                    <i class="fas fa-check-circle me-1"></i>${message}
+                </div>`;
+            }
+            
+            // 3초 후 자동 제거
+            setTimeout(clearPointError, 3000);
+        }
+        
+        // 포인트 피드백 지우기
+        function clearPointError() {
+            const feedbackElement = document.getElementById('point-feedback');
+            if (feedbackElement) {
+                feedbackElement.innerHTML = '';
+            }
+        }
+        
+        // 포인트 강제 새로고침 함수 (디버깅용)
+        window.refreshPoints = async function() {
+            console.log('🔄 포인트 강제 새로고침 시작');
+            
+            try {
+                // Firebase에서 최신 포인트 로드 시도
+                if (typeof firebase !== 'undefined' && firebase.auth) {
+                    const user = firebase.auth().currentUser;
+                    if (user) {
+                        console.log('Firebase 사용자 확인됨, 최신 포인트 로드');
+                        await loadUserPoints();
+                        return;
+                    }
+                }
+                
+                // Firebase 전용 시스템
+                console.log('⚠️ Firebase 전용 시스템 - localStorage 사용 안함');
+                console.log('포인트 로드 실패 - Firebase 연결을 확인하세요');
+                
+            } catch (error) {
+                console.error('포인트 새로고침 실패:', error);
+            }
+        };
+        
+        // 전역에서 사용할 수 있는 디버깅 함수
+        window.debugPoints = function() {
+            console.log('=== 포인트 디버깅 정보 ===');
+            console.log('currentUserPoints:', currentUserPoints);
+            console.log('Firebase 사용자:', firebase?.auth?.()?.currentUser?.email || '없음');
+            
+            const pointSection = document.getElementById('point-use-section');
+            console.log('포인트 섹션 표시 상태:', pointSection ? pointSection.style.display : 'element not found');
+            
+            const availablePoints = document.getElementById('available-points');
+            console.log('표시된 포인트:', availablePoints ? availablePoints.textContent : 'element not found');
+        };
+        
+        // 현재 로그인된 사용자의 포인트 로드 함수 (Firebase 전용)
+        window.loadCurrentUserPoints = async function() {
+            console.log('🎯 현재 사용자 포인트 로드');
+            
+            try {
+                // Firebase에서 현재 로그인된 사용자 확인
+                if (typeof firebase !== 'undefined' && firebase.auth && firebase.firestore) {
+                    const currentUser = firebase.auth().currentUser;
+                    if (currentUser && currentUser.email) {
+                        const userDoc = await firebase.firestore().collection('users').doc(currentUser.email).get();
+                        
+                        if (userDoc.exists) {
+                            const userData = userDoc.data();
+                            const points = userData.points || 0;
+                            
+                            console.log('✅ Firebase에서 사용자 포인트 발견:', points);
+                            
+                            // 포인트 설정
+                            currentUserPoints = points;
+                            
+                            // UI 업데이트
+                            showPointSection();
+                            
+                            console.log('✅ 사용자 포인트 로드 완료:', points);
+                            return points;
+                        } else {
+                            console.log('❌ Firebase에서 사용자 문서를 찾을 수 없음');
+                        }
+                    } else {
+                        console.log('❌ 로그인된 사용자가 없음');
+                    }
+                } else {
+                    console.log('❌ Firebase 사용 불가');
+                }
+            } catch (error) {
+                console.error('❌ 사용자 포인트 로드 실패:', error);
+            }
+            
+            return 0;
+        };
+        
+        window.loadProfileAddress = loadProfileAddress;
+        window.loadSavedCardInfo = loadSavedCardInfo;
+
+
+        // 인증 상태 확인
+        function checkAuthState() {
+            if (window.auth) {
+                window.auth.onAuthStateChanged(function(user) {
+                    // auth-utils.js의 updateUserMenu 함수 호출
+                    if (typeof window.updateUserMenu === 'function') {
+                        window.updateUserMenu();
+                    }
+                });
+            }
+        }
+
+        // 사용자 메뉴 업데이트는 auth-utils.js의 함수를 사용
+        // 이 함수는 auth-utils.js에서 정의됨
+
+        // 로그아웃 함수
+        function logout() {
+            if (typeof firebase !== 'undefined' && firebase.auth) {
+                firebase.auth().signOut().then(() => {
+                    console.log('Firebase 로그아웃 성공');
+                    window.location.href = 'index.html';
+                }).catch((error) => {
+                    console.error('로그아웃 오류:', error);
+                });
+            }
+        }
+
+        // 장바구니 개수 업데이트
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('aetherCart') || '[]');
+            const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+            
+            const cartCount = document.getElementById('cart-count');
+            if (cartCount) {
+                cartCount.textContent = totalItems;
+            }
+            
+            const cartCountMobile = document.getElementById('cart-count-mobile');
+            if (cartCountMobile) {
+                cartCountMobile.textContent = totalItems;
+            }
+        }
+
+        // 페이지 로드 시 실행
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthState();
+            updateCartCount();
+            // auth-utils.js의 updateUserMenu 함수 호출
+            if (typeof window.updateUserMenu === 'function') {
+                window.updateUserMenu();
+            }
+            
+            // 모바일 QR코드 제어 초기화
+            if (typeof setupMobileQRCodeControl === 'function') {
+                setupMobileQRCodeControl();
+            }
+        });
+
+    </script>
+    
+    <!-- Firebase Configuration - 이미 위에서 로드됨 -->
+    
+
+</body>
+</html> 

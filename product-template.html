@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="product-title">商品詳細 - Aether</title>
+    <meta name="description" id="product-description">
+    
+    <!-- Bootstrap CSS -->
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/css/templatemo.css" rel="stylesheet">
+    <link href="assets/css/custom.css" rel="stylesheet">
+    <link href="assets/css/fontawesome.min.css" rel="stylesheet">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="assets/img/aether-icon.png">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <img src="assets/img/logo.png" alt="Aether" height="40">
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- 모바일 메뉴 레이아웃 -->
+                <div class="d-lg-none w-100">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <ul class="nav navbar-nav d-flex justify-content-between mx-auto" style="max-width: 300px;">
+                            <li class="nav-item">
+                                <a class="nav-link" href="index.html">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="shop.html">Brand</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="info.html">Info</a>
+                            </li>
+                        </ul>
+                        <div class="d-flex align-items-center">
+                            <a href="#" class="nav-link text-decoration-none me-2" onclick="showQRCode()" title="QRコード">
+                                <i class="fas fa-qrcode text-dark" style="font-size: 1.5rem;"></i>
+                            </a>
+                            <a href="cart.html" class="nav-link text-decoration-none me-2">
+                                <i class="fas fa-shopping-cart text-dark"></i>
+                                <span class="badge bg-secondary" id="cart-count-mobile">0</span>
+                            </a>
+                            <div class="dropdown">
+                                <a href="#" class="nav-link dropdown-toggle text-decoration-none" id="userDropdownMobile" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-user text-dark" style="font-size: 1.5rem;"></i>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-center" aria-labelledby="userDropdownMobile">
+                                    <li id="login-menu-mobile" style="display: none;">
+                                        <a class="dropdown-item" href="login.html">
+                                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                                        </a>
+                                    </li>
+                                    <li id="register-menu-mobile" style="display: none;">
+                                        <a class="dropdown-item" href="register.html">
+                                            <i class="fas fa-user-plus me-2"></i>Register
+                                        </a>
+                                    </li>
+                                    <li id="profile-menu-mobile" style="display: none;">
+                                        <a class="dropdown-item" href="profile.html">
+                                            <i class="fas fa-user-circle me-2"></i>Profile
+                                        </a>
+                                    </li>
+                                    <li id="points-menu-mobile" style="display: none;">
+                                        <a class="dropdown-item" href="points.html">
+                                            <i class="fas fa-coins me-2"></i>Points
+                                        </a>
+                                    </li>
+                                    <li id="admin-menu-mobile" style="display: none;">
+                                        <a class="dropdown-item" href="admin-dashboard.html">
+                                            <i class="fas fa-cog me-2"></i>管理ダッシュボード
+                                        </a>
+                                    </li>
+                                    <li id="logout-menu-mobile" style="display: none;">
+                                        <hr class="dropdown-divider">
+                                    </li>
+                                    <li id="logout-menu-item-mobile" style="display: none;">
+                                        <a class="dropdown-item" href="#" onclick="logout()">
+                                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 데스크톱 메뉴 레이아웃 -->
+                <div class="flex-fill d-none d-lg-block">
+                    <ul class="nav navbar-nav d-flex justify-content-between mx-lg-auto" style="max-width: 400px; margin: 0 auto;">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="shop.html">Brand</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="info.html">Info</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="navbar align-self-center d-flex d-none d-lg-flex">
+                    <a href="#" class="nav-link text-decoration-none me-3 d-none d-lg-inline-block" id="qr-code-btn" onclick="showQRCode()" title="QRコード">
+                        <i class="fas fa-qrcode text-dark" style="font-size: 1.8rem;"></i>
+                    </a>
+                    <a href="cart.html" class="nav-link text-decoration-none me-3">
+                        <i class="fas fa-shopping-cart text-dark"></i>
+                        <span class="badge bg-secondary" id="cart-count">0</span>
+                    </a>
+                    <div class="dropdown">
+                        <a href="#" class="nav-link dropdown-toggle text-decoration-none" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user text-dark"></i>
+                            <span id="user-name" class="d-none d-lg-inline ms-1"></span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li id="login-menu" style="display: none;">
+                                <a class="dropdown-item" href="login.html">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                                </a>
+                            </li>
+                            <li id="register-menu" style="display: none;">
+                                <a class="dropdown-item" href="register.html">
+                                    <i class="fas fa-user-plus me-2"></i>Register
+                                </a>
+                            </li>
+                            <li id="profile-menu" style="display: none;">
+                                <a class="dropdown-item" href="profile.html">
+                                    <i class="fas fa-user-circle me-2"></i>Profile
+                                </a>
+                            </li>
+                            <li id="points-menu" style="display: none;">
+                                <a class="dropdown-item" href="points.html">
+                                    <i class="fas fa-coins me-2"></i>Points
+                                </a>
+                            </li>
+                            <li id="admin-menu" style="display: none;">
+                                <a class="dropdown-item" href="admin-dashboard.html">
+                                    <i class="fas fa-cog me-2"></i>管理ダッシュボード
+                                </a>
+                            </li>
+                            <li id="logout-menu" style="display: none;">
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li id="logout-menu-item" style="display: none;">
+                                <a class="dropdown-item" href="#" onclick="logout()">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Product Detail Section -->
+    <section class="product-detail py-5">
+        <div class="container">
+            <div id="product-container">
+                <!-- 商品詳細がここに動的に表示されます -->
+                <div class="text-center py-5">
+                    <i class="fas fa-spinner fa-spin fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">商品情報を読み込み中...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <section class="reviews-section py-5 bg-light" id="reviewsSection" style="display: none;">
+        <div class="container">
+            <h3 class="section-title mb-4">
+                <i class="fas fa-star me-2"></i>レビュー
+            </h3>
+            
+            <div class="row">
+                <div class="col-md-8">
+                    <div id="reviews-container">
+                        <!-- レビューがここに動的に表示されます -->
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">レビューを書く</h5>
+                            <form id="reviewForm">
+                                <div class="mb-3">
+                                    <label class="form-label">評価</label>
+                                    <div class="rating">
+                                        <i class="fas fa-star" data-rating="1"></i>
+                                        <i class="fas fa-star" data-rating="2"></i>
+                                        <i class="fas fa-star" data-rating="3"></i>
+                                        <i class="fas fa-star" data-rating="4"></i>
+                                        <i class="fas fa-star" data-rating="5"></i>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">コメント</label>
+                                    <textarea class="form-control" id="reviewComment" rows="3" placeholder="商品についての感想を書いてください..."></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-dark">レビュー投稿</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- QR Code Modal -->
+    <div class="modal fade" id="qrModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">QRコード</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="qrCodeContainer">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="assets/js/jquery-1.11.0.min.js"></script>
+    <script src="assets/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/firebase-config.js"></script>
+    <script src="assets/js/auth-utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    
+    <!-- 포인트 페이지와 동일한 QR 코드 생성 코드 -->
+    <script>
+        // 포인트 페이지와 동일한 QR 코드 생성 함수
+        function generateQRCode(data, containerId) {
+            try {
+                console.log('QR코드 생성 시작, 데이터:', data, '타입:', typeof data);
+                
+                if (!data) {
+                    console.error('QR코드 데이터가 없습니다');
+                    return;
+                }
+
+                const container = document.getElementById(containerId);
+                if (!container) {
+                    console.error('컨테이너를 찾을 수 없습니다:', containerId);
+                    return;
+                }
+
+                // 기존 내용 제거
+                container.innerHTML = '';
+
+                // QR 코드 생성 (포인트 페이지와 동일한 설정)
+                const qr = qrcode(0, 'M'); // 오류정정 레벨 M으로 통일
+                qr.addData(data);
+                qr.make();
+
+                // QR 코드 이미지 생성 (포인트 페이지와 동일한 방식)
+                const qrImage = qr.createImgTag(5, 10);
+                container.innerHTML = qrImage;
+
+                console.log('QR코드 생성 성공');
+            } catch (error) {
+                console.error('QR코드 생성 오류:', error);
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.innerHTML = '<div class="text-danger">QR코드 생성 실패</div>';
+                }
+            }
+        }
+
+        // 포인트 페이지와 동일한 QR 코드 표시 함수
+        async function showQRCode() {
+            console.log('=== QR코드 표시 함수 시작 (포인트 페이지와 동일) ===');
+            
+            // 로그인 상태 확인
+            const user = getCurrentUser();
+            const loginStatus = JSON.parse(localStorage.getItem('aetherLoginStatus') || '{}');
+            
+            if (!user && !loginStatus.email) {
+                alert('QRコードを表示するにはログインが必要です。');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const userId = user?.uid || loginStatus.uid || loginStatus.email;
+                console.log('사용자 ID:', userId);
+                
+                // FirebaseService가 로드될 때까지 대기
+                let attempts = 0;
+                const maxAttempts = 100; // 10초 대기
+                
+                while (typeof window.FirebaseService === 'undefined' && attempts < maxAttempts) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                    if (attempts % 10 === 0) {
+                        console.log(`FirebaseService 로드 대기 중... (${attempts}/100)`);
+                    }
+                }
+                
+                // Firebase 전용 QR 코드 시스템 사용 (포인트 페이지와 동일)
+                if (typeof window.FirebaseService === 'function') {
+                    console.log('✅ FirebaseService 발견, Firebase 전용 QR 토큰 사용');
+                    
+                    try {
+                        // FirebaseService 클래스의 static 메서드 직접 호출 (포인트 페이지와 동일)
+                        const qrToken = await window.FirebaseService.getOrCreateQRToken(userId);
+                        console.log('✅ Firebase 전용 QR 토큰 사용:', qrToken);
+                        
+                        // 모달에 QR코드 생성 (포인트 페이지와 동일한 방식)
+                        generateQRCode(qrToken, 'qr-code-container');
+                        
+                        // 모달 표시
+                        const modal = new bootstrap.Modal(document.getElementById('qr-code-modal'));
+                        modal.show();
+                    } catch (methodError) {
+                        console.error('FirebaseService.getOrCreateQRToken 호출 실패:', methodError);
+                        throw new Error('FirebaseService 메서드 호출에 실패했습니다. Firebase 연결을 확인해주세요.');
+                    }
+                } else {
+                    throw new Error('FirebaseService를 찾을 수 없습니다. Firebase 연결을 확인해주세요.');
+                }
+            } catch (error) {
+                console.error('QR 코드 표시 실패:', error);
+                alert('QRコードの表示中にエラーが発生しました');
+            }
+        }
+    </script>
+
+    <script>
+        let currentProduct = null;
+        let currentUser = null;
+        let selectedRating = 0;
+
+        // Firebase 초기화 완료 이벤트 리스너 추가
+        window.addEventListener('firebaseInitialized', function() {
+            console.log('Firebase 초기화 완료 이벤트 수신 (product-template)');
+            setTimeout(() => {
+                console.log('Firebase 초기화 완료 후 인증 상태 확인');
+                checkAuthState();
+            }, 500);
+        });
+
+        // ページ読み込み時初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeProductPage();
+        });
+
+        // 商品ページ初期化
+        async function initializeProductPage() {
+            try {
+                console.log('商品ページ初期化開始');
+                
+                // URLから商品IDを取得
+                const urlParams = new URLSearchParams(window.location.search);
+                const productId = urlParams.get('id') || getProductIdFromPath();
+                
+                if (!productId) {
+                    showError('商品IDが見つかりません。');
+                    return;
+                }
+                
+                console.log('商品ID:', productId);
+                
+                // Firebase初期化待機
+                await waitForFirebase();
+                
+                // 商品情報を読み込み
+                await loadProductInfo(productId);
+                
+
+                
+                console.log('商品ページ初期化完了');
+                
+            } catch (error) {
+                console.error('商品ページ初期化エラー:', error);
+                showError('ページの読み込みに失敗しました。');
+            }
+        }
+
+        // URLパスから商品IDを取得
+        function getProductIdFromPath() {
+            const path = window.location.pathname;
+            const match = path.match(/\/products\/([^\/]+)/);
+            return match ? match[1] : null;
+        }
+
+        // Firebase初期化待機
+        async function waitForFirebase() {
+            return new Promise((resolve) => {
+                const checkFirebase = () => {
+                    if (window.firebase && firebase.firestore) {
+                        resolve();
+                    } else {
+                        setTimeout(checkFirebase, 100);
+                    }
+                };
+                checkFirebase();
+            });
+        }
+
+        // 商品情報読み込み
+        async function loadProductInfo(productId) {
+            try {
+                const db = firebase.firestore();
+                const productDoc = await db.collection('products').doc(productId).get();
+                
+                if (!productDoc.exists) {
+                    throw new Error('商品が見つかりません。');
+                }
+                
+                currentProduct = {
+                    id: productDoc.id,
+                    ...productDoc.data()
+                };
+                
+                console.log('商品情報読み込み完了:', currentProduct);
+                
+                // UI更新
+                updateProductUI();
+                
+                // レビュー読み込み
+                await loadReviews(productId);
+                
+            } catch (error) {
+                console.error('商品情報読み込みエラー:', error);
+                throw error;
+            }
+        }
+
+        // 商品UI更新
+        function updateProductUI() {
+            // タイトル更新
+            document.title = `${currentProduct.nameJp} - Aether`;
+            document.getElementById('product-title').textContent = `${currentProduct.nameJp} - Aether`;
+            
+            // メタ説明更新
+            const metaDesc = document.getElementById('product-description');
+            metaDesc.content = currentProduct.description || `${currentProduct.nameJp}の詳細情報`;
+            
+            // 商品詳細表示
+            const container = document.getElementById('product-container');
+            container.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="product-image-container">
+                            <img src="${currentProduct.imageUrl || 'assets/img/placeholder-product.jpg'}" 
+                                 class="img-fluid rounded" alt="${currentProduct.nameJp}"
+                                 onerror="this.src='assets/img/placeholder-product.jpg'">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="product-info">
+                            <nav aria-label="breadcrumb">
+                                <ol class="breadcrumb">
+                                    <li class="breadcrumb-item"><a href="index.html">ホーム</a></li>
+                                    <li class="breadcrumb-item"><a href="shop.html">ショップ</a></li>
+                                    <li class="breadcrumb-item"><a href="brand-template.html?brand=${currentProduct.brandCode}">${currentProduct.brandName || 'ブランド'}</a></li>
+                                    <li class="breadcrumb-item active">${currentProduct.nameJp}</li>
+                                </ol>
+                            </nav>
+                            
+                            <h1 class="product-title mb-3">${currentProduct.nameJp}</h1>
+                            <p class="product-subtitle text-muted mb-3">${currentProduct.nameKr}</p>
+                            
+                            <div class="product-price mb-4">
+                                <span class="price-large">¥${currentProduct.price?.toLocaleString() || '0'}</span>
+                                ${currentProduct.originalPrice ? `<span class="price-original text-muted text-decoration-line-through ms-2">¥${currentProduct.originalPrice.toLocaleString()}</span>` : ''}
+                            </div>
+                            
+                            <div class="product-description mb-4">
+                                <p>${currentProduct.description || '商品の詳細説明がありません。'}</p>
+                            </div>
+                            
+                            <div class="product-options mb-4">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label class="form-label">数量</label>
+                                        <select class="form-select" id="quantitySelect">
+                                            ${Array.from({length: 10}, (_, i) => i + 1).map(num => 
+                                                `<option value="${num}">${num}</option>`
+                                            ).join('')}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">在庫状況</label>
+                                        <div class="stock-status">
+                                            ${currentProduct.stock > 0 ? 
+                                                `<span class="badge bg-success">在庫あり (${currentProduct.stock}個)</span>` : 
+                                                `<span class="badge bg-danger">在庫切れ</span>`
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="product-actions">
+                                <button class="btn btn-dark btn-lg me-2" onclick="addToCart()" ${currentProduct.stock <= 0 ? 'disabled' : ''}>
+                                    <i class="fas fa-cart-plus me-2"></i>カートに追加
+                                </button>
+                                <button class="btn btn-outline-dark btn-lg" onclick="buyNow()" ${currentProduct.stock <= 0 ? 'disabled' : ''}>
+                                    <i class="fas fa-shopping-bag me-2"></i>今すぐ購入
+                                </button>
+                            </div>
+                            
+                            <div class="product-meta mt-4">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <small class="text-muted">
+                                            <i class="fas fa-tag me-1"></i>カテゴリ: ${currentProduct.category || '未分類'}
+                                        </small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar me-1"></i>登録日: ${currentProduct.createdAt ? new Date(currentProduct.createdAt.toDate()).toLocaleDateString('ja-JP') : '不明'}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // レビュー読み込み
+        async function loadReviews(productId) {
+            try {
+                const db = firebase.firestore();
+                const reviewsQuery = await db.collection('reviews')
+                    .where('productId', '==', productId)
+                    .orderBy('createdAt', 'desc')
+                    .limit(10)
+                    .get();
+                
+                const reviews = reviewsQuery.docs.map(doc => ({
+                    id: doc.id,
+                    ...doc.data()
+                }));
+                
+                console.log('レビュー読み込み完了:', reviews.length, '件');
+                
+                // レビューセクション表示
+                document.getElementById('reviewsSection').style.display = 'block';
+                
+                // レビュー表示
+                displayReviews(reviews);
+                
+            } catch (error) {
+                console.error('レビュー読み込みエラー:', error);
+            }
+        }
+
+        // レビュー表示
+        function displayReviews(reviews) {
+            const container = document.getElementById('reviews-container');
+            
+            if (reviews.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-comment-slash fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">まだレビューがありません。</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = reviews.map(review => `
+                <div class="review-item card mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <div class="rating-display">
+                                    ${Array.from({length: 5}, (_, i) => 
+                                        `<i class="fas fa-star ${i < review.rating ? 'text-warning' : 'text-muted'}"></i>`
+                                    ).join('')}
+                                </div>
+                                <small class="text-muted">${review.userEmail || '匿名ユーザー'}</small>
+                            </div>
+                            <small class="text-muted">${review.createdAt ? new Date(review.createdAt.toDate()).toLocaleDateString('ja-JP') : ''}</small>
+                        </div>
+                        <p class="review-comment mb-0">${review.comment}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 評価選択
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('fa-star') && e.target.closest('.rating')) {
+                const stars = e.target.closest('.rating').querySelectorAll('.fa-star');
+                const rating = parseInt(e.target.dataset.rating);
+                
+                stars.forEach((star, index) => {
+                    if (index < rating) {
+                        star.classList.add('text-warning');
+                    } else {
+                        star.classList.remove('text-warning');
+                    }
+                });
+                
+                selectedRating = rating;
+            }
+        });
+
+        // レビュー投稿
+        document.getElementById('reviewForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!currentUser) {
+                alert('ログインが必要です。');
+                return;
+            }
+            
+            if (selectedRating === 0) {
+                alert('評価を選択してください。');
+                return;
+            }
+            
+            const comment = document.getElementById('reviewComment').value.trim();
+            if (!comment) {
+                alert('コメントを入力してください。');
+                return;
+            }
+            
+            try {
+                const db = firebase.firestore();
+                await db.collection('reviews').add({
+                    productId: currentProduct.id,
+                    userId: currentUser.uid,
+                    userEmail: currentUser.email,
+                    rating: selectedRating,
+                    comment: comment,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                alert('レビューが投稿されました。');
+                document.getElementById('reviewForm').reset();
+                selectedRating = 0;
+                
+                // レビュー再読み込み
+                await loadReviews(currentProduct.id);
+                
+            } catch (error) {
+                console.error('レビュー投稿エラー:', error);
+                alert('レビューの投稿に失敗しました。');
+            }
+        });
+
+        // カート機能
+        function addToCart() {
+            if (!currentUser) {
+                alert('ログインが必要です。');
+                return;
+            }
+            
+            const quantity = parseInt(document.getElementById('quantitySelect').value);
+            
+            // カートに商品追加ロジック
+            console.log('カートに追加:', currentProduct.id, '数量:', quantity);
+            alert('カートに追加されました。');
+        }
+
+        function buyNow() {
+            if (!currentUser) {
+                alert('ログインが必要です。');
+                return;
+            }
+            
+            const quantity = parseInt(document.getElementById('quantitySelect').value);
+            
+            // 即座購入ロジック
+            console.log('即座購入:', currentProduct.id, '数量:', quantity);
+            window.location.href = `checkout.html?product=${currentProduct.id}&quantity=${quantity}`;
+        }
+
+        // 認証状態確認 (auth-utils.js 사용)
+        function checkAuthState() {
+            // auth-utils.js의 updateUserMenu 함수 호출
+            if (typeof window.updateUserMenu === 'function') {
+                window.updateUserMenu();
+            }
+        }
+
+        // QRコード表示
+        function showQRCode() {
+            const modal = new bootstrap.Modal(document.getElementById('qrModal'));
+            const container = document.getElementById('qrCodeContainer');
+            
+            // QRコード生成
+            const qr = qrcode(0, 'M');
+            qr.addData(window.location.href);
+            qr.make();
+            
+            container.innerHTML = qr.createImgTag(5);
+            modal.show();
+        }
+
+        // エラー表示
+        function showError(message) {
+            const container = document.getElementById('product-container');
+            container.innerHTML = `
+                <div class="text-center py-5">
+                    <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                    <p class="text-danger">${message}</p>
+                    <a href="shop.html" class="btn btn-dark">ショップに戻る</a>
+                </div>
+            `;
+        }
+
+        // カート表示
+        function viewCart() {
+            // カートページに移動
+            window.location.href = 'cart.html';
+        }
+    </script>
+
+    <style>
+        /* 네비게이션바 텍스트 thin 서체 통일 */
+        .navbar-nav .nav-link {
+            font-family: "Montserrat", sans-serif !important;
+            font-weight: 300 !important;
+            font-size: 1rem !important;
+        }
+        
+        .navbar-brand {
+            font-family: "Montserrat", sans-serif !important;
+            font-weight: 300 !important;
+        }
+        
+        #user-name {
+            font-family: "Montserrat", sans-serif !important;
+            font-weight: 300 !important;
+        }
+        
+        .product-image-container img {
+            max-height: 500px;
+            object-fit: contain;
+        }
+        
+        .price-large {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .price-original {
+            font-size: 1.2rem;
+        }
+        
+        .rating .fa-star {
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+        
+        .rating .fa-star:hover {
+            color: #ffc107;
+        }
+        
+        .rating-display .fa-star {
+            font-size: 1rem;
+        }
+        
+        .review-item {
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</body>
+</html>

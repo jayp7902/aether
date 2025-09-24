@@ -1,0 +1,3243 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <title>プロフィール - Aether</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Language" content="ja">
+    <meta name="language" content="Japanese">
+    <link rel="icon" type="image/png" href="assets/img/aether-icon.png?t=1750992166">
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/templatemo.css">
+    <link rel="stylesheet" href="assets/css/custom.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100;200;300;400;500;600;700;800;900&display=swap">
+    <link rel="stylesheet" href="assets/css/fontawesome.min.css">
+    
+    <!-- QR Code Generator -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <style>
+        body {
+            font-family: "Montserrat", sans-serif;
+            background-color: #f8f9fa;
+        }
+        .japanese-text {
+            font-family: "Noto Sans JP", sans-serif;
+            font-weight: 400;
+            line-height: 1.6;
+        }
+        .japanese-heading {
+            font-family: "Noto Sans JP", sans-serif;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+        
+        /* 일본어 날짜 입력 필드 스타일 */
+        input[type="date"][lang="ja"] {
+            font-family: "Noto Sans JP", sans-serif;
+            direction: ltr;
+        }
+        
+        /* 빈 날짜 필드에 일본어 플레이스홀더 표시 */
+        input[type="date"][lang="ja"]:invalid::-webkit-datetime-edit {
+            color: transparent;
+        }
+        
+        input[type="date"][lang="ja"]:invalid::before {
+            content: attr(data-placeholder);
+            color: #6c757d;
+            font-family: "Noto Sans JP", sans-serif;
+        }
+        
+        /* Firefox 지원 */
+        input[type="date"][lang="ja"]::-moz-focus-inner {
+            border: 0;
+        }
+        
+        /* 생년월일 입력 필드 스타일 */
+        #profile-birthdate, #edit-birthdate {
+            font-family: "Noto Sans JP", sans-serif;
+        }
+        
+        #profile-birthdate::placeholder, #edit-birthdate::placeholder {
+            color: #6c757d;
+            font-size: 14px;
+        }
+        
+        /* 프로필 사진 업로드 스타일 */
+        .profile-avatar {
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .profile-avatar:hover {
+            transform: scale(1.05);
+        }
+        
+        .profile-avatar.drag-over {
+            border: 3px dashed #007bff;
+            background-color: rgba(0, 123, 255, 0.1);
+        }
+        
+        .upload-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        .profile-avatar:hover .upload-overlay {
+            opacity: 1;
+        }
+        
+        .photo-upload-options {
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .upload-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 0 0 50px 50px;
+            overflow: hidden;
+        }
+        
+        .upload-progress-bar {
+            height: 100%;
+            background: #28a745;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        .profile-container {
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+        .profile-card {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+            border-radius: 10px;
+        }
+        .profile-header {
+            background-color: #000000;
+            color: white;
+            border-radius: 10px 10px 0 0;
+            padding: 2rem;
+            text-align: center;
+        }
+        .profile-body {
+            padding: 2rem;
+        }
+        .form-control:focus {
+            border-color: #6c757d;
+            box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.25);
+        }
+        .btn-profile {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+        .btn-profile:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+        }
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: #6c757d;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .profile-avatar:hover {
+            background-color: #5a6268;
+            transform: scale(1.05);
+        }
+        
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+        
+        .profile-avatar .upload-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            border-radius: 50%;
+        }
+        
+        .profile-avatar:hover .upload-overlay {
+            opacity: 1;
+        }
+        
+        .profile-avatar .upload-overlay i {
+            color: white;
+            font-size: 1.2rem;
+        }
+        
+        .profile-avatar input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .profile-stats {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-item {
+            text-align: center;
+            padding: 0.5rem;
+        }
+        .tab-content {
+                      margin-top: 1rem;
+      }
+      /* User dropdown hover fix */
+      .dropdown-toggle:hover,
+      .dropdown-toggle:focus,
+      #user-name:hover {
+          color: #343a40 !important;
+          text-decoration: none !important;
+      }
+      .nav-link:hover {
+          color: #343a40 !important;
+      }
+      /* Date input Japanese placeholder */
+      input[type="date"]:lang(ja)::-webkit-datetime-edit-text {
+          color: #6c757d;
+      }
+      input[type="date"]:lang(ja)::-webkit-datetime-edit-month-field,
+      input[type="date"]:lang(ja)::-webkit-datetime-edit-day-field,
+      input[type="date"]:lang(ja)::-webkit-datetime-edit-year-field {
+          color: #6c757d;
+      }
+      
+      /* 네비게이션바 텍스트 thin 서체 통일 */
+      .navbar-nav .nav-link {
+          font-family: "Montserrat", sans-serif !important;
+          font-weight: 300 !important;
+          font-size: 1rem !important;
+      }
+      
+      .navbar-brand {
+          font-family: "Montserrat", sans-serif !important;
+          font-weight: 300 !important;
+      }
+      
+      #user-name {
+          font-family: "Montserrat", sans-serif !important;
+          font-weight: 300 !important;
+      }
+      input[type="date"]:lang(ja)::-webkit-input-placeholder {
+          color: #6c757d;
+      }
+      input[type="date"]:lang(ja)::placeholder {
+          color: #6c757d;
+      }
+  </style>
+</head>
+
+<body>
+    <!-- Start Top Nav -->
+    <nav class="navbar navbar-expand-lg navbar-light" id="templatemo_nav_top" style="min-height: 20px; background-color: #000000 !important;">
+        <div class="container text-light">
+            <div class="w-100 d-flex justify-content-between">
+                <div>
+                    <!-- 빈 공간으로 블랙 바 유지 -->
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- Close Top Nav -->
+
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg navbar-light shadow">
+        <div class="container d-flex justify-content-between align-items-center">
+            <!-- QR 코드 버튼 제거됨 -->
+
+            <a class="navbar-brand text-success logo align-self-center" href="index.html">
+                <img src="assets/img/logo.png" alt="Logo" class="img-fluid" style="max-height: 50px;">
+            </a>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#templatemo_main_nav" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="align-self-center collapse navbar-collapse flex-fill d-lg-flex justify-content-lg-between" id="templatemo_main_nav">
+                <!-- 모바일 메뉴 레이아웃 -->
+                <div class="d-lg-none w-100">
+                    <!-- 영문 메뉴 - 가로 정렬 -->
+                    <div class="d-flex justify-content-center mb-4">
+                        <ul class="nav navbar-nav d-flex flex-row gap-4">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="shop.html">Brand</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="info.html">Info</a>
+                        </li>
+                    </ul>
+                </div>
+                    
+                    <!-- 아이콘들 - 가로 정렬, 좌우 여백 추가 -->
+                    <div class="d-flex justify-content-center align-items-center gap-4 px-4">
+                        <a href="cart.html" class="nav-link text-decoration-none">
+                            <i class="fas fa-shopping-cart text-dark" style="font-size: 1.5rem;"></i>
+                            <span class="badge bg-secondary ms-1" id="cart-count-mobile">0</span>
+                        </a>
+                        <div class="dropdown">
+                            <a href="#" class="nav-link dropdown-toggle text-decoration-none" id="userDropdownMobile" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user text-dark" style="font-size: 1.5rem;"></i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-center" aria-labelledby="userDropdownMobile">
+                                <li id="login-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="login.html">
+                                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                                    </a>
+                                </li>
+                                <li id="register-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="register.html">
+                                        <i class="fas fa-user-plus me-2"></i>Register
+                                    </a>
+                                </li>
+                                <li id="profile-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="profile.html">
+                                        <i class="fas fa-user-circle me-2"></i>Profile
+                                    </a>
+                                </li>
+                                <li id="points-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="points.html">
+                                        <i class="fas fa-coins me-2"></i>Points
+                                    </a>
+                                </li>
+                                <li id="admin-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="admin-dashboard.html">
+                                        <i class="fas fa-cog me-2"></i>管理ダッシュボード
+                                    </a>
+                                </li>
+                                <li id="logout-menu-mobile" style="display: none;">
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li id="logout-menu-item-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="#" onclick="logout()">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                    </a>
+                                </li>
+                            </ul>
+                            </div>
+                        </div>
+                    </div>
+                
+                <!-- 데스크톱 메뉴 레이아웃 -->
+                <div class="flex-fill d-none d-lg-block">
+                    <ul class="nav navbar-nav d-flex justify-content-between mx-lg-auto" style="max-width: 400px; margin: 0 auto;">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="shop.html">Brand</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="info.html">Info</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="navbar align-self-center d-flex d-none d-lg-flex">
+                    <a href="cart.html" class="nav-link text-decoration-none me-3">
+                        <i class="fas fa-shopping-cart text-dark"></i>
+                        <span class="badge bg-secondary" id="cart-count">0</span>
+                    </a>
+                    <div class="dropdown">
+                        <a href="#" class="nav-link dropdown-toggle text-decoration-none" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user text-dark"></i>
+                            <span id="user-name" class="d-none d-lg-inline ms-1"></span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li id="login-menu" style="display: none;">
+                                <a class="dropdown-item" href="login.html">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                                </a>
+                            </li>
+                            <li id="register-menu" style="display: none;">
+                                <a class="dropdown-item" href="register.html">
+                                    <i class="fas fa-user-plus me-2"></i>Register
+                                </a>
+                            </li>
+                            <li id="profile-menu" style="display: none;">
+                                <a class="dropdown-item" href="profile.html">
+                                    <i class="fas fa-user-circle me-2"></i>Profile
+                                </a>
+                            </li>
+                            <li id="points-menu" style="display: none;">
+                                <a class="dropdown-item" href="points.html">
+                                    <i class="fas fa-coins me-2"></i>Points
+                                </a>
+                            </li>
+                            <li id="admin-menu" style="display: none;">
+                                <a class="dropdown-item" href="admin-dashboard.html">
+                                    <i class="fas fa-cog me-2"></i>管理ダッシュボード
+                                </a>
+                            </li>
+                            <li id="logout-menu" style="display: none;">
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li id="logout-menu-item" style="display: none;">
+                                <a class="dropdown-item" href="#" onclick="logout()">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- Close Header -->
+
+    <!-- QR Code Modal 제거됨 -->
+
+    <!-- Profile Container -->
+    <div class="profile-container">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <!-- Profile Card -->
+                    <div class="card profile-card">
+                        <div class="profile-header">
+                            <div class="profile-avatar" id="profile-avatar-container" onclick="openPhotoUpload()">
+                                <img id="profile-photo" src="" alt="プロフィール写真" style="display: none;">
+                                <i class="fas fa-user fa-2x text-white" id="profile-photo-placeholder"></i>
+                                <div class="upload-overlay">
+                                    <i class="fas fa-camera"></i>
+                                </div>
+                                <input type="file" id="profile-photo-input" accept="image/*" style="display: none;" onchange="handleProfilePhotoUpload(event)">
+                            </div>
+                            <div class="photo-upload-options mt-2" id="photo-upload-options" style="display: none;">
+                                <button class="btn btn-sm btn-outline-light me-2" onclick="selectPhotoFromGallery()">
+                                    <i class="fas fa-images me-1"></i>ギャラリー
+                                </button>
+                                <button class="btn btn-sm btn-outline-light" onclick="takePhotoWithCamera()">
+                                    <i class="fas fa-camera me-1"></i>カメラ
+                                </button>
+                            </div>
+                            <h4 class="japanese-heading mb-0" id="profile-display-name">-</h4>
+                            <p class="japanese-text mb-0" id="profile-display-email">-</p>
+                        </div>
+                        <div class="profile-body">
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-profile btn-dark japanese-text" onclick="showEditProfile()">
+                                    <i class="fas fa-edit me-2"></i>プロフィール編集
+                                </button>
+                                <button class="btn btn-outline-secondary japanese-text" onclick="showChangePassword()">
+                                    <i class="fas fa-key me-2"></i>パスワード変更
+                                </button>
+                                <button class="btn btn-outline-secondary japanese-text" onclick="showDeleteAccount()">
+                                    <i class="fas fa-user-times me-2"></i>アカウント削除
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-8">
+                    <!-- Profile Content -->
+                    <div class="card profile-card">
+                        <div class="card-body">
+                            <!-- Tab Navigation -->
+                            <ul class="nav nav-tabs" id="profileTabs" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active japanese-text" id="info-tab" data-bs-toggle="tab" data-bs-target="#info" type="button" role="tab">
+                                        <i class="fas fa-user me-2"></i>基本情報
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link japanese-text" id="address-tab" data-bs-toggle="tab" data-bs-target="#address" type="button" role="tab">
+                                        <i class="fas fa-map-marker-alt me-2"></i>配送先住所
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link japanese-text" id="orders-tab" data-bs-toggle="tab" data-bs-target="#orders" type="button" role="tab">
+                                        <i class="fas fa-shopping-bag me-2"></i>注文履歴
+                                    </button>
+                                </li>
+                            </ul>
+
+                            <!-- Tab Content -->
+                            <div class="tab-content" id="profileTabContent">
+                                <!-- Basic Info Tab -->
+                                <div class="tab-pane fade show active" id="info" role="tabpanel">
+                                    <div class="alert alert-info japanese-text d-none" id="info-alert"></div>
+                                    <form id="profile-form">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="profile-name" class="form-label japanese-text">お名前</label>
+                                                <input type="text" class="form-control" id="profile-name" required>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="profile-email" class="form-label japanese-text">メールアドレス</label>
+                                                <input type="email" class="form-control" id="profile-email" required>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="profile-phone" class="form-label japanese-text">電話番号</label>
+                                                <input type="tel" class="form-control" id="profile-phone">
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="profile-birthdate" class="form-label japanese-text">生年月日</label>
+                                                <input type="text" class="form-control" id="profile-birthdate" placeholder="年/月/日 (例: 1990/01/15)" maxlength="10">
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="profile-gender" class="form-label japanese-text">性別</label>
+                                            <select class="form-control" id="profile-gender">
+                                                <option value="">選択してください</option>
+                                                <option value="male">男性</option>
+                                                <option value="female">女性</option>
+                                                <option value="other">その他</option>
+                                                <option value="prefer-not-to-say">回答しない</option>
+                                            </select>
+                                        </div>
+                                        <button type="submit" class="btn btn-profile btn-dark japanese-text">
+                                            <i class="fas fa-save me-2"></i>基本情報を保存
+                                        </button>
+                                    </form>
+                                </div>
+
+                                <!-- Address Tab -->
+                                <div class="tab-pane fade" id="address" role="tabpanel">
+                                    <div class="alert alert-info japanese-text d-none" id="address-alert"></div>
+                                    <form id="address-form">
+                                        <div class="row">
+                                            <div class="col-md-4 mb-3">
+                                                <label for="postal-code" class="form-label japanese-text">郵便番号</label>
+                                                <div class="input-group">
+                                                    <input type="text" class="form-control" id="postal-code" pattern="[0-9]{3}-[0-9]{4}" maxlength="8" placeholder="123-4567">
+                                                    <button class="btn btn-outline-secondary" type="button" id="search-address-btn" onclick="searchAddress()">
+                                                        <i class="fas fa-search"></i>
+                                                    </button>
+                                                </div>
+                                                <small class="form-text text-muted japanese-text">例: 123-4567</small>
+                                            </div>
+                                            <div class="col-md-8 mb-3">
+                                                <label for="prefecture" class="form-label japanese-text">都道府県</label>
+                                                <input type="text" class="form-control" id="prefecture">
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="city" class="form-label japanese-text">市区町村</label>
+                                            <input type="text" class="form-control" id="city">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="address1" class="form-label japanese-text">住所1（町名・番地）</label>
+                                            <input type="text" class="form-control" id="address1">
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="address2" class="form-label japanese-text">住所2（建物名・部屋番号）</label>
+                                            <input type="text" class="form-control" id="address2">
+                                        </div>
+                                        <button type="submit" class="btn btn-profile btn-dark japanese-text">
+                                            <i class="fas fa-save me-2"></i>住所を保存
+                                        </button>
+                                    </form>
+                                </div>
+
+                                <!-- Orders Tab -->
+                                <div class="tab-pane fade" id="orders" role="tabpanel" aria-labelledby="orders-tab">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5 class="card-title japanese-text mb-4">注文履歴</h5>
+                                            <div id="orders-container">
+                                                <div class="text-center py-4">
+                                                    <i class="fas fa-spinner fa-spin fa-2x text-muted mb-3"></i>
+                                                    <p class="japanese-text text-muted">注文履歴を読み込み中...</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+    <!-- Profile Edit Modal -->
+    <div class="modal fade" id="profileEditModal" tabindex="-1" aria-labelledby="profileEditModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title japanese-heading" id="profileEditModalLabel">
+                        <i class="fas fa-edit me-2"></i>プロフィール編集
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert d-none" id="profile-edit-alert"></div>
+                    <form id="profile-edit-form">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-name" class="form-label japanese-text">お名前</label>
+                                <input type="text" class="form-control" id="edit-name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-email" class="form-label japanese-text">メールアドレス</label>
+                                <input type="email" class="form-control" id="edit-email" required readonly>
+                                <div class="form-text japanese-text">メールアドレスは変更できません</div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-phone" class="form-label japanese-text">電話番号</label>
+                                <input type="tel" class="form-control" id="edit-phone">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit-birthdate" class="form-label japanese-text">生年月日</label>
+                                <input type="text" class="form-control" id="edit-birthdate" placeholder="年/月/日 (例: 1990/01/15)" maxlength="10">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-gender" class="form-label japanese-text">性別</label>
+                            <select class="form-control" id="edit-gender">
+                                <option value="">選択してください</option>
+                                <option value="male">男性</option>
+                                <option value="female">女性</option>
+                                <option value="other">その他</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary japanese-text" data-bs-dismiss="modal">キャンセル</button>
+                    <button type="button" class="btn btn-profile btn-dark japanese-text" onclick="saveProfileEdit()">
+                        <i class="fas fa-save me-2"></i>保存
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Change Modal -->
+    <div class="modal fade" id="passwordModal" tabindex="-1" aria-labelledby="passwordModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title japanese-heading" id="passwordModalLabel">パスワード変更</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info japanese-text d-none" id="password-alert"></div>
+                    <form id="password-form">
+                        <div class="mb-3">
+                            <label for="current-password" class="form-label japanese-text">現在のパスワード</label>
+                            <input type="password" class="form-control" id="current-password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="new-password" class="form-label japanese-text">新しいパスワード</label>
+                            <input type="password" class="form-control" id="new-password" required minlength="8">
+                            <div class="form-text japanese-text">8文字以上で入力してください</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirm-new-password" class="form-label japanese-text">新しいパスワード（確認）</label>
+                            <input type="password" class="form-control" id="confirm-new-password" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary japanese-text" data-bs-dismiss="modal">キャンセル</button>
+                    <button type="button" class="btn btn-profile btn-dark japanese-text" onclick="changePassword()">
+                        <i class="fas fa-key me-2"></i>パスワード変更
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Delete Modal -->
+    <div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title japanese-heading" id="deleteAccountModalLabel">
+                        <i class="fas fa-exclamation-triangle me-2"></i>アカウント削除
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-secondary japanese-text" role="alert">
+                        <strong>⚠️ 重要な警告</strong><br>
+                        アカウントを削除すると、以下のデータがすべて失われます：
+                        <ul class="mt-2 mb-0">
+                            <li>プロフィール情報</li>
+                            <li>注文履歴</li>
+                            <li>配送先住所</li>
+                        </ul>
+                        <strong>この操作は取り消すことができません。</strong>
+                    </div>
+                    
+                    <div class="alert alert-light japanese-text d-none" id="delete-alert"></div>
+                    
+                    <form id="delete-account-form">
+                        <div class="mb-3">
+                            <label for="delete-password" class="form-label japanese-text">
+                                <strong>パスワードを入力してアカウント削除を確認してください</strong>
+                            </label>
+                            <input type="password" class="form-control" id="delete-password" placeholder="現在のパスワード" required>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="delete-confirm" required>
+                                <label class="form-check-label japanese-text" for="delete-confirm">
+                                    <strong>上記の警告を理解し、アカウントを削除することに同意します</strong>
+                                </label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary japanese-text" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>キャンセル
+                    </button>
+                    <button type="button" class="btn btn-danger japanese-text" onclick="confirmDeleteAccount()">
+                        <i class="fas fa-trash-alt me-2"></i>アカウントを削除
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript files -->
+    <script src="assets/js/jquery-1.11.0.min.js"></script>
+    <script src="assets/js/jquery-migrate-1.2.1.min.js"></script>
+    <script src="assets/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/templatemo.js"></script>
+    <script src="assets/js/custom.js"></script>
+    
+
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    
+    <!-- Firebase 설정 및 유틸리티 -->
+    <script src="assets/js/firebase-config.js"></script>
+    <script src="assets/js/auth-utils.js"></script>
+
+    <script>
+        let profileUser = null;
+        
+        // 포인트 페이지 전용 변수들
+        let pointsPageUser = null;
+        
+        // 포인트 페이지와 동일한 QR 코드 생성 함수 제거됨
+        /*
+        const generateQRCode = function(data, containerId) {
+            try {
+                console.log('QR코드 생성 시작, 데이터:', data, '타입:', typeof data);
+                console.log('컨테이너 ID:', containerId);
+                
+                if (!data) {
+                    console.error('QR코드 데이터가 없습니다');
+                    return;
+                }
+
+                const container = document.getElementById(containerId);
+                console.log('컨테이너 요소:', container);
+                
+                if (!container) {
+                    console.error('컨테이너를 찾을 수 없습니다:', containerId);
+                    return;
+                }
+
+                // 기존 내용 제거
+                console.log('기존 컨테이너 내용 제거 전:', container.innerHTML);
+                container.innerHTML = '';
+                console.log('기존 컨테이너 내용 제거 후:', container.innerHTML);
+
+                // QR 코드 생성
+                console.log('qrcode 함수 확인:', typeof qrcode);
+                if (typeof qrcode === 'undefined') {
+                    throw new Error('qrcode 라이브러리가 로드되지 않았습니다');
+                }
+                
+                const qr = qrcode(0, 'M');
+                qr.addData(data);
+                qr.make();
+
+                // QR 코드 이미지 생성
+                const qrImage = qr.createImgTag(5, 10);
+                console.log('생성된 QR 코드 HTML:', qrImage);
+                
+                container.innerHTML = qrImage;
+                console.log('컨테이너에 QR 코드 삽입 후:', container.innerHTML);
+
+                console.log('QR코드 생성 성공');
+            } catch (error) {
+                console.error('QR코드 생성 오류:', error);
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.innerHTML = '<div class="text-danger">QR코드 생성 실패</div>';
+                }
+            }
+        }
+        */
+
+        // QR 코드 표시 함수 제거됨
+        /*
+        const profileShowQRCode = async function() {
+            console.log('=== QR코드 표시 함수 시작 ===');
+            
+            if (!pointsPageUser) {
+                console.log('사용자 정보가 없어 QR코드를 생성할 수 없습니다');
+                alert('ログインが必要です。');
+                return;
+            }
+
+            try {
+                // FirebaseService가 로드될 때까지 대기
+                let attempts = 0;
+                const maxAttempts = 100; // 10초 대기
+                
+                while (typeof window.FirebaseService === 'undefined' && attempts < maxAttempts) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                    if (attempts % 10 === 0) {
+                        console.log(`FirebaseService 로드 대기 중... (${attempts}/100)`);
+                    }
+                }
+                
+                // Firebase 전용 QR 코드 시스템 사용
+                if (typeof window.FirebaseService === 'function') {
+                    console.log('✅ FirebaseService 발견, Firebase 전용 QR 토큰 사용');
+                    
+                    try {
+                        // FirebaseService 클래스의 static 메서드 직접 호출
+                        const qrToken = await window.FirebaseService.getOrCreateQRToken(pointsPageUser.uid);
+                        console.log('✅ Firebase 전용 QR 토큰 사용:', qrToken);
+                        
+                        // 모달에 QR코드 생성 전 컨테이너 확인
+                        const container = document.getElementById('qr-code-modal-container');
+                        if (!container) {
+                            console.error('QR 코드 컨테이너를 찾을 수 없습니다: qr-code-modal-container');
+                            throw new Error('QR 코드 컨테이너를 찾을 수 없습니다');
+                        }
+                        console.log('QR 코드 컨테이너 발견:', container);
+                        
+                        // 모달에 QR코드 생성
+                        generateQRCode(qrToken, 'qr-code-modal-container');
+                        
+                        // 모달 표시
+                        const modal = new bootstrap.Modal(document.getElementById('qr-code-modal'));
+                        modal.show();
+                    } catch (methodError) {
+                        console.error('FirebaseService.getOrCreateQRToken 호출 실패:', methodError);
+                        throw new Error('FirebaseService 메서드 호출에 실패했습니다. Firebase 연결을 확인해주세요.');
+                    }
+                } else {
+                    throw new Error('FirebaseService를 찾을 수 없습니다. Firebase 연결을 확인해주세요.');
+                }
+            } catch (error) {
+                console.error('QR 코드 표시 실패:', error);
+                alert('QRコードの表示中にエラーが発生しました');
+            }
+        }
+        */
+
+        // QR 코드 버튼 이벤트 리스너 설정 - 전역 함수 아님
+        // QR 코드 관련 함수들 제거됨
+        /*
+        const setupQRCodeEventListeners = function() {
+            // 모바일 QR 코드 버튼
+            const mobileQRBtn = document.getElementById('qr-code-btn-mobile');
+            if (mobileQRBtn) {
+                mobileQRBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    // 페이지별 profileShowQRCode 함수 직접 호출
+                    profileShowQRCode();
+                });
+                console.log('✅ 모바일 QR 코드 버튼 이벤트 리스너 등록 완료');
+            }
+            
+            // 데스크톱 QR 코드 버튼
+            const desktopQRBtn = document.getElementById('qr-code-btn');
+            if (desktopQRBtn) {
+                desktopQRBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    // 페이지별 profileShowQRCode 함수 직접 호출
+                    profileShowQRCode();
+                });
+                console.log('✅ 데스크톱 QR 코드 버튼 이벤트 리스너 등록 완료');
+            }
+        }
+        */
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                // Firebase 초기화 완료 대기
+                await new Promise((resolve) => {
+                    const checkFirebase = () => {
+                        if (typeof firebase !== 'undefined' && firebase.auth && firebase.firestore) {
+                            resolve();
+                        } else {
+                            setTimeout(checkFirebase, 100);
+                        }
+                    };
+                    checkFirebase();
+                });
+                
+                // Firebase 초기화 완료 후 사용자 메뉴 업데이트
+                console.log('Firebase 초기화 완료, 사용자 메뉴 업데이트 시도');
+                if (typeof window.updateUserMenu === 'function') {
+                    console.log('auth-utils.js updateUserMenu 함수 호출');
+                    window.updateUserMenu();
+                } else {
+                    console.warn('auth-utils.js updateUserMenu 함수를 찾을 수 없습니다');
+                }
+                
+                // 현재 사용자 정보 가져오기
+                const user = firebase.auth().currentUser;
+                
+                if (!user) {
+                    // Firebase Auth 상태 변경 대기
+                    await new Promise((resolve) => {
+                        const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
+                            if (user) {
+                                // 사용자 메뉴 업데이트
+                                if (typeof window.updateUserMenu === 'function') {
+                                    window.updateUserMenu();
+                                }
+                                unsubscribe(); // 이벤트 리스너 제거
+                                resolve(user);
+                            }
+                        });
+                    });
+                }
+                
+                // 다시 현재 사용자 확인
+                const currentUser = firebase.auth().currentUser;
+                
+                if (currentUser) {
+                    // 사용자 문서 가져오기
+                    const userDoc = await firebase.firestore().collection('users').doc(currentUser.uid).get();
+                    
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        console.log('사용자 데이터 로드:', userData);
+
+                        // 기본 정보 필드 설정
+                        if (userData.profile) {
+                            document.getElementById('profile-name').value = userData.profile.name || '';
+                            document.getElementById('profile-email').value = userData.profile.email || currentUser.email;
+                            document.getElementById('profile-phone').value = userData.profile.phone || '';
+                            // 생년월일을 일본어 형식으로 변환
+                            const birthdate = userData.profile.birthdate || '';
+                            if (birthdate) {
+                                const formattedDate = convertToJapaneseDate(birthdate);
+                                document.getElementById('profile-birthdate').value = formattedDate;
+                            } else {
+                                document.getElementById('profile-birthdate').value = '';
+                            }
+                            document.getElementById('profile-gender').value = userData.profile.gender || '';
+                        }
+
+                        // 배송지 정보 필드 설정
+                        if (userData.address) {
+                            document.getElementById('postal-code').value = userData.address.postalCode || '';
+                            document.getElementById('prefecture').value = userData.address.prefecture || '';
+                            document.getElementById('city').value = userData.address.city || '';
+                            document.getElementById('address1').value = userData.address.address1 || '';
+                            document.getElementById('address2').value = userData.address.address2 || '';
+                        }
+
+                    } else {
+                        // 사용자 문서가 없는 경우 생성
+                        await firebase.firestore().collection('users').doc(currentUser.uid).set({
+                            email: currentUser.email,
+                            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+
+                    // 주문 이력 로드
+                    loadOrderHistory(currentUser.uid);
+                    
+                    // 장바구니 카운트 업데이트
+                    if (typeof updateCartCount === 'function') {
+                        updateCartCount();
+                    }
+                    
+                    // 모바일 QR코드 제어 초기화
+                    if (typeof setupMobileQRCodeControl === 'function') {
+                        setupMobileQRCodeControl();
+                    }
+                    
+                    // Firebase 인증 상태 변경 모니터링
+                    firebase.auth().onAuthStateChanged((user) => {
+                        if (typeof window.updateUserMenu === 'function') {
+                            window.updateUserMenu();
+                        }
+                    });
+                } else {
+                    // 로그인되지 않은 상태에서도 사용자 메뉴 업데이트
+                    if (typeof window.updateUserMenu === 'function') {
+                        window.updateUserMenu();
+                    }
+                    
+                    // Firebase 인증 상태 변경 모니터링
+                    firebase.auth().onAuthStateChanged((user) => {
+                        if (typeof window.updateUserMenu === 'function') {
+                            window.updateUserMenu();
+                        }
+                    });
+                    
+                    window.location.href = 'login.html';
+                }
+            } catch (error) {
+                console.error('프로필 초기화 중 오류:', error);
+                // 에러가 발생해도 기본 정보는 표시하도록 함
+                // 에러 메시지는 표시하지 않음 (사용자 경험 개선)
+            }
+        });
+
+        // 기본 정보 저장
+        document.getElementById('profile-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            try {
+                const profileData = {
+                    name: document.getElementById('profile-name').value,
+                    email: document.getElementById('profile-email').value,
+                    phone: document.getElementById('profile-phone').value,
+                    birthdate: convertFromJapaneseDate(document.getElementById('profile-birthdate').value),
+                    gender: document.getElementById('profile-gender').value
+                };
+                
+                console.log('기본정보 저장 시작:', profileData);
+                
+                let saveSuccess = false;
+                
+                // Firebase 사용자인 경우
+                try {
+                    if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser && firebase.firestore) {
+                        const user = firebase.auth().currentUser;
+                        // 기본 사용자 정보 업데이트
+                        await firebase.firestore().collection('users').doc(user.uid).update({
+                            name: profileData.name,
+                            phone: profileData.phone,
+                            profile: {
+                                ...profileData,
+                                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                            },
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        
+                        console.log('Firebase 기본정보 저장 성공');
+                        saveSuccess = true;
+                    }
+                } catch (firebaseError) {
+                    console.error('Firebase 저장 실패:', firebaseError);
+                }
+                
+                // localStorage에도 저장 (폴백 및 동기화)
+                try {
+                    const loginStatus = getLoginStatus();
+                    if (loginStatus && loginStatus.email) {
+                        const users = JSON.parse(localStorage.getItem('aetherUsers') || '[]');
+                        let userIndex = users.findIndex(u => u.email === loginStatus.email);
+                        
+                        if (userIndex === -1) {
+                            // 새 사용자 생성
+                            users.push({
+                                uid: loginStatus.uid || 'local_' + Date.now(),
+                                email: loginStatus.email,
+                                name: profileData.name,
+                                phone: profileData.phone,
+                                profile: profileData,
+                                createdAt: new Date().toISOString(),
+                                updatedAt: new Date().toISOString()
+                            });
+                        } else {
+                            // 기존 사용자 업데이트
+                            users[userIndex].name = profileData.name;
+                            users[userIndex].phone = profileData.phone;
+                            users[userIndex].profile = profileData;
+                            users[userIndex].updatedAt = new Date().toISOString();
+                        }
+                        
+                        // Firebase 전용 - localStorage 사용 제거
+                        console.log('Firebase 기본정보 저장 성공');
+                        saveSuccess = true;
+                    }
+                } catch (localError) {
+                    console.error('localStorage 저장 실패:', localError);
+                }
+                
+                // 결과 메시지 표시
+                const alertDiv = document.getElementById('info-alert');
+                if (saveSuccess) {
+                    alertDiv.className = 'alert alert-success japanese-text';
+                    alertDiv.innerHTML = '<i class="fas fa-check-circle me-2"></i>基本情報が保存されました。';
+                    alertDiv.classList.remove('d-none');
+                    
+                    // 프로필 헤더 업데이트
+                    await loadProfileHeader();
+                    
+                    // 3초 후 알림 숨기기
+                    setTimeout(() => {
+                        alertDiv.classList.add('d-none');
+                    }, 3000);
+                } else {
+                    alertDiv.className = 'alert alert-danger japanese-text';
+                    alertDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>基本情報の保存に失敗しました。';
+                    alertDiv.classList.remove('d-none');
+                }
+                
+            } catch (error) {
+                console.error('기본 정보 저장 중 오류:', error);
+                const alertDiv = document.getElementById('info-alert');
+                alertDiv.className = 'alert alert-danger japanese-text';
+                alertDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>基本情報の保存中にエラーが発生しました。';
+                alertDiv.classList.remove('d-none');
+            }
+        });
+
+        // 주소 저장
+        document.getElementById('address-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const addressData = {
+                postalCode: document.getElementById('postal-code').value,
+                prefecture: document.getElementById('prefecture').value,
+                city: document.getElementById('city').value,
+                address1: document.getElementById('address1').value,
+                address2: document.getElementById('address2').value,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            // 필수 필드 검증
+            if (!addressData.postalCode || !addressData.prefecture || !addressData.city || !addressData.address1) {
+                const alertDiv = document.getElementById('address-alert');
+                alertDiv.className = 'alert alert-danger japanese-text';
+                alertDiv.textContent = '郵便番号、都道府県、市区町村、住所1は必須項目です。';
+                alertDiv.classList.remove('d-none');
+                
+                setTimeout(() => {
+                    alertDiv.classList.add('d-none');
+                }, 3000);
+                
+                return;
+            }
+            
+            try {
+                const user = firebase.auth().currentUser;
+                if (user) {
+                    // 저장 버튼 비활성화
+                    const submitBtn = e.target.querySelector('button[type="submit"]');
+                    const originalBtnHtml = submitBtn.innerHTML;
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>保存中...';
+
+                    // Firestore에 주소 정보 저장
+                    await firebase.firestore().collection('users').doc(user.uid).update({
+                        address: addressData
+                    });
+                    
+                    // 성공 시 알림 메시지 표시하지 않음
+                    const alertDiv = document.getElementById('address-alert');
+                    alertDiv.classList.add('d-none');
+
+                    // 버튼 상태 복구
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnHtml;
+                }
+            } catch (error) {
+                console.error('주소 저장 실패:', error);
+                const alertDiv = document.getElementById('address-alert');
+                alertDiv.className = 'alert alert-danger japanese-text';
+                alertDiv.textContent = '住所の保存に失敗しました。';
+                alertDiv.classList.remove('d-none');
+
+                // 3초 후 에러 메시지 숨기기
+                setTimeout(() => {
+                    alertDiv.classList.add('d-none');
+                }, 3000);
+            }
+        });
+
+        // 주문 이력 로드 함수 (개선됨)
+        async function loadOrderHistory(userId) {
+            const ordersContainer = document.getElementById('orders-container');
+            
+            try {
+                console.log('주문 이력 로드 시작:', userId);
+                console.log('FirebaseService 사용 가능:', typeof FirebaseService !== 'undefined');
+                
+                // 로딩 표시 (스피너만)
+                ordersContainer.innerHTML = `
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-secondary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                `;
+
+                // Firebase에서만 주문 이력 조회 (로컬스토리지 사용 안함)
+                let orders = [];
+                
+                if (typeof FirebaseService !== 'undefined' && FirebaseService.getOrderHistory) {
+                    try {
+                        orders = await FirebaseService.getOrderHistory(userId);
+                        console.log('FirebaseService 주문 이력 조회 결과:', orders.length, '건');
+                    } catch (serviceError) {
+                        console.error('FirebaseService 주문 이력 조회 실패:', serviceError);
+                        // Firebase 실패 시 빈 배열 반환 (로컬스토리지 폴백 제거)
+                        orders = [];
+                        console.log('Firebase 실패 - 주문 이력 없음');
+                    }
+                } else {
+                    console.warn('FirebaseService를 사용할 수 없음 - 주문 이력 없음');
+                    orders = [];
+                }
+                
+                console.log('최종 주문 이력:', orders);
+
+                // 주문을 날짜 순으로 정렬 (최신순)
+                if (orders && orders.length > 0) {
+                    orders.sort((a, b) => {
+                        let dateA, dateB;
+                        
+                        // A 주문의 날짜 처리
+                        if (a.orderDate && a.orderDate.seconds) {
+                            dateA = new Date(a.orderDate.seconds * 1000);
+                        } else if (a.orderDate && a.orderDate.toDate) {
+                            dateA = a.orderDate.toDate();
+                        } else if (a.orderDate) {
+                            dateA = new Date(a.orderDate);
+                        } else if (a.createdAt) {
+                            dateA = new Date(a.createdAt);
+                        } else {
+                            dateA = new Date(0);
+                        }
+                        
+                        // B 주문의 날짜 처리
+                        if (b.orderDate && b.orderDate.seconds) {
+                            dateB = new Date(b.orderDate.seconds * 1000);
+                        } else if (b.orderDate && b.orderDate.toDate) {
+                            dateB = b.orderDate.toDate();
+                        } else if (b.orderDate) {
+                            dateB = new Date(b.orderDate);
+                        } else if (b.createdAt) {
+                            dateB = new Date(b.createdAt);
+                        } else {
+                            dateB = new Date(0);
+                        }
+                        
+                        // 최신순 정렬 (내림차순)
+                        return dateB.getTime() - dateA.getTime();
+                    });
+                    
+                    console.log('주문 이력 최신순 정렬 완료:', orders.length, '건');
+                }
+
+                if (!orders || orders.length === 0) {
+                    // 주문 이력이 없는 경우 (신규 사용자)
+                    console.log('주문 이력이 없음 - 신규 사용자 또는 주문 없음');
+                    ordersContainer.innerHTML = `
+                        <div class="text-center py-4">
+                            <p class="japanese-text">注文履歴がありません</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // 주문이 있는 경우 계속 진행
+
+                // 주문 이력 HTML 생성
+                let ordersHtml = '';
+                orders.forEach(order => {
+                    console.log('주문 데이터:', order);
+
+                    // 날짜 형식 처리 (다양한 형식 지원)
+                    let orderDate;
+                    if (order.orderDate && order.orderDate.seconds) {
+                        // Firestore Timestamp
+                        orderDate = new Date(order.orderDate.seconds * 1000);
+                    } else if (order.orderDate && order.orderDate.toDate) {
+                        // Firestore Timestamp 객체
+                        orderDate = order.orderDate.toDate();
+                    } else if (order.orderDate) {
+                        // 일반 Date 문자열
+                        orderDate = new Date(order.orderDate);
+                    } else if (order.createdAt) {
+                        // createdAt 사용 (폴백)
+                        orderDate = new Date(order.createdAt);
+                    } else {
+                        // 날짜 정보가 없는 경우
+                        orderDate = new Date();
+                    }
+
+                    const formattedDate = orderDate.toLocaleDateString('ja-JP', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    });
+
+                    // 주문 총액 계산 (상품 가격은 이미 소비세 포함)
+                    const totalWithTax = order.items.reduce((total, item) => total + (item.price * item.quantity), 0);
+                    const subtotal = Math.floor(totalWithTax / 1.1); // 세전 가격
+                    const tax = totalWithTax - subtotal; // 소비세
+                    const shippingFee = totalWithTax >= 3000 ? 0 : 500; // 세포함 가격 기준
+                    
+                    // 포인트 정보 (Firebase에서 저장된 데이터 사용)
+                    const usedPoints = order.usedPoints || order.pointDiscount || 0;
+                    const earnedPoints = order.earnedPoints || Math.floor(subtotal * 0.03);
+                    const originalAmount = order.originalAmount || subtotal;
+                    const finalTotal = order.totalAmount || (totalWithTax + shippingFee - usedPoints);
+
+                    ordersHtml += `
+                        <div class="order-item mb-4">
+                            <div class="card">
+                                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                                    <span class="japanese-text">
+                                        <i class="fas fa-shopping-bag me-2"></i>注文番号: ${order.id || order.orderId || 'N/A'}
+                                    </span>
+                                    <span class="japanese-text">${formattedDate}</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="order-items mb-3">
+                                        ${order.items.map(item => `
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <div>
+                                                    <div class="japanese-heading">${item.name}</div>
+                                                    <small class="text-muted japanese-text">${item.brand} × ${item.quantity}</small>
+                                                </div>
+                                                <div class="japanese-text">¥${(item.price * item.quantity).toLocaleString()}</div>
+                                            </div>
+                                        `).join('')}
+                                    </div>
+                                    <div class="order-summary bg-light p-3 rounded">
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="japanese-text">商品合計:</span>
+                                            <span>¥${subtotal.toLocaleString()}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="japanese-text">配送料:</span>
+                                            <span>${shippingFee === 0 ? '無料' : '¥' + shippingFee.toLocaleString()}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="japanese-text">消費税:</span>
+                                            <span>¥${tax.toLocaleString()}</span>
+                                        </div>
+                                        ${usedPoints > 0 ? `
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="text-muted japanese-text"><small>定価:</small></span>
+                                            <span class="text-muted"><small>¥${originalAmount.toLocaleString()}</small></span>
+                                        </div>
+                                        ` : ''}
+                                        <hr>
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <strong class="japanese-text">合計:</strong>
+                                            <strong>¥${finalTotal.toLocaleString()}</strong>
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-light">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="japanese-text">
+                                            <i class="fas fa-map-marker-alt me-2"></i>配送先:
+                                            ${order.shipping?.prefecture || ''} ${order.shipping?.city || ''}
+                                        </span>
+                                        <span class="badge bg-secondary japanese-text">${order.status === 'processing' ? '処理中' : '完了'}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                ordersContainer.innerHTML = ordersHtml;
+
+            } catch (error) {
+                console.error('주문 이력 로드 실패:', error);
+                ordersContainer.innerHTML = `
+                    <div class="alert alert-danger japanese-text" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i>注文履歴の読み込みに失敗しました。
+                        <br>
+                        <small class="text-muted">${error.message}</small>
+                    </div>
+                `;
+            }
+        }
+        
+        // 로컬스토리지 주문 이력 조회 함수 (사용 안함 - Firebase 전용)
+        function getOrderHistoryDirectly(userId) {
+            console.warn('getOrderHistoryDirectly 함수는 더 이상 사용되지 않습니다. Firebase 전용으로 변경되었습니다.');
+            return []; // 항상 빈 배열 반환
+        }
+
+        // 로그인 상태 확인 (Firebase 전용)
+        function getLoginStatus() {
+            try {
+                // Firebase에서 현재 로그인된 사용자 확인
+                if (typeof firebase !== 'undefined' && 
+                    firebase.auth && 
+                    firebase.apps && 
+                    firebase.apps.length > 0 &&
+                    firebase.apps[0].name === '[DEFAULT]') {
+                    
+                    const user = firebase.auth().currentUser;
+                    if (user && user.email) {
+                        return {
+                            email: user.email,
+                            uid: user.uid,
+                            name: user.displayName || user.email.split('@')[0]
+                        };
+                    }
+                }
+                return null;
+            } catch (error) {
+                console.error('Firebase 로그인 상태 확인 중 오류:', error);
+                return null;
+            }
+        }
+
+        // 사용자 데이터 관리 함수 제거됨 - Firebase 전용 시스템
+
+        function getCurrentUser() {
+            const loginStatus = getLoginStatus();
+            if (!loginStatus) return null;
+            
+            // Firebase 전용 - localStorage 사용 제거됨
+            return loginStatus;
+        }
+
+        async function updateCurrentUser(updatedData) {
+            const loginStatus = getLoginStatus();
+            if (!loginStatus) return false;
+
+            try {
+                // Firebase Firestore에 사용자 데이터 업데이트
+                if (typeof firebase !== 'undefined' && firebase.firestore) {
+                    await firebase.firestore().collection('users').doc(loginStatus.email).update({
+                        ...updatedData,
+                        updatedAt: new Date().toISOString()
+                    });
+                    console.log('Firebase 사용자 데이터 업데이트 성공');
+                    return true;
+                }
+            } catch (error) {
+                console.error('Firebase 사용자 데이터 업데이트 실패:', error);
+            }
+            
+            return false;
+        }
+
+        // 로그아웃
+        async function logout() {
+            try {
+                console.log('=== 로그아웃 시작 ===');
+                
+                // Firebase 로그아웃
+                if (typeof firebase !== 'undefined' && firebase.auth) {
+                    await firebase.auth().signOut();
+                    console.log('Firebase 로그아웃 완료');
+                }
+                
+                // Firebase 전용 로그아웃 완료
+                console.log('Firebase 전용 로그아웃 완료');
+                
+                // FirebaseService 로그아웃 호출 (있는 경우)
+                if (typeof FirebaseService !== 'undefined') {
+                    await FirebaseService.logoutUser();
+                    console.log('FirebaseService 로그아웃 완료');
+                }
+                
+                console.log('로그아웃 성공 - 홈페이지로 이동');
+                if (typeof showToast === 'function') {
+                    showToast('ログアウトしました。', 'success', 2000);
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                } else {
+                alert('ログアウトしました。');
+                window.location.href = 'index.html';
+                }
+                
+            } catch (error) {
+                console.error('로그아웃 중 오류:', error);
+                
+                // Firebase 전용 오류 처리 - localStorage 정리 제거됨
+                
+                if (typeof showToast === 'function') {
+                    showToast('ログアウトしました。', 'success', 2000);
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                } else {
+                alert('ログアウトしました。');
+                window.location.href = 'index.html';
+                }
+            }
+        }
+
+        // 알림 표시
+        function showAlert(elementId, message, type = 'success') {
+            const alertElement = document.getElementById(elementId);
+            alertElement.className = 'alert alert-' + type + ' japanese-text';
+            alertElement.textContent = message;
+            alertElement.classList.remove('d-none');
+            
+            setTimeout(() => {
+                alertElement.classList.add('d-none');
+            }, 3000);
+        }
+
+        // 프로필 편집 (현재는 탭 전환만)
+        // 프로필 편집 모달 표시
+        async function showEditProfile() {
+            try {
+                console.log('프로필 편집 모달 열기');
+                
+                // 현재 사용자 정보 로드
+                let userData = null;
+                
+                // Firebase 사용자 확인
+                const user = firebase.auth && firebase.auth().currentUser;
+                if (user) {
+                    try {
+                    const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+                    if (userDoc.exists) {
+                            userData = userDoc.data();
+                        }
+                    } catch (firebaseError) {
+                        console.warn('Firebase 사용자 정보 로드 실패:', firebaseError);
+                    }
+                }
+                
+                // Firebase 전용 - localStorage 폴백 제거
+                
+                // 모달 필드 채우기
+                if (userData) {
+                    document.getElementById('edit-name').value = userData.name || '';
+                    document.getElementById('edit-email').value = userData.email || '';
+                    document.getElementById('edit-phone').value = userData.phone || '';
+                    // 편집 모달의 생년월일을 일본어 형식으로 변환
+                    const editBirthdate = userData.profile?.birthdate || '';
+                    if (editBirthdate) {
+                        const formattedEditDate = convertToJapaneseDate(editBirthdate);
+                        document.getElementById('edit-birthdate').value = formattedEditDate;
+                    } else {
+                        document.getElementById('edit-birthdate').value = '';
+                    }
+                    document.getElementById('edit-gender').value = userData.profile?.gender || '';
+            } else {
+                    // 기본값 설정
+                    document.getElementById('edit-email').value = '';
+                    document.getElementById('edit-name').value = '';
+                }
+                
+                // 모달 표시
+                const modal = new bootstrap.Modal(document.getElementById('profileEditModal'));
+            modal.show();
+                
+            } catch (error) {
+                console.error('프로필 편집 모달 열기 오류:', error);
+                alert('프로필 정보를 불러오는 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 계정 삭제 모달 표시
+        function showDeleteAccount() {
+            const modal = new bootstrap.Modal(document.getElementById('deleteAccountModal'));
+            modal.show();
+        }
+
+        // 계정 삭제 확인 및 실행
+        async function confirmDeleteAccount() {
+            const password = document.getElementById('delete-password').value;
+            const confirmCheckbox = document.getElementById('delete-confirm').checked;
+
+            if (!password) {
+                showDeleteAlert('パスワードを入力してください。', 'danger');
+                return;
+            }
+
+            if (!confirmCheckbox) {
+                showDeleteAlert('削除の確認にチェックを入れてください。', 'danger');
+                return;
+            }
+
+            // 버튼 비활성화
+            const deleteBtn = document.querySelector('#deleteAccountModal .btn-danger');
+            const originalText = deleteBtn.innerHTML;
+            deleteBtn.disabled = true;
+            deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>削除中...';
+
+            try {
+                const loginStatus = getLoginStatus();
+                if (!loginStatus) {
+                    showDeleteAlert('ログイン情報が見つかりません。', 'danger');
+                    return;
+                }
+
+                // 패스워드 검증
+                const isValidPassword = await validatePassword(loginStatus.email, password);
+                if (!isValidPassword) {
+                    showDeleteAlert('パスワードが正しくありません。', 'danger');
+                    return;
+                }
+
+                // 계정 삭제 실행
+                let deleteResult;
+                if (typeof FirebaseService !== 'undefined') {
+                    deleteResult = await FirebaseService.deleteUserAccount(loginStatus.uid || loginStatus.email, loginStatus.email);
+                } else {
+                    // localStorage만 사용하는 경우
+                    deleteResult = await deleteUserAccountOffline(loginStatus.email);
+                }
+
+                if (deleteResult.success) {
+                    showDeleteAlert('アカウントが正常に削除されました。トップページに移動します...', 'success');
+                    
+                    // 완전한 로그아웃 처리
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    
+                    // Firebase Auth 로그아웃
+                    if (typeof firebase !== 'undefined' && firebase.auth) {
+                        try {
+                            await firebase.auth().signOut();
+                            console.log('Firebase Auth 로그아웃 완료');
+                        } catch (signOutError) {
+                            console.warn('Firebase Auth 로그아웃 실패:', signOutError);
+                        }
+                    }
+                    
+                    setTimeout(() => {
+                        window.location.replace('index.html'); // replace로 변경하여 뒤로가기 방지
+                    }, 2000);
+                } else {
+                    showDeleteAlert('アカウント削除に失敗しました: ' + deleteResult.error, 'danger');
+                }
+            } catch (error) {
+                console.error('계정 삭제 중 오류:', error);
+                showDeleteAlert('アカウント削除中にエラーが発生しました。', 'danger');
+            } finally {
+                // 성공한 경우가 아니면 버튼 복원
+                setTimeout(() => {
+                    if (deleteBtn.disabled) {
+                        deleteBtn.disabled = false;
+                        deleteBtn.innerHTML = originalText;
+                    }
+                }, 1000);
+            }
+        }
+
+        // 패스워드 검증 (Firebase + localStorage)
+        async function validatePassword(email, password) {
+            try {
+                // Firebase 사용자인 경우
+                if (typeof FirebaseService !== 'undefined' && FirebaseService.isFirebaseAvailable()) {
+                    const result = await FirebaseService.loginUser(email, password);
+                    return result.success;
+                }
+
+                // localStorage 사용자인 경우
+                const users = getUsers();
+                const user = users.find(u => u.email === email && u.password === password);
+                return !!user;
+            } catch (error) {
+                console.error('패스워드 검증 실패:', error);
+                return false;
+            }
+        }
+
+        // 오프라인 계정 삭제
+        async function deleteUserAccountOffline(email) {
+            try {
+                const users = getUsers();
+                // Firebase 전용 - localStorage 사용 제거
+                
+                console.log('오프라인 계정 삭제 성공:', email);
+                return { success: true };
+            } catch (error) {
+                console.error('오프라인 계정 삭제 실패:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // 삭제 알림 표시
+        function showDeleteAlert(message, type = 'danger') {
+            const alertDiv = document.getElementById('delete-alert');
+            // danger 타입을 secondary로 변경하여 모노톤 색상 적용
+            const alertType = type === 'danger' ? 'secondary' : type;
+            alertDiv.className = 'alert alert-' + alertType + ' japanese-text';
+            alertDiv.innerHTML = message;
+            alertDiv.classList.remove('d-none');
+            setTimeout(() => alertDiv.classList.add('d-none'), 5000);
+        }
+
+        // 사용자 메뉴 업데이트 (auth-utils.js 함수 사용)
+        function updateUserMenuFromProfile() {
+            console.log('프로필 페이지에서 사용자 메뉴 업데이트 시도');
+            
+            // auth-utils.js의 updateUserMenu 함수 호출
+            if (typeof window.updateUserMenu === 'function') {
+                window.updateUserMenu();
+            } else {
+                console.warn('auth-utils.js의 updateUserMenu 함수를 찾을 수 없습니다');
+            }
+        }
+
+        // 카트 개수 업데이트
+        function updateCartCount() {
+            const cart = JSON.parse(localStorage.getItem('aetherCart') || '[]');
+            const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+            const cartCountElement = document.getElementById('cart-count');
+            if (cartCountElement) {
+                cartCountElement.textContent = totalItems;
+            }
+        }
+
+        // Firebase 연결 상태 체크
+        async function checkFirebaseStatus() {
+            console.log('=== Firebase 상태 체크 ===');
+            console.log('- firebase 객체:', typeof firebase !== 'undefined' ? 'OK' : 'MISSING');
+            console.log('- firebase.auth:', typeof firebase !== 'undefined' && firebase.auth ? 'OK' : 'MISSING');
+            console.log('- firebase.firestore:', typeof firebase !== 'undefined' && firebase.firestore ? 'OK' : 'MISSING');
+            console.log('- FirebaseService:', typeof FirebaseService !== 'undefined' ? 'OK' : 'MISSING');
+            console.log('- 현재 사용자:', firebase && firebase.auth ? firebase.auth().currentUser?.email || 'None' : 'Cannot check');
+            
+            // Firestore 연결 테스트
+            if (typeof window.checkFirestoreConnection === 'function') {
+                const isConnected = await window.checkFirestoreConnection();
+                console.log('- Firestore 연결:', isConnected ? 'OK' : 'FAILED');
+                
+                if (!isConnected) {
+                    console.log('⚠️  Firestore 연결 실패 - localStorage 모드로 동작합니다');
+                    // 오프라인 모드 메시지 비활성화 (localStorage 사용자에게 불필요)
+                    // showAlert('info-alert', 'オフラインモードで動作しています。一部機能が制限される場合があります。', 'warning');
+                }
+            }
+            console.log('=======================');
+        }  
+
+        // 우편번호 자동 포맷팅
+        document.getElementById('postal-code').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, '');
+            if (value.length > 3) {
+                value = value.substring(0, 3) + '-' + value.substring(3);
+            }
+            e.target.value = value;
+            
+            // 우편번호가 완성되면(8자리) 자동으로 주소 검색
+            if (value.length === 8) {
+                searchAddress();
+            }
+        });
+
+        // 우편번호로 주소 검색
+        async function searchAddress() {
+            const postalCodeInput = document.getElementById('postal-code');
+            const searchBtn = document.getElementById('search-address-btn');
+            const alertDiv = document.getElementById('address-alert');
+            
+            // 버튼 상태 변경
+            const originalBtnHtml = searchBtn.innerHTML;
+            searchBtn.disabled = true;
+            searchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            try {
+                // 우편번호 형식 정리 (하이픈 제거)
+                const postalCode = postalCodeInput.value.replace(/-/g, '');
+                
+                if (postalCode.length !== 7) {
+                    throw new Error('郵便番号は7桁で入力してください。');
+                }
+                
+                // 우편번호 API 호출
+                const response = await fetch(`https://zipcloud.ibsnet.co.jp/api/search?zipcode=${postalCode}`);
+                const data = await response.json();
+                
+                if (data.status === 200 && data.results) {
+                    if (data.results.length > 0) {
+                    const result = data.results[0];
+                    
+                        // 주소 필드에 값 설정
+                    document.getElementById('prefecture').value = result.address1;
+                        document.getElementById('city').value = result.address2;
+                        document.getElementById('address1').value = result.address3;
+                        
+                        // 성공 메시지 제거
+                        alertDiv.classList.add('d-none');
+                } else {
+                        throw new Error('該当する住所が見つかりませんでした。');
+                    }
+                } else {
+                    throw new Error('住所の検索に失敗しました。');
+                }
+            } catch (error) {
+                // 에러 메시지 표시
+                alertDiv.className = 'alert alert-danger japanese-text';
+                alertDiv.textContent = error.message;
+                alertDiv.classList.remove('d-none');
+            } finally {
+                // 버튼 상태 복구
+                searchBtn.disabled = false;
+                searchBtn.innerHTML = originalBtnHtml;
+                
+                // 3초 후 알림 메시지 숨기기
+                setTimeout(() => {
+                    alertDiv.classList.add('d-none');
+                }, 3000);
+            }
+        }
+
+
+
+
+        // 프로필 정보 자동 로드 함수
+        async function loadSavedProfileInfo() {
+            try {
+                console.log('저장된 프로필 정보 로드 시작');
+                
+                let profileData = null;
+                
+                // 1. Firebase에서 로드 시도 (초기화 상태 확인 후)
+                if (typeof window.FirebaseService !== 'undefined' && 
+                    window.FirebaseService.isFirebaseAvailable() && 
+                    typeof firebase !== 'undefined' && 
+                    firebase.app && 
+                    firebase.auth && 
+                    firebase.firestore) {
+                    try {
+                        const user = firebase.auth().currentUser;
+                        if (user && user.uid) {
+                            const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+                            
+                            if (userDoc.exists) {
+                                profileData = userDoc.data();
+                                console.log('Firebase에서 프로필 로드 성공');
+                            }
+                        }
+                    } catch (firebaseError) {
+                        console.warn('Firebase 프로필 로드 실패:', firebaseError);
+                    }
+                } else {
+                    console.log('Firebase가 초기화되지 않았거나 사용할 수 없음 - localStorage 모드로 진행');
+                }
+                
+                // 2. localStorage에서 로드 (폴백)
+                if (!profileData) {
+            const loginStatus = getLoginStatus();
+                    if (loginStatus && loginStatus.email) {
+                        const users = JSON.parse(localStorage.getItem('aetherUsers') || '[]');
+                        const userData = users.find(u => u.email === loginStatus.email);
+                        
+                        if (userData) {
+                            profileData = userData;
+                            console.log('localStorage에서 프로필 로드 성공');
+                        }
+                    }
+                }
+                
+                // 3. 프로필 정보 자동 입력
+                if (profileData) {
+                    // 기본 정보 탭의 필드들에 자동 입력
+                    if (profileData.name) {
+                        const profileNameField = document.getElementById('profile-name');
+                        if (profileNameField && !profileNameField.value) {
+                            profileNameField.value = profileData.name;
+                            console.log('기본정보 이름 자동 입력:', profileData.name);
+                        }
+                    }
+                    
+                    if (profileData.email) {
+                        const profileEmailField = document.getElementById('profile-email');
+                        if (profileEmailField && !profileEmailField.value) {
+                            profileEmailField.value = profileData.email;
+                            console.log('기본정보 이메일 자동 입력:', profileData.email);
+                        }
+                    }
+                    
+                    if (profileData.phone) {
+                        const profilePhoneField = document.getElementById('profile-phone');
+                        if (profilePhoneField && !profilePhoneField.value) {
+                            profilePhoneField.value = profileData.phone;
+                            console.log('기본정보 전화번호 자동 입력:', profileData.phone);
+                        }
+                    }
+                    
+                    // 저장된 profile 데이터에서 성별, 생년월일 로드
+                    if (profileData.profile) {
+                        const profile = profileData.profile;
+                        
+                        if (profile.gender) {
+                            const genderField = document.getElementById('profile-gender');
+                            if (genderField && !genderField.value) {
+                                genderField.value = profile.gender;
+                                console.log('기본정보 성별 자동 입력:', profile.gender);
+                            }
+                        }
+                        
+                        if (profile.birthdate) {
+                            const birthdateField = document.getElementById('profile-birthdate');
+                            if (birthdateField && !birthdateField.value) {
+                                birthdateField.value = profile.birthdate;
+                                console.log('기본정보 생년월일 자동 입력:', profile.birthdate);
+                            }
+                        }
+                    }
+                    
+                    // 기존 필드들도 유지 (하위 호환성)
+                    if (profileData.name) {
+                        const nameField = document.getElementById('full-name');
+                        if (nameField && !nameField.value) nameField.value = profileData.name;
+                    }
+                    
+                    if (profileData.phone) {
+                        const phoneField = document.getElementById('phone');
+                        if (phoneField && !phoneField.value) phoneField.value = profileData.phone;
+                    }
+                    
+                    if (profileData.email) {
+                        const emailField = document.getElementById('email');
+                        if (emailField && !emailField.value) emailField.value = profileData.email;
+                    }
+                    
+                    // 주소 정보 (최신 주문에서 자동 입력)
+                    const address = profileData.address || profileData.lastUsedAddress;
+                    if (address) {
+                        const postalField = document.getElementById('postal-code');
+                        const prefectureField = document.getElementById('prefecture');
+                        const cityField = document.getElementById('city');
+                        const address1Field = document.getElementById('address1');
+                        const address2Field = document.getElementById('address2');
+                        
+                        if (postalField && !postalField.value && address.postal) postalField.value = address.postal;
+                        if (prefectureField && !prefectureField.value && address.prefecture) prefectureField.value = address.prefecture;
+                        if (cityField && !cityField.value && address.city) cityField.value = address.city;
+                        if (address1Field && !address1Field.value && address.address1) address1Field.value = address.address1;
+                        if (address2Field && !address2Field.value && address.address2) address2Field.value = address.address2;
+                    }
+                    
+                    console.log('프로필 정보 자동 입력 완료');
+                    
+                    // 사용자에게 알림
+                    const alertDiv = document.getElementById('save-alert');
+                    if (alertDiv) {
+                        alertDiv.className = 'alert alert-info japanese-text';
+                        alertDiv.innerHTML = '<i class="fas fa-info-circle me-2"></i>最新の注文情報からプロフィールを自動入力しました。';
+                        alertDiv.classList.remove('d-none');
+                        
+                        // 5초 후 자동 숨김
+            setTimeout(() => {
+                            alertDiv.classList.add('d-none');
+                        }, 5000);
+                    }
+                } else {
+                    console.log('저장된 프로필 정보가 없습니다');
+                }
+                
+            } catch (error) {
+                console.error('프로필 정보 로드 오류:', error);
+            }
+        }
+        
+        // 프로필 헤더 정보 로드 함수
+        async function loadProfileHeader() {
+            try {
+                console.log('프로필 헤더 정보 로드 시작');
+                
+                let userData = null;
+                let userPoints = 0;
+                
+                // 1. Firebase에서 로드 시도 (안전한 방식)
+                try {
+                    if (typeof window.FirebaseService !== 'undefined' && 
+                        window.FirebaseService.isFirebaseAvailable() && 
+                        typeof firebase !== 'undefined' && 
+                        firebase.app && 
+                        firebase.auth && 
+                        firebase.firestore) {
+                        
+                        let user = firebase.auth().currentUser;
+                        
+                        // Firebase Auth currentUser가 null인 경우 localStorage에서 사용자 정보 가져오기
+                        if (!user) {
+                            const loginStatus = JSON.parse(localStorage.getItem('aetherLoginStatus') || '{}');
+                            if (loginStatus && loginStatus.email) {
+                                user = {
+                                    email: loginStatus.email,
+                                    uid: loginStatus.uid,
+                                    displayName: loginStatus.name
+                                };
+                                console.log('Firebase Auth currentUser가 null이어서 localStorage에서 사용자 정보 사용:', user);
+                            }
+                        }
+                        
+                        if (user && user.email) {
+                            // 먼저 이메일을 문서 ID로 시도
+                            let userDoc = await firebase.firestore().collection('users').doc(user.email).get();
+                            
+                            // 이메일로 찾지 못한 경우 UID로 시도
+                            if (!userDoc.exists && user.uid) {
+                                userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+                            }
+                            
+                            if (userDoc.exists) {
+                                const docData = userDoc.data();
+                                userData = {
+                                    name: docData.name || user.displayName || user.email.split('@')[0],
+                                    email: user.email,
+                                    points: docData.points || 0
+                                };
+                                userPoints = userData.points;
+                                console.log('Firebase에서 사용자 정보 로드 성공:', userData);
+                            } else {
+                                // 문서가 없는 경우 기본 정보로 생성
+                                userData = {
+                                    name: user.displayName || user.email.split('@')[0],
+                                    email: user.email,
+                                    points: 0
+                                };
+                                console.log('Firebase 사용자 문서 없음, 기본 정보 사용:', userData);
+                            }
+                        }
+                    } else {
+                        console.log('Firebase가 초기화되지 않았거나 사용할 수 없음 - localStorage 모드로 진행');
+                    }
+                } catch (firebaseError) {
+                    console.warn('Firebase 사용자 정보 로드 실패:', firebaseError);
+                }
+                
+                // 2. Firebase에서 사용자 정보를 찾지 못한 경우 localStorage에서 기본 정보 로드
+                if (!userData) {
+                    console.log('Firebase에서 사용자 정보를 찾을 수 없음, localStorage에서 기본 정보 로드 시도');
+                    try {
+                        const loginStatus = JSON.parse(localStorage.getItem('aetherLoginStatus') || '{}');
+                        if (loginStatus && loginStatus.email) {
+                            userData = {
+                                name: loginStatus.name || loginStatus.email.split('@')[0],
+                                email: loginStatus.email,
+                                points: 0 // 기본값
+                            };
+                            console.log('localStorage에서 기본 사용자 정보 로드:', userData);
+                        }
+                    } catch (localError) {
+                        console.error('localStorage 사용자 정보 로드 실패:', localError);
+                    }
+                }
+                
+                // 3. 프로필 헤더 업데이트
+                if (userData) {
+                    const displayNameEl = document.getElementById('profile-display-name');
+                    const displayEmailEl = document.getElementById('profile-display-email');
+                    
+                    if (displayNameEl) {
+                        displayNameEl.textContent = userData.name;
+                    }
+                    
+                    if (displayEmailEl) {
+                        displayEmailEl.textContent = userData.email;
+                    }
+                    
+                    console.log('프로필 헤더 업데이트 완료');
+                } else {
+                    console.log('사용자 데이터를 찾을 수 없음 - 기본 정보 표시');
+                    // 기본 정보 표시
+                    const displayNameEl = document.getElementById('profile-display-name');
+                    const displayEmailEl = document.getElementById('profile-display-email');
+                    
+                    if (displayNameEl) {
+                        displayNameEl.textContent = 'ゲ스트';
+                    }
+                    
+                    if (displayEmailEl) {
+                        displayEmailEl.textContent = 'Loading...';
+                    }
+                }
+                
+                
+                // 5. 프로필 사진 로드 (Firebase에서)
+                await loadProfilePhotoFromFirebase();
+                
+            } catch (error) {
+                console.error('프로필 헤더 로드 오류:', error);
+                // 에러가 발생해도 기본 정보는 표시
+                const displayNameEl = document.getElementById('profile-display-name');
+                const displayEmailEl = document.getElementById('profile-display-email');
+                
+                if (displayNameEl) {
+                    displayNameEl.textContent = 'ゲ스트';
+                }
+                
+                if (displayEmailEl) {
+                    displayEmailEl.textContent = 'guest@example.com';
+                }
+            }
+        }
+        
+
+        
+        // 주문 이력 로드 함수 초기화
+        async function initializeProfile() {
+            try {
+                console.log('프로필 페이지 초기화 시작');
+                
+                // 1. 프로필 헤더 로드
+                await loadProfileHeader();
+                
+                // 2. 프로필 사진 로드
+                await loadProfilePhotoFromFirebase();
+                
+                // 2. 주문 이력 로드 (강화된 버전)
+                console.log('=== 주문 이력 로드 준비 ===');
+                
+                let userId = null;
+                let loginStatus = null;
+                
+                // 로그인 상태 확인 (다중 방식)
+                try {
+                    loginStatus = getLoginStatus();
+                    console.log('getLoginStatus() 결과:', loginStatus);
+                } catch (error) {
+                    console.warn('getLoginStatus() 실패:', error);
+                }
+                
+                // Firebase 사용자 확인 (안전한 방식)
+                try {
+                    if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
+                        const firebaseUser = firebase.auth().currentUser;
+                        userId = firebaseUser.uid;
+                        console.log('Firebase 사용자 ID:', userId);
+                    }
+                } catch (firebaseError) {
+                    console.warn('Firebase 사용자 확인 실패:', firebaseError);
+                }
+                
+                // localStorage 사용자 확인
+                if (!userId && loginStatus && (loginStatus.uid || loginStatus.email)) {
+                    userId = loginStatus.uid || loginStatus.email;
+                    console.log('localStorage 사용자 ID:', userId);
+                }
+                
+                // 마지막 폴백: localStorage에서 직접 확인
+                if (!userId) {
+                    try {
+                        // Firebase 전용 - localStorage 사용 제거
+                        const currentUser = firebase.auth().currentUser;
+                        if (currentUser) {
+                            userId = currentUser.uid;
+                            console.log('직접 localStorage 사용자 ID:', userId);
+                        }
+                    } catch (directError) {
+                        console.warn('직접 localStorage 확인 실패:', directError);
+                    }
+                }
+                
+                // 주문 이력 로드 (기본적으로 모든 주문 표시)
+                if (userId) {
+                    console.log('주문 이력 로드 시작:', userId);
+                    await loadOrderHistory(userId);
+                } else {
+                    console.log('로그인 상태 불명 - 모든 주문 표시');
+                    await loadOrderHistory('ALL_ORDERS');
+                }
+                
+                // 주문이 없는 경우는 정상적인 상황 (신규 사용자)
+                
+                // 3. 저장된 프로필 정보 로드
+                await loadSavedProfileInfo();
+                
+                console.log('프로필 페이지 초기화 완료');
+                
+            } catch (error) {
+                console.error('프로필 초기화 오류:', error);
+                // 에러가 발생해도 기본 정보는 표시
+                try {
+                    await loadProfileHeader();
+                } catch (headerError) {
+                    console.error('프로필 헤더 로드 실패:', headerError);
+                }
+            }
+        }
+        
+        // 날짜 변환 함수들 (간단한 형식)
+        function convertToJapaneseDate(dateString) {
+            if (!dateString) return '';
+            
+            // ISO 형식 (YYYY-MM-DD)을 YYYY/MM/DD 형식으로 변환
+            if (dateString.includes('-')) {
+                return dateString.replace(/-/g, '/');
+            }
+            
+            return dateString; // 이미 올바른 형식이면 그대로 반환
+        }
+        
+        function convertFromJapaneseDate(japaneseDateString) {
+            if (!japaneseDateString) return '';
+            
+            // YYYY/MM/DD 형식을 ISO 형식으로 변환
+            if (japaneseDateString.includes('/')) {
+                return japaneseDateString.replace(/\//g, '-');
+            }
+            
+            return japaneseDateString; // 변환 실패 시 원본 반환
+        }
+        
+        // 프로필 사진 업로드 관련 함수들
+        let isUploading = false;
+        
+        // 프로필 사진 업로드 옵션 열기
+        function openPhotoUpload() {
+            const options = document.getElementById('photo-upload-options');
+            if (options.style.display === 'none') {
+                options.style.display = 'block';
+                // 3초 후 자동으로 숨기기
+                setTimeout(() => {
+                    options.style.display = 'none';
+                }, 3000);
+            } else {
+                options.style.display = 'none';
+            }
+        }
+        
+        // 갤러리에서 사진 선택
+        function selectPhotoFromGallery() {
+            const input = document.getElementById('profile-photo-input');
+            input.accept = 'image/*';
+            input.click();
+            document.getElementById('photo-upload-options').style.display = 'none';
+        }
+        
+        // 카메라로 사진 촬영
+        function takePhotoWithCamera() {
+            const input = document.getElementById('profile-photo-input');
+            input.accept = 'image/*';
+            input.capture = 'environment'; // 후면 카메라 우선
+            input.click();
+            document.getElementById('photo-upload-options').style.display = 'none';
+        }
+        
+        // 드래그앤드롭 이벤트 설정
+        function setupDragAndDrop() {
+            const avatarContainer = document.getElementById('profile-avatar-container');
+            
+            // 드래그 오버 이벤트
+            avatarContainer.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.classList.add('drag-over');
+            });
+            
+            // 드래그 리브 이벤트
+            avatarContainer.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.classList.remove('drag-over');
+            });
+            
+            // 드롭 이벤트
+            avatarContainer.addEventListener('drop', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.classList.remove('drag-over');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleProfilePhotoUpload({ target: { files: files } });
+                }
+            });
+        }
+        
+        // Firebase Storage 초기화 대기
+        async function waitForFirebaseStorage() {
+            let attempts = 0;
+            const maxAttempts = 50;
+            
+            while (attempts < maxAttempts) {
+                if (firebase && firebase.storage) {
+                    console.log('Firebase Storage 사용 가능');
+                    return true;
+                }
+                console.log(`Firebase Storage 초기화 대기 중... (${attempts + 1}/${maxAttempts})`);
+                await new Promise(resolve => setTimeout(resolve, 100));
+                attempts++;
+            }
+            
+            throw new Error('Firebase Storage 초기화 시간 초과');
+        }
+        
+        // 프로필 사진 업로드 처리
+        async function handleProfilePhotoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // 파일 크기 체크 (5MB 제한)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('ファイルサイズが大きすぎます。5MB以下の画像を選択してください。');
+                return;
+            }
+            
+            // 파일 타입 체크
+            if (!file.type.startsWith('image/')) {
+                alert('画像ファイルを選択してください。');
+                return;
+            }
+            
+            if (isUploading) return;
+            isUploading = true;
+            
+            try {
+                // Firebase Storage 초기화 대기
+                await waitForFirebaseStorage();
+                
+                // 업로드 진행률 표시
+                showUploadProgress();
+                
+                // Firebase Storage에 업로드
+                const downloadURL = await uploadProfilePhotoToFirebase(file);
+                
+                // 프로필 사진 표시
+                displayProfilePhoto(downloadURL);
+                
+                // Firebase Firestore에 URL 저장
+                await saveProfilePhotoURL(downloadURL);
+                
+                console.log('プロフィール写真のアップロードが完了しました:', downloadURL);
+                
+            } catch (error) {
+                console.error('プロフィール写真のアップロードに失敗しました:', error);
+                alert('プロフィール写真のアップロードに失敗しました。もう一度お試しください。');
+            } finally {
+                isUploading = false;
+                hideUploadProgress();
+            }
+        }
+        
+        // Firebase Storage에 프로필 사진 업로드
+        async function uploadProfilePhotoToFirebase(file) {
+            const currentUser = firebase.auth().currentUser;
+            if (!currentUser) {
+                throw new Error('ユーザーがログインしていません');
+            }
+            
+            // Firebase Storage는 이미 waitForFirebaseStorage()에서 확인됨
+            
+            // 파일명 생성 (사용자 ID + 타임스탬프)
+            const timestamp = Date.now();
+            const fileName = `profile-photos/${currentUser.uid}_${timestamp}.jpg`;
+            
+            // Firebase Storage 참조
+            const storageRef = firebase.storage().ref(fileName);
+            
+            // 이미지 압축 및 업로드
+            const compressedFile = await compressImage(file);
+            
+            // 업로드 실행
+            const uploadTask = storageRef.put(compressedFile);
+            
+            // 업로드 진행률 모니터링
+            return new Promise((resolve, reject) => {
+                uploadTask.on('state_changed',
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        updateUploadProgress(progress);
+                    },
+                    (error) => {
+                        reject(error);
+                    },
+                    async () => {
+                        try {
+                            const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                            resolve(downloadURL);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    }
+                );
+            });
+        }
+        
+        // 이미지 압축
+        function compressImage(file) {
+            return new Promise((resolve) => {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                const img = new Image();
+                
+                img.onload = () => {
+                    // 최대 크기 설정 (400x400)
+                    const maxSize = 400;
+                    let { width, height } = img;
+                    
+                    if (width > height) {
+                        if (width > maxSize) {
+                            height = (height * maxSize) / width;
+                            width = maxSize;
+                        }
+                    } else {
+                        if (height > maxSize) {
+                            width = (width * maxSize) / height;
+                            height = maxSize;
+                        }
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    // 이미지 그리기
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // JPEG로 변환 (품질 0.8)
+                    canvas.toBlob(resolve, 'image/jpeg', 0.8);
+                };
+                
+                img.src = URL.createObjectURL(file);
+            });
+        }
+        
+        // Firebase Firestore에 프로필 사진 URL 저장
+        async function saveProfilePhotoURL(photoURL) {
+            const currentUser = firebase.auth().currentUser;
+            if (!currentUser) return;
+            
+            try {
+                const userRef = firebase.firestore().collection('users').doc(currentUser.email);
+                await userRef.update({
+                    profilePhotoURL: photoURL,
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                console.log('プロフィール写真URLをFirestoreに保存しました');
+            } catch (error) {
+                console.error('プロフィール写真URLの保存に失敗しました:', error);
+                throw error;
+            }
+        }
+        
+        // 프로필 사진 표시
+        function displayProfilePhoto(photoURL) {
+            const photoImg = document.getElementById('profile-photo');
+            const placeholder = document.getElementById('profile-photo-placeholder');
+            
+            if (photoURL) {
+                photoImg.src = photoURL;
+                photoImg.style.display = 'block';
+                placeholder.style.display = 'none';
+            } else {
+                photoImg.style.display = 'none';
+                placeholder.style.display = 'block';
+            }
+        }
+        
+        // Firebase에서 프로필 사진 로드
+        async function loadProfilePhotoFromFirebase() {
+            const currentUser = firebase.auth().currentUser;
+            if (!currentUser) return;
+            
+            try {
+                const userDoc = await firebase.firestore().collection('users').doc(currentUser.email).get();
+                
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    if (userData.profilePhotoURL) {
+                        displayProfilePhoto(userData.profilePhotoURL);
+                        console.log('プロフィール写真をFirebaseから読み込みました');
+                    }
+                }
+            } catch (error) {
+                console.error('プロフィール写真の読み込みに失敗しました:', error);
+            }
+        }
+        
+        // 업로드 진행률 표시
+        function showUploadProgress() {
+            const avatarContainer = document.getElementById('profile-avatar-container');
+            const progressHTML = `
+                <div class="upload-progress">
+                    <div class="upload-progress-bar" id="upload-progress-bar"></div>
+                </div>
+            `;
+            avatarContainer.insertAdjacentHTML('beforeend', progressHTML);
+        }
+        
+        // 업로드 진행률 업데이트
+        function updateUploadProgress(progress) {
+            const progressBar = document.getElementById('upload-progress-bar');
+            if (progressBar) {
+                progressBar.style.width = progress + '%';
+            }
+        }
+        
+        // 업로드 진행률 숨기기
+        function hideUploadProgress() {
+            const progress = document.querySelector('.upload-progress');
+            if (progress) {
+                progress.remove();
+            }
+        }
+        
+        // 간단한 생년월일 입력 필드 초기화
+        
+        // 생년월일 입력 필드 초기화 함수
+        function initializeDateInputs() {
+            console.log('생년월일 입력 필드 초기화 시작');
+            
+            // 생년월일 입력 필드에 자동 포맷팅 추가
+            const birthdateInputs = ['profile-birthdate', 'edit-birthdate'];
+            
+            birthdateInputs.forEach(inputId => {
+                const input = document.getElementById(inputId);
+                if (input) {
+                    // 입력 시 자동으로 슬래시 추가
+                    input.addEventListener('input', function(e) {
+                        let value = e.target.value.replace(/\D/g, ''); // 숫자만 남기기
+                        
+                        if (value.length >= 4) {
+                            value = value.substring(0, 4) + '/' + value.substring(4);
+                        }
+                        if (value.length >= 7) {
+                            value = value.substring(0, 7) + '/' + value.substring(7, 9);
+                        }
+                        
+                        e.target.value = value;
+                    });
+                    
+                    // 포커스 시 플레이스홀더 표시
+                    input.addEventListener('focus', function() {
+                        if (!this.value) {
+                            this.placeholder = '年/月/日 (例: 1990/01/15)';
+                        }
+                    });
+                    
+                    console.log('생년월일 입력 필드 초기화 완료:', inputId);
+                }
+            });
+            
+            // 페이지 언어 설정 확인
+            if (document.documentElement.lang !== 'ja') {
+                document.documentElement.lang = 'ja';
+                console.log('문서 언어를 일본어로 설정');
+            }
+        }
+        
+        // 드롭다운 초기화 및 프로필 로드
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                console.log('프로필 페이지 DOM 로드 완료');
+                console.log('auth-utils.js 로드 확인:', typeof updateUserMenu);
+                console.log('custom.js 로드 확인:', typeof setupMobileQRCodeControl);
+                
+                // 일본어 날짜 입력 필드 초기화
+                initializeDateInputs();
+                
+                // 프로필 사진 업로드 기능 초기화
+                setupDragAndDrop();
+                
+                // QR 코드 버튼 이벤트 리스너 제거됨
+                // setupQRCodeEventListeners();
+                
+                // 드롭다운 초기화
+                var dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
+                var dropdownList = dropdownElementList.map(function(dropdownToggleEl) {
+                    return new bootstrap.Dropdown(dropdownToggleEl);
+                });
+                
+                // Firebase 초기화 대기 (더 안전한 방식)
+                let firebaseReady = false;
+                if (typeof window.waitForFirebaseComplete === 'function') {
+                    try {
+                        console.log('Firebase 초기화 대기 중...');
+                        await window.waitForFirebaseComplete();
+                        firebaseReady = true;
+                        console.log('Firebase 초기화 완료');
+                    } catch (firebaseError) {
+                        console.warn('Firebase 초기화 실패, localStorage 모드로 진행:', firebaseError);
+                    }
+                } else {
+                    // Firebase 초기화 함수가 없는 경우 3초 대기
+                    console.log('Firebase 초기화 함수 없음, 3초 대기...');
+                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    firebaseReady = typeof firebase !== 'undefined';
+                }
+                
+                // Firebase 초기화 완료 후 사용자 정보 로드
+                loadUserInfo();
+                
+                // 인증 상태 확인 및 사용자 메뉴 업데이트
+                updateCartCount();
+                
+                // Firebase 초기화 완료 후 인증 상태 확인
+                if (firebaseReady) {
+                    console.log('Firebase 준비됨, 인증 상태 확인');
+                    checkAuthState();
+                } else {
+                    console.log('Firebase 준비 안됨, localStorage 기반으로 인증 상태 확인');
+                    // Firebase가 준비되지 않은 경우 즉시 localStorage 기반으로 확인
+                    const loginStatus = getLoginStatus();
+                    console.log('즉시 localStorage 로그인 상태 확인:', loginStatus);
+                    if (typeof window.updateUserMenu === 'function') {
+                        window.updateUserMenu();
+                    }
+                }
+                
+                // Firebase 초기화 완료 후 프로필 전체 초기화
+                if (firebaseReady) {
+                    console.log('Firebase 준비됨, 프로필 초기화 시작');
+                    await initializeProfile();
+                } else {
+                    console.log('Firebase 준비 안됨, localStorage 기반으로 프로필 초기화');
+                    // Firebase가 준비되지 않은 경우 localStorage 기반으로만 초기화
+                    try {
+                        await loadProfileHeader();
+                        await loadSavedProfileInfo();
+                    } catch (profileError) {
+                        console.warn('localStorage 기반 프로필 초기화 실패:', profileError);
+                    }
+                }
+                
+                // 3초 후 강제 로그인 상태 확인 (백업)
+                setTimeout(() => {
+                    console.log('3초 후 강제 로그인 상태 확인');
+                    forceCheckLoginStatus();
+                }, 3000);
+                
+            } catch (error) {
+                console.error('프로필 페이지 초기화 중 오류:', error);
+                // 에러가 발생해도 기본 기능은 동작하도록
+                try {
+                    await initializeProfile();
+                } catch (innerError) {
+                    console.error('프로필 초기화 재시도 실패:', innerError);
+                }
+            }
+        });
+        
+        // 테스트 주문 데이터 생성 함수 제거됨 - Firebase 전용 시스템
+        
+        // 저장된 주문 데이터 분석 함수
+        function analyzeStoredOrders() {
+            console.log('Firebase 전용 시스템 - localStorage 주문 분석 제거됨');
+            console.log('주문 데이터는 Firebase에서 확인하세요');
+            return [];
+        }
+        
+        // 주문 데이터 수정 함수 (이메일 매칭을 위해)
+        function fixOrderData() {
+            try {
+                // Firebase 전용 - localStorage 사용 제거
+                const currentUser = firebase.auth().currentUser;
+                
+                if (!currentUser) {
+                    console.log('로그인 상태가 없어 수정할 수 없음');
+                    return false;
+                }
+                
+                console.log('주문 데이터 수정 시작...');
+                
+                let modified = false;
+                orders.forEach(order => {
+                    // userEmail이 비어있고 shipping.email이 있는 경우
+                    if (!order.userEmail && order.shipping && order.shipping.email) {
+                        order.userEmail = order.shipping.email;
+                        modified = true;
+                        console.log('주문 userEmail 수정:', order.id || order.orderId, '->', order.userEmail);
+                    }
+                    
+                    // userId가 로그인 사용자와 다르지만 이메일이 매칭되는 경우
+                    if (order.shipping && order.shipping.email === loginStatus.email && order.userId !== loginStatus.email) {
+                        console.log('주문 userId 수정 후보:', order.id || order.orderId, order.userId, '->', loginStatus.email);
+                        // 예비 학인: userId를 이메일로 업데이트하지 않고 로그만 출력
+                    }
+                });
+                
+                if (modified) {
+                    localStorage.setItem('aetherOrders', JSON.stringify(orders));
+                    console.log('주문 데이터 수정 완료');
+                    return true;
+                } else {
+                    console.log('수정할 데이터가 없음');
+                    return false;
+                }
+                
+            } catch (error) {
+                console.error('주문 데이터 수정 오류:', error);
+                return false;
+            }
+        }
+        
+        // 강제 주문 표시 함수 (디버깅용)
+        function showAllOrders() {
+            try {
+                console.log('모든 주문 표시 모드 시작');
+                loadOrderHistory('ALL_ORDERS');
+            } catch (error) {
+                console.error('모든 주문 표시 오류:', error);
+            }
+        }
+        
+        // 프로필 편집 저장
+        async function saveProfileEdit() {
+            try {
+                const profileData = {
+                    name: document.getElementById('edit-name').value,
+                    email: document.getElementById('edit-email').value,
+                    phone: document.getElementById('edit-phone').value,
+                    profile: {
+                        birthdate: convertFromJapaneseDate(document.getElementById('edit-birthdate').value),
+                        gender: document.getElementById('edit-gender').value
+                    }
+                };
+                
+                console.log('프로필 저장 시작:', profileData);
+                
+                let saveSuccess = false;
+                
+                // Firebase에 저장
+                const user = firebase.auth && firebase.auth().currentUser;
+                if (user) {
+                    try {
+                        await firebase.firestore().collection('users').doc(user.uid).update({
+                            name: profileData.name,
+                            phone: profileData.phone,
+                            profile: profileData.profile,
+                            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                        console.log('Firebase 프로필 저장 성공');
+                        saveSuccess = true;
+                    } catch (firebaseError) {
+                        console.warn('Firebase 저장 실패:', firebaseError);
+                    }
+                }
+                
+                // localStorage에 저장
+                const loginStatus = JSON.parse(localStorage.getItem('aetherLoginStatus') || '{}');
+                if (loginStatus.email) {
+                    const users = JSON.parse(localStorage.getItem('aetherUsers') || '[]');
+                    let userIndex = users.findIndex(u => u.email === loginStatus.email);
+                    
+                    if (userIndex === -1) {
+                        // 새 사용자 생성
+                        users.push({
+                            uid: loginStatus.uid || 'local_' + Date.now(),
+                            email: profileData.email,
+                            name: profileData.name,
+                            phone: profileData.phone,
+                            profile: profileData.profile,
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString()
+                        });
+                    } else {
+                        // 기존 사용자 업데이트
+                        users[userIndex].name = profileData.name;
+                        users[userIndex].phone = profileData.phone;
+                        users[userIndex].profile = profileData.profile;
+                        users[userIndex].updatedAt = new Date().toISOString();
+                    }
+                    
+                    localStorage.setItem('aetherUsers', JSON.stringify(users));
+                    
+                    // 로그인 상태도 업데이트
+                    loginStatus.name = profileData.name;
+                    localStorage.setItem('aetherLoginStatus', JSON.stringify(loginStatus));
+                    
+                    console.log('localStorage 프로필 저장 성공');
+                    saveSuccess = true;
+                }
+                
+                // 결과 처리
+                if (saveSuccess) {
+                    showProfileEditAlert('プロフィールが正常に保存されました。', 'success');
+                    
+                    // 프로필 헤더 업데이트
+                    setTimeout(async () => {
+                        await loadProfileHeader();
+                        // 모달 닫기
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('profileEditModal'));
+                        if (modal) modal.hide();
+                    }, 1500);
+                } else {
+                    showProfileEditAlert('プロフィール 保存に失敗しました。', 'danger');
+                }
+                
+            } catch (error) {
+                console.error('프로필 저장 오류:', error);
+                showProfileEditAlert('エラーが発生しました。', 'danger');
+            }
+        }
+        
+        // 프로필 편집 알림 표시
+        function showProfileEditAlert(message, type) {
+            const alertDiv = document.getElementById('profile-edit-alert');
+            alertDiv.className = `alert alert-${type} japanese-text`;
+            alertDiv.textContent = message;
+            alertDiv.classList.remove('d-none');
+            
+            // 3초 후 숨기기
+            setTimeout(() => {
+                alertDiv.classList.add('d-none');
+            }, 3000);
+        }
+        
+        // 패스워드 변경 모달 표시
+        function showChangePassword() {
+            // 필드 초기화
+            document.getElementById('current-password').value = '';
+            document.getElementById('new-password').value = '';
+            document.getElementById('confirm-new-password').value = '';
+            
+            // 알림 숨기기
+            const alertDiv = document.getElementById('password-alert');
+            alertDiv.classList.add('d-none');
+            
+            // 모달 표시
+            const modal = new bootstrap.Modal(document.getElementById('passwordModal'));
+            modal.show();
+        }
+        
+        // 패스워드 변경 실행
+        async function changePassword() {
+            try {
+                const currentPassword = document.getElementById('current-password').value;
+                const newPassword = document.getElementById('new-password').value;
+                const confirmPassword = document.getElementById('confirm-new-password').value;
+                
+                // 입력 검증
+                if (!currentPassword || !newPassword || !confirmPassword) {
+                    showPasswordAlert('すべてのフィールドを入力してください。', 'danger');
+                    return;
+                }
+                
+                if (newPassword !== confirmPassword) {
+                    showPasswordAlert('新しいパスワードが一致しません。', 'danger');
+                    return;
+                }
+                
+                if (newPassword.length < 8) {
+                    showPasswordAlert('パスワードは8文字以上で入力してください。', 'danger');
+                    return;
+                }
+                
+                let changeSuccess = false;
+                
+                // Firebase 패스워드 변경
+                const user = firebase.auth && firebase.auth().currentUser;
+                if (user) {
+                    try {
+                        // 현재 패스워드 확인
+                        const credential = firebase.auth.EmailAuthProvider.credential(user.email, currentPassword);
+                        await user.reauthenticateWithCredential(credential);
+                        
+                        // 새 패스워드로 변경
+                        await user.updatePassword(newPassword);
+                        console.log('Firebase 패스워드 변경 성공');
+                        changeSuccess = true;
+                    } catch (firebaseError) {
+                        console.warn('Firebase 패스워드 변경 실패:', firebaseError);
+                        if (firebaseError.code === 'auth/wrong-password') {
+                            showPasswordAlert('現在のパスワードが正しくありません。', 'danger');
+                            return;
+                        }
+                    }
+                }
+                
+                // localStorage 패스워드 변경
+                const loginStatus = JSON.parse(localStorage.getItem('aetherLoginStatus') || '{}');
+                if (loginStatus.email) {
+                    const users = JSON.parse(localStorage.getItem('aetherUsers') || '[]');
+                    const userIndex = users.findIndex(u => u.email === loginStatus.email);
+                    
+                    if (userIndex !== -1) {
+                        // 현재 패스워드 확인
+                        if (users[userIndex].password && users[userIndex].password !== currentPassword) {
+                            showPasswordAlert('現在のパスワードが正しくありません。', 'danger');
+                            return;
+                        }
+                        
+                        // 새 패스워드 저장
+                        users[userIndex].password = newPassword;
+                        users[userIndex].updatedAt = new Date().toISOString();
+                        localStorage.setItem('aetherUsers', JSON.stringify(users));
+                        console.log('localStorage 패스워드 변경 성공');
+                        changeSuccess = true;
+                    }
+                }
+                
+                // 결과 처리
+                if (changeSuccess) {
+                    showPasswordAlert('パスワードが正常に変更されました。', 'success');
+                    
+                    // 모달 닫기
+                    setTimeout(() => {
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('passwordModal'));
+                        if (modal) modal.hide();
+                    }, 1500);
+                } else {
+                    showPasswordAlert('パスワード 変更に失敗しました。', 'danger');
+                }
+                
+            } catch (error) {
+                console.error('패스워드 변경 오류:', error);
+                showPasswordAlert('エラーが発生しました。', 'danger');
+            }
+        }
+        
+        // 패스워드 알림 표시
+        function showPasswordAlert(message, type) {
+            const alertDiv = document.getElementById('password-alert');
+            alertDiv.className = `alert alert-${type} japanese-text`;
+            alertDiv.textContent = message;
+            alertDiv.classList.remove('d-none');
+            
+            // 3초 후 숨기기
+            setTimeout(() => {
+                alertDiv.classList.add('d-none');
+            }, 3000);
+        }
+        
+        // 전역 함수 노출 (테스트 함수 제거됨)
+        window.loadOrderHistory = loadOrderHistory;
+        window.getOrderHistoryDirectly = getOrderHistoryDirectly;
+        window.initializeProfile = initializeProfile;
+        window.analyzeStoredOrders = analyzeStoredOrders;
+        window.fixOrderData = fixOrderData;
+        window.showAllOrders = showAllOrders;
+        window.saveProfileEdit = saveProfileEdit;
+        window.showChangePassword = showChangePassword;
+        window.changePassword = changePassword;
+
+        // 이전 showQRCode 함수는 제거됨 - 포인트 페이지와 동일한 방식만 사용
+
+        // 이전 헬퍼 함수들은 제거됨 - 포인트 페이지와 동일한 방식만 사용
+
+                // 사용자 정보 관리 (포인트 페이지와 동일)
+
+        // 사용자 정보 로드 (포인트 페이지와 동일)
+        const loadUserInfo = async function() {
+            try {
+                console.log('사용자 정보 로드 시작');
+                
+                // 1. Firebase에서 로드 시도 (더 안전한 확인)
+                let userData = null;
+                
+                try {
+                    if (typeof firebase !== 'undefined' && 
+                        firebase.auth && 
+                        firebase.auth().currentUser && 
+                        firebase.firestore &&
+                        firebase.app) {
+                        
+                        const user = firebase.auth().currentUser;
+                        if (user && user.email) {
+                            userData = {
+                                name: user.displayName || user.email.split('@')[0],
+                                email: user.email,
+                                uid: user.uid,
+                                points: 0
+                            };
+                            console.log('Firebase에서 사용자 정보 로드 성공:', userData);
+                        }
+                    }
+                } catch (firebaseError) {
+                    console.warn('Firebase 사용자 정보 로드 실패:', firebaseError);
+                }
+                
+                // 2. localStorage에서 로드 (폴백)
+                if (!userData) {
+                    try {
+                        const loginStatus = JSON.parse(localStorage.getItem('aetherLoginStatus') || '{}');
+                        if (loginStatus && loginStatus.email) {
+                            const users = JSON.parse(localStorage.getItem('aetherUsers') || '[]');
+                            const localUser = users.find(u => u.email === loginStatus.email);
+                            
+                            if (localUser) {
+                                userData = {
+                                    name: localUser.name || loginStatus.name || loginStatus.email.split('@')[0],
+                                    email: loginStatus.email,
+                                    uid: loginStatus.uid || loginStatus.email,
+                                    points: localUser.points || 0
+                                };
+                            } else {
+                                // 기본 사용자 정보
+                                userData = {
+                                    name: loginStatus.name || loginStatus.email.split('@')[0],
+                                    email: loginStatus.email,
+                                    uid: loginStatus.uid || loginStatus.email,
+                                    points: 0
+                                };
+                            }
+                            console.log('localStorage에서 사용자 정보 로드 성공:', userData);
+                        }
+                    } catch (localError) {
+                        console.warn('localStorage 사용자 정보 로드 실패:', localError);
+                    }
+                }
+                
+                // 3. 사용자 정보 설정 및 Firebase 동기화
+                if (userData) {
+                    pointsPageUser = userData;
+                    console.log('최종 사용자 정보 설정:', pointsPageUser);
+                    
+                    // Firebase에 사용자 정보가 없으면 생성/업데이트
+                    if (typeof window.FirebaseService !== 'undefined' && 
+                        window.FirebaseService.isFirebaseAvailable() && 
+                        userData.uid && 
+                        userData.uid !== userData.email) {
+                        
+                        try {
+                            await firebase.firestore().collection('users').doc(userData.uid).set({
+                                name: userData.name,
+                                email: userData.email,
+                                points: userData.points,
+                                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
+                            }, { merge: true });
+                            console.log('Firebase 사용자 정보 동기화 완료');
+                        } catch (syncError) {
+                            console.warn('Firebase 사용자 정보 동기화 실패:', syncError);
+                        }
+                    }
+                } else {
+                    console.log('사용자 데이터를 찾을 수 없음');
+                }
+                
+            } catch (error) {
+                console.error('사용자 정보 로드 실패:', error);
+            }
+        }
+
+        // 이전 QR 코드 생성 함수들은 제거됨 - 포인트 페이지와 동일한 방식만 사용
+
+        // 인증 상태 확인
+        const checkAuthState = function() {
+            try {
+                console.log('=== 인증 상태 확인 시작 ===');
+                
+                // 1. Firebase 인증 상태 확인 (우선)
+                if (typeof firebase !== 'undefined' && firebase.auth) {
+                    console.log('Firebase 인증 상태 확인 중...');
+                    firebase.auth().onAuthStateChanged(function(user) {
+                        console.log('Firebase 인증 상태 변경:', user ? '로그인됨' : '로그아웃됨');
+                        if (user) {
+                            if (typeof window.updateUserMenu === 'function') {
+                                window.updateUserMenu();
+                            }
+                        } else {
+                            // Firebase에서 로그아웃된 경우 localStorage 확인
+                            const loginStatus = getLoginStatus();
+                            console.log('localStorage 로그인 상태:', loginStatus);
+                            if (typeof window.updateUserMenu === 'function') {
+                                window.updateUserMenu();
+                            }
+                        }
+                    });
+                } else {
+                    console.log('Firebase 없음, localStorage 기반으로 확인');
+                    // Firebase가 없는 경우 localStorage 기반으로 메뉴 업데이트
+                    const loginStatus = getLoginStatus();
+                    console.log('localStorage 로그인 상태:', loginStatus);
+                    if (typeof window.updateUserMenu === 'function') {
+                        window.updateUserMenu();
+                    }
+                }
+            } catch (error) {
+                console.warn('인증 상태 확인 실패:', error);
+                // localStorage 기반으로 메뉴 업데이트
+                const loginStatus = getLoginStatus();
+                console.log('에러 후 localStorage 로그인 상태:', loginStatus);
+                if (typeof window.updateUserMenu === 'function') {
+                    window.updateUserMenu();
+                }
+            }
+        }
+
+        // 사용자 메뉴 업데이트 (auth-utils.js의 함수 사용)
+        function updateUserMenuFromProfile(user) {
+            console.log('=== profile.html 사용자 메뉴 업데이트 시작 ===');
+            console.log('사용자 정보:', user);
+            
+            // 사용자 이름 업데이트
+            if (user && user.email) {
+                const userNameElement = document.getElementById('user-name');
+                if (userNameElement) {
+                    userNameElement.textContent = user.displayName || user.email.split('@')[0];
+                    userNameElement.classList.remove('d-none');
+                }
+            }
+            
+            // auth-utils.js의 updateUserMenu 함수 비동기 호출
+            if (typeof window.updateUserMenu === 'function') {
+                window.updateUserMenu().then(() => {
+                    console.log('auth-utils.js updateUserMenu 완료');
+                }).catch(error => {
+                    console.error('auth-utils.js updateUserMenu 실패:', error);
+                });
+            } else {
+                console.warn('auth-utils.js의 updateUserMenu 함수를 찾을 수 없습니다');
+            }
+            
+            console.log('메뉴 업데이트 완료');
+        }
+
+        // 로그아웃 함수
+        function logout() {
+            try {
+                // Firebase 로그아웃
+                if (typeof firebase !== 'undefined' && firebase.auth) {
+                    firebase.auth().signOut().then(() => {
+                        console.log('Firebase 로그아웃 성공');
+                    }).catch((error) => {
+                        console.error('Firebase 로그아웃 오류:', error);
+                    });
+                }
+                
+                // localStorage 정리
+                // Firebase 전용 - localStorage 사용 제거
+                
+                console.log('로그아웃 완료');
+                window.location.href = 'index.html';
+                
+            } catch (error) {
+                console.error('로그아웃 중 오류:', error);
+                // 오류가 발생해도 강제로 로그인 상태 제거
+                // Firebase 전용 - localStorage 사용 제거
+                window.location.href = 'index.html';
+            }
+        }
+
+        // 장바구니 개수 업데이트
+        function updateCartCount() {
+            const cartCount = document.getElementById('cart-count');
+            if (cartCount) {
+                const cart = JSON.parse(localStorage.getItem('aetherCart') || '[]');
+                cartCount.textContent = cart.length;
+            }
+        }
+
+        // 기존 중복된 프로필 사진 업로드 함수 제거됨 - 위의 새로운 함수 사용
+        
+        // 중복된 Firebase 업로드 함수 제거됨 - 위의 새로운 함수 사용
+        
+        // 기존 localStorage 기반 프로필 사진 함수 제거됨 - Firebase 전용으로 변경
+
+        // 강제 로그인 상태 확인 (디버깅용)
+        function forceCheckLoginStatus() {
+            console.log('=== 강제 로그인 상태 확인 ===');
+            
+            // localStorage 확인
+            const loginStatus = getLoginStatus();
+            console.log('localStorage 로그인 상태:', loginStatus);
+            
+            // Firebase 확인 (초기화 상태 확인 후)
+            if (typeof window.FirebaseService !== 'undefined' && 
+                window.FirebaseService.isFirebaseAvailable() && 
+                typeof firebase !== 'undefined' && 
+                firebase.app && 
+                firebase.auth) {
+                const currentUser = firebase.auth().currentUser;
+                console.log('Firebase 현재 사용자:', currentUser);
+            } else {
+                console.log('Firebase가 초기화되지 않았거나 사용할 수 없음');
+            }
+            
+            // 관리자 메뉴 수동 표시 (우선순위 높음)
+            updateAdminMenuVisibility().then(() => {
+                console.log('강제 로그인 상태 확인 - 관리자 메뉴 업데이트 완료');
+            });
+            
+            // Firebase 사용자 정보로 메뉴 업데이트 (localStorage 대신)
+            if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
+                const firebaseUser = firebase.auth().currentUser;
+                updateUserMenuFromProfile({ 
+                    email: firebaseUser.email, 
+                    displayName: firebaseUser.displayName || firebaseUser.email.split('@')[0] 
+                });
+            } else {
+                // Firebase 사용자가 없을 때만 localStorage 사용
+                updateUserMenuFromProfile(loginStatus ? { email: loginStatus.email, displayName: loginStatus.name } : null);
+            }
+        }
+        
+        // 관리자 메뉴 표시 여부 업데이트 (간단한 방식)
+        async function updateAdminMenuVisibility() {
+            // auth-utils.js의 updateUserMenu 함수가 모든 메뉴를 관리하므로
+            // 여기서는 단순히 해당 함수를 호출만 함
+            if (typeof updateUserMenu === 'function') {
+                try {
+                    await updateUserMenu();
+                    console.log('관리자 메뉴 업데이트 완료');
+                } catch (error) {
+                    console.error('관리자 메뉴 업데이트 실패:', error);
+                }
+            }
+        }
+
+        // 페이지 로드 시 실행 (하단)
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('하단 DOM 로드 이벤트 실행');
+            // 상단에서 이미 처리되므로 여기서는 장바구니만 업데이트
+            updateCartCount();
+            
+            // Firebase 초기화 완료 후 메뉴 업데이트 (한 번만)
+            setTimeout(async () => {
+                if (typeof FirebaseService !== 'undefined' && FirebaseService.isFirebaseAvailable()) {
+                    console.log('Firebase 준비됨, 메뉴 업데이트');
+                    await updateAdminMenuVisibility();
+                }
+            }, 2000);
+        });
+
+    </script>
+    
+
+</body>
+</html>
+ 

@@ -1,0 +1,2271 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title id="brand-title">ブランドページ - Aether</title>
+    <meta name="description" id="brand-description">
+    
+    <!-- Bootstrap CSS -->
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/css/templatemo.css" rel="stylesheet">
+    <link href="assets/css/custom.css" rel="stylesheet">
+    <link href="assets/css/fontawesome.min.css" rel="stylesheet">
+    
+    <!-- Google Fonts - Noto Sans JP (小塚 기반) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap&v=3" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap&v=3" rel="stylesheet"></noscript>
+    
+    <!-- Load fonts style after rendering the layout styles -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap">
+    
+    <!-- QR Code Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    
+    <style>
+        body {
+            font-family: "Montserrat", sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+            font-family: "Montserrat", sans-serif;
+            font-weight: 600;
+        }
+        .japanese-text {
+            font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif !important;
+            font-weight: 400;
+            line-height: 1.6;
+            font-display: swap;
+        }
+        .japanese-heading {
+            font-family: "Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif !important;
+            font-weight: 600;
+            line-height: 1.4;
+            font-display: swap;
+        }
+        
+        /* User dropdown hover fix */
+        .dropdown-toggle:hover,
+        .dropdown-toggle:focus,
+        #user-name:hover {
+            color: #343a40 !important;
+            text-decoration: none !important;
+        }
+        .nav-link:hover {
+            color: #343a40 !important;
+        }
+        
+        /* 네비게이션바 텍스트 thin 서체 통일 */
+        .navbar-nav .nav-link {
+            font-family: "Montserrat", sans-serif !important;
+            font-weight: 300 !important;
+            font-size: 1rem !important;
+        }
+        
+        .navbar-brand {
+            font-family: "Montserrat", sans-serif !important;
+            font-weight: 300 !important;
+        }
+        
+        #user-name {
+            font-family: "Montserrat", sans-serif !important;
+            font-weight: 300 !important;
+        }
+        
+        /* 푸터 스타일링 */
+        #tempaltemo_footer {
+            font-family: 'Montserrat', sans-serif !important;
+        }
+        #tempaltemo_footer h2,
+        #tempaltemo_footer .h2,
+        #tempaltemo_footer a,
+        #tempaltemo_footer li,
+        #tempaltemo_footer span,
+        #tempaltemo_footer p {
+            font-family: 'Montserrat', sans-serif !important;
+        }
+        
+        /* 푸터 링크 호버 효과 */
+        #tempaltemo_footer a:hover {
+            color: #cccccc !important;
+            text-decoration: none !important;
+        }
+        
+        /* Aether 로고 색상 */
+        #tempaltemo_footer .logo {
+            color: #cccccc !important;
+        }
+        
+        /* 푸터 배경 강제 적용 */
+        #tempaltemo_footer {
+            background-color: #000000 !important;
+        }
+        #tempaltemo_footer .w-100.bg-white {
+            background-color: #ffffff !important;
+        }
+        #tempaltemo_footer .w-100.bg-white p {
+            color: #000000 !important;
+            font-family: 'Montserrat', sans-serif !important;
+        }
+        
+        /* QR 코드 관련 CSS 제거됨 */
+        
+        /* 상품 카드 이미지 정사각형 스타일 */
+        .product-card .card-img-top {
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            width: 100%;
+        }
+        
+        /* aspect-ratio 미지원 브라우저를 위한 fallback */
+        @supports not (aspect-ratio: 1 / 1) {
+            .product-card .position-relative {
+                position: relative;
+                width: 100%;
+                padding-bottom: 100%; /* 1:1 비율 */
+            }
+            
+            .product-card .card-img-top {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+        }
+        
+        /* 모바일 반응형 상품 카드 스타일 */
+        @media (max-width: 767.98px) {
+            .product-card {
+                transition: transform 0.2s ease, box-shadow 0.2s ease;
+            }
+            
+            .product-card:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            }
+            
+            .product-card .card-title {
+                font-size: 0.9rem;
+                line-height: 1.2;
+                margin-bottom: 0.5rem;
+            }
+            
+            .product-card .card-text {
+                font-size: 0.75rem;
+                line-height: 1.3;
+                margin-bottom: 0.5rem;
+            }
+            
+            .product-card .price {
+                font-size: 0.9rem;
+                font-weight: bold;
+            }
+            
+            .product-card .original-price {
+                text-decoration: line-through;
+                font-size: 0.8em;
+                color: #6c757d;
+            }
+            
+            .product-card .sale-price {
+                color: #dc3545;
+                font-weight: bold;
+            }
+            
+            .product-card .btn {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+                width: 100%;
+            }
+            
+            .product-card .btn i {
+                font-size: 0.7rem;
+            }
+            
+            .product-card .position-absolute .btn {
+                padding: 0.2rem 0.4rem;
+                font-size: 0.7rem;
+            }
+        }
+        
+        
+        /* 브랜드 로고 섹션 스타일 */
+        .brand-logo-section {
+            background-color: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .brand-name {
+            font-family: "Noto Sans JP", sans-serif;
+            font-weight: 600;
+            color: #333;
+            font-size: 1.5rem;
+        }
+        
+        .brand-logo {
+            border-radius: 0px;
+            object-fit: contain;
+        }
+        
+        @media (max-width: 767.98px) {
+            .brand-logo {
+                max-height: 32px !important;
+                max-width: 192px !important;
+            }
+            
+            .brand-info {
+                justify-content: flex-start !important;
+                margin-bottom: 0;
+            }
+            
+            .product-filters {
+                text-align: right !important;
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
+                margin-left: auto;
+            }
+            
+            .brand-logo-section .row {
+                align-items: center;
+            }
+            
+            .brand-logo-section .col-md-4,
+            .brand-logo-section .col-md-8 {
+                flex: 0 0 auto;
+                width: auto;
+            }
+            
+            .brand-logo-section .col-md-4 {
+                margin-right: 0;
+            }
+            
+            .brand-logo-section .row {
+                justify-content: space-between;
+            }
+            
+            #searchInput {
+                min-width: 150px !important;
+                max-width: 200px;
+            }
+        }
+
+        /* 토스트 알림 스타일 */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            pointer-events: none;
+        }
+
+        .toast-notification {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            padding: 16px 20px;
+            margin-bottom: 10px;
+            min-width: 300px;
+            max-width: 400px;
+            transform: translateX(100%);
+            transition: transform 0.3s ease;
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .toast-notification.show {
+            transform: translateX(0);
+        }
+
+        .toast-notification.success {
+            border-left: 4px solid #343a40;
+        }
+
+        .toast-notification.error {
+            border-left: 4px solid #6c757d;
+        }
+
+        .toast-notification.info {
+            border-left: 4px solid #495057;
+        }
+
+        .toast-icon {
+            font-size: 1.2rem;
+            flex-shrink: 0;
+        }
+
+        .toast-notification.success .toast-icon {
+            color: #343a40;
+        }
+
+        .toast-notification.error .toast-icon {
+            color: #6c757d;
+        }
+
+        .toast-notification.info .toast-icon {
+            color: #495057;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 600;
+            margin-bottom: 2px;
+            font-size: 0.95rem;
+        }
+
+        .toast-message {
+            color: #6c757d;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            color: #6c757d;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+            flex-shrink: 0;
+        }
+
+        .toast-close:hover {
+            background-color: #f8f9fa;
+            color: #495057;
+        }
+
+        /* 모바일 반응형 */
+        @media (max-width: 768px) {
+            .toast-container {
+                top: 10px;
+                right: 10px;
+                left: 10px;
+            }
+
+            .toast-notification {
+                min-width: auto;
+                max-width: none;
+            }
+        }
+
+        /* 작은 모바일 화면 (480px 이하) */
+        @media (max-width: 480px) {
+            .brand-logo {
+                max-height: 28px !important;
+                max-width: 168px !important;
+            }
+        }
+
+        /* 매우 작은 모바일 화면 (360px 이하) */
+        @media (max-width: 360px) {
+            .brand-logo {
+                max-height: 24px !important;
+                max-width: 144px !important;
+            }
+        }
+    </style>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="assets/img/aether-icon.png">
+</head>
+<body>
+    <!-- Start Top Nav -->
+    <nav class="navbar navbar-expand-lg navbar-light" id="templatemo_nav_top" style="min-height: 20px; background-color: #000000 !important;">
+        <div class="container text-light">
+            <div class="w-100 d-flex justify-content-between">
+                <div>
+                    <!-- 빈 공간으로 블랙 바 유지 -->
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- Close Top Nav -->
+
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg navbar-light shadow">
+        <div class="container d-flex justify-content-between align-items-center">
+            <!-- QR 코드 버튼 제거됨 -->
+
+            <a class="navbar-brand text-success logo align-self-center" href="index.html">
+                <img src="assets/img/logo.png" alt="Logo" class="img-fluid" style="max-height: 50px;">
+            </a>
+
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#templatemo_main_nav" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="align-self-center collapse navbar-collapse flex-fill  d-lg-flex justify-content-lg-between" id="templatemo_main_nav">
+                <!-- 모바일 메뉴 레이아웃 -->
+                <div class="d-lg-none w-100">
+                    <!-- 영문 메뉴 - 가로 정렬 -->
+                    <div class="d-flex justify-content-center mb-4">
+                        <ul class="nav navbar-nav d-flex flex-row gap-4">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="shop.html">Brand</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="info.html">Info</a>
+                        </li>
+                    </ul>
+                </div>
+                    
+                    <!-- 아이콘들 - 가로 정렬, 좌우 여백 추가 -->
+                    <div class="d-flex justify-content-center align-items-center gap-4 px-4">
+                        <a href="cart.html" class="nav-link text-decoration-none">
+                            <i class="fas fa-shopping-cart text-dark" style="font-size: 1.5rem;"></i>
+                            <span class="badge bg-secondary ms-1" id="cart-count-mobile">0</span>
+                        </a>
+                        <div class="dropdown">
+                            <a href="#" class="nav-link dropdown-toggle text-decoration-none" id="userDropdownMobile" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user text-dark" style="font-size: 1.5rem;"></i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-center" aria-labelledby="userDropdownMobile">
+                                <li id="login-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="login.html">
+                                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                                    </a>
+                                </li>
+                                <li id="register-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="register.html">
+                                        <i class="fas fa-user-plus me-2"></i>Register
+                                    </a>
+                                </li>
+                                <li id="profile-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="profile.html">
+                                        <i class="fas fa-user-circle me-2"></i>Profile
+                                    </a>
+                                </li>
+                                <li id="points-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="points.html">
+                                        <i class="fas fa-coins me-2"></i>Points
+                                    </a>
+                                </li>
+                                <li id="admin-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="admin-dashboard.html">
+                                        <i class="fas fa-cog me-2"></i>管理ダッシュボード
+                                    </a>
+                                </li>
+                                <li id="logout-menu-mobile" style="display: none;">
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li id="logout-menu-item-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="#" onclick="logout()">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                    </a>
+                                </li>
+                            </ul>
+                            </div>
+                        </div>
+                    </div>
+                
+                <!-- 데스크톱 메뉴 레이아웃 -->
+                <div class="flex-fill d-none d-lg-block">
+                    <ul class="nav navbar-nav d-flex justify-content-between mx-lg-auto" style="max-width: 400px; margin: 0 auto;">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="shop.html">Brand</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="info.html">Info</a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- 데스크톱 우측 아이콘들 -->
+                <div class="navbar align-self-center d-flex d-none d-lg-flex">
+                    <a href="cart.html" class="nav-link text-decoration-none me-3">
+                        <i class="fas fa-shopping-cart text-dark"></i>
+                        <span class="badge bg-secondary" id="cart-count">0</span>
+                    </a>
+                    <div class="dropdown">
+                        <a href="#" class="nav-link dropdown-toggle text-decoration-none" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user text-dark"></i>
+                            <span id="user-name" class="d-none d-lg-inline ms-1"></span>
+                    </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li id="login-menu" style="display: none;">
+                                <a class="dropdown-item" href="login.html">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                                </a>
+                            </li>
+                            <li id="register-menu" style="display: none;">
+                                <a class="dropdown-item" href="register.html">
+                                    <i class="fas fa-user-plus me-2"></i>Register
+                                </a>
+                            </li>
+                            <li id="profile-menu" style="display: none;">
+                                <a class="dropdown-item" href="profile.html">
+                                    <i class="fas fa-user-circle me-2"></i>Profile
+                                </a>
+                            </li>
+                            <li id="points-menu" style="display: none;">
+                                <a class="dropdown-item" href="points.html">
+                                    <i class="fas fa-coins me-2"></i>Points
+                                </a>
+                            </li>
+                            <li id="admin-menu" style="display: none;">
+                                <a class="dropdown-item" href="admin-dashboard.html">
+                                    <i class="fas fa-cog me-2"></i>管理ダッシュボード
+                                </a>
+                            </li>
+                            <li id="logout-menu" style="display: none;">
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li id="logout-menu-item" style="display: none;">
+                                <a class="dropdown-item" href="#" onclick="logout()">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- Close Header -->
+
+    <!-- Modal -->
+    <div class="modal fade bg-white" id="templatemo_search" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="w-100 pt-1 mb-5 text-right">
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="" method="get" class="modal-content modal-body border-0 p-0">
+                <div class="input-group mb-2">
+                    <input type="text" class="form-control" id="inputModalSearch" name="q" placeholder="Search ...">
+                    <button type="submit" class="input-group-text bg-success text-light">
+                        <i class="fa fa-fw fa-search text-white"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+            <!-- QR Code Modal 제거됨 -->
+
+    <!-- Brand Logo and Search Section -->
+    <section class="brand-logo-section py-4">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <div class="brand-info d-flex align-items-center justify-content-start">
+                        <!-- 브랜드 로고 -->
+                        <img id="brand-logo" src="" alt="ブランドロゴ" class="brand-logo" style="max-height: 48px; max-width: 240px; object-fit: contain;">
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="product-filters text-end">
+                        <input type="text" class="form-control d-inline-block w-auto" id="searchInput" placeholder="商品検索..." style="min-width: 200px;">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Simple Products Section -->
+    <section class="products-section py-4">
+        <div class="container">
+            
+            <div id="products-container" class="row">
+                <!-- 商品がここに動的に表示されます -->
+                <div class="col-12 text-center py-5">
+                    <i class="fas fa-spinner fa-spin fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">商品を読み込み中...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- QR Code Modal 제거됨 -->
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script src="assets/js/jquery-1.11.0.min.js"></script>
+    <script src="assets/js/jquery-migrate-1.2.1.min.js"></script>
+    <script src="assets/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/templatemo.js"></script>
+    
+    <!-- QR Code Generator Library -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
+    <!-- Firebase Configuration -->
+    <script src="assets/js/firebase-config.js"></script>
+    
+    <!-- Authentication Utilities -->
+    <script src="assets/js/auth-utils.js"></script>
+    
+    <!-- Custom Scripts -->
+    <script src="assets/js/custom.js"></script>
+    
+
+
+    <script>
+        // 기본 변수들
+        let currentBrand = null;
+        let allProducts = [];
+        let filteredProducts = [];
+        let currentUser = null;
+
+        // ページ読み込み時初期化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 DOMContentLoaded 이벤트 발생');
+            console.log('📅 현재 시간:', new Date().toISOString());
+            console.log('🔍 initializeBrandPage 함수 호출 시작');
+            initializeBrandPage();
+            console.log('✅ initializeBrandPage 함수 호출 완료');
+        });
+
+        // Firebase 초기화 완료 이벤트 리스너 추가
+        window.addEventListener('firebaseInitialized', function() {
+            console.log('Firebase 초기화 완료 이벤트 수신 (brand-template)');
+            
+            // Firebase 초기화 완료 후 인증 상태 다시 확인
+            setTimeout(() => {
+                console.log('Firebase 초기화 완료 후 인증 상태 재확인');
+                checkAuthState();
+            }, 100);
+            
+            // Firebase 초기화 완료 후 브랜드 정보와 상품 정보 다시 로드
+            if (currentBrand && currentBrand.code) {
+                setTimeout(async () => {
+                    console.log('Firebase 초기화 완료 후 브랜드 정보와 상품 정보 다시 로드');
+                    await loadBrandInfo(currentBrand.code);
+                    await loadProducts(currentBrand.code);
+                }, 500);
+            }
+            
+            // Firebase 초기화 완료 후 QR 코드 버튼 활성화
+            setTimeout(() => {
+                console.log('Firebase 초기화 완료');
+            }, 1000);
+        });
+        
+        // QR 코드 버튼 이벤트 리스너 제거됨
+
+        // QR 코드 관련 함수들 제거됨
+        /*
+        async function showQRCode() {
+            console.log('=== QR코드 표시 함수 시작 ===');
+            
+            // Firebase 초기화 상태 확인
+            if (typeof firebase === 'undefined' || !firebase.apps || firebase.apps.length === 0) {
+                console.log('Firebase가 아직 초기화되지 않음, 잠시 대기...');
+                alert('Firebase 초기화 중입니다. 잠시 후 다시 시도해주세요.');
+                return;
+            }
+            
+            // 로그인 상태 확인
+            const user = getCurrentUser();
+            const loginStatus = JSON.parse(localStorage.getItem('aetherLoginStatus') || '{}');
+            
+            if (!user && !loginStatus.email) {
+                alert('QRコードを表示するにはログインが必要です。');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                const userId = user?.uid || loginStatus.uid || loginStatus.email;
+                console.log('사용자 ID:', userId);
+                
+                // FirebaseService가 로드될 때까지 대기
+                let attempts = 0;
+                const maxAttempts = 100; // 10초 대기
+                
+                while (typeof window.FirebaseService === 'undefined' && attempts < maxAttempts) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                    if (attempts % 10 === 0) {
+                        console.log(`FirebaseService 로드 대기 중... (${attempts}/100)`);
+                    }
+                }
+                
+                // Firebase 전용 QR 코드 시스템 사용 (포인트 페이지와 동일)
+                if (typeof window.FirebaseService === 'function') {
+                    console.log('✅ FirebaseService 발견, Firebase 전용 QR 토큰 사용');
+                    
+                    try {
+                        // FirebaseService 클래스의 static 메서드 직접 호출 (포인트 페이지와 동일)
+                        const qrToken = await window.FirebaseService.getOrCreateQRToken(userId);
+                        console.log('✅ Firebase 전용 QR 토큰 사용:', qrToken);
+                        
+                        // 모달에 QR코드 생성 (포인트 페이지와 동일한 방식)
+                        generateQRCode(qrToken, 'qr-code-modal-container');
+                        
+                        // 모달 표시
+                        const modal = new bootstrap.Modal(document.getElementById('qr-code-modal'));
+                        modal.show();
+                    } catch (methodError) {
+                        console.error('FirebaseService.getOrCreateQRToken 호출 실패:', methodError);
+                        throw new Error('FirebaseService 메서드 호출에 실패했습니다. Firebase 연결을 확인해주세요.');
+                    }
+                } else {
+                    throw new Error('FirebaseService를 찾을 수 없습니다. Firebase 연결을 확인해주세요.');
+                }
+            } catch (error) {
+                console.error('QR 코드 표시 실패:', error);
+                alert('QRコードの表示中にエラーが発生しました');
+            }
+        }
+
+        // QR 코드 생성 함수 (포인트 페이지와 동일)
+        function generateQRCode(data, containerId) {
+            try {
+                console.log('QR코드 생성 시작, 데이터:', data, '타입:', typeof data);
+                
+                if (!data) {
+                    console.error('QR코드 데이터가 없습니다');
+                    return;
+                }
+
+                const container = document.getElementById(containerId);
+                if (!container) {
+                    console.error('컨테이너를 찾을 수 없습니다:', containerId);
+                    return;
+                }
+
+                // 기존 내용 제거
+                container.innerHTML = '';
+
+                // QR 코드 생성 (포인트 페이지와 동일한 설정)
+                const qr = qrcode(0, 'M'); // 오류정정 레벨 M으로 통일
+                qr.addData(data);
+                qr.make();
+
+                // QR 코드 이미지 생성 (포인트 페이지와 동일한 방식)
+                const qrImage = qr.createImgTag(5, 10);
+                container.innerHTML = qrImage;
+
+                console.log('QR코드 생성 성공');
+            } catch (error) {
+                console.error('QR코드 생성 오류:', error);
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.innerHTML = '<div class="text-danger">QR코드 생성 실패</div>';
+                }
+            }
+        }
+        */
+
+        // 현재 사용자 정보 가져오기 함수
+        function getCurrentUser() {
+            try {
+                // Firebase가 완전히 초기화되었는지 확인
+                if (typeof firebase !== 'undefined' && 
+                    firebase.apps && 
+                    firebase.apps.length > 0 && 
+                    firebase.auth && 
+                    firebase.auth().currentUser) {
+                    return firebase.auth().currentUser;
+                }
+                
+                // Firebase가 아직 초기화되지 않은 경우 null 반환
+                console.log('Firebase가 아직 초기화되지 않음, 사용자 정보 가져오기 건너뛰기');
+                return null;
+            } catch (error) {
+                console.error('사용자 정보 가져오기 실패:', error);
+                return null;
+            }
+        }
+
+        // ブランドページ初期化
+        async function initializeBrandPage() {
+            try {
+                console.log('🚀 브랜드 페이지 초기화 시작');
+                
+                // URLからブランドコードを取得
+                const urlParams = new URLSearchParams(window.location.search);
+                const brandCode = urlParams.get('brand') || getBrandCodeFromPath();
+                
+                if (!brandCode) {
+                    console.error('❌ 브랜드 코드를 찾을 수 없습니다');
+                    console.log('🔄 기본 브랜드(lalarecipe)로 리다이렉트합니다');
+                    window.location.href = 'brand-template.html?brand=lalarecipe';
+                    return;
+                }
+                
+                console.log('✅ 브랜드 코드 확인:', brandCode);
+                
+                // Firebase初期化待機
+                console.log('⏳ Firebase 초기화 대기 중...');
+                const firebaseReady = await waitForFirebase();
+                if (!firebaseReady) {
+                    console.log('❌ Firebase 초기화 실패, 페이지 로드 중단');
+                    showError('Firebase에 연결할 수 없습니다. 페이지를 새로고침해주세요.');
+                    return;
+                }
+                console.log('✅ Firebase 초기화 완료');
+                
+                // ブランド情報を読み込み
+                console.log('📚 브랜드 정보 로드 시작...');
+                await loadBrandInfo(brandCode);
+                console.log('✅ 브랜드 정보 로드 완료');
+                
+                // 商品情報を読み込み
+                console.log('📦 상품 정보 로드 시작...');
+                console.log('🔍 loadProducts 함수 호출 직전');
+                const loadProductsResult = await loadProducts(brandCode);
+                console.log('📦 상품 정보 로드 완료, 결과:', loadProductsResult);
+                console.log('✅ 브랜드 정보 로드 완료');
+                
+                // ユーザー認証状態確認
+                console.log('🔐 사용자 인증 상태 확인 시작...');
+                checkAuthState();
+                console.log('✅ 사용자 인증 상태 확인 완료');
+                
+                // 사용자 메뉴 업데이트
+                if (typeof window.updateUserMenu === 'function') {
+                    console.log('✅ auth-utils.js updateUserMenu 함수 호출');
+                    window.updateUserMenu();
+                } else {
+                    console.warn('⚠️ auth-utils.js updateUserMenu 함수를 찾을 수 없습니다');
+                    // auth-utils.js의 updateUserMenu 함수 호출
+                    if (typeof window.updateUserMenu === 'function') {
+                        window.updateUserMenu();
+                    }
+                }
+                
+
+                
+                // 장바구니 카운트 업데이트
+                if (typeof window.updateCartCount === 'function') {
+                    console.log('🛒 장바구니 카운트 업데이트 시작...');
+                    window.updateCartCount();
+                    console.log('✅ 장바구니 카운트 업데이트 완료');
+                } else {
+                    console.log('🛒 로컬 장바구니 카운트 업데이트 시작...');
+                    updateCartCount();
+                    console.log('✅ 로컬 장바구니 카운트 업데이트 완료');
+                }
+                
+                console.log('🎉 브랜드 페이지 초기화 완료!');
+                
+            } catch (error) {
+                console.error('❌ 브랜드 페이지 초기화 실패:', error);
+                showError('ページの初期化に失敗しました。');
+            }
+        }
+
+        // URLパスからブランドコードを取得
+        function getBrandCodeFromPath() {
+            const path = window.location.pathname;
+            const match = path.match(/\/brands\/([^\/]+)/);
+            return match ? match[1] : null;
+        }
+
+        // Firebase初期化待機
+        async function waitForFirebase() {
+            console.log('⏳ waitForFirebase 함수 시작');
+            return new Promise((resolve) => {
+                let attempts = 0;
+                const maxAttempts = 30; // 30초 대기
+                
+                const checkFirebase = () => {
+                    attempts++;
+                    console.log(`🔄 Firebase 확인 시도 ${attempts}/${maxAttempts}`);
+                    
+                    // Firebase SDK 로드 확인
+                    if (typeof firebase !== 'undefined') {
+                        console.log('✅ Firebase SDK 로드 확인됨');
+                        
+                        // Firebase 앱 초기화 확인
+                        if (firebase.apps && firebase.apps.length > 0) {
+                            console.log('✅ Firebase 앱 초기화 확인됨');
+                            resolve(true);
+                            return;
+                        }
+                        
+                        // Firestore 사용 가능 확인
+                        if (firebase.firestore) {
+                            console.log('✅ Firestore 사용 가능 확인됨');
+                            resolve(true);
+                            return;
+                        }
+                    } else {
+                        console.log('❌ Firebase SDK가 정의되지 않음');
+                    }
+                    
+                    // 전역 변수 확인
+                    if (window.firebase && window.db) {
+                        console.log('✅ 전역 Firebase 변수 확인됨');
+                        resolve(true);
+                        return;
+                    }
+                    
+                    // FirebaseService 확인
+                    if (window.FirebaseService && window.FirebaseService.isFirebaseAvailable()) {
+                        console.log('✅ FirebaseService 사용 가능 확인됨');
+                        resolve(true);
+                        return;
+                    }
+                    
+                    if (attempts >= maxAttempts) {
+                        console.log('⚠️ Firebase 초기화 시간 초과, 기본 모드로 진행');
+                        resolve(false); // 실패로 처리
+                    } else {
+                        setTimeout(checkFirebase, 100);
+                    }
+                };
+                checkFirebase();
+            });
+        }
+
+        // ブランド情報読み込み
+        async function loadBrandInfo(brandCode) {
+            try {
+                console.log('🏷️ 브랜드 정보 로드 시작, 브랜드 코드:', brandCode);
+                
+                // Firebase 사용 가능 여부 확인 (더 안전한 방식)
+                let db = null;
+                let firebaseAvailable = false;
+                
+                try {
+                    if (typeof firebase !== 'undefined' && firebase.firestore && firebase.apps && firebase.apps.length > 0) {
+                        db = firebase.firestore();
+                        firebaseAvailable = true;
+                        console.log('✅ Firebase Firestore 사용 가능 (앱 초기화됨)');
+                    } else if (window.db) {
+                        db = window.db;
+                        firebaseAvailable = true;
+                        console.log('✅ 전역 Firebase DB 사용 가능');
+                    } else {
+                        console.log('❌ Firebase 앱이 초기화되지 않음');
+                    }
+                } catch (e) {
+                    console.log('❌ Firebase 확인 중 오류:', e.message);
+                    firebaseAvailable = false;
+                }
+                
+                if (firebaseAvailable && db) {
+                    console.log('📊 Firestore 사용 시도');
+                    try {
+                        console.log('🔍 브랜드 쿼리 시작:', brandCode);
+                        
+                        // 먼저 전체 브랜드 확인 (디버깅용)
+                        const allBrandsQuery = await db.collection('brands').get();
+                        console.log('📊 전체 브랜드 수:', allBrandsQuery.size, '개');
+                        
+                        if (allBrandsQuery.size === 0) {
+                            console.log('⚠️ Firebase에 브랜드 데이터가 없습니다. 초기 데이터를 생성합니다.');
+                            await createInitialBrandData();
+                        }
+                        
+                        allBrandsQuery.docs.forEach(doc => {
+                            const data = doc.data();
+                            console.log('🏷️ 브랜드:', { 
+                                id: doc.id, 
+                                code: data.code, 
+                                nameJp: data.nameJp,
+                                status: data.status,
+                                hasBrandLogo: !!data.brandLogoUrl,
+                                logoUrl: data.logoUrl
+                            });
+                        });
+                        
+                        // 대소문자 구분 없이 브랜드 검색
+                        let brandQuery = await db.collection('brands')
+                            .where('code', '==', brandCode.toLowerCase())
+                            .where('status', '==', 'active')
+                            .get();
+                        
+                        // 소문자로 찾지 못하면 대문자로 시도
+                        if (brandQuery.empty) {
+                            brandQuery = await db.collection('brands')
+                                .where('code', '==', brandCode.toUpperCase())
+                                .where('status', '==', 'active')
+                                .get();
+                        }
+                        
+                        // 그래도 찾지 못하면 원본으로 시도
+                        if (brandQuery.empty) {
+                            brandQuery = await db.collection('brands')
+                                .where('code', '==', brandCode)
+                                .where('status', '==', 'active')
+                                .get();
+                        }
+                        
+                        console.log('📊 브랜드 쿼리 결과:', brandQuery.size, '개 문서');
+                        
+                        if (!brandQuery.empty) {
+                            const brandData = brandQuery.docs[0].data();
+                            currentBrand = {
+                                id: brandQuery.docs[0].id,
+                                ...brandData
+                            };
+                            console.log('✅ Firebase에서 브랜드 정보 로드 완료:', currentBrand);
+                            console.log('브랜드 로고 URL 확인:', {
+                                brandLogoUrl: brandData.brandLogoUrl,
+                                logoUrl: brandData.logoUrl,
+                                hasBrandLogo: !!brandData.brandLogoUrl,
+                                hasLogo: !!brandData.logoUrl
+                            });
+                            updateBrandUI();
+                            return;
+                        } else {
+                            console.log('⚠️ Firebase에서 해당 브랜드를 찾을 수 없음:', brandCode);
+                        }
+                    } catch (firebaseError) {
+                        console.error('❌ Firebase 브랜드 로드 실패:', firebaseError);
+                        console.log('🔄 기본 데이터 사용으로 폴백');
+                    }
+                }
+                
+                // 기본 브랜드 정보 사용
+                currentBrand = getDefaultBrandInfo(brandCode);
+                console.log('✅ 기본 브랜드 정보 사용:', currentBrand);
+                updateBrandUI();
+                
+            } catch (error) {
+                console.error('❌ 브랜드 정보 로드 에러:', error);
+                // 오류 발생 시 기본 브랜드 정보 사용
+                currentBrand = getDefaultBrandInfo(brandCode);
+                updateBrandUI();
+            }
+        }
+
+        // ブランドUI更新
+        function updateBrandUI() {
+            // タイトル更新
+            document.title = `${currentBrand.nameJp} - Aether`;
+            document.getElementById('brand-title').textContent = `${currentBrand.nameJp} - Aether`;
+            
+            // メタ説明更新
+            const metaDesc = document.getElementById('brand-description');
+            metaDesc.content = currentBrand.description || `${currentBrand.nameJp}の商品一覧`;
+            
+            // ブランドロゴ表示 (브랜드명 제거됨)
+            const brandLogo = document.getElementById('brand-logo');
+            
+            if (brandLogo) {
+                console.log('브랜드 로고 로딩 시작:', {
+                    brandLogoUrl: currentBrand.brandLogoUrl,
+                    logoUrl: currentBrand.logoUrl,
+                    brandCode: currentBrand.code
+                });
+                
+                // 브랜드 로고 URL 우선순위: brandLogoUrl > logoUrl
+                let logoUrl = currentBrand.brandLogoUrl || currentBrand.logoUrl;
+                
+                if (logoUrl) {
+                    // 브랜드 로고 표시
+                    brandLogo.src = logoUrl;
+                    brandLogo.style.display = 'block';
+                    console.log('브랜드 로고 사용:', logoUrl);
+                    
+                    brandLogo.onload = function() {
+                        console.log('브랜드 로고 로딩 성공:', logoUrl);
+                    };
+                    
+                    brandLogo.onerror = function() {
+                        console.log('브랜드 로고 로딩 실패, 기본 이미지 시도');
+                        // 기본 이미지로 폴백
+                        this.src = 'assets/img/placeholder-brand.svg';
+                        this.onerror = function() {
+                            console.log('기본 이미지도 로딩 실패, 로고 숨김');
+                            this.style.display = 'none';
+                        };
+                    };
+                } else {
+                    console.log('브랜드 로고가 없음, 로고 숨김');
+                    brandLogo.style.display = 'none';
+                }
+            }
+        }
+
+        // 商品情報読み込み
+        async function loadProducts(brandCode) {
+            try {
+                console.log('🔍 상품 로드 시작, 브랜드 코드:', brandCode);
+                
+                // 로딩 상태 표시
+                const container = document.getElementById('products-container');
+                if (container) {
+                    container.innerHTML = `
+                        <div class="col-12 text-center py-5">
+                            <div class="spinner-border text-dark" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-3 text-muted">商品を読み込み中...</p>
+                        </div>
+                    `;
+                }
+                
+                console.log('📊 현재 Firebase 상태:', {
+                    firebase: typeof firebase !== 'undefined',
+                    firestore: typeof firebase !== 'undefined' && firebase.firestore,
+                    apps: typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length,
+                    windowDb: typeof window.db !== 'undefined'
+                });
+                
+                // Firebase 사용 가능 여부 확인 (더 안전한 방식)
+                let db = null;
+                let firebaseAvailable = false;
+                
+                try {
+                    if (typeof firebase !== 'undefined' && firebase.firestore && firebase.apps && firebase.apps.length > 0) {
+                        db = firebase.firestore();
+                        firebaseAvailable = true;
+                        console.log('✅ Firebase Firestore 사용 가능 (앱 초기화됨)');
+                    } else if (window.db) {
+                        db = window.db;
+                        firebaseAvailable = true;
+                        console.log('✅ 전역 Firebase DB 사용 가능');
+                    } else {
+                        console.log('❌ Firebase 앱이 초기화되지 않음');
+                    }
+                } catch (e) {
+                    console.log('❌ Firebase 확인 중 오류:', e.message);
+                    firebaseAvailable = false;
+                }
+                
+                if (firebaseAvailable && db) {
+                    console.log('📊 Firestore 사용 시도');
+                    try {
+                        // 먼저 전체 상품을 가져와서 디버깅
+                        console.log('🔍 전체 상품 컬렉션 조회 시도...');
+                        const allProductsQuery = await db.collection('products').get();
+                        console.log('📊 전체 상품 수:', allProductsQuery.size, '개');
+                        
+                        // 각 상품 정보 로깅
+                        allProductsQuery.docs.forEach(doc => {
+                            const data = doc.data();
+                            console.log('📦 상품:', { 
+                                id: doc.id, 
+                                name: data.nameKr || data.nameJp, 
+                                brandCode: data.brandCode, 
+                                status: data.status,
+                                code: data.code 
+                            });
+                            
+                            // LALARECIPE 브랜드 상품 특별 로깅
+                            if (data.brandCode === 'lalarecipe' || data.brandCode === 'LALARECIPE') {
+                                console.log('🏷️ LALARECIPE 상품 발견:', {
+                                    id: doc.id,
+                                    name: data.nameKr || data.nameJp,
+                                    brandCode: data.brandCode,
+                                    status: data.status,
+                                    isActive: data.status === 'active'
+                                });
+                            }
+                        });
+                        
+                        // 브랜드별 필터링 (status 조건 제거하여 모든 상품 확인)
+                        console.log('🔍 브랜드별 상품 필터링 시도 (status 조건 없음)...');
+                        console.log('🔍 검색 브랜드 코드:', brandCode);
+                        const productsQuery = await db.collection('products')
+                            .where('brandCode', '==', brandCode)
+                            .get();
+                        
+                        console.log('📊 브랜드별 쿼리 결과 (status 조건 없음):', productsQuery.size, '개 문서');
+                        
+                        // status별 개수 확인
+                        let activeCount = 0;
+                        let inactiveCount = 0;
+                        let otherStatusCount = 0;
+                        
+                        productsQuery.docs.forEach(doc => {
+                            const data = doc.data();
+                            if (data.status === 'active') {
+                                activeCount++;
+                            } else if (data.status === 'inactive') {
+                                inactiveCount++;
+                            } else {
+                                otherStatusCount++;
+                                console.log('🔍 기타 상태 상품:', {
+                                    id: doc.id,
+                                    name: data.nameKr || data.nameJp,
+                                    status: data.status
+                                });
+                            }
+                        });
+                        
+                        console.log('📊 상태별 상품 수:', {
+                            active: activeCount,
+                            inactive: inactiveCount,
+                            other: otherStatusCount,
+                            total: productsQuery.size
+                        });
+                        
+                        console.log('📊 브랜드별 쿼리 결과:', productsQuery.size, '개 문서');
+                        
+                        // 모든 상품 데이터 저장 (디버깅용)
+                        const allFoundProducts = productsQuery.docs.map(doc => {
+                            const data = doc.data();
+                            return {
+                                id: doc.id,
+                                ...data
+                            };
+                        });
+                        
+                        // active 상품만 필터링하여 표시용 배열에 저장
+                        allProducts = allFoundProducts.filter(product => product.status === 'active');
+                        
+                        console.log('✅ Firebase에서 상품 정보 로드 완료:');
+                        console.log('   - 전체 발견된 상품:', allFoundProducts.length, '개');
+                        console.log('   - active 상품:', allProducts.length, '개');
+                        console.log('📋 모든 발견된 상품들:', allFoundProducts.map(p => ({ 
+                            id: p.id, 
+                            name: p.nameKr || p.nameJp, 
+                            brandCode: p.brandCode,
+                            status: p.status,
+                            code: p.code 
+                        })));
+                        console.log('📋 active 상품들:', allProducts.map(p => ({ 
+                            id: p.id, 
+                            name: p.nameKr || p.nameJp, 
+                            brandCode: p.brandCode,
+                            status: p.status,
+                            code: p.code 
+                        })));
+                        
+                        if (allProducts.length > 0) {
+                            // 우선순위 순으로 정렬 (높은 우선순위가 먼저)
+                            allProducts.sort((a, b) => {
+                                const priorityA = a.priority || 50;
+                                const priorityB = b.priority || 50;
+                                if (priorityB !== priorityA) {
+                                    return priorityB - priorityA;  // 우선순위 높은 순
+                                }
+                                return (a.nameJp || a.nameKr || '').localeCompare(b.nameJp || b.nameKr || '');  // 같은 우선순위면 알파벳 순
+                            });
+                            
+                            filteredProducts = [...allProducts];
+                            console.log('🎯 상품 정렬 완료, 화면에 표시 시작');
+                            displayProducts();
+                            return;
+                        } else {
+                            console.log('⚠️ Firebase에서 해당 브랜드의 상품을 찾을 수 없음');
+                            console.log('📭 상품이 없음을 표시');
+                            // 상품이 없음을 표시
+                            allProducts = [];
+                            filteredProducts = [];
+                            console.log('📦 빈 상품 목록으로 설정');
+                            displayProducts();
+                            return;
+                        }
+                    } catch (firebaseError) {
+                        console.error('❌ Firebase 상품 로드 실패:', firebaseError);
+                        console.log('🔄 Firebase 오류 시 로딩 계속');
+                        // Firebase 오류 시에도 로딩 계속
+                        allProducts = [];
+                        filteredProducts = [];
+                        displayProducts();
+                        return;
+                    }
+                } else {
+                    console.log('⚠️ Firebase 사용 불가능, 로딩 계속');
+                    // Firebase 사용 불가능 시에도 로딩 계속
+                    allProducts = [];
+                    filteredProducts = [];
+                    displayProducts();
+                }
+                
+            } catch (error) {
+                console.error('❌ 상품 정보 로드 에러:', error);
+                console.log('🔄 오류 발생 시 로딩 계속');
+                // 오류 발생 시에도 로딩 계속
+                allProducts = [];
+                filteredProducts = [];
+                displayProducts();
+            }
+        }
+
+        // 商品表示
+        function displayProducts() {
+            console.log('🎨 displayProducts 함수 시작');
+            console.log('📊 현재 상품 데이터:', {
+                allProducts: allProducts.length,
+                filteredProducts: filteredProducts.length
+            });
+            
+            const container = document.getElementById('products-container');
+            if (!container) {
+                console.error('❌ products-container를 찾을 수 없습니다');
+                return;
+            }
+            
+            console.log('📦 상품 컨테이너 찾음:', container);
+            
+            if (filteredProducts.length === 0) {
+                console.log('⚠️ 표시할 상품이 없음 - 로딩 메시지 표시');
+                container.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <div class="spinner-border text-dark" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3 text-muted">商品を読み込み中...</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            console.log('🎯 상품 카드 생성 시작:', filteredProducts.length, '개');
+            
+            container.innerHTML = filteredProducts.map(product => {
+                // 배지 정보 처리
+                let badgeHtml = '';
+                const colorMap = {
+                    'red': '#dc3545',
+                    'blue': '#0d6efd',
+                    'green': '#198754',
+                    'orange': '#fd7e14',
+                    'purple': '#6f42c1',
+                    'dark': '#212529'
+                };
+                
+                if (product.badgeType && product.badgeType !== '' && product.badgeType !== 'NONE') {
+                    const badgeText = product.badgeType === 'CUSTOM' ? (product.badgeText || 'CUSTOM') : product.badgeType;
+                    const badgeColor = colorMap[product.badgeColor] || '#dc3545';
+                    badgeHtml = `<span class="badge" style="background-color: ${badgeColor}; color: white; font-size: 10px; margin-left: 5px;">${badgeText}</span>`;
+                }
+
+                return `
+                <div class="col-6 col-md-4 col-lg-3 mb-4">
+                    <div class="card product-card h-100" style="cursor: pointer;" onclick="openProductDetail('${product.id}')">
+                        <div class="position-relative">
+                            <img src="${product.imageUrl || 'assets/img/placeholder-product.jpg'}" 
+                                 class="card-img-top" alt="${product.nameJp}"
+                                 onerror="this.src='assets/img/placeholder-product.jpg'">
+                            ${product.badgeType && product.badgeType !== '' && product.badgeType !== 'NONE' ? `
+                                <span class="badge" style="position: absolute; top: 8px; right: 8px; background-color: ${colorMap[product.badgeColor] || '#dc3545'}; color: white; font-size: 15px; padding: 6px 12px; border-radius: 6px; z-index: 10; font-weight: bold;">
+                                    ${product.badgeType === 'CUSTOM' ? (product.badgeText || 'CUSTOM') : product.badgeType}
+                                </span>
+                            ` : ''}
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">${product.nameJp}</h5>
+                            <p class="card-text text-muted small">${product.description || ''}</p>
+                            <div class="mt-auto">
+                                <div class="price mb-2">
+                                    ${product.salePrice && product.salePrice > 0 ? 
+                                        `<span class="original-price text-muted" style="text-decoration: line-through; font-size: 0.9em;">¥${(product.price || 0).toLocaleString()}</span><br>
+                                         <span class="sale-price text-dark fw-bold">¥${product.salePrice.toLocaleString()}</span>` :
+                                            `<span class="regular-price fw-bold">¥${(product.price || 0).toLocaleString()}</span>`
+                                    }
+                                </div>
+                                <button class="btn btn-dark btn-sm w-100" onclick="addToCart('${product.id}'); event.stopPropagation();">
+                                    <i class="fas fa-cart-plus me-1"></i>カートに追加
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            }).join('');
+            
+            console.log('✅ 상품 카드 생성 완료');
+        }
+
+        // 検索機能 초기화
+        function initializeSearch() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                console.log('✅ 검색 입력 필드 찾음, 이벤트 리스너 설정');
+                
+                // 기존 이벤트 리스너 제거 (중복 방지)
+                searchInput.removeEventListener('input', filterProducts);
+                searchInput.removeEventListener('keyup', filterProducts);
+                
+                // 새 이벤트 리스너 추가
+                searchInput.addEventListener('input', function() {
+                    console.log('🎯 검색 input 이벤트 발생:', this.value);
+                    filterProducts();
+                });
+                
+                searchInput.addEventListener('keyup', function() {
+                    console.log('🎯 검색 keyup 이벤트 발생:', this.value);
+                    filterProducts();
+                });
+                
+                console.log('✅ 검색 이벤트 리스너 설정 완료');
+            } else {
+                console.error('❌ 검색 입력 필드를 찾을 수 없습니다');
+            }
+        }
+        
+        // DOM 로드 완료 후 검색 기능 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔍 DOM 로드 완료 - 검색 기능 초기화');
+            initializeSearch();
+        });
+        
+        // 페이지 로드 후에도 한 번 더 시도 (보험)
+        setTimeout(() => {
+            console.log('🔍 지연 후 검색 기능 초기화');
+            initializeSearch();
+        }, 1000);
+
+        function filterProducts() {
+            const searchInput = document.getElementById('searchInput');
+            if (!searchInput) {
+                console.error('❌ 검색 입력 필드를 찾을 수 없습니다');
+                return;
+            }
+            
+            const searchTerm = searchInput.value.toLowerCase();
+            console.log('🔍 검색어:', searchTerm);
+            console.log('📦 전체 상품 수:', allProducts.length);
+            
+            if (!allProducts || allProducts.length === 0) {
+                console.warn('⚠️ 검색할 상품이 없습니다');
+                return;
+            }
+            
+            // 검색어가 비어있으면 모든 상품 표시
+            if (!searchTerm.trim()) {
+                console.log('🔍 검색어가 비어있음 - 모든 상품 표시');
+                filteredProducts = [...allProducts];
+            } else {
+                // 검색フィルターのみ
+                filteredProducts = allProducts.filter(product => {
+                    const nameJp = product.nameJp || '';
+                    const nameKr = product.nameKr || '';
+                    const nameEn = product.nameEn || '';
+                    const description = product.description || '';
+                    
+                    const matchesJp = nameJp.toLowerCase().includes(searchTerm);
+                    const matchesKr = nameKr.toLowerCase().includes(searchTerm);
+                    const matchesEn = nameEn.toLowerCase().includes(searchTerm);
+                    const matchesDesc = description.toLowerCase().includes(searchTerm);
+                    
+                    const isMatch = matchesJp || matchesKr || matchesEn || matchesDesc;
+                    
+                    if (isMatch) {
+                        console.log('✅ 검색 일치:', {
+                            product: product.nameJp || product.nameKr || product.nameEn,
+                            searchTerm,
+                            matchesJp,
+                            matchesKr,
+                            matchesEn,
+                            matchesDesc
+                        });
+                    }
+                    
+                    return isMatch;
+                });
+            }
+            
+            console.log('🎯 필터링된 상품 수:', filteredProducts.length);
+            console.log('📋 필터링된 상품들:', filteredProducts.map(p => p.nameJp || p.nameKr || p.nameEn));
+            
+            displayProducts();
+        }
+
+        // カート機能
+        function addToCart(productId) {
+            try {
+                console.log('카트 추가 시작, 상품 ID:', productId);
+                
+                // 로그인 상태 확인
+            if (!currentUser) {
+                    showToast('ログインが必要です。', 'info');
+                return;
+            }
+            
+                // 상품 정보 찾기
+                const product = allProducts.find(p => p.id === productId);
+                if (!product) {
+                    console.error('상품을 찾을 수 없습니다:', productId);
+                    showToast('상품情報を 찾을 수 없습니다。', 'error');
+                    return;
+                }
+                
+                console.log('상품 정보:', product);
+                
+                // 기존 카트 가져오기
+                let cart = JSON.parse(localStorage.getItem('aetherCart') || '[]');
+                
+                // 이미 카트에 있는 상품인지 확인
+                const existingItemIndex = cart.findIndex(item => item.id === productId);
+                
+                if (existingItemIndex !== -1) {
+                    // 기존 상품 수량 증가
+                    cart[existingItemIndex].quantity = (cart[existingItemIndex].quantity || 1) + 1;
+                    console.log('기존 상품 수량 증가:', cart[existingItemIndex]);
+                } else {
+                    // 새 상품 추가
+                    const cartItem = {
+                        id: product.id,
+                        nameKr: product.nameKr || product.nameJp,
+                        nameJp: product.nameJp,
+                        price: (product.salePrice && product.salePrice > 0) ? product.salePrice : (product.price || 0),
+                        image: product.imageUrl || product.image || '',
+                        brandCode: product.brandCode || currentBrand?.code,
+                        brandName: currentBrand?.nameJp || currentBrand?.nameKr,
+                        quantity: 1,
+                        addedAt: new Date().toISOString()
+                    };
+                    cart.push(cartItem);
+                    console.log('새 상품 추가:', cartItem);
+                }
+                
+                // 카트 저장
+                localStorage.setItem('aetherCart', JSON.stringify(cart));
+                console.log('카트 저장 완료, 총 상품 수:', cart.length);
+                
+                // 카트 카운트 업데이트
+                updateCartCount();
+                
+                // 성공 메시지 표시
+                showToast('カートに追加されました！', 'success');
+                
+            } catch (error) {
+                console.error('카트 추가 오류:', error);
+                showToast('カートへの追加中にエラーが発生しました。', 'error');
+            }
+        }
+
+        // 商品詳細ページを開く
+        function openProductDetail(productId) {
+            window.open(`product-detail.html?id=${productId}`, '_blank');
+        }
+
+
+
+        // 헬퍼 함수들 (index.html과 동일한 로직)
+
+
+        // 사용자 인증 상태 확인
+        function checkAuthState() {
+            try {
+                console.log('브랜드 템플릿 페이지 인증 상태 확인 시작');
+                
+                // Firebase Auth 사용 가능 여부 확인
+                if (typeof firebase !== 'undefined' && firebase.auth && firebase.apps && firebase.apps.length > 0) {
+                    const auth = firebase.auth();
+                    console.log('Firebase Auth 사용 가능, 인증 상태 리스너 설정');
+                    
+            auth.onAuthStateChanged(function(user) {
+                        console.log('Firebase 인증 상태 변경:', user ? user.email : '로그아웃');
+                currentUser = user;
+                        // auth-utils.js의 updateUserMenu 함수 호출
+                        if (typeof window.updateUserMenu === 'function') {
+                            window.updateUserMenu();
+                        }
+                    });
+                    
+                    // 현재 사용자 상태 즉시 확인
+                    const currentFirebaseUser = auth.currentUser;
+                    if (currentFirebaseUser) {
+                        console.log('현재 Firebase 사용자:', currentFirebaseUser.email);
+                        currentUser = currentFirebaseUser;
+                        // auth-utils.js의 updateUserMenu 함수 호출
+                        if (typeof window.updateUserMenu === 'function') {
+                            window.updateUserMenu();
+                        }
+                    }
+            } else {
+                    console.log('Firebase Auth 사용 불가능, localStorage 확인');
+                    // localStorage에서 로그인 상태 확인
+                    const loginStatus = localStorage.getItem('aetherLoginStatus');
+                    if (loginStatus) {
+                        try {
+                            const parsed = JSON.parse(loginStatus);
+                            console.log('localStorage에서 로그인 상태 발견:', parsed.email);
+                            currentUser = parsed;
+                            // auth-utils.js의 updateUserMenu 함수 호출
+                            if (typeof window.updateUserMenu === 'function') {
+                                window.updateUserMenu();
+                            }
+                        } catch (e) {
+                            console.error('localStorage 로그인 상태 파싱 오류:', e);
+                            currentUser = null;
+                            // auth-utils.js의 updateUserMenu 함수 호출
+                            if (typeof window.updateUserMenu === 'function') {
+                                window.updateUserMenu();
+                            }
+                        }
+                    } else {
+                        console.log('로그인 상태 없음');
+                        currentUser = null;
+                        // auth-utils.js의 updateUserMenu 함수 호출
+                        if (typeof window.updateUserMenu === 'function') {
+                            window.updateUserMenu();
+                        }
+                    }
+                }
+            } catch (error) {
+                console.log('인증 상태 확인 실패:', error.message);
+                currentUser = null;
+                // auth-utils.js의 updateUserMenu 함수 호출
+                if (typeof window.updateUserMenu === 'function') {
+                    window.updateUserMenu();
+                }
+            }
+        }
+
+        // 사용자 메뉴 업데이트는 auth-utils.js의 함수를 사용
+        // 이 함수는 auth-utils.js에서 정의됨
+
+        // 로그아웃 함수 (개선됨)
+        async function logout() {
+            try {
+                console.log('브랜드 템플릿 페이지 로그아웃 시작');
+                
+                // auth-utils.js의 로그아웃 함수 사용 (우선)
+                if (typeof window.logout === 'function' && window.logout.toString().includes('=== 로그아웃 시작 ===')) {
+                    console.log('auth-utils.js logout 함수 사용');
+                    await window.logout();
+                    return;
+                }
+                
+                // 직접 로그아웃 처리 (폴백)
+                console.log('직접 로그아웃 처리 시작');
+                
+                // Firebase 로그아웃
+                if (typeof firebase !== 'undefined' && firebase.auth && firebase.apps && firebase.apps.length > 0) {
+                    try {
+                        await firebase.auth().signOut();
+                        console.log('Firebase 로그아웃 완료');
+                    } catch (firebaseError) {
+                        console.log('Firebase 로그아웃 실패:', firebaseError.message);
+                    }
+                }
+                
+                // localStorage 로그인 상태 제거
+                localStorage.removeItem('aetherLoginStatus');
+                localStorage.removeItem('aetherLogin');
+                sessionStorage.removeItem('aetherLogin');
+                console.log('localStorage 로그인 상태 제거 완료');
+                
+                // 전역 변수 초기화
+                currentUser = null;
+                
+                // 사용자 메뉴 업데이트
+                if (typeof window.updateUserMenu === 'function') {
+                    await window.updateUserMenu();
+                }
+                
+                // 토스트 메시지 표시
+                if (typeof window.showToast === 'function') {
+                    window.showToast('ログアウトしました。', 'success', 2000);
+                } else {
+                    alert('ログアウトしました。');
+                }
+                
+                // 페이지 리다이렉트 (약간의 지연 후)
+                setTimeout(() => {
+                    // 현재 페이지가 brand-template.html인 경우 홈으로 이동
+                    if (window.location.pathname.includes('brand-template.html')) {
+                        window.location.href = '/';
+                    } else {
+                        window.location.reload();
+                    }
+                }, 1000);
+                
+                console.log('브랜드 템플릿 페이지 로그아웃 완료');
+                
+            } catch (error) {
+                console.error('로그아웃 함수 오류:', error);
+                
+                // 오류가 발생해도 강제로 로그인 상태 제거
+                localStorage.removeItem('aetherLoginStatus');
+                localStorage.removeItem('aetherLogin');
+                sessionStorage.removeItem('aetherLogin');
+                currentUser = null;
+                
+                if (typeof window.updateUserMenu === 'function') {
+                    await window.updateUserMenu();
+                }
+                
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 1000);
+            }
+        }
+
+        // 카트 개수 업데이트
+        function updateCartCount() {
+            try {
+                const cart = JSON.parse(localStorage.getItem('aetherCart') || '[]');
+                const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
+                
+                console.log('카트 개수 업데이트:', totalItems, '개 상품');
+                
+                // 데스크톱 카트 카운트 업데이트
+                const cartCountElement = document.getElementById('cart-count');
+                if (cartCountElement) {
+                    cartCountElement.textContent = totalItems;
+                }
+                
+                // 모바일 카트 카운트 업데이트
+                const cartCountMobileElement = document.getElementById('cart-count-mobile');
+                if (cartCountMobileElement) {
+                    cartCountMobileElement.textContent = totalItems;
+                }
+                
+            } catch (error) {
+                console.error('카트 개수 업데이트 실패:', error);
+            }
+        }
+
+        // 중복된 DOMContentLoaded 이벤트 리스너 제거됨 - 위의 이벤트 리스너 사용
+
+        // 토스트 알림 함수
+        function showToast(message, type = 'info', duration = 2000) {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = `toast-notification ${type}`;
+            
+            const iconMap = {
+                success: 'fas fa-check-circle',
+                error: 'fas fa-exclamation-circle',
+                info: 'fas fa-info-circle'
+            };
+            
+            const icon = iconMap[type] || iconMap.info;
+            
+            toast.innerHTML = `
+                <i class="${icon} toast-icon"></i>
+                <div class="toast-content">
+                    <div class="toast-title">${message}</div>
+                </div>
+                <button class="toast-close" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            container.appendChild(toast);
+            
+            // 애니메이션을 위한 지연
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 10);
+            
+            // 자동 제거
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentElement) {
+                        toast.remove();
+                    }
+                }, 300);
+            }, duration);
+        }
+
+        // 전역 함수로 노출
+        window.logout = logout;
+        window.showToast = showToast;
+
+        // エラー表示
+        function showError(message) {
+            const container = document.getElementById('products-container');
+            container.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                    <p class="text-danger">${message}</p>
+                    <a href="shop.html" class="btn btn-dark">ショップに戻る</a>
+                </div>
+            `;
+        }
+
+        // カート表示
+        function viewCart() {
+            // カートページに移動
+            window.location.href = 'cart.html';
+        }
+
+        // 기본 상품 데이터 함수 제거됨 - Firebase 전용으로 변경
+
+        // 초기 브랜드 데이터 생성 함수
+        async function createInitialBrandData() {
+            try {
+                console.log('🚀 초기 브랜드 데이터 생성 시작...');
+                
+                if (!firebase || !firebase.firestore) {
+                    console.error('❌ Firebase가 초기화되지 않았습니다.');
+                    return { success: false, error: 'Firebase 초기화 필요' };
+                }
+                
+                const db = firebase.firestore();
+                const initialBrands = [
+                    {
+                        code: 'lalarecipe',
+                        nameKr: 'LALARECIPE',
+                        nameJp: 'ララレシピ',
+                        description: '자연 친화적 스킨케어 브랜드',
+                        logoUrl: 'assets/img/SHOP BRAND/LALARECIPE.jpg',
+                        status: 'active'
+                    },
+                    {
+                        code: 'lucinde',
+                        nameKr: 'LUCINDE',
+                        nameJp: 'ルシンデ',
+                        description: '럭셔리 안티에이징 브랜드',
+                        logoUrl: 'assets/img/SHOP BRAND/LUCINDE.jpg',
+                        status: 'active'
+                    },
+                    {
+                        code: 'coscell',
+                        nameKr: 'COSCELL',
+                        nameJp: 'コスセル',
+                        description: '셀 재생 전문 브랜드',
+                        logoUrl: 'assets/img/SHOP BRAND/coscell.jpg',
+                        status: 'active'
+                    },
+                    {
+                        code: 'makeheal',
+                        nameKr: 'Make heal',
+                        nameJp: 'メイクヒール',
+                        description: '힐링 스킨케어 브랜드',
+                        logoUrl: 'assets/img/SHOP BRAND/make heal.jpg',
+                        status: 'active'
+                    },
+                    {
+                        code: 'mondaymuseum',
+                        nameKr: 'Monday Museum',
+                        nameJp: 'マンデーミュージアム',
+                        description: '아트에서 영감받은 뷰티 브랜드',
+                        logoUrl: 'assets/img/SHOP BRAND/monday museum.jpg',
+                        status: 'active'
+                    },
+                    {
+                        code: 'plareceta',
+                        nameKr: 'Plareceta',
+                        nameJp: 'プラレセタ',
+                        description: '플라센타 전문 브랜드',
+                        logoUrl: 'assets/img/SHOP BRAND/Plareceta.jpg',
+                        status: 'active'
+                    },
+                    {
+                        code: 'catchbysonyouna',
+                        nameKr: 'Catch By Sonyouna',
+                        nameJp: 'キャッチバイソニョウナ',
+                        description: '트렌디한 K-뷰티 브랜드',
+                        logoUrl: 'assets/img/SHOP BRAND/Catch By Sonyouna.jpg',
+                        status: 'active'
+                    },
+                    {
+                        code: 'medipeel',
+                        nameKr: 'Medipeel',
+                        nameJp: 'メディピール',
+                        description: '메디컬 스킨케어 브랜드',
+                        logoUrl: 'assets/img/SHOP BRAND/Medipeel.jpg',
+                        status: 'active'
+                    },
+                    {
+                        code: 'dancingwhale',
+                        nameKr: 'Dancing Whale',
+                        nameJp: 'ダンシングホエール',
+                        description: '바다에서 영감받은 자연 브랜드',
+                        logoUrl: 'assets/img/SHOP BRAND/Dancing Whale.jpg',
+                        status: 'active'
+                    }
+                ];
+                
+                const results = [];
+                
+                for (const brandData of initialBrands) {
+                    console.log(`📝 브랜드 생성 중: ${brandData.nameKr}`);
+                    
+                    const firestoreBrandData = {
+                        ...brandData,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        isInitialData: true
+                    };
+                    
+                    const docRef = await db.collection('brands').add(firestoreBrandData);
+                    
+                    results.push({
+                        id: docRef.id,
+                        code: brandData.code,
+                        name: brandData.nameKr,
+                        status: 'success'
+                    });
+                    
+                    console.log(`✅ ${brandData.nameKr} 생성 완료 (ID: ${docRef.id})`);
+                }
+                
+                console.log('🎉 모든 브랜드 데이터 생성 완료!');
+                return {
+                    success: true,
+                    brands: results,
+                    message: `${results.length}개 브랜드가 성공적으로 생성되었습니다.`
+                };
+                
+            } catch (error) {
+                console.error('❌ 브랜드 데이터 생성 실패:', error);
+                return {
+                    success: false,
+                    error: error.message
+                };
+            }
+        }
+
+        // 基本ブランド情報取得
+        function getDefaultBrandInfo(brandCode) {
+            const defaultBrands = {
+                'lalarecipe': {
+                    nameKr: 'LALARECIPE',
+                    nameJp: 'ララレシピ',
+                    code: 'lalarecipe',
+                    description: '自然成分を使用した韓国コスメブランド',
+                    category: 'COSMETICS'
+                },
+                'lucinde': {
+                    nameKr: 'LUCINDE',
+                    nameJp: 'ルシンデ',
+                    code: 'lucinde',
+                    description: 'プレミアム韓国スキンケアブランド',
+                    category: 'COSMETICS'
+                },
+                'coscell': {
+                    nameKr: 'COSCELL',
+                    nameJp: 'コスセル',
+                    code: 'coscell',
+                    description: '細胞活性化コスメブランド',
+                    category: 'COSMETICS'
+                },
+                'makeheal': {
+                    nameKr: 'Make heal',
+                    nameJp: 'メイクヒール',
+                    code: 'makeheal',
+                    description: '肌に優しいメイクアップブランド',
+                    category: 'COSMETICS'
+                },
+                'mondaymuseum': {
+                    nameKr: 'Monday Museum',
+                    nameJp: 'マンデーミュージアム',
+                    code: 'mondaymuseum',
+                    description: 'アートとコスメが融合したブランド',
+                    category: 'COSMETICS'
+                },
+                'plareceta': {
+                    nameKr: 'Plareceta',
+                    nameJp: 'プラレセタ',
+                    code: 'plareceta',
+                    description: 'プラセンタ配合コスメブランド',
+                    category: 'COSMETICS'
+                },
+                'catchbysonyouna': {
+                    nameKr: 'Catch By Sonyouna',
+                    nameJp: 'キャッチバイソニョウナ',
+                    code: 'catchbysonyouna',
+                    description: 'トレンドリーディングコスメブランド',
+                    category: 'COSMETICS'
+                },
+                'medipeel': {
+                    nameKr: 'Medipeel',
+                    nameJp: 'メディピール',
+                    code: 'medipeel',
+                    description: '医療用成分配合コスメブランド',
+                    category: 'COSMETICS'
+                },
+                'dancingwhale': {
+                    nameKr: 'Dancing Whale',
+                    nameJp: 'ダンシングホエール',
+                    code: 'dancingwhale',
+                    description: 'ユニークなコンセプトのコスメブランド',
+                    category: 'COSMETICS'
+                }
+            };
+            
+            return defaultBrands[brandCode] || {
+                nameKr: brandCode.toUpperCase(),
+                nameJp: brandCode,
+                code: brandCode,
+                description: '韓国コスメブランド',
+                category: 'COSMETICS'
+            };
+        }
+        
+        // 푸터 관련 함수들
+        // 기본 푸터 데이터 제거됨 - Firebase 전용 시스템
+        
+        // 푸터 회사 정보 업데이트
+        function updateFooterCompanyInfo(footerData) {
+            const companyInfoContainer = document.getElementById('footer-company-info');
+            if (!companyInfoContainer) {
+                console.warn('⚠️ 회사 정보 컨테이너를 찾을 수 없습니다');
+                return;
+            }
+            
+            console.log('🏢 회사 정보 업데이트 시작:', footerData.companyInfo);
+            
+            // companyInfo 배열이 있는 경우
+            if (footerData.companyInfo && Array.isArray(footerData.companyInfo)) {
+                if (footerData.companyInfo.length === 0) {
+                    companyInfoContainer.innerHTML = '<li><span class="text-muted">会社情報が登録されていません。</span></li>';
+                    console.log('📝 회사 정보가 없습니다');
+                    return;
+                }
+                
+                // 순서대로 정렬
+                const sortedInfo = [...footerData.companyInfo].sort((a, b) => a.order - b.order);
+                console.log('📊 정렬된 회사 정보:', sortedInfo);
+                
+                let html = '';
+                sortedInfo.forEach(info => {
+                    let icon = '';
+                    let content = '';
+                    
+                    // 타입에 따라 아이콘과 링크 설정
+                    switch (info.type) {
+                        case 'address':
+                            icon = '<i class="fas fa-map-marker-alt fa-fw"></i>';
+                            content = info.value;
+                            break;
+                        case 'phone':
+                            icon = '<i class="fas fa-phone fa-fw"></i>';
+                            content = `<a class="text-decoration-none text-white" href="tel:${info.value}">${info.value}</a>`;
+                            break;
+                        case 'email':
+                            icon = '<i class="fas fa-envelope fa-fw"></i>';
+                            content = `<a class="text-decoration-none text-white" href="mailto:${info.value}">${info.value}</a>`;
+                            break;
+                        case 'fax':
+                            icon = '<i class="fas fa-fax fa-fw"></i>';
+                            content = info.value;
+                            break;
+                        case 'hours':
+                            icon = '<i class="fas fa-clock fa-fw"></i>';
+                            content = info.value;
+                            break;
+                        default:
+                            icon = '<i class="fas fa-info-circle fa-fw"></i>';
+                            content = info.value;
+                    }
+                    
+                    html += `
+                        <li>
+                            ${icon}
+                            ${content}
+                        </li>
+                    `;
+                });
+                
+                companyInfoContainer.innerHTML = html;
+                console.log('✅ 회사 정보 HTML 업데이트 완료');
+                return;
+            }
+            
+            // 하위 호환성: 기존 필드들도 지원
+            let html = '';
+            
+            if (footerData.address) {
+                html += `
+                    <li>
+                        <i class="fas fa-map-marker-alt fa-fw"></i>
+                        ${footerData.address}
+                    </li>
+                `;
+            }
+            
+            if (footerData.phone) {
+                html += `
+                    <li>
+                        <i class="fa fa-phone fa-fw"></i>
+                        <a class="text-decoration-none text-white" href="tel:${footerData.phone}">${footerData.phone}</a>
+                    </li>
+                `;
+            }
+            
+            if (footerData.email) {
+                html += `
+                    <li>
+                        <i class="fa fa-envelope fa-fw"></i>
+                        <a class="text-decoration-none text-white" href="mailto:${footerData.email}">${footerData.email}</a>
+                    </li>
+                `;
+            }
+            
+            companyInfoContainer.innerHTML = html;
+        }
+        
+        // 푸터 브랜드명 업데이트
+        function updateFooterBrands(brandNames) {
+            const brandsListContainer = document.getElementById('footer-brands-list');
+            if (!brandsListContainer) return;
+            
+            if (brandNames.length === 0) {
+                brandsListContainer.innerHTML = '<li><span class="text-muted">ブランドが登録されていません。</span></li>';
+                return;
+            }
+            
+            // 순서대로 정렬 (order 속성이 있는 경우)
+            const sortedBrands = [...brandNames].sort((a, b) => {
+                const orderA = typeof a === 'object' && a.order ? a.order : 999;
+                const orderB = typeof b === 'object' && b.order ? b.order : 999;
+                return orderA - orderB;
+            });
+            
+            let html = '';
+            sortedBrands.forEach(brand => {
+                // 기존 문자열 형태와 새로운 객체 형태 모두 지원
+                const brandName = typeof brand === 'string' ? brand : brand.name;
+                const brandLink = typeof brand === 'string' ? '#' : (brand.link || '#');
+                
+                html += `
+                    <li>
+                        <a class="text-decoration-none text-white" href="${brandLink}">
+                            ${brandName}
+                        </a>
+                    </li>
+                `;
+            });
+            
+            brandsListContainer.innerHTML = html;
+        }
+        
+        // 푸터 Further Info 링크 업데이트
+        function updateFooterFurtherInfoLinks(furtherInfoLinks) {
+            const furtherInfoContainer = document.getElementById('footer-further-info');
+            if (!furtherInfoContainer) return;
+            
+            if (furtherInfoLinks.length === 0) {
+                furtherInfoContainer.innerHTML = '<li><span class="text-muted">リンクが登録されていません。</span></li>';
+                return;
+            }
+            
+            // 순서대로 정렬
+            const sortedLinks = [...furtherInfoLinks].sort((a, b) => a.order - b.order);
+            
+            let html = '';
+            sortedLinks.forEach(link => {
+                html += `
+                    <li>
+                        <a class="text-decoration-none text-white" href="${link.link}">
+                            ${link.name}
+                        </a>
+                    </li>
+                `;
+            });
+            
+            furtherInfoContainer.innerHTML = html;
+        }
+        
+        // 푸터 HTML 업데이트
+        function updateFooterHTML(footerData) {
+            console.log('🦶 푸터 데이터 업데이트 시작:', footerData);
+            
+            // 회사 정보 동적 로드
+            updateFooterCompanyInfo(footerData);
+            
+            // 브랜드명 동적 로드
+            updateFooterBrands(footerData.brandNames || []);
+            
+            // Further Info 링크 동적 로드
+            updateFooterFurtherInfoLinks(footerData.furtherInfoLinks || []);
+            
+            console.log('✅ 푸터 데이터 업데이트 완료');
+        }
+        
+        // Firebase에서 푸터 데이터 로드
+        async function loadFooterContent() {
+            try {
+                console.log('🦶 Firebase에서 푸터 데이터 로드 시작');
+                
+                let footerData = {};
+                
+                // Firebase에서 데이터 로드 시도
+                if (window.firebase && window.firebase.firestore) {
+                    const snapshot = await window.firebase.firestore().collection('footer_content').limit(1).get();
+                    if (!snapshot.empty) {
+                        footerData = snapshot.docs[0].data();
+                        console.log('📊 Firebase에서 푸터 데이터 로드 완료');
+                    }
+                }
+                
+                // 데이터가 없으면 빈 객체로 설정 (Firebase 전용)
+                if (Object.keys(footerData).length === 0) {
+                    footerData = { companyInfo: [], furtherInfoLinks: [], brandNames: [] };
+                    console.log('📝 Firebase에 푸터 데이터 없음');
+                }
+                
+                // 푸터 HTML 업데이트
+                updateFooterHTML(footerData);
+                
+                console.log('✅ 푸터 콘텐츠 로딩 완료');
+                
+            } catch (error) {
+                console.error('❌ 푸터 콘텐츠 로딩 오류:', error);
+                const emptyFooterData = { companyInfo: [], furtherInfoLinks: [], brandNames: [] };
+                updateFooterHTML(emptyFooterData);
+            }
+        }
+        
+        // 페이지 로드 시 푸터 로드
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🏷️ Brand Template 페이지 초기화 시작');
+            
+            // Firebase 초기화 대기 후 푸터 로드
+            setTimeout(() => {
+                console.log('✅ Firebase 초기화 대기 완료, 푸터 로드 시작');
+                loadFooterContent();
+            }, 1000);
+        });
+    </script>
+    
+    <!-- Start Footer -->
+    <footer class="bg-black text-white" id="tempaltemo_footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 pt-5">
+                    <h2 class="h2 text-white border-bottom pb-3 border-light logo">Aether</h2>
+                    <ul class="list-unstyled text-white footer-link-list" id="footer-company-info">
+                        <!-- 회사 정보가 여기에 동적으로 로드됩니다 -->
+                    </ul>
+                </div>
+
+                <div class="col-md-4 pt-5">
+                    <h2 class="h2 text-white border-bottom pb-3 border-light">Brand</h2>
+                    <ul class="list-unstyled text-white footer-link-list" id="footer-brands-list">
+                        <!-- 브랜드명이 여기에 동적으로 로드됩니다 -->
+                    </ul>
+                </div>
+
+                <div class="col-md-4 pt-5">
+                    <h2 class="h2 text-white border-bottom pb-3 border-light">Further Info</h2>
+                    <ul class="list-unstyled text-white footer-link-list" id="footer-further-info">
+                        <!-- Further Info 링크가 여기에 동적으로 로드됩니다 -->
+                    </ul>
+                </div>
+            </div>
+
+            <div class="row text-white mb-4">
+                <div class="col-12 mb-3">
+                    <div class="w-100 my-3 border-top border-light"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="w-100 bg-white py-3">
+            <div class="container">
+                <div class="row pt-2">
+                    <div class="col-12">
+                        <p class="text-left text-dark">
+                            Copyright © 2025 Aether
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <!-- End Footer -->
+</body>
+</html>

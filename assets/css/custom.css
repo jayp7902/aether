@@ -1,0 +1,241 @@
+/*
+Custom Css
+*/
+
+/* 네비게이션바 상하 여백 20% 줄이기 */
+.navbar {
+    padding-top: 0.4rem !important;    /* 0.5rem에서 20% 줄임 */
+    padding-bottom: 0.4rem !important; /* 0.5rem에서 20% 줄임 */
+    position: relative !important; /* QR코드 버튼의 기준점 */
+}
+
+/* QR코드 버튼 항상 표시 */
+#qr-code-btn {
+    display: inline-block !important;
+    visibility: visible !important;
+    font-size: 2rem !important;
+    padding: 0.5rem !important;
+}
+
+/* 모바일 햄버거 메뉴 스타일 개선 */
+@media (max-width: 991.98px) {
+    .navbar-collapse {
+        padding: 2rem 1rem !important;
+        background-color: #fff !important;
+        border-top: 1px solid #e9ecef !important;
+    }
+    
+    /* 모바일 메뉴 링크 스타일 */
+    .navbar-collapse .nav-link {
+        font-size: 1.1rem !important;
+        font-weight: 400 !important;
+        color: #333 !important;
+        padding: 0.75rem 1rem !important;
+        border-radius: 8px !important;
+        transition: all 0.2s ease !important;
+    }
+    
+    .navbar-collapse .nav-link:hover {
+        background-color: #f8f9fa !important;
+        color: #000 !important;
+    }
+    
+    /* 모바일 아이콘 스타일 */
+    .navbar-collapse .fas {
+        transition: all 0.2s ease !important;
+    }
+    
+    .navbar-collapse .nav-link:hover .fas {
+        transform: scale(1.1) !important;
+    }
+    
+    /* 모바일 드롭다운 메뉴 중앙 정렬 */
+    .dropdown-menu-center {
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        right: auto !important;
+    }
+}
+
+/* 모바일 QR코드 버튼 기본 스타일 */
+#qr-code-btn-mobile {
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 9999 !important; /* 매우 높은 z-index */
+    font-size: 2.2rem !important; /* 적당한 크기로 조정 */
+    padding: 0.8rem !important;
+    color: #333 !important; /* 더 부드러운 색상 */
+    transition: all 0.2s ease !important; /* 부드러운 전환 효과 */
+    background-color: rgba(255, 255, 255, 0.95) !important; /* 배경색 추가 */
+    border-radius: 50% !important; /* 원형 배경 */
+    min-width: 60px !important; /* 최소 너비 */
+    min-height: 60px !important; /* 최소 높이 */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+/* container에 상대 위치 설정 */
+.navbar .container {
+    position: relative !important;
+}
+
+/* 모바일 QR코드 버튼 호버 효과 */
+#qr-code-btn-mobile:hover {
+    color: #000 !important;
+    transform: translate(-50%, -50%) scale(1.05) !important;
+}
+
+/* 모바일에서 QR코드 버튼 기본 표시 */
+@media (max-width: 991.98px) {
+    #qr-code-btn-mobile {
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        pointer-events: auto !important;
+    }
+}
+
+/* 햄버거 메뉴가 펼쳐진 상태에서 모바일 QR코드 버튼 강제 숨김 */
+.navbar-collapse.show ~ #qr-code-btn-mobile,
+.navbar-collapse.collapsing ~ #qr-code-btn-mobile,
+.navbar-collapse.show + #qr-code-btn-mobile,
+.navbar-collapse.collapsing + #qr-code-btn-mobile {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+/* 데스크톱에서 모바일 QR코드 버튼 숨김 */
+@media (min-width: 992px) {
+    #qr-code-btn-mobile {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+}
+
+.brand-logo {
+    max-width: 300px;
+    width: 100%;
+    height: auto;
+}
+
+@media (max-width: 768px) {
+    .brand-logo {
+        max-width: 200px;
+    }
+}
+
+@media (max-width: 576px) {
+    .brand-logo {
+        max-width: 150px;
+    }
+}
+
+/* Japanese Font Styles */
+.japanese-text {
+    font-family: "Noto Sans JP", sans-serif !important;
+    font-weight: 400;
+    line-height: 1.6;
+    letter-spacing: 0.05em;
+}
+
+.japanese-heading {
+    font-family: "Noto Sans JP", sans-serif !important;
+    font-weight: 600;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+}
+
+/* Responsive Japanese text */
+@media (max-width: 768px) {
+    .japanese-text {
+        font-size: 0.85em;
+        line-height: 1.5;
+    }
+    
+    .japanese-heading {
+        font-size: 0.9em;
+        line-height: 1.3;
+    }
+}
+
+/* 체크박스 모노톤 스타일 - 전체 사이트 적용 */
+.form-check-input {
+    background-color: #fff;
+    border-color: #6c757d;
+}
+
+.form-check-input:checked {
+    background-color: #343a40 !important;
+    border-color: #343a40 !important;
+}
+
+.form-check-input:focus {
+    border-color: #6c757d;
+    box-shadow: 0 0 0 0.25rem rgba(108, 117, 125, 0.25);
+}
+
+.form-check-input:checked:focus {
+    border-color: #343a40;
+    box-shadow: 0 0 0 0.25rem rgba(52, 58, 64, 0.25);
+}
+
+/* 드롭다운 메뉴 서체 통일 */
+.dropdown-menu {
+    font-family: "Montserrat", sans-serif !important;
+    font-weight: 400 !important;
+    font-size: 0.9rem !important;
+}
+
+.dropdown-item {
+    font-family: "Montserrat", sans-serif !important;
+    font-weight: 400 !important;
+    font-size: 0.9rem !important;
+    color: #343a40 !important;
+    padding: 0.35rem 1rem !important; /* 패딩 줄임 */
+    transition: all 0.2s ease !important;
+}
+
+.dropdown-item:hover,
+.dropdown-item:focus {
+    background-color: #f8f9fa !important;
+    color: #000 !important;
+}
+
+.dropdown-item i {
+    font-size: 0.85rem !important;
+    margin-right: 0.5rem !important;
+}
+
+.dropdown-divider {
+    border-top-color: #e9ecef !important;
+    margin: 0.15rem 0 !important; /* 마진 줄임 */
+}
+
+/* 드롭다운 메뉴 모바일 버전 */
+@media (max-width: 991.98px) {
+    .dropdown-menu {
+        font-size: 1rem !important;
+        border-radius: 8px !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    .dropdown-item {
+        font-size: 1rem !important;
+        padding: 0.6rem 1rem !important; /* 패딩 줄임 */
+        border-radius: 4px !important;
+        margin: 0.1rem 0.25rem !important; /* 마진 줄임 */
+    }
+    
+    .dropdown-item:hover,
+    .dropdown-item:focus {
+        background-color: #f8f9fa !important;
+        transform: translateX(2px) !important;
+    }
+}

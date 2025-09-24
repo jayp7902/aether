@@ -1,0 +1,16 @@
+# SPA 라우팅을 위한 리다이렉션 규칙
+
+# 브랜드 페이지 리다이렉션
+/brands/* /brand-template.html 200
+
+# 상품 상세 페이지 리다이렉션
+/products/* /product-detail.html 200
+
+# 관리자 대시보드
+/admin /admin-dashboard.html 200
+
+# API 리다이렉션 (필요시)
+/api/* https://your-firebase-project.cloudfunctions.net/:splat 200
+
+# 404 페이지
+/* /index.html 404

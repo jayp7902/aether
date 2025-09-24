@@ -1,0 +1,30 @@
+{
+  "name": "aether-cosmetics",
+  "version": "2.0.0",
+  "description": "Aether - Korean Cosmetics Brand Shopping Mall",
+  "main": "index.html",
+  "scripts": {
+    "build": "echo 'Static site - no build required'",
+    "deploy": "netlify deploy --prod",
+    "dev": "python3 -m http.server 8000"
+  },
+  "keywords": [
+    "cosmetics",
+    "korean-beauty",
+    "e-commerce",
+    "firebase",
+    "netlify"
+  ],
+  "author": "Aether Team",
+  "license": "UNLICENSED",
+  "homepage": "https://aether-cosmetics.netlify.app",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/aether-cosmetics.git"
+  },
+  "devDependencies": {},
+  "dependencies": {},
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

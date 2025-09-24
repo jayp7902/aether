@@ -1,0 +1,981 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Aether Store - Tablet Interface</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <link rel="apple-touch-icon" href="assets/img/aether-icon.png">
+    <link rel="shortcut icon" type="image/x-icon" href="assets/img/aether-icon.png">
+    
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <link rel="stylesheet" href="assets/css/templatemo.css">
+    <link rel="stylesheet" href="assets/css/custom.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100;200;300;400;500;600;700;800;900&display=swap">
+    <link rel="stylesheet" href="assets/css/fontawesome.min.css">
+    
+    <style>
+        body {
+            font-family: "Montserrat", sans-serif;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .japanese-text {
+            font-family: "Noto Sans JP", sans-serif;
+            font-weight: 400;
+            line-height: 1.6;
+        }
+        
+        .japanese-heading {
+            font-family: "Noto Sans JP", sans-serif;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+        
+        .tablet-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .store-header {
+            background: linear-gradient(135deg, #343a40 0%, #495057 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .scanner-section {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .customer-info {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            display: none;
+        }
+        
+        .point-actions {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: none;
+        }
+        
+        #scanner-video {
+            width: 100%;
+            max-width: 400px;
+            height: 300px;
+            border-radius: 10px;
+            border: 3px solid #343a40;
+            background: #000;
+        }
+        
+        .scan-overlay {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .scan-line {
+            position: absolute;
+            top: 50%;
+            left: 10%;
+            right: 10%;
+            height: 2px;
+            background: #28a745;
+            animation: scan 2s infinite;
+        }
+        
+        @keyframes scan {
+            0% { transform: translateY(-150px); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(150px); opacity: 0; }
+        }
+        
+        .btn-large {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            margin: 10px;
+            min-width: 200px;
+        }
+        
+        .customer-card {
+            background: linear-gradient(135deg, #343a40 0%, #6c757d 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .points-display {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .transaction-history {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 15px;
+            background: #f8f9fa;
+        }
+        
+        .transaction-item {
+            background: white;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #6c757d;
+        }
+        
+        .amount-input {
+            font-size: 1.5rem;
+            text-align: center;
+            border-radius: 10px;
+            border: 2px solid #dee2e6;
+            padding: 15px;
+        }
+        
+        .quick-amounts {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .quick-amount-btn {
+            padding: 10px 20px;
+            border: 2px solid #343a40;
+            background: white;
+            color: #343a40;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .quick-amount-btn:hover,
+        .quick-amount-btn.active {
+            background: #343a40;
+            color: white;
+        }
+        
+        .success-animation {
+            animation: bounce 0.6s;
+        }
+        
+        @keyframes bounce {
+            0%, 20%, 60%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            80% { transform: translateY(-10px); }
+        }
+        
+        .status-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border-radius: 25px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .status-online {
+            background: #6c757d;
+        }
+        
+        .status-offline {
+            background: #343a40;
+        }
+        
+        .manual-input-section {
+            margin-top: 20px;
+            padding: 20px;
+            border: 2px dashed #dee2e6;
+            border-radius: 10px;
+            background: #f8f9fa;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Status Indicator -->
+    <div class="status-indicator status-online" id="connection-status">
+        <i class="fas fa-wifi me-2"></i>オンライン
+    </div>
+
+    <div class="tablet-container">
+        <!-- Store Header -->
+        <div class="store-header">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <img src="assets/img/logo.png" alt="Aether Logo" class="img-fluid" style="max-height: 60px;">
+                </div>
+                <div class="col-md-6">
+                    <h2 class="mb-0 japanese-heading">店舗用ポイントシステム</h2>
+                    <p class="mb-0 japanese-text">QRコードスキャン & ポイント管理</p>
+                </div>
+                <div class="col-md-3 text-end">
+                    <div class="japanese-text">
+                        <div id="current-date"></div>
+                        <div id="current-time" style="font-size: 1.2rem; font-weight: bold;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- QR Scanner Section -->
+        <div class="scanner-section" id="scanner-section">
+            <h3 class="japanese-heading mb-4">
+                <i class="fas fa-qrcode me-2"></i>QRコードをスキャン
+            </h3>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="scan-overlay">
+                        <video id="scanner-video" autoplay muted playsinline></video>
+                        <div class="scan-line"></div>
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-dark btn-large" onclick="startScanner()">
+                            <i class="fas fa-camera me-2"></i>スキャン開始
+                        </button>
+                        <button class="btn btn-secondary btn-large" onclick="stopScanner()">
+                            <i class="fas fa-stop me-2"></i>停止
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="manual-input-section">
+                        <h5 class="japanese-heading">手動入力</h5>
+                        <p class="japanese-text text-muted">QRコードが読み取れない場合</p>
+                        <div class="input-group mb-3">
+                            <input type="text" class="form-control" id="manual-qr-input" placeholder="QRコードを手動入力">
+                            <button class="btn btn-outline-secondary" onclick="processManualQR()">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <h5 class="japanese-heading">今日の実績</h5>
+                        <div class="row text-center">
+                            <div class="col-6">
+                                <div class="p-3 bg-light rounded">
+                                    <div class="h4 mb-0" id="today-customers">0</div>
+                                    <small class="japanese-text">お客様数</small>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="p-3 bg-light rounded">
+                                    <div class="h4 mb-0" id="today-points">0</div>
+                                    <small class="japanese-text">付与ポイント</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Information -->
+        <div class="customer-info" id="customer-info">
+            <h3 class="japanese-heading mb-4">
+                <i class="fas fa-user me-2"></i>お客様情報
+            </h3>
+            
+            <div class="customer-card">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h4 class="mb-1" id="customer-name">お客様名</h4>
+                        <p class="mb-0" id="customer-email">メールアドレス</p>
+                        <small id="customer-phone">電話番号</small>
+                    </div>
+                    <div class="col-md-4 text-center">
+                        <div class="japanese-text">現在のポイント</div>
+                        <div class="points-display" id="customer-points">0</div>
+                        <div class="japanese-text">Point</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button class="btn btn-outline-secondary btn-large" onclick="resetScanner()">
+                    <i class="fas fa-arrow-left me-2"></i>戻る
+                </button>
+            </div>
+        </div>
+
+        <!-- Point Actions -->
+        <div class="point-actions" id="point-actions">
+            <h3 class="japanese-heading mb-4">
+                <i class="fas fa-coins me-2"></i>ポイント操作
+            </h3>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="japanese-heading mb-0">ポイント付与</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label japanese-text">購入金額（円）</label>
+                                <input type="number" class="form-control amount-input" id="purchase-amount" placeholder="0" min="0">
+                            </div>
+                            
+                            <div class="quick-amounts">
+                                <div class="quick-amount-btn" onclick="setPurchaseAmount(1000)">¥1,000</div>
+                                <div class="quick-amount-btn" onclick="setPurchaseAmount(2000)">¥2,000</div>
+                                <div class="quick-amount-btn" onclick="setPurchaseAmount(3000)">¥3,000</div>
+                                <div class="quick-amount-btn" onclick="setPurchaseAmount(5000)">¥5,000</div>
+                                <div class="quick-amount-btn" onclick="setPurchaseAmount(10000)">¥10,000</div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label japanese-text">付与ポイント</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control amount-input" id="points-to-add" readonly>
+                                    <span class="input-group-text">P</span>
+                                </div>
+                                <small class="japanese-text text-muted">購入金額の3%がポイント</small>
+                            </div>
+                            
+                            <button class="btn btn-dark btn-large w-100" onclick="addPoints()">
+                                <i class="fas fa-plus me-2"></i>ポイント付与
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="japanese-heading mb-0">手動ポイント操作</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label japanese-text">ポイント数</label>
+                                <input type="number" class="form-control amount-input" id="manual-points" placeholder="0" min="0">
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label japanese-text">理由</label>
+                                <select class="form-control" id="point-reason">
+                                    <option value="特別付与">特別付与</option>
+                                    <option value="イベント特典">イベント特典</option>
+                                    <option value="誕生日特典">誕生日特典</option>
+                                    <option value="キャンペーン">キャンペーン</option>
+                                    <option value="修正">修正</option>
+                                    <option value="その他">その他</option>
+                                </select>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-6">
+                                    <button class="btn btn-secondary w-100" onclick="addManualPoints()">
+                                        <i class="fas fa-plus me-2"></i>追加
+                                    </button>
+                                </div>
+                                <div class="col-6">
+                                    <button class="btn btn-outline-secondary w-100" onclick="subtractManualPoints()">
+                                        <i class="fas fa-minus me-2"></i>差引
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <button class="btn btn-outline-secondary btn-large" onclick="backToCustomerInfo()">
+                    <i class="fas fa-arrow-left me-2"></i>お客様情報に戻る
+                </button>
+                <button class="btn btn-dark btn-large" onclick="resetScanner()">
+                    <i class="fas fa-home me-2"></i>最初に戻る
+                </button>
+            </div>
+        </div>
+
+        <!-- Today's Transactions -->
+        <div class="card" style="display: none;" id="transactions-section">
+            <div class="card-header">
+                <h5 class="japanese-heading mb-0">
+                    <i class="fas fa-history me-2"></i>本日の取引履歴
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="transaction-history" id="transaction-history">
+                    <!-- 취引 내역이 여기에 동적으로 추가됩니다 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <script src="assets/js/jquery-1.11.0.min.js"></script>
+    <script src="assets/js/bootstrap.bundle.min.js"></script>
+    <script src="assets/js/firebase-config.js"></script>
+    
+    <!-- QR Code Scanner Library -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+
+    <script>
+        let scanner = null;
+        let currentCustomer = null;
+        let todayStats = {
+            customers: 0,
+            points: 0,
+            transactions: []
+        };
+
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            loadTodayStats();
+            setupPurchaseAmountListener();
+            
+            // URL에서 QR코드 확인
+            checkUrlForQRCode();
+        });
+
+        // URL에서 QR코드 확인
+        function checkUrlForQRCode() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const hashParams = window.location.hash.substring(1);
+            
+            // URL 파라미터에서 QR코드 확인
+            let qrCode = urlParams.get('qr');
+            
+            // Hash에서 QR코드 확인
+            if (!qrCode && hashParams) {
+                const hashQR = hashParams.match(/qr=([^&]+)/);
+                if (hashQR) {
+                    qrCode = decodeURIComponent(hashQR[1]);
+                }
+            }
+            
+            if (qrCode) {
+                console.log('URL에서 QR코드 발견:', qrCode);
+                // 자동으로 QR코드 처리
+                setTimeout(() => {
+                    processQRCode(qrCode);
+                }, 1000);
+            }
+        }
+
+        // 날짜/시간 업데이트
+        function updateDateTime() {
+            const now = new Date();
+            const dateOptions = { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                weekday: 'long' 
+            };
+            const timeOptions = { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                hour12: false 
+            };
+            
+            document.getElementById('current-date').textContent = now.toLocaleDateString('ja-JP', dateOptions);
+            document.getElementById('current-time').textContent = now.toLocaleTimeString('ja-JP', timeOptions);
+        }
+
+        // QR 스캐너 시작
+        async function startScanner() {
+            try {
+                const video = document.getElementById('scanner-video');
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment',
+                        width: { ideal: 400 },
+                        height: { ideal: 300 }
+                    } 
+                });
+                
+                video.srcObject = stream;
+                video.play();
+                
+                // QR 코드 스캔 시작
+                scanQRCode();
+                
+            } catch (error) {
+                console.error('카메라 접근 실패:', error);
+                alert('カメラにアクセスできません。権限を確認してください。');
+            }
+        }
+
+        // QR 스캐너 중지
+        function stopScanner() {
+            const video = document.getElementById('scanner-video');
+            if (video.srcObject) {
+                const tracks = video.srcObject.getTracks();
+                tracks.forEach(track => track.stop());
+                video.srcObject = null;
+            }
+            if (scanner) {
+                clearInterval(scanner);
+                scanner = null;
+            }
+        }
+
+        // QR 코드 스캔
+        function scanQRCode() {
+            const video = document.getElementById('scanner-video');
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            
+            scanner = setInterval(() => {
+                if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    
+                    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                    const code = jsQR(imageData.data, imageData.width, imageData.height);
+                    
+                    if (code) {
+                        console.log('QR 코드 감지:', code.data);
+                        processQRCode(code.data);
+                        stopScanner();
+                    }
+                }
+            }, 100);
+        }
+
+        // 수동 QR 입력 처리
+        function processManualQR() {
+            const qrInput = document.getElementById('manual-qr-input');
+            const qrCode = qrInput.value.trim();
+            
+            if (qrCode) {
+                processQRCode(qrCode);
+                qrInput.value = '';
+            } else {
+                alert('QRコードを入力してください。');
+            }
+        }
+
+        // QR 코드 처리
+        async function processQRCode(qrData) {
+            console.log('=== QR코드 처리 시작 ===');
+            console.log('입력된 QR데이터:', qrData);
+            
+            try {
+                // 로딩 표시
+                showLoading();
+                
+                // QR데이터 정리 (앞뒤 공백 제거)
+                const cleanQRData = qrData.trim();
+                console.log('정리된 QR데이터:', cleanQRData);
+                
+                // localStorage 사용자 목록 확인
+                const users = JSON.parse(localStorage.getItem('aetherUsers') || '[]');
+                console.log('localStorage 사용자 수:', users.length);
+                console.log('사용자 목록:', users.map(u => ({ email: u.email, qrToken: u.qrToken })));
+                
+                // Firebase에서 사용자 정보 조회
+                console.log('FirebaseService.getUserByQRToken 호출');
+                const result = await FirebaseService.getUserByQRToken(cleanQRData);
+                console.log('FirebaseService.getUserByQRToken 결과:', result);
+                
+                hideLoading();
+                
+                if (result.success) {
+                    console.log('QR코드 처리 성공, 사용자 정보:', result.user);
+                    currentCustomer = result.user;
+                    showCustomerInfo();
+                } else {
+                    console.error('QR코드 처리 실패:', result.error);
+                    alert('有効なQRコードではありません。\n' + result.error + '\n\nQRコード: ' + cleanQRData);
+                    resetScanner();
+                }
+                
+            } catch (error) {
+                hideLoading();
+                console.error('QR 코드 처리 예외:', error);
+                alert('QRコードの処理中にエラーが発生しました。\n' + error.message);
+                resetScanner();
+            }
+        }
+
+        // 고객 정보 표시
+        function showCustomerInfo() {
+            document.getElementById('scanner-section').style.display = 'none';
+            document.getElementById('customer-info').style.display = 'block';
+            document.getElementById('point-actions').style.display = 'block';
+            
+            // 고객 정보 업데이트
+            document.getElementById('customer-name').textContent = currentCustomer.name || 'お客様';
+            document.getElementById('customer-email').textContent = currentCustomer.email || '';
+            document.getElementById('customer-phone').textContent = currentCustomer.phone || '';
+            document.getElementById('customer-points').textContent = (currentCustomer.points || 0).toLocaleString();
+            
+            // 성공 애니메이션
+            document.getElementById('customer-info').classList.add('success-animation');
+            setTimeout(() => {
+                document.getElementById('customer-info').classList.remove('success-animation');
+            }, 600);
+        }
+
+        // 구매 금액 설정
+        function setPurchaseAmount(amount) {
+            document.getElementById('purchase-amount').value = amount;
+            calculatePoints();
+            
+            // 활성 버튼 표시
+            document.querySelectorAll('.quick-amount-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        // 구매 금액 입력 리스너 설정
+        function setupPurchaseAmountListener() {
+            document.getElementById('purchase-amount').addEventListener('input', calculatePoints);
+        }
+
+        // 포인트 계산 (3% 적립률)
+        function calculatePoints() {
+            const amount = parseInt(document.getElementById('purchase-amount').value) || 0;
+            const points = Math.floor(amount * 0.03);
+            document.getElementById('points-to-add').value = points;
+        }
+
+        // 포인트 적립
+        async function addPoints() {
+            const amount = parseInt(document.getElementById('purchase-amount').value);
+            const points = parseInt(document.getElementById('points-to-add').value);
+            
+            if (!amount || points <= 0) {
+                alert('購入金額を入力してください。');
+                return;
+            }
+            
+            if (!confirm(`${points}ポイントを付与しますか？`)) {
+                return;
+            }
+            
+            try {
+                showLoading();
+                
+                const result = await FirebaseService.addPoints(
+                    currentCustomer.uid,
+                    points,
+                    `店舗購入 ¥${amount.toLocaleString()}`
+                );
+                
+                hideLoading();
+                
+                if (result.success) {
+                    // 고객 포인트 업데이트
+                    currentCustomer.points += points;
+                    document.getElementById('customer-points').textContent = currentCustomer.points.toLocaleString();
+                    
+                    // localStorage 사용자 정보도 업데이트
+                    updateLocalStorageUserPoints(currentCustomer.uid, currentCustomer.email, points);
+                    
+                    // 통계 업데이트
+                    updateTodayStats(points);
+                    
+                    // 성공 메시지
+                    alert(`${points}ポイントを付与しました！`);
+                    
+                    // 폼 초기화
+                    document.getElementById('purchase-amount').value = '';
+                    document.getElementById('points-to-add').value = '';
+                    document.querySelectorAll('.quick-amount-btn').forEach(btn => btn.classList.remove('active'));
+                    
+                } else {
+                    alert('ポイント付与に失敗しました。\n' + result.error);
+                }
+                
+            } catch (error) {
+                hideLoading();
+                console.error('포인트 적립 실패:', error);
+                alert('ポイント付与中にエラーが発生しました。');
+            }
+        }
+
+        // 수동 포인트 추가
+        async function addManualPoints() {
+            const points = parseInt(document.getElementById('manual-points').value);
+            const reason = document.getElementById('point-reason').value;
+            
+            if (!points || points <= 0) {
+                alert('ポイント数を入力してください。');
+                return;
+            }
+            
+            if (!confirm(`${points}ポイントを追加しますか？\n理由: ${reason}`)) {
+                return;
+            }
+            
+            try {
+                showLoading();
+                
+                const result = await FirebaseService.addPoints(
+                    currentCustomer.uid,
+                    points,
+                    reason
+                );
+                
+                hideLoading();
+                
+                if (result.success) {
+                    currentCustomer.points += points;
+                    document.getElementById('customer-points').textContent = currentCustomer.points.toLocaleString();
+                    
+                    // localStorage 사용자 정보도 업데이트
+                    updateLocalStorageUserPoints(currentCustomer.uid, currentCustomer.email, points);
+                    
+                    updateTodayStats(points);
+                    alert(`${points}ポイントを追加しました！`);
+                    document.getElementById('manual-points').value = '';
+                } else {
+                    alert('ポイント追加に失敗しました。\n' + result.error);
+                }
+                
+            } catch (error) {
+                hideLoading();
+                console.error('수동 포인트 추가 실패:', error);
+                alert('ポイント追加中にエラーが発生しました。');
+            }
+        }
+
+        // 수동 포인트 차감
+        async function subtractManualPoints() {
+            const points = parseInt(document.getElementById('manual-points').value);
+            const reason = document.getElementById('point-reason').value;
+            
+            if (!points || points <= 0) {
+                alert('ポイント数を入力してください。');
+                return;
+            }
+            
+            if (currentCustomer.points < points) {
+                alert('お客様のポイントが不足しています。');
+                return;
+            }
+            
+            if (!confirm(`${points}ポイントを差し引きますか？\n理由: ${reason}`)) {
+                return;
+            }
+            
+            try {
+                showLoading();
+                
+                const result = await FirebaseService.usePoints(
+                    currentCustomer.uid,
+                    points,
+                    reason
+                );
+                
+                hideLoading();
+                
+                if (result.success) {
+                    currentCustomer.points -= points;
+                    document.getElementById('customer-points').textContent = currentCustomer.points.toLocaleString();
+                    
+                    // localStorage 사용자 정보도 업데이트 (차감이므로 -points)
+                    updateLocalStorageUserPoints(currentCustomer.uid, currentCustomer.email, -points);
+                    
+                    alert(`${points}ポイントを差し引きました。`);
+                    document.getElementById('manual-points').value = '';
+                } else {
+                    alert('ポイント差引に失敗しました。\n' + result.error);
+                }
+                
+            } catch (error) {
+                hideLoading();
+                console.error('수동 포인트 차감 실패:', error);
+                alert('ポイント差引中にエラーが発生しました。');
+            }
+        }
+
+        // 고객 정보로 돌아가기
+        function backToCustomerInfo() {
+            document.getElementById('point-actions').style.display = 'none';
+            document.getElementById('customer-info').style.display = 'block';
+        }
+
+        // 스캐너 초기화
+        function resetScanner() {
+            stopScanner();
+            currentCustomer = null;
+            
+            document.getElementById('scanner-section').style.display = 'block';
+            document.getElementById('customer-info').style.display = 'none';
+            document.getElementById('point-actions').style.display = 'none';
+            
+            // 폼 초기화
+            document.getElementById('purchase-amount').value = '';
+            document.getElementById('points-to-add').value = '';
+            document.getElementById('manual-points').value = '';
+            document.getElementById('manual-qr-input').value = '';
+            document.querySelectorAll('.quick-amount-btn').forEach(btn => btn.classList.remove('active'));
+        }
+
+        // 오늘 통계 로드
+        function loadTodayStats() {
+            const today = new Date().toDateString();
+            const savedStats = localStorage.getItem('aetherStoreStats_' + today);
+            
+            if (savedStats) {
+                todayStats = JSON.parse(savedStats);
+            }
+            
+            updateStatsDisplay();
+        }
+
+        // 오늘 통계 업데이트
+        function updateTodayStats(points) {
+            todayStats.customers++;
+            todayStats.points += points;
+            
+            const today = new Date().toDateString();
+            localStorage.setItem('aetherStoreStats_' + today, JSON.stringify(todayStats));
+            
+            updateStatsDisplay();
+        }
+
+        // 통계 표시 업데이트
+        function updateStatsDisplay() {
+            document.getElementById('today-customers').textContent = todayStats.customers.toLocaleString();
+            document.getElementById('today-points').textContent = todayStats.points.toLocaleString();
+        }
+
+        // localStorage 사용자 포인트 업데이트
+        function updateLocalStorageUserPoints(uid, email, pointsChange) {
+            try {
+                console.log('localStorage 사용자 포인트 업데이트 시작:', {uid, email, pointsChange});
+                
+                const users = JSON.parse(localStorage.getItem('aetherUsers') || '[]');
+                let userIndex = users.findIndex(u => u.uid === uid || u.email === email);
+                
+                if (userIndex !== -1) {
+                    // 기존 사용자 포인트 업데이트
+                    const oldPoints = users[userIndex].points || 0;
+                    users[userIndex].points = oldPoints + pointsChange;
+                    users[userIndex].lastUpdated = new Date().toISOString();
+                    
+                    console.log('사용자 포인트 업데이트:', {
+                        email: users[userIndex].email,
+                        oldPoints: oldPoints,
+                        pointsChange: pointsChange,
+                        newPoints: users[userIndex].points
+                    });
+                    
+                    localStorage.setItem('aetherUsers', JSON.stringify(users));
+                    console.log('localStorage 업데이트 완료');
+                } else {
+                    console.warn('localStorage에서 사용자를 찾을 수 없음:', {uid, email});
+                }
+                
+            } catch (error) {
+                console.error('localStorage 사용자 포인트 업데이트 실패:', error);
+            }
+        }
+
+        // 로딩 표시
+        function showLoading() {
+            // 간단한 로딩 표시 (필요시 구현)
+            console.log('Loading...');
+        }
+
+        // 로딩 숨김
+        function hideLoading() {
+            console.log('Loading complete');
+        }
+
+        // QR코드 디버깅 함수
+        function debugQRTokens() {
+            console.log('=== QR토큰 디버깅 ===');
+            
+            // localStorage 사용자들 확인
+            const users = JSON.parse(localStorage.getItem('aetherUsers') || '[]');
+            console.log('localStorage 사용자 수:', users.length);
+            
+            users.forEach((user, index) => {
+                console.log(`${index + 1}. ${user.email}`);
+                console.log(`   uid: ${user.uid}`);
+                console.log(`   qrToken: ${user.qrToken || '없음'}`);
+                console.log(`   points: ${user.points || 0}`);
+            });
+            
+            // 로그인 상태 확인
+            const loginStatus = JSON.parse(localStorage.getItem('aetherLoginStatus') || '{}');
+            console.log('로그인 상태:', loginStatus);
+        }
+        
+        // 테스트 QR코드 생성
+        async function generateTestQRToken() {
+            try {
+                const loginStatus = JSON.parse(localStorage.getItem('aetherLoginStatus') || '{}');
+                if (!loginStatus.email) {
+                    console.error('로그인이 필요합니다');
+                    return;
+                }
+                
+                console.log('Testing QR token generation...');
+                const result = await FirebaseService.generateUserQRToken(loginStatus.uid || loginStatus.email);
+                console.log('QR token generation result:', result);
+                
+                if (result.success) {
+                    alert('QR Token Generated Successfully: ' + result.qrToken);
+                } else {
+                    alert('QR Token Generation Failed: ' + result.error);
+                }
+            } catch (error) {
+                console.error('QR token generation error:', error);
+                alert('QR Token Generation Error');
+            }
+        }
+        
+        // QR코드 강제 테스트
+        function testQRCode(qrToken) {
+            if (!qrToken) {
+                qrToken = prompt('QR토큰을 입력하세요:');
+            }
+            if (qrToken) {
+                console.log('강제 QR토큰 테스트:', qrToken);
+                processQRCode(qrToken);
+            }
+        }
+        
+        // 전역 함수들을 노출
+        window.debugQRTokens = debugQRTokens;
+        window.generateTestQRToken = generateTestQRToken;
+        window.testQRCode = testQRCode;
+        
+        // 페이지 언로드 시 카메라 정리
+        window.addEventListener('beforeunload', function() {
+            stopScanner();
+        });
+    </script>
+</body>
+</html> 
