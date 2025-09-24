@@ -1137,7 +1137,7 @@
                         console.log('✅ 포인트 섹션 최종 확인 완료');
                         
                         // 포인트 재로드 시도
-                        loadUserPointsOffline();
+                        await forceLoadUserPoints();
                     }
                 }, 1000);
 
@@ -2310,14 +2310,16 @@
                 
                 currentUser = user;
                 console.log('🔥 Firebase 포인트 정보 로드 시작:', user.email);
+                console.log('🔥 사용자 UID:', user.uid);
                 
-                // 1. UID 기반으로 사용자 문서 확인
-                let userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+                // 1. UID 기반으로 사용자 문서 확인 (서버에서 직접 가져오기)
+                let userDoc = await firebase.firestore().collection('users').doc(user.uid).get({ source: 'server' });
                 let userData = null;
                 
                 if (userDoc.exists) {
                     userData = userDoc.data();
                     console.log('✅ UID 기반 사용자 문서 발견:', userData);
+                    console.log('✅ UID 기반 포인트:', userData.points);
                 } else {
                     console.log('⚠️ UID 기반 문서 없음, 이메일 기반 검색 시도');
                     
@@ -2370,6 +2372,60 @@
             } catch (error) {
                 console.error('❌ Firebase 포인트 정보 로드 실패:', error);
                 console.log('⚠️ Firebase 전용 시스템 - localStorage 폴백 사용 안함');
+                currentUserPoints = 0;
+                showPointSection();
+            }
+        }
+        
+        // 강제 포인트 로딩 함수 (체크아웃 페이지 전용)
+        async function forceLoadUserPoints() {
+            try {
+                console.log('🔄 강제 포인트 로딩 시작');
+                const user = firebase.auth().currentUser;
+                if (!user) {
+                    console.log('❌ 사용자 없음');
+                    currentUserPoints = 0;
+                    showPointSection();
+                    return;
+                }
+                
+                console.log('🔄 강제 로딩 - 사용자:', user.email, 'UID:', user.uid);
+                
+                // 서버에서 직접 가져오기
+                const db = firebase.firestore();
+                
+                // UID로 먼저 시도
+                let userDoc = await db.collection('users').doc(user.uid).get({ source: 'server' });
+                let userData = null;
+                
+                if (userDoc.exists) {
+                    userData = userDoc.data();
+                    console.log('✅ 강제 로딩 - UID 문서 발견:', userData);
+                } else {
+                    // 이메일로 검색
+                    const emailQuery = await db.collection('users')
+                        .where('email', '==', user.email)
+                        .limit(1)
+                        .get({ source: 'server' });
+                    
+                    if (!emailQuery.empty) {
+                        userData = emailQuery.docs[0].data();
+                        console.log('✅ 강제 로딩 - 이메일 문서 발견:', userData);
+                    }
+                }
+                
+                if (userData) {
+                    currentUserPoints = userData.points || 0;
+                    console.log('✅ 강제 로딩 완료 - 포인트:', currentUserPoints);
+                    showPointSection();
+                } else {
+                    console.log('❌ 강제 로딩 실패 - 사용자 데이터 없음');
+                    currentUserPoints = 0;
+                    showPointSection();
+                }
+                
+            } catch (error) {
+                console.error('❌ 강제 포인트 로딩 오류:', error);
                 currentUserPoints = 0;
                 showPointSection();
             }
