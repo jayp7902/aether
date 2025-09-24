@@ -227,14 +227,25 @@
             text-align: center;
             padding: 0.5rem;
         }
-        .tab-content {
+        .tab-content,
+        #profileTabContent.tab-content,
+        .tab-pane {
             margin-top: 2rem !important;
             padding-top: 1rem !important;
         }
         
-        /* 프로필 카드 바디 여백 추가 */
-        .profile-card .card-body {
+        /* 프로필 카드 바디 여백 추가 - Bootstrap 강제 덮어쓰기 */
+        .profile-card .card-body,
+        .card.profile-card .card-body,
+        .col-md-8 .card.profile-card .card-body {
             padding: 2rem 1.5rem !important;
+        }
+        
+        /* 탭 콘텐츠 내부 여백 강화 */
+        .tab-pane .alert,
+        .tab-pane form,
+        .tab-pane .row {
+            margin-top: 0 !important;
         }
         
         /* 탭 네비게이션과 콘텐츠 사이 여백 */
@@ -244,22 +255,30 @@
         
         /* 모바일에서 여백 조정 */
         @media (max-width: 768px) {
-            .profile-card .card-body {
+            .profile-card .card-body,
+            .card.profile-card .card-body,
+            .col-md-8 .card.profile-card .card-body {
                 padding: 1.5rem 1rem !important;
             }
             
-            .tab-content {
+            .tab-content,
+            #profileTabContent.tab-content,
+            .tab-pane {
                 margin-top: 1.5rem !important;
                 padding-top: 0.5rem !important;
             }
         }
         
         @media (max-width: 480px) {
-            .profile-card .card-body {
+            .profile-card .card-body,
+            .card.profile-card .card-body,
+            .col-md-8 .card.profile-card .card-body {
                 padding: 1rem 0.75rem !important;
             }
             
-            .tab-content {
+            .tab-content,
+            #profileTabContent.tab-content,
+            .tab-pane {
                 margin-top: 1rem !important;
                 padding-top: 0.5rem !important;
             }
@@ -733,7 +752,7 @@
                 <div class="col-md-8">
                     <!-- Profile Content -->
                     <div class="card profile-card">
-                        <div class="card-body">
+                        <div class="card-body" style="padding: 2rem 1.5rem !important;">
                             <!-- Tab Navigation -->
                             <ul class="nav nav-tabs" id="profileTabs" role="tablist">
                                 <li class="nav-item" role="presentation">
@@ -754,7 +773,7 @@
                             </ul>
 
                             <!-- Tab Content -->
-                            <div class="tab-content" id="profileTabContent">
+                            <div class="tab-content" id="profileTabContent" style="margin-top: 2rem !important; padding-top: 1rem !important;">
                                 <!-- Basic Info Tab -->
                                 <div class="tab-pane fade show active" id="info" role="tabpanel">
                                     <div class="alert alert-info japanese-text d-none" id="info-alert"></div>
@@ -2832,6 +2851,23 @@
             try {
                 console.log('프로필 페이지 DOM 로드 완료');
                 console.log('auth-utils.js 로드 확인:', typeof updateUserMenu);
+                
+                // 여백 강제 적용
+                setTimeout(() => {
+                    const tabContent = document.getElementById('profileTabContent');
+                    const cardBody = document.querySelector('.col-md-8 .card.profile-card .card-body');
+                    
+                    if (tabContent) {
+                        tabContent.style.marginTop = '2rem';
+                        tabContent.style.paddingTop = '1rem';
+                        console.log('탭 콘텐츠 여백 적용 완료');
+                    }
+                    
+                    if (cardBody) {
+                        cardBody.style.padding = '2rem 1.5rem';
+                        console.log('카드 바디 여백 적용 완료');
+                    }
+                }, 100);
                 console.log('custom.js 로드 확인:', typeof setupMobileQRCodeControl);
                 
                 // 일본어 날짜 입력 필드 초기화
