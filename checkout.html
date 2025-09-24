@@ -1074,7 +1074,7 @@
                             console.log('👤 Firebase 로그인 사용자 확인:', user.email);
                             currentUser = user; // 현재 사용자 설정
                             await loadProfileAddress();
-                            await loadUserPoints(); // 포인트 정보 로드
+                            await loadPointsLikePointsPage(); // 포인트 정보 로드 (포인트 페이지 방식)
                         } else {
                             console.log('👤 Firebase 비로그인 상태');
                             
@@ -1136,19 +1136,19 @@
                         pointSection.style.display = 'block';
                         console.log('✅ 포인트 섹션 최종 확인 완료');
                         
-                        // 포인트 재로드 시도 (여러 번 시도)
-                        forceLoadUserPoints();
+                        // 포인트 재로드 시도 (포인트 페이지 방식)
+                        loadPointsLikePointsPage();
                         
                         // 추가 시도 (2초 후)
                         setTimeout(() => {
-                            console.log('🔄 포인트 추가 로딩 시도');
-                            forceLoadUserPoints();
+                            console.log('🔄 포인트 추가 로딩 시도 (포인트 페이지 방식)');
+                            loadPointsLikePointsPage();
                         }, 2000);
                         
                         // 최종 시도 (5초 후)
                         setTimeout(() => {
-                            console.log('🔄 포인트 최종 로딩 시도');
-                            forceLoadUserPoints();
+                            console.log('🔄 포인트 최종 로딩 시도 (포인트 페이지 방식)');
+                            loadPointsLikePointsPage();
                         }, 5000);
                     }
                 }, 1000);
@@ -2339,7 +2339,7 @@
                     const emailQuery = await firebase.firestore().collection('users')
                         .where('email', '==', user.email)
                         .limit(1)
-                        .get();
+                        .get({ source: 'server' });
                     
                     if (!emailQuery.empty) {
                         const emailDoc = emailQuery.docs[0];
@@ -2357,11 +2357,12 @@
                 }
                 
                 if (userData) {
-                    currentUserPoints = userData.points || 0;
-                    console.log('🔥 Firebase에서 로드한 포인트:', currentUserPoints, '(이메일:', user.email, ')');
-                    
-                    // 포인트는 Firebase에서만 관리 (로컬스토리지 동기화 안함)
-                    console.log('✅ Firebase 포인트 로드 완료 (로컬스토리지 사용 안함)');
+                    const newPoints = userData.points || 0;
+                    console.log(`포인트 로딩: ${currentUserPoints} → ${newPoints}`);
+                    currentUserPoints = newPoints;
+                    console.log('Firebase에서 포인트 정보 로드 (최신):', currentUserPoints);
+                    console.log('사용자 데이터:', userData);
+                    console.log('✅ Firebase 포인트 로드 완료 (포인트 페이지 방식)');
                     showPointSection();
                     
                 } else {
@@ -2389,6 +2390,84 @@
             }
         }
         
+        // 포인트 페이지와 동일한 포인트 로딩 함수
+        async function loadPointsLikePointsPage() {
+            try {
+                console.log('🔄 포인트 페이지 방식 포인트 로딩 시작');
+                const user = firebase.auth().currentUser;
+                if (!user) {
+                    console.log('❌ 사용자 없음');
+                    currentUserPoints = 0;
+                    showPointSection();
+                    return;
+                }
+                
+                // 포인트 페이지와 동일한 사용자 객체 생성
+                const checkoutPageUser = {
+                    uid: user.uid,
+                    email: user.email,
+                    name: user.displayName || user.email.split('@')[0],
+                    points: 0
+                };
+                
+                console.log('🔄 포인트 페이지 방식 - 사용자:', checkoutPageUser);
+                
+                // Firebase에서 포인트 정보 가져오기 (포인트 페이지와 동일)
+                if (typeof firebase !== 'undefined' && firebase.firestore) {
+                    const db = firebase.firestore();
+                    
+                    // 먼저 사용자 ID로 검색 (캐시 무시하고 서버에서 직접 가져오기)
+                    let userDoc = await db.collection('users').doc(checkoutPageUser.uid).get({ source: 'server' });
+                    console.log('사용자 ID로 검색 결과 (서버에서):', userDoc.exists);
+                    
+                    if (!userDoc.exists) {
+                        // 사용자 ID로 찾지 못한 경우 이메일로 검색
+                        console.log('사용자 ID로 찾지 못함, 이메일로 검색 시도');
+                        const emailQuery = await db.collection('users')
+                            .where('email', '==', checkoutPageUser.email)
+                            .limit(1)
+                            .get({ source: 'server' });
+                        
+                        if (!emailQuery.empty) {
+                            userDoc = emailQuery.docs[0];
+                            console.log('이메일로 사용자 찾음:', userDoc.id);
+                        }
+                    }
+                    
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        const newPoints = userData.points || 0;
+                        
+                        // 포인트가 변경되었는지 확인
+                        if (currentUserPoints !== newPoints) {
+                            console.log(`포인트 변경 감지: ${currentUserPoints} → ${newPoints}`);
+                            currentUserPoints = newPoints;
+                            checkoutPageUser.points = currentUserPoints; // 사용자 정보도 업데이트
+                        } else {
+                            console.log('포인트 변경 없음:', currentUserPoints);
+                        }
+                        
+                        console.log('Firebase에서 포인트 정보 로드 (최신):', currentUserPoints);
+                        console.log('사용자 데이터:', userData);
+                        showPointSection();
+                    } else {
+                        console.log('사용자 문서가 존재하지 않습니다');
+                        currentUserPoints = 0;
+                        showPointSection();
+                    }
+                } else {
+                    console.log('Firebase 사용 불가');
+                    currentUserPoints = 0;
+                    showPointSection();
+                }
+                
+            } catch (error) {
+                console.error('❌ 포인트 페이지 방식 로딩 오류:', error);
+                currentUserPoints = 0;
+                showPointSection();
+            }
+        }
+
         // 강제 포인트 로딩 함수 (체크아웃 페이지 전용)
         async function forceLoadUserPoints() {
             try {
@@ -2437,13 +2516,19 @@
                     }
                 }
                 
-                // 3. 포인트 설정 및 표시
-                if (userData && userData.points !== undefined) {
-                    currentUserPoints = userData.points;
-                    console.log('✅ 강제 로딩 완료 - 포인트:', currentUserPoints);
+                // 3. 포인트 설정 및 표시 (포인트 페이지와 동일한 방식)
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    const newPoints = userData.points || 0;
+                    
+                    console.log(`강제 포인트 로딩: ${currentUserPoints} → ${newPoints}`);
+                    currentUserPoints = newPoints;
+                    
+                    console.log('Firebase에서 포인트 정보 로드 (강제 최신):', currentUserPoints);
+                    console.log('사용자 데이터:', userData);
                     showPointSection();
                 } else {
-                    console.log('❌ 강제 로딩 실패 - 사용자 데이터 없음');
+                    console.log('❌ 강제 로딩 실패 - 사용자 문서 없음');
                     currentUserPoints = 0;
                     showPointSection();
                 }
@@ -2703,7 +2788,7 @@
                     const user = firebase.auth().currentUser;
                     if (user) {
                         console.log('Firebase 사용자 확인됨, 최신 포인트 로드');
-                        await loadUserPoints();
+                        await loadPointsLikePointsPage();
                         return;
                     }
                 }
