@@ -295,6 +295,45 @@
           color: #212529 !important;
           border-color: #dee2e6 #dee2e6 #ffffff !important;
       }
+      
+      /* 모바일에서 탭 메뉴 한 줄로 표시 */
+      @media (max-width: 768px) {
+          .nav-tabs {
+              flex-wrap: nowrap !important;
+          }
+          
+          .nav-tabs .nav-item {
+              flex: 1;
+              min-width: 0;
+          }
+          
+          .nav-tabs .nav-link {
+              font-size: 12px !important;
+              padding: 8px 4px !important;
+              text-align: center;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
+          }
+          
+          .nav-tabs .nav-link i {
+              font-size: 10px !important;
+              margin-right: 2px !important;
+          }
+      }
+      
+      /* 더 작은 화면에서 추가 조정 */
+      @media (max-width: 480px) {
+          .nav-tabs .nav-link {
+              font-size: 10px !important;
+              padding: 6px 2px !important;
+          }
+          
+          .nav-tabs .nav-link i {
+              font-size: 8px !important;
+              margin-right: 1px !important;
+          }
+      }
   </style>
 </head>
 
@@ -580,7 +619,6 @@
                                                         <i class="fas fa-search"></i>
                                                     </button>
                                                 </div>
-                                                <small class="form-text text-muted japanese-text">例: 123-4567</small>
                                             </div>
                                             <div class="col-md-8 mb-3">
                                                 <label for="prefecture" class="form-label japanese-text">都道府県</label>
