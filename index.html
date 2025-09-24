@@ -678,50 +678,40 @@ https://templatemo.com/tm-559-aether
                 return;
             }
             
-            // 기존 로고 오버레이 제거
+            // 기존 로고 텍스트 제거
             const existingOverlay = modalBody.querySelector('.aether-logo-overlay');
+            const existingText = modalBody.querySelector('.aether-logo-text');
             if (existingOverlay) {
                 console.log('🗑️ 기존 로고 오버레이 제거');
                 existingOverlay.remove();
             }
+            if (existingText) {
+                console.log('🗑️ 기존 로고 텍스트 제거');
+                existingText.remove();
+            }
             
-            // 새 로고 오버레이 생성 (QR 코드 위쪽에 배치)
-            const logoOverlay = document.createElement('div');
-            logoOverlay.className = 'aether-logo-overlay';
-            logoOverlay.style.cssText = `
-                position: relative;
-                top: 0;
-                left: 50%;
-                transform: translateX(-50%);
-                background: transparent;
-                width: auto;
-                height: auto;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                z-index: 1000;
-                margin-bottom: 20px;
-            `;
-            
+            // 새 로고 텍스트 생성 (QR 코드 위쪽에 배치)
             const logoText = document.createElement('span');
+            logoText.className = 'aether-logo-text';
             logoText.textContent = 'Aether';
             logoText.style.cssText = `
                 font-family: 'Montserrat', sans-serif;
-                font-size: 48px;
-                font-weight: 700;
+                font-size: 34px;
+                font-weight: 400;
                 color: #000;
                 letter-spacing: 2px;
                 text-transform: uppercase;
+                display: block;
+                text-align: center;
+                margin-bottom: 20px;
             `;
             
-            logoOverlay.appendChild(logoText);
-            
-            // QR 코드 컨테이너 앞에 로고 삽입
+            // QR 코드 컨테이너 앞에 로고 텍스트 삽입
             const qrContainer = document.getElementById('qr-code-container');
-            modalBody.insertBefore(logoOverlay, qrContainer);
+            modalBody.insertBefore(logoText, qrContainer);
             
-            console.log('✅ 로고 오버레이 DOM에 추가 완료 (QR 코드 위쪽)');
-            console.log('🔍 추가된 오버레이:', logoOverlay);
+            console.log('✅ 로고 텍스트 DOM에 추가 완료 (QR 코드 위쪽)');
+            console.log('🔍 추가된 텍스트:', logoText);
         }
 
         // QR 코드 표시 함수
