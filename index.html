@@ -87,6 +87,21 @@
             transition: all 0.3s ease;
         }
         
+        /* Aether 로고 오버레이 스타일 */
+        .aether-logo-overlay {
+            transition: all 0.3s ease;
+        }
+        
+        .aether-logo-overlay:hover {
+            transform: translate(-50%, -50%) scale(1.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        /* QR 코드 컨테이너에 로고 오버레이 대비 */
+        #qr-code-container {
+            position: relative;
+        }
+        
         /* 모바일에서 QR 모달 중앙 정렬 강화 */
         @media (max-width: 768px) {
             .modal-dialog.modal-dialog-centered {
@@ -101,6 +116,16 @@
             .qr-modal-content {
                 max-width: 320px !important;
                 margin: 0 auto !important;
+            }
+            
+            .aether-logo-overlay {
+                width: 45px !important;
+                height: 45px !important;
+            }
+            
+            .aether-logo-overlay img {
+                width: 25px !important;
+                height: 25px !important;
             }
         }
         
@@ -525,15 +550,19 @@ https://templatemo.com/tm-559-aether
         <div class="modal-dialog modal-dialog-centered d-flex justify-content-center align-items-center">
             <div class="modal-content qr-modal-content" style="max-width: 340px; border-radius: 24px;">
                 <div class="modal-body text-center p-5">
-                    <div id="qr-code-container" class="qr-code-container mx-auto mb-4" style="width: 220px; height: 220px;">
+                    <div id="qr-code-container" class="qr-code-container mx-auto mb-4" style="width: 220px; height: 220px; position: relative;">
                         <div class="d-flex justify-content-center align-items-center h-100">
                             <div class="spinner-border text-secondary" role="status">
                                 <span class="visually-hidden">読み込み中...</span>
                             </div>
                         </div>
+                        <!-- Aether 로고 오버레이 -->
+                        <div class="aether-logo-overlay" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); z-index: 10;">
+                            <img src="assets/img/aether-icon.png" alt="Aether" style="width: 30px; height: 30px;">
+                        </div>
                     </div>
-                    <button type="button" class="btn btn-outline-secondary rounded-circle d-block mx-auto" data-bs-dismiss="modal" aria-label="Close" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-width: 2px;">
-                        <i class="fas fa-times" style="font-weight: 600; font-size: 18px;"></i>
+                    <button type="button" class="btn btn-dark rounded-circle d-block mx-auto" data-bs-dismiss="modal" aria-label="Close" style="width: 53px; height: 53px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-times text-white" style="font-weight: 900; font-size: 20px;"></i>
                     </button>
                 </div>
             </div>
