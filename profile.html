@@ -273,26 +273,50 @@
           color: #6c757d;
       }
       
-      /* 탭 메뉴 모노톤 색상 적용 */
+      /* 탭 메뉴 모노톤 색상 적용 및 연결된 디자인 */
+      .nav-tabs {
+          border-bottom: 1px solid #dee2e6 !important;
+          margin-bottom: 0 !important;
+      }
+      
+      .nav-tabs .nav-item {
+          margin-bottom: -1px !important;
+      }
+      
       .nav-tabs .nav-link {
           color: #6c757d !important;
-          border-color: #dee2e6 !important;
+          border: 1px solid transparent !important;
+          border-radius: 0 !important;
+          margin-right: 0 !important;
+          border-right: none !important;
+          border-bottom: 1px solid #dee2e6 !important;
+      }
+      
+      .nav-tabs .nav-item:first-child .nav-link {
+          border-top-left-radius: 4px !important;
+      }
+      
+      .nav-tabs .nav-item:last-child .nav-link {
+          border-top-right-radius: 4px !important;
+          border-right: 1px solid #dee2e6 !important;
       }
       
       .nav-tabs .nav-link:hover {
           color: #495057 !important;
-          border-color: #adb5bd #adb5bd #dee2e6 !important;
+          background-color: #f8f9fa !important;
+          border-color: #dee2e6 #dee2e6 #dee2e6 !important;
       }
       
       .nav-tabs .nav-link.active {
           color: #212529 !important;
           background-color: #ffffff !important;
           border-color: #dee2e6 #dee2e6 #ffffff !important;
-          border-bottom: 2px solid #212529 !important;
+          border-bottom: 1px solid #ffffff !important;
       }
       
       .nav-tabs .nav-link.active:hover {
           color: #212529 !important;
+          background-color: #ffffff !important;
           border-color: #dee2e6 #dee2e6 #ffffff !important;
       }
       
@@ -1180,8 +1204,8 @@
                 // 결과 메시지 표시
                 const alertDiv = document.getElementById('info-alert');
                 if (saveSuccess) {
-                    alertDiv.className = 'alert alert-success japanese-text';
-                    alertDiv.innerHTML = '<i class="fas fa-check-circle me-2"></i>基本情報が保存されました。';
+                    alertDiv.className = 'alert alert-secondary border-0 shadow-sm';
+                    alertDiv.innerHTML = '<i class="fas fa-check-circle me-2 text-dark"></i><span class="text-dark">基本情報が保存されました</span>';
                     alertDiv.classList.remove('d-none');
                     
                     // 프로필 헤더 업데이트
@@ -1192,16 +1216,16 @@
                         alertDiv.classList.add('d-none');
                     }, 3000);
                 } else {
-                    alertDiv.className = 'alert alert-danger japanese-text';
-                    alertDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>基本情報の保存に失敗しました。';
+                    alertDiv.className = 'alert alert-secondary border-0 shadow-sm';
+                    alertDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2 text-dark"></i><span class="text-dark">基本情報の保存に失敗しました</span>';
                     alertDiv.classList.remove('d-none');
                 }
                 
             } catch (error) {
                 console.error('기본 정보 저장 중 오류:', error);
                 const alertDiv = document.getElementById('info-alert');
-                alertDiv.className = 'alert alert-danger japanese-text';
-                alertDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>基本情報の保存中にエラーが発生しました。';
+                alertDiv.className = 'alert alert-secondary border-0 shadow-sm';
+                alertDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2 text-dark"></i><span class="text-dark">基本情報の保存中にエラーが発生しました</span>';
                 alertDiv.classList.remove('d-none');
             }
         });
@@ -1222,8 +1246,8 @@
             // 필수 필드 검증
             if (!addressData.postalCode || !addressData.prefecture || !addressData.city || !addressData.address1) {
                 const alertDiv = document.getElementById('address-alert');
-                alertDiv.className = 'alert alert-danger japanese-text';
-                alertDiv.textContent = '郵便番号、都道府県、市区町村、住所1は必須項目です。';
+                alertDiv.className = 'alert alert-secondary border-0 shadow-sm';
+                alertDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2 text-dark"></i><span class="text-dark">郵便番号、都道府県、市区町村、住所1は必須項目です</span>';
                 alertDiv.classList.remove('d-none');
                 
                 setTimeout(() => {
@@ -1247,9 +1271,16 @@
                         address: addressData
                     });
                     
-                    // 성공 시 알림 메시지 표시하지 않음
+                    // 성공 시 알림 메시지 표시
                     const alertDiv = document.getElementById('address-alert');
-                    alertDiv.classList.add('d-none');
+                    alertDiv.className = 'alert alert-secondary border-0 shadow-sm';
+                    alertDiv.innerHTML = '<i class="fas fa-check-circle me-2 text-dark"></i><span class="text-dark">住所が保存されました</span>';
+                    alertDiv.classList.remove('d-none');
+                    
+                    // 3초 후 성공 메시지 숨기기
+                    setTimeout(() => {
+                        alertDiv.classList.add('d-none');
+                    }, 3000);
 
                     // 버튼 상태 복구
                     submitBtn.disabled = false;
@@ -1258,8 +1289,8 @@
             } catch (error) {
                 console.error('주소 저장 실패:', error);
                 const alertDiv = document.getElementById('address-alert');
-                alertDiv.className = 'alert alert-danger japanese-text';
-                alertDiv.textContent = '住所の保存に失敗しました。';
+                alertDiv.className = 'alert alert-secondary border-0 shadow-sm';
+                alertDiv.innerHTML = '<i class="fas fa-exclamation-triangle me-2 text-dark"></i><span class="text-dark">住所の保存に失敗しました</span>';
                 alertDiv.classList.remove('d-none');
 
                 // 3초 후 에러 메시지 숨기기
