@@ -4414,13 +4414,37 @@
                 // Firebase에서 사용자 검색
                 console.log('🔥 Firebase에서 사용자 검색:', email);
                 
-                if (user) {
+                if (!firebase || !firebase.firestore) {
+                    throw new Error('Firebase가 초기화되지 않았습니다');
+                }
+                
+                const db = firebase.firestore();
+                
+                // 이메일로 사용자 검색 (문서 ID가 이메일인 경우)
+                let userDoc = null;
+                try {
+                    userDoc = await db.collection('users').doc(email).get();
+                } catch (error) {
+                    console.log('이메일로 문서 검색 실패, 쿼리로 재시도:', error);
+                }
+                
+                // 문서 ID로 찾지 못한 경우 쿼리로 검색
+                if (!userDoc || !userDoc.exists) {
+                    const querySnapshot = await db.collection('users').where('email', '==', email).limit(1).get();
+                    if (!querySnapshot.empty) {
+                        userDoc = querySnapshot.docs[0];
+                    }
+                }
+                
+                if (userDoc && userDoc.exists) {
+                    const userData = userDoc.data();
                     currentCustomer = {
-                        uid: user.uid,
-                        name: user.name,
-                        email: user.email,
-                        points: user.points || 0,
-                        phone: user.phone
+                        uid: userDoc.id,
+                        name: userData.name || userData.displayName || 'Unknown',
+                        email: userData.email || email,
+                        points: userData.points || 0,
+                        phone: userData.phone || '',
+                        createdAt: userData.createdAt
                     };
                     showCustomerInfo();
                     showAdminAlert(`${currentCustomer.name || currentCustomer.email} 様を見つけました`, 'success');
