@@ -1984,7 +1984,7 @@
                                         <tr>
                                             <th class="japanese-text">顧客情報</th>
                                             <th class="japanese-text">顧客等級</th>
-                                            <th class="japanese-text">登録日</th>
+                                            <th class="japanese-text">最終訪問日</th>
                                             <th class="japanese-text">注文数</th>
                                             <th class="japanese-text">総購入額</th>
                                             <th class="japanese-text">ポイント</th>
@@ -14458,13 +14458,16 @@
                 return;
             }
             
-            // 최신 가입고객이 상단에 오도록 정렬 (최신순)
+            // 최신 방문일 기준으로 정렬 (활성 고객이 상단에)
             const sortedCustomers = [...filteredCustomers].sort((a, b) => {
-                return new Date(b.createdAt) - new Date(a.createdAt);
+                const lastVisitA = a.lastVisit || a.createdAt;
+                const lastVisitB = b.lastVisit || b.createdAt;
+                return new Date(lastVisitB) - new Date(lastVisitA);
             });
             
             tbody.innerHTML = sortedCustomers.map(customer => {
                 const joinDate = customer.createdAt.toLocaleDateString('ja-JP');
+                const lastVisitDate = (customer.lastVisit || customer.createdAt).toLocaleDateString('ja-JP');
                 const statusBadge = customer.isVip ? 
                     '<span class="badge bg-warning">VIP</span>' :
                     customer.isInactive ? 
@@ -14484,7 +14487,7 @@
                             </div>
                         </td>
                         <td>${tierBadge}</td>
-                        <td class="japanese-text">${joinDate}</td>
+                        <td class="japanese-text">${lastVisitDate}</td>
                         <td>${customer.orderCount || 0}</td>
                         <td>¥${(customer.totalSpent || 0).toLocaleString()}</td>
                         <td>${(customer.points || 0).toLocaleString()}pt</td>
@@ -14535,7 +14538,9 @@
                                     <div class="p-2 bg-light rounded">
                                         <strong>${customer.name || 'Unknown'}</strong><br>
                                         <small class="text-muted">${customer.email}</small><br>
-                                        <small class="text-muted">総購入額: ¥${(customer.totalSpent || 0).toLocaleString()}</small>
+                                        <small class="text-muted">総購入額: ¥${(customer.totalSpent || 0).toLocaleString()}</small><br>
+                                        <small class="text-muted">登録日: ${customer.createdAt.toLocaleDateString('ja-JP')}</small><br>
+                                        <small class="text-muted">最終訪問日: ${(customer.lastVisit || customer.createdAt).toLocaleDateString('ja-JP')}</small>
                                     </div>
                                 </div>
                                 <div class="mb-3">
