@@ -546,7 +546,17 @@ async function initializePage() {
                                 email: user.email,
                                 displayName: user.displayName,
                                 uidLength: user.uid?.length,
-                                uidType: typeof user.uid
+                                uidType: typeof user.uid,
+                                uidFirst10: user.uid?.substring(0, 10),
+                                uidLast10: user.uid?.substring(user.uid.length - 10)
+                            });
+                            
+                            // Firebase Auth currentUser와 비교
+                            const firebaseCurrentUser = firebase?.auth?.currentUser;
+                            console.log('🔍 Firebase Auth currentUser 비교:', {
+                                same: firebaseCurrentUser?.uid === user.uid,
+                                firebaseUID: firebaseCurrentUser?.uid,
+                                firebaseEmail: firebaseCurrentUser?.email
                             });
                             
                             // Firebase에서 카트 로드
