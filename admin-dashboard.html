@@ -1995,22 +1995,7 @@
                         <i class="fas fa-chart-line me-2"></i>分析
                     </h3>
                     
-                    <!-- 분석 필터 -->
-                    <div class="row mb-4">
-                        <div class="col-md-3">
-                            <select class="form-select" id="analytics-period">
-                                <option value="7">過去7日</option>
-                                <option value="30" selected>過去30日</option>
-                                <option value="90">過去90日</option>
-                                <option value="365">過去1年</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <button class="btn btn-outline-secondary" onclick="refreshAnalytics()">
-                                <i class="fas fa-sync-alt me-2"></i>更新
-                            </button>
-                        </div>
-                    </div>
+                    <!-- 분석 필터 (제거됨 - 기간 선택 기능으로 대체) -->
 
                     <!-- 기간 선택 기능 -->
                     <div class="period-selector mb-4">
@@ -2113,17 +2098,17 @@
                                 <div class="card-body">
                                     <div class="row text-center">
                                         <div class="col-6">
-                                            <h4 class="text-success mb-1" id="new-customers">0</h4>
+                                            <h4 class="text-dark mb-1" id="new-customers">0</h4>
                                             <p class="text-muted japanese-text mb-0">新規顧客</p>
                                         </div>
                                         <div class="col-6">
-                                            <h4 class="text-primary mb-1" id="returning-customers">0</h4>
+                                            <h4 class="text-secondary mb-1" id="returning-customers">0</h4>
                                             <p class="text-muted japanese-text mb-0">リピート顧客</p>
                                         </div>
                                     </div>
                                     <hr>
                                     <div class="text-center">
-                                        <h4 class="text-warning mb-1" id="repeat-rate">0%</h4>
+                                        <h4 class="text-dark mb-1" id="repeat-rate">0%</h4>
                                         <p class="text-muted japanese-text mb-0">リピート率</p>
                                     </div>
                                 </div>
@@ -2143,17 +2128,17 @@
                                 <div class="card-body">
                                     <div class="row text-center">
                                         <div class="col-6">
-                                            <h4 class="text-success mb-1" id="points-earned">0</h4>
+                                            <h4 class="text-dark mb-1" id="points-earned">0</h4>
                                             <p class="text-muted japanese-text mb-0">獲得ポイント</p>
                                         </div>
                                         <div class="col-6">
-                                            <h4 class="text-danger mb-1" id="points-used">0</h4>
+                                            <h4 class="text-secondary mb-1" id="points-used">0</h4>
                                             <p class="text-muted japanese-text mb-0">使用ポイント</p>
                                         </div>
                                     </div>
                                     <hr>
                                     <div class="text-center">
-                                        <h4 class="text-info mb-1" id="points-utilization">0%</h4>
+                                        <h4 class="text-dark mb-1" id="points-utilization">0%</h4>
                                         <p class="text-muted japanese-text mb-0">ポイント利用率</p>
                                     </div>
                                 </div>
@@ -6091,6 +6076,9 @@
             
             // 매출 분석 카드 라벨 업데이트
             updateAnalyticsLabels();
+            
+            // 하단 분석 데이터 업데이트
+            updateBottomAnalytics();
         }
 
         // 날짜 네비게이션
@@ -6114,6 +6102,7 @@
             updatePeriodDisplay();
             loadOrderStatistics();
             updateAnalyticsLabels();
+            updateBottomAnalytics();
         }
 
         // 기간 표시 업데이트
@@ -6208,6 +6197,81 @@
             if (revenueLabel) revenueLabel.textContent = periodText + '売上';
             if (ordersLabel) ordersLabel.textContent = periodText + '注文数';
             if (avgOrderLabel) avgOrderLabel.textContent = periodText + '平均注文金額';
+        }
+
+        // 하단 분석 데이터 업데이트
+        function updateBottomAnalytics() {
+            if (!analyticsData || !analyticsData.orders) {
+                console.warn('⚠️ analyticsData가 없습니다');
+                return;
+            }
+            
+            // 기간별 필터링된 주문
+            const filteredOrders = filterOrdersByPeriod(analyticsData.orders);
+            
+            // 고객 분석 업데이트
+            const customerEmails = new Set();
+            const newCustomerEmails = new Set();
+            
+            filteredOrders.forEach(order => {
+                const email = order.customerEmail || order.email || '';
+                if (email) {
+                    customerEmails.add(email);
+                    
+                    // 신규 고객 판단 (첫 주문인지 확인)
+                    const previousOrders = analyticsData.orders.filter(o => {
+                        const orderDate = o.orderDate && o.orderDate.seconds ? 
+                            new Date(o.orderDate.seconds * 1000) : new Date(o.orderDate || 0);
+                        const currentOrderDate = order.orderDate && order.orderDate.seconds ? 
+                            new Date(order.orderDate.seconds * 1000) : new Date(order.orderDate || 0);
+                        return o.customerEmail === email && orderDate < currentOrderDate;
+                    });
+                    
+                    if (previousOrders.length === 0) {
+                        newCustomerEmails.add(email);
+                    }
+                }
+            });
+            
+            const totalCustomers = customerEmails.size;
+            const newCustomers = newCustomerEmails.size;
+            const returningCustomers = totalCustomers - newCustomers;
+            const repeatRate = totalCustomers > 0 ? Math.round((returningCustomers / totalCustomers) * 100) : 0;
+            
+            // 포인트 분석 업데이트
+            let pointsEarned = 0;
+            let pointsUsed = 0;
+            
+            filteredOrders.forEach(order => {
+                pointsEarned += order.earnedPoints || 0;
+                pointsUsed += order.usedPoints || 0;
+            });
+            
+            const pointsUtilization = pointsEarned > 0 ? Math.round((pointsUsed / pointsEarned) * 100) : 0;
+            
+            // DOM 업데이트
+            const newCustomersEl = document.getElementById('new-customers');
+            const returningCustomersEl = document.getElementById('returning-customers');
+            const repeatRateEl = document.getElementById('repeat-rate');
+            const pointsEarnedEl = document.getElementById('points-earned');
+            const pointsUsedEl = document.getElementById('points-used');
+            const pointsUtilizationEl = document.getElementById('points-utilization');
+            
+            if (newCustomersEl) newCustomersEl.textContent = newCustomers.toLocaleString();
+            if (returningCustomersEl) returningCustomersEl.textContent = returningCustomers.toLocaleString();
+            if (repeatRateEl) repeatRateEl.textContent = repeatRate + '%';
+            if (pointsEarnedEl) pointsEarnedEl.textContent = pointsEarned.toLocaleString();
+            if (pointsUsedEl) pointsUsedEl.textContent = pointsUsed.toLocaleString();
+            if (pointsUtilizationEl) pointsUtilizationEl.textContent = pointsUtilization + '%';
+            
+            console.log(`📊 ${currentPeriod} 기간 하단 분석 업데이트:`, {
+                newCustomers,
+                returningCustomers,
+                repeatRate,
+                pointsEarned,
+                pointsUsed,
+                pointsUtilization
+            });
         }
 
         // 주문 통계 로드
@@ -13780,14 +13844,9 @@
             try {
                 console.log('📊 분석 데이터 로드 시작');
                 
-                const period = document.getElementById('analytics-period')?.value || 30;
-                const daysAgo = new Date();
-                daysAgo.setDate(daysAgo.getDate() - parseInt(period));
-                
-                // 주문 데이터 로드
-                const ordersSnapshot = await firebase.firestore().collection('orders')
-                    .where('createdAt', '>=', daysAgo)
-                    .get();
+                // 기간 선택 기능과 연동하여 모든 주문 데이터 로드
+                // 필터링은 기간 선택 기능에서 처리
+                const ordersSnapshot = await firebase.firestore().collection('orders').get();
                 
                 analyticsData.orders = [];
                 ordersSnapshot.forEach(doc => {
@@ -13850,6 +13909,9 @@
             updateTopProducts();
             updateOrderStatusChart();
             updateRevenueChart();
+            
+            // 하단 분석 데이터 업데이트 (기간별)
+            updateBottomAnalytics();
         }
 
         // 매출 지표 업데이트
@@ -14009,8 +14071,18 @@
 
         // 매출 추이 차트 업데이트
         function updateRevenueChart() {
-            const period = document.getElementById('analytics-period')?.value || 30;
-            const days = parseInt(period);
+            // 기간 선택 기능과 연동
+            let days = 30; // 기본값
+            
+            if (currentPeriod === 'day') {
+                days = 1;
+            } else if (currentPeriod === 'week') {
+                days = 7;
+            } else if (currentPeriod === 'month') {
+                days = 30;
+            } else if (currentPeriod === 'year') {
+                days = 365;
+            }
             
             // 일별 매출 데이터 생성
             const dailyRevenue = {};
