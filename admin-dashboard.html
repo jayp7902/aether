@@ -6156,30 +6156,22 @@
             const filteredOrders = orders.filter(order => {
                 let orderDate;
                 
-                // Firebase Timestamp 객체 처리 (다양한 필드명 대응)
-                if (order.orderDate && order.orderDate.seconds) {
-                    orderDate = new Date(order.orderDate.seconds * 1000);
-                } else if (order.createdAt && order.createdAt.seconds) {
+                // Firebase Timestamp 객체 처리 (createdAt 우선 사용)
+                if (order.createdAt && order.createdAt.seconds) {
                     orderDate = new Date(order.createdAt.seconds * 1000);
+                } else if (order.orderDate && order.orderDate.seconds) {
+                    orderDate = new Date(order.orderDate.seconds * 1000);
                 } else if (order.timestamp && order.timestamp.seconds) {
                     orderDate = new Date(order.timestamp.seconds * 1000);
-                } else if (order.orderDate && typeof order.orderDate === 'string') {
-                    orderDate = new Date(order.orderDate);
                 } else if (order.createdAt && typeof order.createdAt === 'string') {
                     orderDate = new Date(order.createdAt);
+                } else if (order.orderDate && typeof order.orderDate === 'string') {
+                    orderDate = new Date(order.orderDate);
                 } else if (order.timestamp && typeof order.timestamp === 'string') {
                     orderDate = new Date(order.timestamp);
                 } else {
-                    orderDate = new Date(order.orderDate || order.createdAt || order.timestamp || Date.now());
+                    orderDate = new Date(order.createdAt || order.orderDate || order.timestamp || Date.now());
                 }
-                
-                console.log(`🔍 주문 ${order.id} 날짜 분석:`, {
-                    orderDate: order.orderDate,
-                    createdAt: order.createdAt,
-                    timestamp: order.timestamp,
-                    parsedDate: orderDate.toISOString(),
-                    currentDate: currentDate.toISOString()
-                });
                 
                 const orderYear = orderDate.getFullYear();
                 const orderMonth = orderDate.getMonth();
@@ -13892,6 +13884,10 @@
                         createdAt: data.createdAt?.toDate() || new Date()
                     });
                 });
+                
+                // window.allOrders 설정 (주문 통계용)
+                window.allOrders = analyticsData.orders;
+                console.log('📋 window.allOrders 설정 완료:', analyticsData.orders.length, '개 주문');
                 
                 // 사용자 데이터 로드 (모든 사용자 데이터 로드)
                 const usersSnapshot = await firebase.firestore().collection('users').get();
