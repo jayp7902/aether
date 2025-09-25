@@ -1984,7 +1984,7 @@
                                         <tr>
                                             <th class="japanese-text">顧客情報</th>
                                             <th class="japanese-text">顧客等級</th>
-                                            <th class="japanese-text">最終訪問日</th>
+                                            <th class="japanese-text">最終訪問日 <small class="text-muted">(訪問順)</small></th>
                                             <th class="japanese-text">注文数</th>
                                             <th class="japanese-text">総購入額</th>
                                             <th class="japanese-text">ポイント</th>
@@ -14667,16 +14667,43 @@
                 return;
             }
             
-            // 최신 방문일 기준으로 정렬 (활성 고객이 상단에)
+            // 방문일 기준으로 정렬 (최신 방문 고객이 상단에)
             const sortedCustomers = [...filteredCustomers].sort((a, b) => {
-                const lastVisitA = a.lastVisit || a.createdAt;
-                const lastVisitB = b.lastVisit || b.createdAt;
-                return new Date(lastVisitB) - new Date(lastVisitA);
+                // 각 고객의 방문일 가져오기
+                const getVisitDate = (customer) => {
+                    // 1순위: 실제 방문 기록 (lastVisit)
+                    if (customer.lastVisit) {
+                        return new Date(customer.lastVisit);
+                    }
+                    // 2순위: 등록일 (createdAt)
+                    if (customer.createdAt) {
+                        return new Date(customer.createdAt);
+                    }
+                    // 최후: 현재 시간에서 1년 전 (가장 하단에 배치)
+                    return new Date(Date.now() - 365 * 24 * 60 * 60 * 1000);
+                };
+                
+                const visitDateA = getVisitDate(a);
+                const visitDateB = getVisitDate(b);
+                
+                // 최신 방문일이 먼저 오도록 정렬 (내림차순)
+                const diff = visitDateB.getTime() - visitDateA.getTime();
+                
+                console.log('고객 방문일 정렬 비교:', {
+                    customerA: a.name || a.email,
+                    visitDateA: visitDateA.toLocaleString('ja-JP'),
+                    customerB: b.name || b.email,
+                    visitDateB: visitDateB.toLocaleString('ja-JP'),
+                    diff: diff
+                });
+                
+                return diff;
             });
             
             tbody.innerHTML = sortedCustomers.map(customer => {
                 const joinDate = customer.createdAt.toLocaleDateString('ja-JP');
                 const lastVisitDate = (customer.lastVisit || customer.createdAt).toLocaleDateString('ja-JP');
+                const lastVisitTime = (customer.lastVisit || customer.createdAt).toLocaleString('ja-JP');
                 const statusBadge = customer.isVip ? 
                     '<span class="badge bg-warning">VIP</span>' :
                     customer.isInactive ? 
@@ -14749,7 +14776,7 @@
                                         <small class="text-muted">${customer.email}</small><br>
                                         <small class="text-muted">総購入額: ¥${(customer.totalSpent || 0).toLocaleString()}</small><br>
                                         <small class="text-muted">登録日: ${customer.createdAt.toLocaleDateString('ja-JP')}</small><br>
-                                        <small class="text-muted">最終訪問日: ${(customer.lastVisit || customer.createdAt).toLocaleDateString('ja-JP')}</small>
+                                        <small class="text-muted">最終訪問日: ${(customer.lastVisit || customer.createdAt).toLocaleString('ja-JP')}</small>
                                     </div>
                                 </div>
                                 <div class="mb-3">
