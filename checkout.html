@@ -1397,6 +1397,18 @@
         // 카트 아이템 로드
         async function loadCartItems() {
             console.log('loadCartItems 함수 호출됨');
+            
+            // Firebase 카트 동기화 (로그인된 사용자인 경우)
+            if (firebase?.auth?.currentUser && window.CartSyncService) {
+                try {
+                    console.log('🛒 checkout.html Firebase 카트 동기화 시작');
+                    const syncedCart = await window.CartSyncService.syncCart(firebase.auth.currentUser.uid);
+                    console.log('✅ checkout.html 카트 동기화 완료:', syncedCart.length, '개 상품');
+                } catch (error) {
+                    console.warn('checkout.html 카트 동기화 실패:', error);
+                }
+            }
+            
             const cart = getCart();
             console.log('로드된 카트 데이터:', cart);
             
