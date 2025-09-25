@@ -822,8 +822,12 @@ class FirebaseService {
         console.log('Firebase 사용 가능:', this.isFirebaseAvailable());
 
         if (!this.isFirebaseAvailable()) {
-            console.log('Firebase 사용 불가, localStorage 로그인으로 폴백');
-            return this.loginUserOffline(email, password);
+            console.log('Firebase 사용 불가 - 서버 연결을 확인해주세요');
+            return { 
+                success: false, 
+                error: 'auth/network-request-failed', 
+                message: 'ネットワークエラーが発生しました。接続を確認してください。' 
+            };
         }
         
         // Firebase 초기화가 완료되었는지 한 번 더 확인
@@ -832,8 +836,12 @@ class FirebaseService {
             await new Promise(resolve => setTimeout(resolve, 1000));
             
             if (!this.isFirebaseAvailable()) {
-                console.log('Firebase 초기화 타임아웃, localStorage 로그인으로 폴백');
-                return this.loginUserOffline(email, password);
+                console.log('Firebase 초기화 타임아웃 - 서버 연결을 확인해주세요');
+                return { 
+                    success: false, 
+                    error: 'auth/network-request-failed', 
+                    message: 'ネットワークエラーが発生しました。接続を確認してください。' 
+                };
             }
         }
 
@@ -912,102 +920,54 @@ class FirebaseService {
                 error.code === 'auth/too-many-requests' ||
                 error.code === 'auth/network-request-failed'
             )) {
-                console.log('Firebase Authentication 에러 - 구체적인 에러 메시지 반환');
+                console.log('Firebase Authentication 에러 - 구체적인 에러 메시지 반환:', error.code);
+                
+                // invalid-login-credentials는 더 구체적으로 처리
+                if (error.code === 'auth/invalid-login-credentials') {
+                    console.log('🔍 invalid-login-credentials 에러 - 이메일 존재 여부 확인 중...');
+                    console.log('🔍 확인할 이메일:', email);
+                    
+                    // 이메일 존재 여부 확인
+                    try {
+                        const signInMethods = await auth.fetchSignInMethodsForEmail(email);
+                        console.log('✅ 이메일은 존재함 - 비밀번호가 틀림');
+                        console.log('🔍 사용 가능한 로그인 방법:', signInMethods);
+                        return { 
+                            success: false, 
+                            error: 'auth/wrong-password', 
+                            message: 'パスワードが間違っています。' 
+                        };
+                    } catch (emailError) {
+                        console.log('🔍 fetchSignInMethodsForEmail 에러:', emailError);
+                        if (emailError.code === 'auth/user-not-found') {
+                            console.log('❌ 이메일이 존재하지 않음');
+                            return { 
+                                success: false, 
+                                error: 'auth/user-not-found', 
+                                message: 'このメールアドレスは登録されていません。' 
+                            };
+                        } else {
+                            console.log('⚠️ 기타 이메일 확인 에러:', emailError.code);
+                            // 기타 에러의 경우 원래 에러 메시지 사용
+                            return { 
+                                success: false, 
+                                error: error.code, 
+                                message: error.message 
+                            };
+                        }
+                    }
+                }
+                
                 return { success: false, error: error.code, message: error.message };
             }
             
-            // 기타 에러의 경우에만 localStorage로 폴백
-            console.log('기타 Firebase 에러로 인해 localStorage로 폴백 시도');
-            return this.loginUserOffline(email, password);
+            // 기타 에러의 경우 Firebase 에러 그대로 반환
+            console.log('기타 Firebase 에러:', error.code, error.message);
+            return { success: false, error: error.code || 'auth/unknown-error', message: error.message };
         }
     }
 
 
-    // 오프라인 사용자 로그인 (더 안전한 에러 처리)
-    static loginUserOffline(email, password) {
-        try {
-            console.log('=== 오프라인 로그인 시도 ===');
-            console.log('로그인 시도 이메일:', email);
-            
-            // localStorage에서 사용자 데이터 가져오기
-            let users = [];
-            try {
-                const usersData = localStorage.getItem('aetherUsers');
-                if (usersData) {
-                    users = JSON.parse(usersData);
-                    if (!Array.isArray(users)) {
-                        console.warn('사용자 데이터가 배열이 아닙니다. 초기화합니다.');
-                        users = [];
-                    }
-                }
-            } catch (parseError) {
-                console.error('localStorage 데이터 파싱 실패:', parseError);
-                // 데이터 손상 시 새로 시작
-                users = [];
-                localStorage.removeItem('aetherUsers');
-            }
-            
-            console.log('저장된 사용자 수:', users.length);
-            
-            // 사용자 찾기
-            const user = users.find(u => u && u.email === email);
-            
-            if (!user) {
-                console.log('사용자를 찾을 수 없음:', email);
-                return { 
-                    success: false, 
-                    error: 'auth/user-not-found', 
-                    message: 'このメールアドレスは登録されていません。' 
-                };
-            }
-            
-            // 패스워드 확인
-            if (user.password !== password) {
-                console.log('패스워드 불일치');
-                return { 
-                    success: false, 
-                    error: 'auth/wrong-password', 
-                    message: 'パスワードが間違っています。' 
-                };
-            }
-            
-            console.log('오프라인 로그인 성공:', email);
-            
-            // localStorage에 로그인 상태 저장
-            const loginStatus = {
-                uid: user.uid || 'offline_' + Date.now(),
-                email: user.email,
-                name: user.name || user.email.split('@')[0],
-                loginTime: new Date().toISOString(),
-                isOffline: true
-            };
-            
-            try {
-                localStorage.setItem('aetherLoginStatus', JSON.stringify(loginStatus));
-                console.log('오프라인 로그인 상태 저장 성공');
-            } catch (storageError) {
-                console.error('로그인 상태 저장 실패:', storageError);
-                // 로그인은 성공했지만 상태 저장에 실패
-            }
-            
-            return { 
-                success: true, 
-                user: { 
-                    uid: loginStatus.uid, 
-                    email: user.email, 
-                    displayName: user.name || user.email.split('@')[0]
-                } 
-            };
-            
-        } catch (error) {
-            console.error('오프라인 로그인 중 예외 발생:', error);
-            return { 
-                success: false, 
-                error: 'auth/unknown-error', 
-                message: 'ログイン中にエラーが発生しました。もう一度お試しください。' 
-            };
-        }
-    }
 
     // 사용자 로그아웃
     static async logoutUser() {
@@ -1133,46 +1093,6 @@ class FirebaseService {
         }
     }
 
-    // localStorage에서 사용자 데이터 완전 삭제
-    static clearUserDataFromLocalStorage(email) {
-        try {
-            console.log('localStorage 사용자 데이터 정리 시작:', email);
-            
-            // 현재 로그인 상태 삭제
-            const loginStatus = localStorage.getItem('loginStatus');
-            if (loginStatus) {
-                const loginData = JSON.parse(loginStatus);
-                if (loginData.email === email) {
-                    localStorage.removeItem('loginStatus');
-                    console.log('현재 로그인 상태 삭제 완료');
-                }
-            }
-            
-            // 사용자 관련 키들 삭제
-            const keysToRemove = [];
-            for (let i = 0; i < localStorage.length; i++) {
-                const key = localStorage.key(i);
-                if (key && (key.includes(email) || key.includes('user_') || key.includes('cart_'))) {
-                    keysToRemove.push(key);
-                }
-            }
-            
-            keysToRemove.forEach(key => {
-                localStorage.removeItem(key);
-                console.log('localStorage 키 삭제:', key);
-            });
-            
-            // 세션 스토리지도 정리
-            if (typeof sessionStorage !== 'undefined') {
-                sessionStorage.clear();
-                console.log('sessionStorage 정리 완료');
-            }
-            
-            console.log('localStorage 사용자 데이터 정리 완료');
-        } catch (error) {
-            console.error('localStorage 정리 중 오류:', error);
-        }
-    }
 
     // 사용자 프로필 조회
     static async getUserProfile(uid) {
@@ -1211,8 +1131,12 @@ class FirebaseService {
         console.log('주문 저장 시작:', orderData);
         
         if (!this.isFirebaseAvailable()) {
-            console.log('Firebase 사용 불가, localStorage에 주문 저장');
-            return this.saveOrderOffline(orderData);
+            console.log('Firebase 사용 불가 - 네트워크 연결을 확인해주세요');
+            return { 
+                success: false, 
+                error: 'network-error', 
+                message: 'ネットワークエラーが発生しました。接続を確認してください。' 
+            };
         }
 
         try {
@@ -1256,70 +1180,22 @@ class FirebaseService {
             };
         } catch (error) {
             console.error('주문 저장 실패:', error);
-            return this.saveOrderOffline(orderData);
-        }
-    }
-
-    // 오프라인 주문 저장
-    static saveOrderOffline(orderData) {
-        try {
-            // 현재 사용자 정보 가져오기
-            const userStr = localStorage.getItem('currentUser');
-            if (!userStr) {
-                throw new Error('로그인이 필요합니다.');
-            }
-            const user = JSON.parse(userStr);
-
-            // 주문 ID 생성
-            const orderId = 'offline-' + Date.now();
-
-            // 주문 총액 계산
-            const totalAmount = orderData.items.reduce((sum, item) => {
-                return sum + (item.price * item.quantity);
-            }, 0);
-
-            // 적립 포인트 계산 (3%)
-            const pointsToAdd = Math.floor(totalAmount * 0.03);
-
-            // 주문 데이터 구성
-            const order = {
-                id: orderId,
-                userId: user.uid,
-                userEmail: user.email,
-                ...orderData,
-                totalAmount: totalAmount,
-                pointsEarned: pointsToAdd,
-                status: 'pending',
-                createdAt: new Date().toISOString()
-            };
-
-            // localStorage에 주문 저장
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-            orders.push(order);
-            localStorage.setItem('orders', JSON.stringify(orders));
-
-            // 포인트 적립
-            this.addPointsOffline(user.uid, pointsToAdd, `주문 ${orderId} 포인트 적립`);
-
-            console.log('오프라인 주문 저장 성공:', orderId);
             return { 
-                success: true, 
-                orderId: orderId,
-                pointsEarned: pointsToAdd 
+                success: false, 
+                error: error.code || 'order-save-failed', 
+                message: '주문 저장에 실패했습니다. 다시 시도해주세요.' 
             };
-        } catch (error) {
-            console.error('오프라인 주문 저장 실패:', error);
-            return { success: false, error: error.message };
         }
     }
+
 
     // 사용자 주문 이력 조회
     static async getUserOrders(uid) {
         console.log('사용자 주문 이력 조회:', uid);
 
         if (!this.isFirebaseAvailable()) {
-            console.log('Firebase 사용 불가, localStorage에서 주문 이력 조회');
-            return this.getUserOrdersOffline(uid);
+            console.log('Firebase 사용 불가 - 네트워크 연결을 확인해주세요');
+            return [];
         }
 
         try {
@@ -1340,29 +1216,22 @@ class FirebaseService {
             return orders;
         } catch (error) {
             console.error('주문 이력 조회 실패:', error);
-            return this.getUserOrdersOffline(uid);
-        }
-    }
-
-    // 오프라인 주문 이력 조회
-    static getUserOrdersOffline(uid) {
-        try {
-            const orders = JSON.parse(localStorage.getItem('orders') || '[]');
-            return orders.filter(order => order.userId === uid)
-                        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        } catch (error) {
-            console.error('오프라인 주문 이력 조회 실패:', error);
             return [];
         }
     }
+
 
     // 포인트 적립 (이메일 기반)
     static async addPoints(userEmail, points, reason = '포인트 적립') {
         console.log('포인트 적립 시작:', { userEmail, points, reason });
 
         if (!this.isFirebaseAvailable()) {
-            console.log('Firebase 사용 불가, localStorage에 포인트 적립');
-            return this.addPointsOffline(userEmail, points, reason);
+            console.log('Firebase 사용 불가 - 네트워크 연결을 확인해주세요');
+            return { 
+                success: false, 
+                error: 'network-error', 
+                message: 'ネットワークエラーが発生しました。接続を確認してください。' 
+            };
         }
 
         try {
@@ -1391,7 +1260,11 @@ class FirebaseService {
             return { success: true, points: currentPoints + points };
         } catch (error) {
             console.error('포인트 적립 실패:', error);
-            return this.addPointsOffline(userEmail, points, reason);
+            return { 
+                success: false, 
+                error: error.code || 'points-add-failed', 
+                message: '포인트 적립에 실패했습니다. 다시 시도해주세요.' 
+            };
         }
     }
 
@@ -1400,8 +1273,12 @@ class FirebaseService {
         console.log('포인트 사용 시작:', { userEmail, points, reason });
 
         if (!this.isFirebaseAvailable()) {
-            console.log('Firebase 사용 불가, localStorage에서 포인트 사용');
-            return this.usePointsOffline(userEmail, points, reason);
+            console.log('Firebase 사용 불가 - 네트워크 연결을 확인해주세요');
+            return { 
+                success: false, 
+                error: 'network-error', 
+                message: 'ネットワークエラーが発生しました。接続を確認してください。' 
+            };
         }
 
         try {
@@ -1441,88 +1318,27 @@ class FirebaseService {
             return { success: true, points: newPoints };
         } catch (error) {
             console.error('포인트 사용 실패:', error);
-            return this.usePointsOffline(userEmail, points, reason);
+            return { 
+                success: false, 
+                error: error.code || 'points-use-failed', 
+                message: '포인트 사용에 실패했습니다. 다시 시도해주세요.' 
+            };
         }
     }
 
     // 오프라인 포인트 적립 (이메일 기반)
-    static addPointsOffline(userEmail, points, reason = '포인트 적립') {
-        try {
-            // localStorage에서 현재 포인트 조회
-            const pointsData = JSON.parse(localStorage.getItem('userPoints') || '{}');
-            const currentPoints = pointsData[userEmail] || 0;
-            
-            // 포인트 업데이트
-            pointsData[userEmail] = currentPoints + points;
-            localStorage.setItem('userPoints', JSON.stringify(pointsData));
 
-            // 포인트 이력 저장
-            const history = JSON.parse(localStorage.getItem('pointHistory') || '[]');
-            history.push({
-                userId: userEmail,
-                userEmail: userEmail,
-                points: points,
-                type: 'earn',
-                reason: reason,
-                balance: currentPoints + points,
-                createdAt: new Date().toISOString()
-            });
-            localStorage.setItem('pointHistory', JSON.stringify(history));
-
-            console.log('오프라인 포인트 적립 성공:', points, '사용자:', userEmail);
-            return { success: true, points: currentPoints + points };
-        } catch (error) {
-            console.error('오프라인 포인트 적립 실패:', error);
-            return { success: false, error: error.message };
-        }
-    }
 
     // 오프라인 포인트 사용/차감 (이메일 기반)
-    static usePointsOffline(userEmail, points, reason = '포인트 사용') {
-        try {
-            // localStorage에서 현재 포인트 조회
-            const pointsData = JSON.parse(localStorage.getItem('userPoints') || '{}');
-            const currentPoints = pointsData[userEmail] || 0;
-            
-            // 포인트 부족 체크
-            if (currentPoints < points) {
-                return { success: false, error: '포인트가 부족합니다' };
-            }
-            
-            const newPoints = currentPoints - points;
-            
-            // 포인트 업데이트
-            pointsData[userEmail] = newPoints;
-            localStorage.setItem('userPoints', JSON.stringify(pointsData));
 
-            // 포인트 이력 저장
-            const history = JSON.parse(localStorage.getItem('pointHistory') || '[]');
-            history.push({
-                userId: userEmail,
-                userEmail: userEmail,
-                points: points,
-                type: 'use',
-                reason: reason,
-                balance: newPoints,
-                createdAt: new Date().toISOString()
-            });
-            localStorage.setItem('pointHistory', JSON.stringify(history));
-
-            console.log('오프라인 포인트 사용 성공:', points, '사용자:', userEmail);
-            return { success: true, points: newPoints };
-        } catch (error) {
-            console.error('오프라인 포인트 사용 실패:', error);
-            return { success: false, error: error.message };
-        }
-    }
 
     // 사용자 포인트 조회
     static async getUserPoints(uid) {
         console.log('사용자 포인트 조회:', uid);
 
         if (!this.isFirebaseAvailable()) {
-            console.log('Firebase 사용 불가, localStorage에서 포인트 조회');
-            return this.getUserPointsOffline(uid);
+            console.log('Firebase 사용 불가 - 네트워크 연결을 확인해주세요');
+            return 0;
         }
 
         try {
@@ -1533,28 +1349,20 @@ class FirebaseService {
             return points;
         } catch (error) {
             console.error('포인트 조회 실패:', error);
-            return this.getUserPointsOffline(uid);
+            return 0;
         }
     }
 
     // 오프라인 포인트 조회
-    static getUserPointsOffline(uid) {
-        try {
-            const pointsData = JSON.parse(localStorage.getItem('userPoints') || '{}');
-            return pointsData[uid] || 0;
-        } catch (error) {
-            console.error('오프라인 포인트 조회 실패:', error);
-            return 0;
-        }
-    }
+
 
     // 포인트 이력 조회
     static async getPointHistory(uid) {
         console.log('포인트 이력 조회:', uid);
 
         if (!this.isFirebaseAvailable()) {
-            console.log('Firebase 사용 불가, localStorage에서 포인트 이력 조회');
-            return this.getPointHistoryOffline(uid);
+            console.log('Firebase 사용 불가 - 네트워크 연결을 확인해주세요');
+            return [];
         }
 
         try {
@@ -1586,29 +1394,24 @@ class FirebaseService {
             return history;
         } catch (error) {
             console.error('포인트 이력 조회 실패:', error);
-            return this.getPointHistoryOffline(uid);
+            return [];
         }
     }
 
     // 오프라인 포인트 이력 조회
-    static getPointHistoryOffline(uid) {
-        try {
-            const history = JSON.parse(localStorage.getItem('pointHistory') || '[]');
-            return history.filter(item => item.userId === uid)
-                         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-        } catch (error) {
-            console.error('오프라인 포인트 이력 조회 실패:', error);
-            return [];
-        }
-    }
+
 
     // QR 코드용 사용자 토큰 생성
     static async generateUserQRToken(uid) {
         const qrToken = 'QR_' + uid + '_' + Date.now();
 
         if (!this.isFirebaseAvailable()) {
-            console.log('Firebase 사용 불가, localStorage QR 토큰 생성');
-            return this.generateQRTokenOffline(uid, qrToken);
+            console.log('Firebase 사용 불가 - 네트워크 연결을 확인해주세요');
+            return { 
+                success: false, 
+                error: 'network-error', 
+                message: 'ネットワークエラーが発生しました。接続を確認してください。' 
+            };
         }
 
         try {
@@ -1623,7 +1426,11 @@ class FirebaseService {
             return { success: true, qrToken: qrToken };
         } catch (error) {
             console.error('Firebase QR 토큰 생성 실패, localStorage로 폴백:', error);
-            return this.generateQRTokenOffline(uid, qrToken);
+            return { 
+                success: false, 
+                error: error.code || 'qr-token-failed', 
+                message: 'QR 토큰 생성에 실패했습니다. 다시 시도해주세요.' 
+            };
         }
     }
 
@@ -2242,63 +2049,7 @@ class FirebaseService {
     /**
      * 오프라인 만료 포인트 정리
      */
-    static cleanupExpiredPointsOffline(userId) {
-        try {
-            const pointHistory = JSON.parse(localStorage.getItem('aetherPointHistory') || '[]');
-            const users = JSON.parse(localStorage.getItem('aetherUsers') || '[]');
-            
-            const oneYearAgo = new Date();
-            oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
-            
-            let totalExpiredPoints = 0;
-            
-            // 만료된 포인트 이력 찾기
-            pointHistory.forEach(history => {
-                if (history.userId === userId && 
-                    history.type === 'earn' && 
-                    !history.expired &&
-                    new Date(history.timestamp) < oneYearAgo) {
-                    
-                    totalExpiredPoints += history.points;
-                    history.expired = true;
-                    history.expiredAt = new Date().toISOString();
-                }
-            });
-            
-            if (totalExpiredPoints > 0) {
-                // 사용자 포인트 차감
-                const userIndex = users.findIndex(u => u.uid === userId || u.email === userId);
-                if (userIndex !== -1) {
-                    const currentPoints = users[userIndex].points || 0;
-                    users[userIndex].points = Math.max(0, currentPoints - totalExpiredPoints);
-                    users[userIndex].lastExpiredCleanup = new Date().toISOString();
-                }
-                
-                // 만료 이력 추가
-                pointHistory.push({
-                    userId: userId,
-                    points: totalExpiredPoints,
-                    type: 'expire',
-                    reason: 'ポイント有効期限切れ',
-                    timestamp: new Date().toISOString()
-                });
-                
-                // localStorage 업데이트
-                localStorage.setItem('aetherPointHistory', JSON.stringify(pointHistory));
-                localStorage.setItem('aetherUsers', JSON.stringify(users));
-            }
-            
-            return {
-                success: true,
-                expiredPoints: totalExpiredPoints,
-                message: `${totalExpiredPoints}포인트가 만료되어 제거되었습니다`
-            };
-            
-        } catch (error) {
-            console.error('오프라인 만료 포인트 정리 실패:', error);
-            return { success: false, error: error.message };
-        }
-    }
+
     
     /**
      * 사용자의 포인트 유효기간 정보 조회
@@ -2356,48 +2107,7 @@ class FirebaseService {
     /**
      * 오프라인 포인트 유효기간 정보 조회
      */
-    static getPointExpiryInfoOffline(userId) {
-        try {
-            const pointHistory = JSON.parse(localStorage.getItem('aetherPointHistory') || '[]');
-            
-            const now = new Date();
-            const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, now.getDate());
-            
-            let soonExpirePoints = 0;
-            let totalActivePoints = 0;
-            
-            pointHistory.forEach(history => {
-                if (history.userId === userId && 
-                    history.type === 'earn' && 
-                    !history.expired) {
-                    
-                    const earnDate = new Date(history.timestamp);
-                    const expireDate = new Date(earnDate.getFullYear() + 1, earnDate.getMonth(), earnDate.getDate());
-                    
-                    if (expireDate > now) {
-                        totalActivePoints += history.points;
-                        
-                        if (expireDate <= nextMonth) {
-                            soonExpirePoints += history.points;
-                        }
-                    }
-                }
-            });
-            
-            return {
-                success: true,
-                soonExpirePoints: soonExpirePoints,
-                totalActivePoints: totalActivePoints,
-                message: soonExpirePoints > 0 ? 
-                    `${soonExpirePoints}포인트가 다음 달에 만료됩니다` : 
-                    '다음 달에 만료될 포인트가 없습니다'
-            };
-            
-        } catch (error) {
-            console.error('오프라인 포인트 유효기간 정보 조회 실패:', error);
-            return { success: false, error: error.message };
-        }
-    }
+
     
     // ===================
     // 관리자 권한 관리 (Firebase 기반)
@@ -2911,28 +2621,7 @@ class FirebaseService {
     /**
      * 오프라인 포인트 이력 조회
      */
-    static getPointHistoryOffline(userId) {
-        try {
-            const pointHistory = JSON.parse(localStorage.getItem('aetherPointHistory') || '[]');
-            
-            // 사용자 ID로 필터링 (이메일도 포함)
-            const userHistory = pointHistory.filter(entry => {
-                return entry.userId === userId || 
-                       entry.userEmail === userId ||
-                       (entry.userId && entry.userId.includes(userId));
-            });
-            
-            // 최신순 정렬
-            userHistory.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            
-            console.log(`localStorage 포인트 이력 조회 성공: ${userHistory.length}건`);
-            return userHistory.slice(0, 50); // 최대 50건
-            
-        } catch (error) {
-            console.error('localStorage 포인트 이력 조회 실패:', error);
-            return [];
-        }
-    }
+
     
     /**
      * 사용자 주문 이력 조회
@@ -3015,18 +2704,15 @@ class FirebaseService {
     /**
      * Firebase 전용 - localStorage 주문 이력 조회 제거됨
      */
-    static getOrderHistoryOffline(userId) {
-        console.log('Firebase 전용 시스템 - localStorage 주문 이력 사용 안함');
-        return []; // 빈 배열 반환
-    }
+
     
     // 포인트 이력 조회 (Firebase)
     static async getPointHistory(uid) {
         console.log('포인트 이력 조회 시작:', uid);
         
         if (!this.isFirebaseAvailable()) {
-            console.log('Firebase 사용 불가, localStorage에서 포인트 이력 조회');
-            return this.getPointHistoryOffline(uid);
+            console.log('Firebase 사용 불가 - 네트워크 연결을 확인해주세요');
+            return [];
         }
         
         try {
@@ -3053,42 +2739,12 @@ class FirebaseService {
         } catch (error) {
             console.error('Firebase 포인트 이력 조회 실패:', error);
             // Firebase 실패 시 localStorage 폴백
-            return this.getPointHistoryOffline(uid);
+            return [];
         }
     }
     
     // 포인트 이력 조회 (localStorage)
-    static getPointHistoryOffline(uid) {
-        try {
-            console.log('localStorage에서 포인트 이력 조회:', uid);
-            
-            const loginStatus = JSON.parse(localStorage.getItem('aetherLoginStatus') || '{}');
-            const allHistory = JSON.parse(localStorage.getItem('aetherPointHistory') || '[]');
-            
-            console.log('전체 포인트 이력:', allHistory.length, '건');
-            
-            const userHistory = allHistory.filter(item => {
-                return item.userId === uid || 
-                       item.userEmail === loginStatus.email ||
-                       item.userId === loginStatus.email || // 이메일로 저장된 경우
-                       item.userId === loginStatus.uid; // localStorage uid로 저장된 경우
-            });
-            
-            // 최신순으로 정렬
-            userHistory.sort((a, b) => {
-                const timeA = new Date(a.timestamp || a.createdAt);
-                const timeB = new Date(b.timestamp || b.createdAt);
-                return timeB - timeA;
-            });
-            
-            console.log(`localStorage 포인트 이력 조회 성공: ${userHistory.length}건`);
-            return userHistory.slice(0, 50); // 최대 50건
-            
-        } catch (error) {
-            console.error('localStorage 포인트 이력 조회 실패:', error);
-            return [];
-        }
-    }
+
 
     // 브랜드 삭제
     static async deleteBrand(brandId) {
