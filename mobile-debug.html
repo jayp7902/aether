@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>모바일 디버깅</title>
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <style>
+        body { 
+            padding: 10px; 
+            font-size: 14px;
+            background: #f8f9fa;
+        }
+        .debug-section { 
+            margin: 10px 0; 
+            padding: 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 5px; 
+            background: white;
+        }
+        .debug-log { 
+            background: #000; 
+            color: #0f0; 
+            padding: 10px; 
+            border-radius: 5px; 
+            max-height: 300px; 
+            overflow-y: auto; 
+            font-family: monospace; 
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .status-label {
+            font-weight: bold;
+        }
+        .status-value {
+            color: #666;
+        }
+        .status-good {
+            color: #28a745;
+        }
+        .status-bad {
+            color: #dc3545;
+        }
+        .status-warning {
+            color: #ffc107;
+        }
+        .btn {
+            margin: 5px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <h2>🔍 모바일 디버깅</h2>
+        
+        <div class="debug-section">
+            <h4>현재 상태</h4>
+            <div id="status-container">
+                <div class="status-item">
+                    <span class="status-label">사용자:</span>
+                    <span id="user-status" class="status-value">확인 중...</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Firebase:</span>
+                    <span id="firebase-status" class="status-value">확인 중...</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">카트 (로컬):</span>
+                    <span id="local-cart-status" class="status-value">확인 중...</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">카트 (Firebase):</span>
+                    <span id="firebase-cart-status" class="status-value">확인 중...</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">동기화:</span>
+                    <span id="sync-status" class="status-value">확인 중...</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="debug-section">
+            <h4>테스트 작업</h4>
+            <button class="btn btn-primary btn-sm" onclick="refreshStatus()">상태 새로고침</button>
+            <button class="btn btn-success btn-sm" onclick="testAddProduct()">테스트 상품 추가</button>
+            <button class="btn btn-info btn-sm" onclick="syncFromFirebase()">Firebase에서 동기화</button>
+            <button class="btn btn-warning btn-sm" onclick="clearLocalCart()">로컬 카트 비우기</button>
+            <button class="btn btn-secondary btn-sm" onclick="goToCart()">카트 페이지로 이동</button>
+        </div>
+        
+        <div class="debug-section">
+            <h4>디버그 로그</h4>
+            <div id="debug-log" class="debug-log"></div>
+            <button class="btn btn-outline-secondary btn-sm" onclick="clearLog()">로그 지우기</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
+    <!-- 애플리케이션 스크립트 -->
+    <script src="assets/js/firebase-config.js"></script>
+    <script src="assets/js/auth-utils.js"></script>
+    
+    <script>
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logContainer = document.getElementById('debug-log');
+            const logMessage = `[${timestamp}] ${message}\n`;
+            logContainer.textContent += logMessage;
+            logContainer.scrollTop = logContainer.scrollHeight;
+            console.log(message);
+        }
+        
+        function clearLog() {
+            document.getElementById('debug-log').textContent = '';
+        }
+        
+        function updateStatus() {
+            log('📊 상태 업데이트 시작');
+            
+            // 사용자 상태
+            let user = firebase?.auth?.currentUser;
+            if (!user && typeof getCurrentUser === 'function') {
+                const authUtilsUser = getCurrentUser();
+                if (authUtilsUser) {
+                    user = authUtilsUser;
+                }
+            }
+            
+            const userStatus = document.getElementById('user-status');
+            if (user) {
+                userStatus.textContent = user.email;
+                userStatus.className = 'status-good';
+                log('✅ 사용자: ' + user.email);
+            } else {
+                userStatus.textContent = '로그인 안됨';
+                userStatus.className = 'status-bad';
+                log('❌ 사용자: 로그인 안됨');
+            }
+            
+            // Firebase 상태
+            const firebaseAvailable = window.FirebaseService?.isFirebaseAvailable();
+            const firebaseStatus = document.getElementById('firebase-status');
+            if (firebaseAvailable) {
+                firebaseStatus.textContent = '사용 가능';
+                firebaseStatus.className = 'status-good';
+                log('✅ Firebase: 사용 가능');
+            } else {
+                firebaseStatus.textContent = '사용 불가';
+                firebaseStatus.className = 'status-bad';
+                log('❌ Firebase: 사용 불가');
+            }
+            
+            // 로컬 카트
+            const localCart = JSON.parse(localStorage.getItem('aetherCart') || '[]');
+            const localCartStatus = document.getElementById('local-cart-status');
+            localCartStatus.textContent = `${localCart.length}개 상품`;
+            localCartStatus.className = localCart.length > 0 ? 'status-good' : 'status-warning';
+            log('📦 로컬 카트: ' + localCart.length + '개 상품');
+            
+            // Firebase 카트 확인
+            checkFirebaseCart();
+            
+            // 동기화 상태
+            const canSync = user && firebaseAvailable && window.CartSyncService;
+            const syncStatus = document.getElementById('sync-status');
+            if (canSync) {
+                syncStatus.textContent = '가능';
+                syncStatus.className = 'status-good';
+                log('✅ 동기화: 가능');
+            } else {
+                syncStatus.textContent = '불가능';
+                syncStatus.className = 'status-bad';
+                log('❌ 동기화: 불가능');
+            }
+        }
+        
+        async function checkFirebaseCart() {
+            const firebaseCartStatus = document.getElementById('firebase-cart-status');
+            
+            if (!firebase?.auth?.currentUser || !window.CartSyncService) {
+                firebaseCartStatus.textContent = '확인 불가';
+                firebaseCartStatus.className = 'status-warning';
+                return;
+            }
+            
+            try {
+                const userEmail = firebase.auth.currentUser.email;
+                log('🔍 Firebase 카트 확인 중: ' + userEmail);
+                
+                const cartData = await window.CartSyncService.loadCartFromFirebase(userEmail);
+                firebaseCartStatus.textContent = `${cartData.length}개 상품`;
+                firebaseCartStatus.className = cartData.length > 0 ? 'status-good' : 'status-warning';
+                log('📦 Firebase 카트: ' + cartData.length + '개 상품');
+                
+                if (cartData.length > 0) {
+                    log('📋 Firebase 카트 내용: ' + JSON.stringify(cartData, null, 2));
+                }
+            } catch (error) {
+                firebaseCartStatus.textContent = '오류: ' + error.message;
+                firebaseCartStatus.className = 'status-bad';
+                log('❌ Firebase 카트 확인 오류: ' + error.message);
+            }
+        }
+        
+        function refreshStatus() {
+            log('🔄 상태 새로고침');
+            updateStatus();
+        }
+        
+        function testAddProduct() {
+            log('🛒 테스트 상품 추가');
+            
+            const testProduct = {
+                id: 'mobile-test-' + Date.now(),
+                name: '모바일 테스트 상품',
+                price: 1500,
+                quantity: 1,
+                addedAt: new Date().toISOString()
+            };
+            
+            const cart = JSON.parse(localStorage.getItem('aetherCart') || '[]');
+            cart.push(testProduct);
+            localStorage.setItem('aetherCart', JSON.stringify(cart));
+            
+            log('✅ 테스트 상품 추가 완료');
+            updateStatus();
+        }
+        
+        async function syncFromFirebase() {
+            log('🔄 Firebase에서 동기화 시작');
+            
+            if (!firebase?.auth?.currentUser || !window.CartSyncService) {
+                log('❌ 동기화 불가: 사용자 또는 서비스 없음');
+                return;
+            }
+            
+            try {
+                const userEmail = firebase.auth.currentUser.email;
+                log('📧 동기화 사용자: ' + userEmail);
+                
+                const syncedCart = await window.CartSyncService.syncCart(userEmail);
+                log('✅ 동기화 완료: ' + syncedCart.length + '개 상품');
+                
+                if (syncedCart.length > 0) {
+                    log('📋 동기화된 카트: ' + JSON.stringify(syncedCart, null, 2));
+                }
+                
+                updateStatus();
+            } catch (error) {
+                log('❌ 동기화 오류: ' + error.message);
+            }
+        }
+        
+        function clearLocalCart() {
+            log('🗑️ 로컬 카트 비우기');
+            localStorage.removeItem('aetherCart');
+            updateStatus();
+        }
+        
+        function goToCart() {
+            log('🛒 카트 페이지로 이동');
+            window.location.href = 'cart.html';
+        }
+        
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            log('🚀 모바일 디버깅 페이지 로드');
+            log('📱 디바이스: ' + (navigator.userAgent.includes('Mobile') ? '모바일' : '데스크톱'));
+            
+            // Firebase 초기화 대기
+            setTimeout(() => {
+                updateStatus();
+                
+                // Firebase Auth 상태 변경 감지
+                if (firebase?.auth) {
+                    firebase.auth.onAuthStateChanged((user) => {
+                        log('🔐 인증 상태 변경: ' + (user ? user.email : '로그아웃'));
+                        updateStatus();
+                    });
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
