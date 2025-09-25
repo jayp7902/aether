@@ -380,6 +380,73 @@
 
     <!-- QR Code Modal 제거됨 - 페이지에 직접 표시 -->
 
+    <!-- 포인트 이력 테이블 스타일 -->
+    <style>
+        /* 포인트 이력 테이블 스타일 개선 */
+        .table-responsive {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .table thead th {
+            background-color: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: 600;
+            padding: 12px 8px;
+        }
+        
+        .table tbody tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .table tbody td {
+            padding: 12px 8px;
+            vertical-align: middle;
+        }
+        
+        /* 주문 정보 스타일 */
+        .table tbody td small {
+            font-size: 0.85rem;
+            line-height: 1.4;
+            display: block;
+            margin-top: 4px;
+        }
+        
+        .table tbody td .text-muted {
+            color: #6c757d !important;
+        }
+        
+        .table tbody td .text-info {
+            color: #6c757d !important;
+            font-weight: 500;
+        }
+        
+        /* 포인트 표시 스타일 - 모노톤 색상 */
+        .table tbody td .text-success {
+            color: #212529 !important;
+            font-weight: 600;
+        }
+        
+        .table tbody td .text-danger {
+            color: #495057 !important;
+            font-weight: 600;
+        }
+        
+        /* 반응형 테이블 */
+        @media (max-width: 768px) {
+            .table thead th,
+            .table tbody td {
+                padding: 8px 4px;
+                font-size: 0.9rem;
+            }
+            
+            .table tbody td small {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+
     <!-- Start Script -->
     <script src="assets/js/jquery-1.11.0.min.js"></script>
     <script src="assets/js/jquery-migrate-1.2.1.min.js"></script>
@@ -765,7 +832,7 @@
             }
 
             let historyHTML = '<div class="table-responsive"><table class="table table-hover">';
-            historyHTML += '<thead><tr><th class="japanese-text">日付</th><th class="japanese-text">内容</th><th class="japanese-text">ポイント</th></tr></thead><tbody>';
+            historyHTML += '<thead><tr><th class="japanese-text">日付</th><th class="japanese-text">内容・注文詳細</th><th class="japanese-text">ポイント</th></tr></thead><tbody>';
             
             pointHistory.forEach((item, index) => {
                 console.log(`이력 ${index + 1}:`, item);
@@ -802,8 +869,10 @@
                     pointsClass = item.points > 0 ? 'text-success' : 'text-danger';
                 }
                 
-                // 이력 내용 결정
+                // 이력 내용 결정 (주문 정보 포함)
                 let description = 'ポイント取引';
+                let orderInfo = ''; // 주문 정보 추가
+                
                 if (item.reason) {
                     // 한국어 reason을 일본어로 변환
                     if (item.reason.includes('신규 가입 웰컴 보너스') || item.reason.includes('신규 가입')) {
@@ -833,10 +902,32 @@
                     description = item.description;
                 }
                 
+                // 주문 정보 표시 (orderAmount가 있는 경우)
+                if (item.orderAmount && (item.type === 'earn' || item.type === 'use')) {
+                    const orderAmount = item.orderAmount;
+                    const usedPoints = item.type === 'use' ? item.points : 0;
+                    const earnedPoints = item.type === 'earn' ? item.points : 0;
+                    const finalAmount = orderAmount - usedPoints;
+                    
+                    if (item.type === 'use' && usedPoints > 0) {
+                        // 포인트 사용 시: 총금액 - 포인트 사용금액 = 결제금액
+                        orderInfo = `<br><small class="text-muted">総額: ¥${orderAmount.toLocaleString()} - ポイント使用: ¥${usedPoints.toLocaleString()} = 支払額: ¥${finalAmount.toLocaleString()}</small>`;
+                        if (item.orderId) {
+                            orderInfo += `<br><small class="text-info">注文ID: ${item.orderId}</small>`;
+                        }
+                    } else if (item.type === 'earn' && earnedPoints > 0) {
+                        // 포인트 적립 시: 주문 금액 표시
+                        orderInfo = `<br><small class="text-muted">購入金額: ¥${orderAmount.toLocaleString()}</small>`;
+                        if (item.orderId) {
+                            orderInfo += `<br><small class="text-info">注文ID: ${item.orderId}</small>`;
+                        }
+                    }
+                }
+                
                 historyHTML += `
                     <tr>
                         <td class="japanese-text">${dateStr}</td>
-                        <td class="japanese-text">${description}</td>
+                        <td class="japanese-text">${description}${orderInfo}</td>
                         <td class="${pointsClass} japanese-text">${pointsStr}</td>
                     </tr>
                 `;
