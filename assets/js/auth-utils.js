@@ -5,7 +5,7 @@ let currentAuthUser = null;
 let isAuthInitialized = false;
 
 // 페이지별 인증 상태 감지 비활성화 리스트
-const AUTH_DISABLED_PAGES = ['login.html', 'register.html'];
+const AUTH_DISABLED_PAGES = ['login.html', 'register.html', 'test-cart-sync.html'];
 
 // 현재 페이지가 인증 상태 감지를 비활성화해야 하는지 확인
 function shouldDisableAuthListener() {
