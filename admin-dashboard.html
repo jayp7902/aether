@@ -1942,37 +1942,29 @@
                 </div>
             </div>
 
-                    <!-- 고객 통계 카드 -->
+                    <!-- 고객 통계 카드 (가로 한 줄, 모노톤) -->
                     <div class="row mb-4">
-                        <div class="col-md-3">
+                        <div class="col-12">
                             <div class="card border-0 shadow-sm">
-                                <div class="card-body text-center">
-                                    <h4 class="text-primary mb-1" id="total-customers-count">0</h4>
-                                    <p class="text-muted japanese-text mb-0">総顧客数</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body text-center">
-                                    <h4 class="text-success mb-1" id="new-customers-count">0</h4>
-                                    <p class="text-muted japanese-text mb-0">新規顧客</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body text-center">
-                                    <h4 class="text-warning mb-1" id="vip-customers-count">0</h4>
-                                    <p class="text-muted japanese-text mb-0">VIP顧客</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body text-center">
-                                    <h4 class="text-info mb-1" id="avg-order-value-customers">¥0</h4>
-                                    <p class="text-muted japanese-text mb-0">平均購入額</p>
+                                <div class="card-body">
+                                    <div class="row text-center">
+                                        <div class="col-3">
+                                            <h4 class="text-dark mb-1" id="total-customers-count">0</h4>
+                                            <p class="text-muted japanese-text mb-0">総顧客数</p>
+                                        </div>
+                                        <div class="col-3">
+                                            <h4 class="text-secondary mb-1" id="new-customers-count">0</h4>
+                                            <p class="text-muted japanese-text mb-0">新規顧客</p>
+                                        </div>
+                                        <div class="col-3">
+                                            <h4 class="text-dark mb-1" id="vip-customers-count">0</h4>
+                                            <p class="text-muted japanese-text mb-0">VIP顧客</p>
+                                        </div>
+                                        <div class="col-3">
+                                            <h4 class="text-secondary mb-1" id="avg-order-value-customers">¥0</h4>
+                                            <p class="text-muted japanese-text mb-0">平均購入額</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -1991,6 +1983,7 @@
                                     <thead>
                                         <tr>
                                             <th class="japanese-text">顧客情報</th>
+                                            <th class="japanese-text">顧客等級</th>
                                             <th class="japanese-text">登録日</th>
                                             <th class="japanese-text">注文数</th>
                                             <th class="japanese-text">総購入額</th>
@@ -2001,7 +1994,7 @@
                                     </thead>
                                     <tbody id="customers-table-body">
                                         <tr>
-                                            <td colspan="7" class="text-center text-muted">
+                                            <td colspan="8" class="text-center text-muted">
                                                 <i class="fas fa-spinner fa-spin me-2"></i>データ読み込み中...
                                             </td>
                                         </tr>
@@ -14247,6 +14240,30 @@
         
         let customersData = [];
         let filteredCustomers = [];
+        
+        // 고객 등급 시스템
+        const customerTiers = {
+            '일반': { minAmount: 0, color: '#6c757d', icon: 'fas fa-user' },
+            '실버': { minAmount: 500000, color: '#6c757d', icon: 'fas fa-medal' },
+            '골드': { minAmount: 1000000, color: '#495057', icon: 'fas fa-crown' },
+            'VIP': { minAmount: 2000000, color: '#212529', icon: 'fas fa-gem' }
+        };
+        
+        // 고객 등급 계산 함수
+        function calculateCustomerTier(totalSpent) {
+            if (totalSpent >= customerTiers.VIP.minAmount) return 'VIP';
+            if (totalSpent >= customerTiers.골드.minAmount) return '골드';
+            if (totalSpent >= customerTiers.실버.minAmount) return '실버';
+            return '일반';
+        }
+        
+        // 등급별 배지 생성 함수
+        function generateTierBadge(tier) {
+            const tierInfo = customerTiers[tier];
+            return `<span class="badge" style="background-color: ${tierInfo.color}; color: white;">
+                <i class="${tierInfo.icon} me-1"></i>${tier}
+            </span>`;
+        }
 
         // 고객 데이터 로드
         async function loadCustomers() {
@@ -14377,7 +14394,13 @@
                 const daysSinceJoin = Math.floor((new Date() - c.createdAt) / (1000 * 60 * 60 * 24));
                 return daysSinceJoin <= 30;
             }).length;
-            const vipCustomers = customersData.filter(c => c.isVip).length;
+            
+            // 새로운 등급 시스템으로 VIP 고객 계산
+            const vipCustomers = customersData.filter(c => {
+                const tier = calculateCustomerTier(c.totalSpent || 0);
+                return tier === 'VIP';
+            }).length;
+            
             const avgOrderValue = customersData.length > 0 ? 
                 customersData.reduce((sum, c) => sum + (c.totalSpent || 0), 0) / customersData.length : 0;
             
@@ -14437,6 +14460,10 @@
                     '<span class="badge bg-secondary">非アクティブ</span>' :
                     '<span class="badge bg-success">アクティブ</span>';
                 
+                // 고객 등급 계산
+                const tier = calculateCustomerTier(customer.totalSpent || 0);
+                const tierBadge = generateTierBadge(tier);
+                
                 return `
                     <tr>
                         <td>
@@ -14445,6 +14472,7 @@
                                 <small class="text-muted">${customer.email}</small>
                             </div>
                         </td>
+                        <td>${tierBadge}</td>
                         <td class="japanese-text">${joinDate}</td>
                         <td>${customer.orderCount || 0}</td>
                         <td>¥${(customer.totalSpent || 0).toLocaleString()}</td>
@@ -14454,7 +14482,10 @@
                             <button class="btn btn-sm btn-outline-secondary" onclick="viewCustomerDetail('${customer.id}')">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            <button class="btn btn-sm btn-outline-primary" onclick="sendEmailToCustomer('${customer.email}')">
+                            <button class="btn btn-sm btn-outline-secondary" onclick="changeCustomerTier('${customer.id}', '${tier}')">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="sendEmailToCustomer('${customer.email}')">
                                 <i class="fas fa-envelope"></i>
                             </button>
                         </td>
@@ -14472,6 +14503,104 @@
         function refreshCustomers() {
             console.log('🔄 고객 데이터 새로고침');
             loadCustomers();
+        }
+
+        // 고객 등급 변경 모달
+        function changeCustomerTier(customerId, currentTier) {
+            const customer = customersData.find(c => c.id === customerId);
+            if (!customer) return;
+            
+            const modalHtml = `
+                <div class="modal fade" id="changeTierModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">顧客等級変更</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label">顧客情報</label>
+                                    <div class="p-2 bg-light rounded">
+                                        <strong>${customer.name || 'Unknown'}</strong><br>
+                                        <small class="text-muted">${customer.email}</small><br>
+                                        <small class="text-muted">総購入額: ¥${(customer.totalSpent || 0).toLocaleString()}</small>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">現在の等級</label>
+                                    <div class="p-2">${generateTierBadge(currentTier)}</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">新しい等級を選択</label>
+                                    <select class="form-select" id="newTierSelect">
+                                        <option value="일반" ${currentTier === '일반' ? 'selected' : ''}>일반</option>
+                                        <option value="실버" ${currentTier === '실버' ? 'selected' : ''}>실버</option>
+                                        <option value="골드" ${currentTier === '골드' ? 'selected' : ''}>골드</option>
+                                        <option value="VIP" ${currentTier === 'VIP' ? 'selected' : ''}>VIP</option>
+                                    </select>
+                                </div>
+                                <div class="alert alert-info">
+                                    <small>
+                                        <strong>等級基準:</strong><br>
+                                        • 一般: 購入額 0円以上<br>
+                                        • シルバー: 購入額 50万円以上<br>
+                                        • ゴールド: 購入額 100万円以上<br>
+                                        • VIP: 購入額 200万円以上
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                                <button type="button" class="btn btn-dark" onclick="saveCustomerTier('${customerId}')">保存</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 기존 모달 제거
+            const existingModal = document.getElementById('changeTierModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // 새 모달 추가
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            const modal = new bootstrap.Modal(document.getElementById('changeTierModal'));
+            modal.show();
+        }
+        
+        // 고객 등급 저장
+        async function saveCustomerTier(customerId) {
+            try {
+                const newTier = document.getElementById('newTierSelect').value;
+                
+                // Firebase에서 고객 데이터 업데이트
+                await firebase.firestore().collection('users').doc(customerId).update({
+                    tier: newTier,
+                    tierUpdatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
+                // 로컬 데이터 업데이트
+                const customer = customersData.find(c => c.id === customerId);
+                if (customer) {
+                    customer.tier = newTier;
+                }
+                
+                // 테이블 새로고침
+                displayCustomers();
+                
+                // 모달 닫기
+                const modal = bootstrap.Modal.getInstance(document.getElementById('changeTierModal'));
+                modal.hide();
+                
+                showAdminAlert(`顧客等級を「${newTier}」に変更しました`, 'success');
+                
+            } catch (error) {
+                console.error('고객 등급 변경 실패:', error);
+                showAdminAlert('顧客等級の変更に失敗しました', 'danger');
+            }
         }
 
         // 고객 상세 보기
