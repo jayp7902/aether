@@ -6088,14 +6088,16 @@
             // 날짜 표시 업데이트
             updatePeriodDisplay();
             
-            // 통계 업데이트
+            // 분석 섹션의 모든 지표 업데이트
+            if (analyticsData && analyticsData.orders) {
+                updateSalesMetrics();
+                updateCustomerMetrics();
+                updatePointMetrics();
+                updateBottomAnalytics();
+            }
+            
+            // 주문 관리 탭의 통계도 업데이트
             loadOrderStatistics();
-            
-            // 매출 분석 카드 라벨 업데이트
-            updateAnalyticsLabels();
-            
-            // 하단 분석 데이터 업데이트
-            updateBottomAnalytics();
         }
 
         // 날짜 네비게이션
@@ -6117,9 +6119,17 @@
             currentDay = currentDate.getDate();
             
             updatePeriodDisplay();
+            
+            // 분석 섹션의 모든 지표 업데이트
+            if (analyticsData && analyticsData.orders) {
+                updateSalesMetrics();
+                updateCustomerMetrics();
+                updatePointMetrics();
+                updateBottomAnalytics();
+            }
+            
+            // 주문 관리 탭의 통계도 업데이트
             loadOrderStatistics();
-            updateAnalyticsLabels();
-            updateBottomAnalytics();
         }
 
         // 기간 표시 업데이트
@@ -6356,13 +6366,13 @@
                 const customers = customerEmails.size;
                 
                 console.log('📊 통계 계산 완료:', {
-                    todayOrders: todayOrders.length,
-                    todaySales,
+                    filteredOrders: filteredOrders.length,
+                    periodSales,
                     pendingCount,
                     customers
                 });
             
-                // 주문 관리 탭의 통계 업데이트
+                // 주문 관리 탭의 통계 업데이트 (분석 섹션과 구분)
                 const todayOrdersEl = document.getElementById('today-orders');
                 const todaySalesEl = document.getElementById('today-sales');
                 const pendingOrdersEl = document.getElementById('pending-orders');
@@ -6372,6 +6382,9 @@
                 if (todaySalesEl) todaySalesEl.textContent = `¥${periodSales.toLocaleString()}`;
                 if (pendingOrdersEl) pendingOrdersEl.textContent = pendingCount;
                 if (totalCustomersEl) totalCustomersEl.textContent = customers;
+                
+                // 분석 섹션의 매출 지표도 업데이트 (기간별 필터링 적용)
+                updateSalesMetrics();
                 
                 console.log('✅ 주문 통계 업데이트 완료');
                 
