@@ -93,6 +93,7 @@
             <button class="btn btn-success btn-sm" onclick="testAddProduct()">테스트 상품 추가</button>
             <button class="btn btn-info btn-sm" onclick="syncFromFirebase()">Firebase에서 동기화</button>
             <button class="btn btn-warning btn-sm" onclick="clearLocalCart()">로컬 카트 비우기</button>
+            <button class="btn btn-danger btn-sm" onclick="forceReloadScripts()">스크립트 강제 재로드</button>
             <button class="btn btn-secondary btn-sm" onclick="goToCart()">카트 페이지로 이동</button>
         </div>
         
@@ -108,9 +109,30 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
-    <!-- 애플리케이션 스크립트 -->
+    <!-- 애플리케이션 스크립트 (순서 중요) -->
     <script src="assets/js/firebase-config.js"></script>
     <script src="assets/js/auth-utils.js"></script>
+    
+    <!-- 스크립트 로드 확인 -->
+    <script>
+        // 스크립트 로드 상태 확인
+        function checkScriptsLoaded() {
+            const scripts = {
+                'firebase': typeof firebase !== 'undefined',
+                'FirebaseService': typeof window.FirebaseService !== 'undefined',
+                'CartSyncService': typeof window.CartSyncService !== 'undefined',
+                'auth-utils': typeof getCurrentUser !== 'undefined'
+            };
+            
+            console.log('📋 스크립트 로드 상태:', scripts);
+            return scripts;
+        }
+        
+        // 페이지 로드 후 스크립트 상태 확인
+        window.addEventListener('load', () => {
+            setTimeout(checkScriptsLoaded, 1000);
+        });
+    </script>
     
     <script>
         function log(message) {
@@ -241,9 +263,37 @@
         async function syncFromFirebase() {
             log('🔄 Firebase에서 동기화 시작');
             
-            if (!firebase?.auth?.currentUser || !window.CartSyncService) {
-                log('❌ 동기화 불가: 사용자 또는 서비스 없음');
+            // 상세한 상태 확인
+            log('🔍 동기화 조건 확인:');
+            log('- firebase 객체: ' + (typeof firebase !== 'undefined' ? '존재' : '없음'));
+            log('- firebase.auth: ' + (firebase?.auth ? '존재' : '없음'));
+            log('- firebase.auth.currentUser: ' + (firebase?.auth?.currentUser ? firebase.auth.currentUser.email : '없음'));
+            log('- window.CartSyncService: ' + (typeof window.CartSyncService !== 'undefined' ? '존재' : '없음'));
+            log('- window.FirebaseService: ' + (typeof window.FirebaseService !== 'undefined' ? '존재' : '없음'));
+            
+            if (!firebase?.auth?.currentUser) {
+                log('❌ 동기화 불가: 사용자 로그인 안됨');
                 return;
+            }
+            
+            if (!window.CartSyncService) {
+                log('❌ 동기화 불가: CartSyncService 로드 안됨');
+                log('🔧 CartSyncService 수동 로드 시도...');
+                
+                // firebase-config.js가 완전히 로드될 때까지 대기
+                let attempts = 0;
+                while (attempts < 50 && !window.CartSyncService) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                    log(`CartSyncService 로드 대기 중... (${attempts}/50)`);
+                }
+                
+                if (!window.CartSyncService) {
+                    log('❌ CartSyncService 로드 실패 - firebase-config.js 확인 필요');
+                    return;
+                } else {
+                    log('✅ CartSyncService 로드 성공');
+                }
             }
             
             try {
@@ -274,23 +324,78 @@
             window.location.href = 'cart.html';
         }
         
+        function forceReloadScripts() {
+            log('🔄 스크립트 강제 재로드 시작');
+            
+            // 현재 스크립트 상태 확인
+            log('현재 스크립트 상태:');
+            log('- firebase: ' + (typeof firebase !== 'undefined' ? '존재' : '없음'));
+            log('- FirebaseService: ' + (typeof window.FirebaseService !== 'undefined' ? '존재' : '없음'));
+            log('- CartSyncService: ' + (typeof window.CartSyncService !== 'undefined' ? '존재' : '없음'));
+            
+            // 페이지 새로고침으로 모든 스크립트 재로드
+            log('📄 페이지 새로고침으로 스크립트 재로드...');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        }
+        
+        // 스크립트 로드 대기 함수
+        async function waitForScripts() {
+            log('⏳ 필수 스크립트 로드 대기 중...');
+            
+            let attempts = 0;
+            const maxAttempts = 100; // 10초 대기
+            
+            while (attempts < maxAttempts) {
+                const scriptsLoaded = {
+                    firebase: typeof firebase !== 'undefined',
+                    FirebaseService: typeof window.FirebaseService !== 'undefined',
+                    CartSyncService: typeof window.CartSyncService !== 'undefined'
+                };
+                
+                if (scriptsLoaded.firebase && scriptsLoaded.FirebaseService && scriptsLoaded.CartSyncService) {
+                    log('✅ 모든 필수 스크립트 로드 완료');
+                    return true;
+                }
+                
+                attempts++;
+                log(`스크립트 로드 대기 중... (${attempts}/${maxAttempts})`);
+                log(`- firebase: ${scriptsLoaded.firebase}`);
+                log(`- FirebaseService: ${scriptsLoaded.FirebaseService}`);
+                log(`- CartSyncService: ${scriptsLoaded.CartSyncService}`);
+                
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            log('❌ 스크립트 로드 타임아웃');
+            return false;
+        }
+        
         // 페이지 로드 시 초기화
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             log('🚀 모바일 디버깅 페이지 로드');
             log('📱 디바이스: ' + (navigator.userAgent.includes('Mobile') ? '모바일' : '데스크톱'));
             
-            // Firebase 초기화 대기
-            setTimeout(() => {
-                updateStatus();
-                
-                // Firebase Auth 상태 변경 감지
-                if (firebase?.auth) {
-                    firebase.auth.onAuthStateChanged((user) => {
-                        log('🔐 인증 상태 변경: ' + (user ? user.email : '로그아웃'));
-                        updateStatus();
-                    });
-                }
-            }, 1000);
+            // 스크립트 로드 대기
+            const scriptsReady = await waitForScripts();
+            
+            if (scriptsReady) {
+                // Firebase 초기화 대기
+                setTimeout(() => {
+                    updateStatus();
+                    
+                    // Firebase Auth 상태 변경 감지
+                    if (firebase?.auth) {
+                        firebase.auth.onAuthStateChanged((user) => {
+                            log('🔐 인증 상태 변경: ' + (user ? user.email : '로그아웃'));
+                            updateStatus();
+                        });
+                    }
+                }, 1000);
+            } else {
+                log('❌ 스크립트 로드 실패 - 수동 새로고침 필요');
+            }
         });
     </script>
 </body>
