@@ -559,12 +559,12 @@ async function initializePage() {
                                 firebaseEmail: firebaseCurrentUser?.email
                             });
                             
-                            // Firebase에서 카트 로드
-                            const syncedCart = await window.CartSyncService.syncCart(user.uid);
+                            // Firebase에서 카트 로드 (이메일 주소 사용)
+                            const syncedCart = await window.CartSyncService.syncCart(user.email);
                             console.log('✅ 카트 동기화 완료:', syncedCart.length, '개 상품');
                             
-                            // 실시간 카트 리스너 설정
-                            window.CartSyncService.setupCartListener(user.uid);
+                            // 실시간 카트 리스너 설정 (이메일 주소 사용)
+                            window.CartSyncService.setupCartListener(user.email);
                             
                             // 카트 카운트 업데이트
                             updateCartCount();
