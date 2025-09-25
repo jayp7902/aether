@@ -1527,7 +1527,7 @@
                 
                 // Firebase 카트 동기화 (로그인된 사용자인 경우)
                 if (firebase?.auth?.currentUser && window.CartSyncService) {
-                    window.CartSyncService.saveCartToFirebase(cart, firebase.auth.currentUser.uid)
+                    window.CartSyncService.saveCartToFirebase(cart, firebase.auth.currentUser.email)
                         .then(() => console.log('✅ Firebase 카트 동기화 완료'))
                         .catch(error => console.warn('Firebase 카트 동기화 실패:', error));
                 }
