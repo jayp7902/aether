@@ -572,6 +572,22 @@
 
             console.log('카트 렌더링 시작, 총 상품 수:', cart.length);
             console.log('카트 데이터:', cart);
+            
+            // 모바일 디버깅을 위한 추가 로그
+            console.log('🔍 cart.html renderCart 디버깅:');
+            console.log('- 현재 사용자:', firebase?.auth?.currentUser?.email || '없음');
+            console.log('- Firebase 사용 가능:', window.FirebaseService?.isFirebaseAvailable() || false);
+            console.log('- CartSyncService 존재:', !!window.CartSyncService);
+            console.log('- 로컬 카트 길이:', cart.length);
+            console.log('- localStorage 카트:', localStorage.getItem('aetherCart'));
+            
+            // 모바일에서 확인할 수 있는 임시 알림 (디버깅용)
+            if (window.location.search.includes('debug=1')) {
+                const debugInfo = `사용자: ${firebase?.auth?.currentUser?.email || '없음'}\n카트: ${cart.length}개\nFirebase: ${window.FirebaseService?.isFirebaseAvailable() ? 'OK' : 'NG'}`;
+                setTimeout(() => {
+                    alert('디버그 정보:\n' + debugInfo);
+                }, 1000);
+            }
 
             if (cart.length === 0) {
                 container.innerHTML = '<div class="empty-cart"><h3 class="japanese-heading">カートは空です</h3><a href="shop.html" class="btn btn-secondary japanese-text">お買い物を始める</a></div>';
@@ -863,6 +879,10 @@
                             console.log('🛒 cart.html Firebase 카트 동기화 시작');
                             const syncedCart = await window.CartSyncService.syncCart(firebase.auth.currentUser.email);
                             console.log('✅ cart.html 카트 동기화 완료:', syncedCart.length, '개 상품');
+                            
+                            // 실시간 카트 리스너 설정
+                            window.CartSyncService.setupCartListener(firebase.auth.currentUser.email);
+                            console.log('🔄 cart.html 실시간 카트 리스너 설정 완료');
                         } catch (error) {
                             console.warn('cart.html 카트 동기화 실패:', error);
                         }
