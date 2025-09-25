@@ -541,6 +541,13 @@ async function initializePage() {
                         // 카트 동기화 설정
                         if (window.CartSyncService) {
                             console.log('🛒 로그인 시 카트 동기화 시작');
+                            console.log('🔍 사용자 정보 디버깅:', {
+                                uid: user.uid,
+                                email: user.email,
+                                displayName: user.displayName,
+                                uidLength: user.uid?.length,
+                                uidType: typeof user.uid
+                            });
                             
                             // Firebase에서 카트 로드
                             const syncedCart = await window.CartSyncService.syncCart(user.uid);
