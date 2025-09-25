@@ -911,14 +911,44 @@
                         console.log('Firebase 앱 초기화 확인됨');
                         
                         const currentUser = firebase.auth().currentUser;
+                        console.log('Firebase Auth currentUser:', currentUser);
+                        
                         if (currentUser && currentUser.email) {
-                            userData = {
-                                name: currentUser.displayName || currentUser.email.split('@')[0],
-                                email: currentUser.email,
-                                uid: currentUser.uid,
-                                points: 0
-                            };
-                            console.log('Firebase에서 사용자 정보 로드 성공:', userData);
+                            // Firebase에서 사용자 문서 조회
+                            try {
+                                const userDoc = await db.collection('users').doc(currentUser.email).get();
+                                if (userDoc.exists) {
+                                    const userDocData = userDoc.data();
+                                    userData = {
+                                        name: userDocData.name || currentUser.displayName || currentUser.email.split('@')[0],
+                                        email: currentUser.email,
+                                        uid: currentUser.uid,
+                                        points: userDocData.points || 0,
+                                        tier: userDocData.tier || '일반',
+                                        ...userDocData
+                                    };
+                                    console.log('Firebase 사용자 문서에서 정보 로드 성공:', userData);
+                                } else {
+                                    userData = {
+                                        name: currentUser.displayName || currentUser.email.split('@')[0],
+                                        email: currentUser.email,
+                                        uid: currentUser.uid,
+                                        points: 0,
+                                        tier: '일반'
+                                    };
+                                    console.log('Firebase 사용자 문서 없음, 기본 정보 사용:', userData);
+                                }
+                            } catch (docError) {
+                                console.warn('사용자 문서 조회 실패:', docError);
+                                userData = {
+                                    name: currentUser.displayName || currentUser.email.split('@')[0],
+                                    email: currentUser.email,
+                                    uid: currentUser.uid,
+                                    points: 0,
+                                    tier: '일반'
+                                };
+                                console.log('기본 사용자 정보 사용:', userData);
+                            }
                         } else {
                             console.log('Firebase에 로그인된 사용자 없음');
                         }
