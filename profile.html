@@ -1641,8 +1641,10 @@
                     // 포인트 정보 (Firebase에서 저장된 데이터 사용)
                     const usedPoints = order.usedPoints || order.pointDiscount || 0;
                     const earnedPoints = order.earnedPoints || Math.floor(subtotal * 0.03);
-                    const originalAmount = order.originalAmount || subtotal;
-                    const finalTotal = order.totalAmount || (totalWithTax + shippingFee - usedPoints);
+                    
+                    // 최종 결제 금액 계산
+                    const grossTotal = totalWithTax + shippingFee; // 총금액 (세금+배송비 포함)
+                    const finalTotal = order.totalAmount || (grossTotal - usedPoints); // 실제 결제금액
 
                     ordersHtml += `
                         <div class="order-item mb-4">
@@ -1678,17 +1680,25 @@
                                             <span class="japanese-text">消費税:</span>
                                             <span>¥${tax.toLocaleString()}</span>
                                         </div>
-                                        ${usedPoints > 0 ? `
                                         <div class="d-flex justify-content-between mb-2">
-                                            <span class="text-muted japanese-text"><small>定価:</small></span>
-                                            <span class="text-muted"><small>¥${originalAmount.toLocaleString()}</small></span>
+                                            <span class="japanese-text">総額:</span>
+                                            <span>¥${grossTotal.toLocaleString()}</span>
                                         </div>
-                                        ` : ''}
+                                        <div class="d-flex justify-content-between mb-2">
+                                            <span class="japanese-text text-dark">ポイント使用:</span>
+                                            <span class="text-dark">${usedPoints > 0 ? '-¥' + usedPoints.toLocaleString() : '¥0'}</span>
+                                        </div>
                                         <hr>
                                         <div class="d-flex justify-content-between mb-3">
-                                            <strong class="japanese-text">合計:</strong>
+                                            <strong class="japanese-text">支払額:</strong>
                                             <strong>¥${finalTotal.toLocaleString()}</strong>
                                         </div>
+                                        ${earnedPoints > 0 ? `
+                                        <div class="d-flex justify-content-between">
+                                            <span class="japanese-text text-muted"><small>獲得ポイント:</small></span>
+                                            <span class="text-muted"><small>${earnedPoints}pt</small></span>
+                                        </div>
+                                        ` : ''}
                                         
                                     </div>
                                 </div>
