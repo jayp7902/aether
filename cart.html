@@ -874,18 +874,42 @@
                     await loadUserInfo();
                     
                     // Firebase 카트 동기화 (로그인된 사용자인 경우)
-                    if (firebase?.auth?.currentUser && window.CartSyncService) {
+                    let currentUser = firebase?.auth?.currentUser;
+                    
+                    // Firebase Auth currentUser가 null인 경우 auth-utils.js에서 사용자 정보 확인
+                    if (!currentUser && typeof getCurrentUser === 'function') {
+                        const authUtilsUser = getCurrentUser();
+                        if (authUtilsUser) {
+                            console.log('🔧 cart.html: Firebase Auth currentUser가 null - auth-utils.js에서 사용자 정보 사용');
+                            console.log('🔧 cart.html: auth-utils 사용자:', authUtilsUser.email);
+                            
+                            // Firebase Auth 상태 강제 새로고침 시도
+                            if (firebase?.auth) {
+                                try {
+                                    await firebase.auth.authStateReady();
+                                    currentUser = firebase.auth.currentUser;
+                                    console.log('🔧 cart.html: Firebase Auth 상태 새로고침 후:', currentUser ? currentUser.email : '여전히 null');
+                                } catch (error) {
+                                    console.warn('cart.html: Firebase Auth 상태 새로고침 실패:', error);
+                                }
+                            }
+                        }
+                    }
+                    
+                    if (currentUser && window.CartSyncService) {
                         try {
                             console.log('🛒 cart.html Firebase 카트 동기화 시작');
-                            const syncedCart = await window.CartSyncService.syncCart(firebase.auth.currentUser.email);
+                            const syncedCart = await window.CartSyncService.syncCart(currentUser.email);
                             console.log('✅ cart.html 카트 동기화 완료:', syncedCart.length, '개 상품');
                             
                             // 실시간 카트 리스너 설정
-                            window.CartSyncService.setupCartListener(firebase.auth.currentUser.email);
+                            window.CartSyncService.setupCartListener(currentUser.email);
                             console.log('🔄 cart.html 실시간 카트 리스너 설정 완료');
                         } catch (error) {
                             console.warn('cart.html 카트 동기화 실패:', error);
                         }
+                    } else {
+                        console.log('cart.html: Firebase 카트 동기화 건너뜀 - 사용자:', currentUser ? currentUser.email : '없음', 'CartSyncService:', !!window.CartSyncService);
                     }
                 }, 1000);
                 
