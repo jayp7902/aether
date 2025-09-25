@@ -555,7 +555,16 @@
     
     <script>
         function getCart() { return JSON.parse(localStorage.getItem('aetherCart') || '[]'); }
-        function saveCart(cart) { localStorage.setItem('aetherCart', JSON.stringify(cart)); }
+        function saveCart(cart) { 
+            localStorage.setItem('aetherCart', JSON.stringify(cart));
+            
+            // Firebase 카트 동기화 (로그인된 사용자인 경우)
+            if (firebase?.auth?.currentUser && window.CartSyncService) {
+                window.CartSyncService.saveCartToFirebase(cart, firebase.auth.currentUser.uid)
+                    .then(() => console.log('✅ Firebase 카트 동기화 완료'))
+                    .catch(error => console.warn('Firebase 카트 동기화 실패:', error));
+            }
+        }
 
         function renderCart() {
             const cart = getCart();
@@ -844,9 +853,20 @@
                     console.warn('Firebase 초기화 시간 초과, 기본 모드로 진행');
                 }
                 
-                // Firebase 초기화 완료 후 사용자 정보 로드 (지연)
-                setTimeout(() => {
+                // Firebase 초기화 완료 후 사용자 정보 로드 및 카트 동기화
+                setTimeout(async () => {
                     loadUserInfo();
+                    
+                    // Firebase 카트 동기화 (로그인된 사용자인 경우)
+                    if (firebase?.auth?.currentUser && window.CartSyncService) {
+                        try {
+                            console.log('🛒 cart.html Firebase 카트 동기화 시작');
+                            const syncedCart = await window.CartSyncService.syncCart(firebase.auth.currentUser.uid);
+                            console.log('✅ cart.html 카트 동기화 완료:', syncedCart.length, '개 상품');
+                        } catch (error) {
+                            console.warn('cart.html 카트 동기화 실패:', error);
+                        }
+                    }
                 }, 1000);
                 
                 // 카트 렌더링
