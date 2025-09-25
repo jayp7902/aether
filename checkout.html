@@ -1068,27 +1068,51 @@
                     await window.waitForFirebaseComplete();
                     console.log('✅ Firebase 초기화 완료');
                     
-                    // Firebase 인증 상태 확인
-                    firebase.auth().onAuthStateChanged(async (user) => {
+                    // Firebase Auth 완전 로드 대기 후 사용자 정보 확인 (포인트 페이지와 동일)
+                    try {
+                        // Firebase Auth가 완전히 로드될 때까지 대기
+                        let user = null;
+                        await new Promise((resolve) => {
+                            const unsubscribe = firebase.auth().onAuthStateChanged((authUser) => {
+                                unsubscribe(); // 한 번만 실행되도록 구독 해제
+                                user = authUser;
+                                resolve(authUser);
+                            });
+                        });
+                        
                         if (user) {
-                            console.log('👤 Firebase 로그인 사용자 확인:', user.email);
+                            console.log('✅ 로그인된 사용자 확인:', user.email);
+                            
+                            // 사용자 정보 설정 (포인트 페이지와 동일)
+                            const checkoutPageUser = {
+                                uid: user.uid,
+                                email: user.email,
+                                name: user.displayName || user.email.split('@')[0],
+                                points: 0
+                            };
+                            
+                            console.log('✅ 체크아웃 페이지 사용자 설정:', checkoutPageUser);
+                            
                             currentUser = user; // 현재 사용자 설정
                             await loadProfileAddress();
-                            await loadPointsLikePointsPage(); // 포인트 정보 로드 (포인트 페이지 방식)
-                        } else {
-                            console.log('👤 Firebase 비로그인 상태');
                             
+                            // 포인트 정보 로드 (포인트 페이지와 동일한 방식)
+                            await loadPointsLikePointsPageWithUser(checkoutPageUser);
+                            
+                        } else {
+                            console.log('❌ 로그인된 사용자가 없음');
                             // Firebase 전용 정책 - 로그인 필수
                             console.log('🚫 로그인이 필요합니다. Firebase 전용 시스템입니다.');
                             showAlert('payment-alert', 'ログインが必要です。注文するにはアカウントにログインしてください。', 'warning');
                             
                             // 로그인 페이지로 리다이렉트
                             setTimeout(() => {
-                                window.location.href = 'login.html?redirect=checkout';
+                                window.location.href = 'login.html?redirect=checkout.html';
                             }, 2000);
-                            return;
                         }
-                    });
+                    } catch (error) {
+                        console.error('❌ Firebase Auth 상태 확인 오류:', error);
+                    }
                 } catch (error) {
                     console.log('⚠️ Firebase 초기화 실패:', error);
                     console.log('❌ Firebase가 필요합니다. 페이지를 새로고침해주세요.');
@@ -1136,19 +1160,46 @@
                         pointSection.style.display = 'block';
                         console.log('✅ 포인트 섹션 최종 확인 완료');
                         
-                        // 포인트 재로드 시도 (포인트 페이지 방식)
-                        loadPointsLikePointsPage();
+                        // 포인트 재로드 시도 (사용자 객체와 함께)
+                        const user = firebase.auth().currentUser;
+                        if (user) {
+                            const checkoutPageUser = {
+                                uid: user.uid,
+                                email: user.email,
+                                name: user.displayName || user.email.split('@')[0],
+                                points: 0
+                            };
+                            loadPointsLikePointsPageWithUser(checkoutPageUser);
+                        }
                         
                         // 추가 시도 (2초 후)
                         setTimeout(() => {
                             console.log('🔄 포인트 추가 로딩 시도 (포인트 페이지 방식)');
-                            loadPointsLikePointsPage();
+                            const user = firebase.auth().currentUser;
+                            if (user) {
+                                const checkoutPageUser = {
+                                    uid: user.uid,
+                                    email: user.email,
+                                    name: user.displayName || user.email.split('@')[0],
+                                    points: 0
+                                };
+                                loadPointsLikePointsPageWithUser(checkoutPageUser);
+                            }
                         }, 2000);
                         
                         // 최종 시도 (5초 후)
                         setTimeout(() => {
                             console.log('🔄 포인트 최종 로딩 시도 (포인트 페이지 방식)');
-                            loadPointsLikePointsPage();
+                            const user = firebase.auth().currentUser;
+                            if (user) {
+                                const checkoutPageUser = {
+                                    uid: user.uid,
+                                    email: user.email,
+                                    name: user.displayName || user.email.split('@')[0],
+                                    points: 0
+                                };
+                                loadPointsLikePointsPageWithUser(checkoutPageUser);
+                            }
                         }, 5000);
                     }
                 }, 1000);
@@ -2310,14 +2361,8 @@
         // 포인트 관리 함수들
         // =============
         
-        // 사용자 포인트 로드 (포인트 페이지와 동일한 방식)
+        // 사용자 포인트 로드 (Firebase) - 이메일 기반 개선 버전
         async function loadUserPoints() {
-            // loadPointsLikePointsPage와 동일한 함수 호출
-            await loadPointsLikePointsPage();
-        }
-        
-        // 사용자 포인트 로드 (Firebase) - 이메일 기반 개선 버전 (OLD)
-        async function loadUserPointsOLD() {
             try {
                 const user = firebase.auth().currentUser;
                 if (!user) {
@@ -2396,29 +2441,18 @@
             }
         }
         
-        // 포인트 페이지와 정확히 동일한 포인트 로딩 함수 (단일 함수로 통합)
-        async function loadPointsLikePointsPage() {
+        // 포인트 페이지와 동일한 포인트 로딩 함수 (사용자 객체 전달)
+        async function loadPointsLikePointsPageWithUser(checkoutPageUser) {
             try {
-                console.log('🔄 포인트 페이지 방식 포인트 로딩 시작');
-                const user = firebase.auth().currentUser;
-                if (!user) {
-                    console.log('❌ 사용자 없음');
+                console.log('🔄 포인트 페이지 방식 포인트 로딩 시작 (사용자 전달)');
+                console.log('🔄 포인트 페이지 방식 - 사용자:', checkoutPageUser);
+                
+                if (!checkoutPageUser) {
+                    console.log('❌ 사용자 객체 없음');
                     currentUserPoints = 0;
                     showPointSection();
                     return;
                 }
-                
-                currentUser = user;
-                
-                // 포인트 페이지와 동일한 사용자 객체 생성
-                const checkoutPageUser = {
-                    uid: user.uid,
-                    email: user.email,
-                    name: user.displayName || user.email.split('@')[0],
-                    points: 0
-                };
-                
-                console.log('🔄 포인트 페이지 방식 - 사용자:', checkoutPageUser);
                 
                 // Firebase에서 포인트 정보 가져오기 (포인트 페이지와 동일)
                 if (typeof firebase !== 'undefined' && firebase.firestore) {
@@ -2446,25 +2480,20 @@
                         const userData = userDoc.data();
                         const newPoints = userData.points || 0;
                         
-                        // 포인트가 변경되었는지 확인
+                        // 포인트가 변경되었는지 확인 (포인트 페이지와 동일)
                         if (currentUserPoints !== newPoints) {
                             console.log(`포인트 변경 감지: ${currentUserPoints} → ${newPoints}`);
                             currentUserPoints = newPoints;
                             checkoutPageUser.points = currentUserPoints; // 사용자 정보도 업데이트
+                            
+                            // UI 업데이트 (포인트 페이지와 동일)
+                            showPointSection();
                         } else {
                             console.log('포인트 변경 없음:', currentUserPoints);
                         }
                         
                         console.log('Firebase에서 포인트 정보 로드 (최신):', currentUserPoints);
                         console.log('사용자 데이터:', userData);
-                        console.log('🔍 포인트 상세 분석:');
-                        console.log('  - userData.points:', userData.points);
-                        console.log('  - typeof userData.points:', typeof userData.points);
-                        console.log('  - userData.points === undefined:', userData.points === undefined);
-                        console.log('  - userData.points === null:', userData.points === null);
-                        console.log('  - userData.points === 0:', userData.points === 0);
-                        console.log('  - userData 전체 키:', Object.keys(userData));
-                        showPointSection();
                     } else {
                         console.log('사용자 문서가 존재하지 않습니다');
                         currentUserPoints = 0;
@@ -2803,7 +2832,7 @@
                     const user = firebase.auth().currentUser;
                     if (user) {
                         console.log('Firebase 사용자 확인됨, 최신 포인트 로드');
-                        await loadPointsLikePointsPage();
+                        // 포인트 로딩은 이미 onAuthStateChanged에서 처리됨
                         return;
                     }
                 }
