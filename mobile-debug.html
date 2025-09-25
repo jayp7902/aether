@@ -94,6 +94,7 @@
             <button class="btn btn-info btn-sm" onclick="syncFromFirebase()">Firebase에서 동기화</button>
             <button class="btn btn-warning btn-sm" onclick="clearLocalCart()">로컬 카트 비우기</button>
             <button class="btn btn-danger btn-sm" onclick="forceReloadScripts()">스크립트 강제 재로드</button>
+            <button class="btn btn-info btn-sm" onclick="forceAuthRefresh()">Firebase Auth 새로고침</button>
             <button class="btn btn-secondary btn-sm" onclick="goToCart()">카트 페이지로 이동</button>
         </div>
         
@@ -271,8 +272,30 @@
             log('- window.CartSyncService: ' + (typeof window.CartSyncService !== 'undefined' ? '존재' : '없음'));
             log('- window.FirebaseService: ' + (typeof window.FirebaseService !== 'undefined' ? '존재' : '없음'));
             
-            if (!firebase?.auth?.currentUser) {
+            // Firebase Auth currentUser가 null인 경우 auth-utils.js에서 사용자 정보 확인
+            let currentUser = firebase?.auth?.currentUser;
+            if (!currentUser && typeof getCurrentUser === 'function') {
+                const authUtilsUser = getCurrentUser();
+                if (authUtilsUser) {
+                    log('🔧 Firebase Auth currentUser가 null - auth-utils.js에서 사용자 정보 사용');
+                    log('🔧 auth-utils 사용자: ' + authUtilsUser.email);
+                    
+                    // Firebase Auth 상태 강제 새로고침 시도
+                    if (firebase?.auth) {
+                        try {
+                            await firebase.auth.authStateReady();
+                            currentUser = firebase.auth.currentUser;
+                            log('🔧 Firebase Auth 상태 새로고침 후: ' + (currentUser ? currentUser.email : '여전히 null'));
+                        } catch (error) {
+                            log('⚠️ Firebase Auth 상태 새로고침 실패: ' + error.message);
+                        }
+                    }
+                }
+            }
+            
+            if (!currentUser) {
                 log('❌ 동기화 불가: 사용자 로그인 안됨');
+                log('💡 Firebase Auth 상태 동기화 문제 - 잠시 후 다시 시도해보세요');
                 return;
             }
             
@@ -338,6 +361,51 @@
             setTimeout(() => {
                 window.location.reload();
             }, 1000);
+        }
+        
+        async function forceAuthRefresh() {
+            log('🔄 Firebase Auth 강제 새로고침 시작');
+            
+            if (!firebase?.auth) {
+                log('❌ Firebase Auth 없음');
+                return;
+            }
+            
+            try {
+                // 현재 Auth 상태 확인
+                const currentUser = firebase.auth.currentUser;
+                log('현재 firebase.auth.currentUser: ' + (currentUser ? currentUser.email : 'null'));
+                
+                // auth-utils.js 사용자와 비교
+                if (typeof getCurrentUser === 'function') {
+                    const authUtilsUser = getCurrentUser();
+                    log('auth-utils.js 사용자: ' + (authUtilsUser ? authUtilsUser.email : 'null'));
+                    
+                    if (authUtilsUser && !currentUser) {
+                        log('🔧 Firebase Auth 상태 동기화 문제 감지');
+                        log('🔧 Firebase Auth 상태 강제 새로고침 시도...');
+                        
+                        // Firebase Auth 상태 새로고침
+                        await firebase.auth.authStateReady();
+                        const refreshedUser = firebase.auth.currentUser;
+                        log('새로고침 후 firebase.auth.currentUser: ' + (refreshedUser ? refreshedUser.email : '여전히 null'));
+                        
+                        if (refreshedUser) {
+                            log('✅ Firebase Auth 상태 새로고침 성공');
+                            updateStatus();
+                        } else {
+                            log('❌ Firebase Auth 상태 새로고침 실패');
+                            log('💡 로그아웃 후 다시 로그인해보세요');
+                        }
+                    } else if (authUtilsUser && currentUser && authUtilsUser.email === currentUser.email) {
+                        log('✅ Firebase Auth 상태 정상');
+                    } else {
+                        log('⚠️ Firebase Auth 상태 불일치');
+                    }
+                }
+            } catch (error) {
+                log('❌ Firebase Auth 새로고침 오류: ' + error.message);
+            }
         }
         
         // 스크립트 로드 대기 함수
