@@ -2259,6 +2259,18 @@
                     newPoints: newPoints !== null ? newPoints : 'Firebase에서 계산됨'
                 });
                 
+                // 주문 완료 방문 기록 저장
+                try {
+                    await window.recordUserVisit(user.email, 'purchase', {
+                        orderId: orderId,
+                        totalAmount: totalAmount,
+                        usedPoints: usedPoints,
+                        earnedPoints: earnedPoints
+                    });
+                } catch (error) {
+                    console.warn('주문 완료 방문 기록 저장 실패:', error);
+                }
+                
                 // 포인트 페이지로 이동 (포인트 적립 안내와 함께)
                 setTimeout(() => {
                     window.location.href = `points.html?newOrder=${orderId}&earnedPoints=${earnedPoints}`;
