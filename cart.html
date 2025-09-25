@@ -855,7 +855,7 @@
                 
                 // Firebase 초기화 완료 후 사용자 정보 로드 및 카트 동기화
                 setTimeout(async () => {
-                    loadUserInfo();
+                    await loadUserInfo();
                     
                     // Firebase 카트 동기화 (로그인된 사용자인 경우)
                     if (firebase?.auth?.currentUser && window.CartSyncService) {
@@ -893,7 +893,7 @@
         let pointsPageUser = null;
 
         // 사용자 정보 로드
-        function loadUserInfo() {
+        async function loadUserInfo() {
             try {
                 console.log('사용자 정보 로드 시작');
                 
