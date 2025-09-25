@@ -3638,6 +3638,78 @@
         let scanner = null;
         let currentCustomer = null;
         let currentAdmin = null;
+        
+        // 커스텀 확인 모달 생성
+        function createCustomConfirmModal(title, message, confirmText, cancelText, onConfirm, onCancel) {
+            const modalId = 'customConfirmModal';
+            
+            // 기존 모달 제거
+            const existingModal = document.getElementById(modalId);
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            const modalHtml = `
+                <div class="modal fade" id="${modalId}" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px; background: #ffffff;">
+                            <div class="modal-body p-4">
+                                <div class="text-center mb-4">
+                                    <div class="mb-3">
+                                        <i class="fas fa-question-circle" style="font-size: 3rem; color: #6c757d;"></i>
+                                    </div>
+                                    <h5 class="modal-title mb-3" style="color: #212529; font-weight: 600;">${title}</h5>
+                                    <p class="text-muted mb-0" style="line-height: 1.5;">${message}</p>
+                                </div>
+                                <div class="d-flex gap-3 justify-content-center">
+                                    <button type="button" class="btn btn-outline-secondary px-4 py-2" style="border-radius: 8px; font-weight: 500;" onclick="closeCustomConfirmModal(false)">
+                                        ${cancelText || 'キャンセル'}
+                                    </button>
+                                    <button type="button" class="btn btn-dark px-4 py-2" style="border-radius: 8px; font-weight: 500;" onclick="closeCustomConfirmModal(true)">
+                                        ${confirmText || '確認'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            const modal = new bootstrap.Modal(document.getElementById(modalId));
+            
+            // 이벤트 핸들러 저장
+            window.currentConfirmModal = {
+                modal: modal,
+                onConfirm: onConfirm,
+                onCancel: onCancel
+            };
+            
+            modal.show();
+        }
+        
+        // 커스텀 확인 모달 닫기
+        function closeCustomConfirmModal(confirmed) {
+            const modalElement = document.getElementById('customConfirmModal');
+            if (modalElement) {
+                const modal = bootstrap.Modal.getInstance(modalElement);
+                modal.hide();
+                
+                if (confirmed && window.currentConfirmModal && window.currentConfirmModal.onConfirm) {
+                    window.currentConfirmModal.onConfirm();
+                } else if (!confirmed && window.currentConfirmModal && window.currentConfirmModal.onCancel) {
+                    window.currentConfirmModal.onCancel();
+                }
+                
+                // 정리
+                window.currentConfirmModal = null;
+                setTimeout(() => {
+                    if (modalElement && modalElement.parentNode) {
+                        modalElement.remove();
+                    }
+                }, 300);
+            }
+        }
         let todayStats = {
             earnedPoints: 0,
             usedPoints: 0,
@@ -4552,10 +4624,18 @@
                 return;
             }
             
-            if (!confirm(`${points}ポイントを付与しますか？`)) {
-                return;
-            }
-            
+            createCustomConfirmModal(
+                'ポイント付与確認',
+                `${points}ポイントを付与しますか？<br><small class="text-muted">購入金額: ¥${amount.toLocaleString()}</small>`,
+                'ポイント付与',
+                'キャンセル',
+                () => executeAddPurchasePoints(amount, points),
+                () => {}
+            );
+        }
+        
+        // 포인트 적립 실행 함수
+        async function executeAddPurchasePoints(amount, points) {
             try {
                 showAdminAlert('ポイントを付与中...', 'info');
                 
@@ -4601,10 +4681,18 @@
                 return;
             }
             
-            if (!confirm(`${points}ポイントを追加しますか？\n理由: ${reason}`)) {
-                return;
-            }
-            
+            createCustomConfirmModal(
+                'ポイント追加確認',
+                `${points}ポイントを追加しますか？<br><small class="text-muted">理由: ${reason}</small>`,
+                'ポイント追加',
+                'キャンセル',
+                () => executeAddManualPoints(points, reason),
+                () => {}
+            );
+        }
+        
+        // 수동 포인트 추가 실행 함수
+        async function executeAddManualPoints(points, reason) {
             try {
                 showAdminAlert('ポイントを追加中...', 'info');
                 
@@ -4648,10 +4736,20 @@
                 return;
             }
             
-            if (!confirm(`${points}ポイントを差し引きますか？\n理由: ${reason}`)) {
-                return;
-            }
+            createCustomConfirmModal(
+                'ポイント差引確認',
+                `${points}ポイントを差し引きますか？<br><small class="text-muted">理由: ${reason}</small>`,
+                'ポイント差引',
+                'キャンセル',
+                () => executeSubtractManualPoints(points, reason),
+                () => {}
+            );
+            return;
             
+        }
+        
+        // 수동 포인트 차감 실행 함수
+        async function executeSubtractManualPoints(points, reason) {
             try {
                 showAdminAlert('ポイントを差し引き中...', 'info');
                 
