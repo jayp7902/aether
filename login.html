@@ -477,21 +477,26 @@
             console.log('Redirect URL 파라미터:', redirectUrl);
             console.log('Document referrer:', document.referrer);
             
-            if (redirectUrl) {
+            // redirect URL이 있고, register.html이 아닌 경우
+            if (redirectUrl && !redirectUrl.includes('register.html')) {
                 console.log('Redirect URL로 이동:', decodeURIComponent(redirectUrl));
                 window.location.replace(decodeURIComponent(redirectUrl));
-            } else if (document.referrer && 
-                       document.referrer !== window.location.href && 
-                       !document.referrer.includes('login.html') &&
-                       !document.referrer.includes('register.html')) {
-                // referrer가 있고 현재 페이지나 회원가입 페이지가 아닌 경우
+                return;
+            }
+            
+            // referrer가 있고, login.html이나 register.html이 아닌 경우
+            if (document.referrer && 
+                document.referrer !== window.location.href && 
+                !document.referrer.includes('login.html') &&
+                !document.referrer.includes('register.html')) {
                 console.log('Referrer로 이동:', document.referrer);
                 window.location.replace(document.referrer);
-            } else {
-                // 기본값으로 홈페이지
-                console.log('기본값으로 index.html로 이동');
-                window.location.replace('index.html');
+                return;
             }
+            
+            // 기본값으로 홈페이지
+            console.log('기본값으로 index.html로 이동');
+            window.location.replace('index.html');
         }
 
 
@@ -545,7 +550,14 @@
                 console.log('로그인 결과:', result);
                 
                 if (result.success) {
-                    console.log('로그인 성공:', result.user.uid || result.user.email);
+                    console.log('✅ 로그인 성공:', result.user.uid || result.user.email);
+                    console.log('🔍 로그인 결과 상세:', {
+                        success: result.success,
+                        uid: result.user.uid,
+                        email: result.user.email,
+                        name: result.user.displayName,
+                        isFirebase: result.user.isFirebase
+                    });
                     
                     // localStorage에 로그인 상태 저장 (중복 방지)
                     const loginStatus = {
@@ -565,8 +577,12 @@
                         // 로그인은 성공했으므로 계속 진행
                     }
                     
-                    // 로그인 성공 시 바로 이전 페이지로 리다이렉트
-                    redirectToPreviousPage();
+                    // 잠시 대기 후 리다이렉트 (Firebase Auth 상태 동기화 대기)
+                    setTimeout(() => {
+                        console.log('🚀 로그인 성공 후 리다이렉트 시작');
+                        redirectToPreviousPage();
+                    }, 1000);
+                    
                     return true;
                 } else {
                     console.log('로그인 실패:', result.error, result.message);
