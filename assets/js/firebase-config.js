@@ -3171,4 +3171,48 @@ window.showOfflineModeAlert = function() {
     }
 };
 
-window.waitForFirebaseComplete = waitForInitialization; 
+window.waitForFirebaseComplete = waitForInitialization;
+
+// 사용자 방문 기록 저장 함수 (전역)
+window.recordUserVisit = async function(userEmail, visitType = 'page_view', additionalData = {}) {
+    try {
+        if (!userEmail || !FirebaseService.isFirebaseAvailable()) {
+            console.log('방문 기록 저장 건너뜀:', userEmail ? 'Firebase 미사용' : '사용자 이메일 없음');
+            return;
+        }
+        
+        const db = firebase.firestore();
+        const visitData = {
+            userEmail: userEmail,
+            visitType: visitType, // 'login', 'page_view', 'action', 'purchase' 등
+            timestamp: new Date(),
+            userAgent: navigator.userAgent,
+            pageUrl: window.location.href,
+            referrer: document.referrer,
+            ...additionalData
+        };
+        
+        await db.collection('userVisits').add(visitData);
+        console.log('✅ 사용자 방문 기록 저장:', userEmail, visitType);
+    } catch (error) {
+        console.error('❌ 방문 기록 저장 실패:', error);
+    }
+};
+
+// 자동 방문 기록 저장 (페이지 로드 시)
+document.addEventListener('DOMContentLoaded', function() {
+    // Firebase 초기화 완료 후 사용자 확인하여 방문 기록 저장
+    setTimeout(async () => {
+        try {
+            if (firebase?.auth?.currentUser?.email) {
+                await window.recordUserVisit(
+                    firebase.auth.currentUser.email, 
+                    'page_view',
+                    { pageTitle: document.title }
+                );
+            }
+        } catch (error) {
+            console.warn('자동 방문 기록 저장 실패:', error);
+        }
+    }, 2000); // Firebase 초기화 대기
+}); 
