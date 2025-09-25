@@ -530,15 +530,30 @@ async function initializePage() {
                 await updateUserMenu();
                 console.log('인증 상태 변경:', user ? user.email : '로그아웃');
                 
-                // 로그인 시 방문 기록 저장
+                // 로그인 시 방문 기록 저장 및 카트 동기화
                 if (user && user.email) {
                     try {
                         await window.recordUserVisit(user.email, 'login', {
                             loginTime: new Date().toISOString(),
                             pageTitle: document.title
                         });
+                        
+                        // 카트 동기화 설정
+                        if (window.CartSyncService) {
+                            console.log('🛒 로그인 시 카트 동기화 시작');
+                            
+                            // Firebase에서 카트 로드
+                            const syncedCart = await window.CartSyncService.syncCart(user.uid);
+                            console.log('✅ 카트 동기화 완료:', syncedCart.length, '개 상품');
+                            
+                            // 실시간 카트 리스너 설정
+                            window.CartSyncService.setupCartListener(user.uid);
+                            
+                            // 카트 카운트 업데이트
+                            updateCartCount();
+                        }
                     } catch (error) {
-                        console.warn('로그인 방문 기록 저장 실패:', error);
+                        console.warn('로그인 시 카트 동기화 실패:', error);
                     }
                 }
             });
@@ -565,15 +580,30 @@ async function initializeAuthUtils() {
             await updateUserMenu();
             console.log('auth-utils.js 인증 상태 변경:', user ? user.email : '로그아웃');
             
-            // 로그인 시 방문 기록 저장
+            // 로그인 시 방문 기록 저장 및 카트 동기화
             if (user && user.email) {
                 try {
                     await window.recordUserVisit(user.email, 'login', {
                         loginTime: new Date().toISOString(),
                         pageTitle: document.title
                     });
+                    
+                    // 카트 동기화 설정
+                    if (window.CartSyncService) {
+                        console.log('🛒 로그인 시 카트 동기화 시작 (auth-utils)');
+                        
+                        // Firebase에서 카트 로드
+                        const syncedCart = await window.CartSyncService.syncCart(user.uid);
+                        console.log('✅ 카트 동기화 완료 (auth-utils):', syncedCart.length, '개 상품');
+                        
+                        // 실시간 카트 리스너 설정
+                        window.CartSyncService.setupCartListener(user.uid);
+                        
+                        // 카트 카운트 업데이트
+                        updateCartCount();
+                    }
                 } catch (error) {
-                    console.warn('로그인 방문 기록 저장 실패:', error);
+                    console.warn('로그인 시 카트 동기화 실패 (auth-utils):', error);
                 }
             }
         });
