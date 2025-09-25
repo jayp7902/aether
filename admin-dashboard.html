@@ -1306,6 +1306,31 @@
                 min-width: 120px;
             }
         }
+
+        /* 매출 분석 카드 반응형 */
+        @media (max-width: 768px) {
+            .card-body .row .col-3 {
+                margin-bottom: 1rem;
+            }
+            
+            .card-body .row .col-3:last-child {
+                margin-bottom: 0;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .card-body .row .col-3 {
+                margin-bottom: 0.5rem;
+            }
+            
+            .card-body .row .col-3 h4 {
+                font-size: 1.1rem;
+            }
+            
+            .card-body .row .col-3 p {
+                font-size: 0.85rem;
+            }
+        }
     </style>
 </head>
 
@@ -2018,37 +2043,29 @@
                         </div>
                     </div>
 
-                    <!-- 매출 분석 카드 -->
+                    <!-- 매출 분석 카드 (가로 한 줄) -->
                     <div class="row mb-4">
-                        <div class="col-md-3">
+                        <div class="col-12">
                             <div class="card border-0 shadow-sm">
-                                <div class="card-body text-center">
-                                    <h4 class="text-dark mb-1" id="total-revenue">¥0</h4>
-                                    <p class="text-muted japanese-text mb-0">総売上</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body text-center">
-                                    <h4 class="text-secondary mb-1" id="total-orders">0</h4>
-                                    <p class="text-muted japanese-text mb-0">総注文数</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body text-center">
-                                    <h4 class="text-dark mb-1" id="avg-order-value">¥0</h4>
-                                    <p class="text-muted japanese-text mb-0">平均注文金額</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-3">
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body text-center">
-                                    <h4 class="text-secondary mb-1" id="total-customers-analytics">0</h4>
-                                    <p class="text-muted japanese-text mb-0">総顧客数</p>
+                                <div class="card-body">
+                                    <div class="row text-center">
+                                        <div class="col-3">
+                                            <h4 class="text-dark mb-1" id="total-revenue">¥0</h4>
+                                            <p class="text-muted japanese-text mb-0">総売上</p>
+                                        </div>
+                                        <div class="col-3">
+                                            <h4 class="text-secondary mb-1" id="total-orders">0</h4>
+                                            <p class="text-muted japanese-text mb-0">総注文数</p>
+                                        </div>
+                                        <div class="col-3">
+                                            <h4 class="text-dark mb-1" id="avg-order-value">¥0</h4>
+                                            <p class="text-muted japanese-text mb-0">平均注文金額</p>
+                                        </div>
+                                        <div class="col-3">
+                                            <h4 class="text-secondary mb-1" id="total-customers-analytics">0</h4>
+                                            <p class="text-muted japanese-text mb-0">総顧客数</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -6139,12 +6156,30 @@
             const filteredOrders = orders.filter(order => {
                 let orderDate;
                 
-                // Firebase Timestamp 객체 처리
+                // Firebase Timestamp 객체 처리 (다양한 필드명 대응)
                 if (order.orderDate && order.orderDate.seconds) {
                     orderDate = new Date(order.orderDate.seconds * 1000);
+                } else if (order.createdAt && order.createdAt.seconds) {
+                    orderDate = new Date(order.createdAt.seconds * 1000);
+                } else if (order.timestamp && order.timestamp.seconds) {
+                    orderDate = new Date(order.timestamp.seconds * 1000);
+                } else if (order.orderDate && typeof order.orderDate === 'string') {
+                    orderDate = new Date(order.orderDate);
+                } else if (order.createdAt && typeof order.createdAt === 'string') {
+                    orderDate = new Date(order.createdAt);
+                } else if (order.timestamp && typeof order.timestamp === 'string') {
+                    orderDate = new Date(order.timestamp);
                 } else {
-                    orderDate = new Date(order.orderDate || order.timestamp || Date.now());
+                    orderDate = new Date(order.orderDate || order.createdAt || order.timestamp || Date.now());
                 }
+                
+                console.log(`🔍 주문 ${order.id} 날짜 분석:`, {
+                    orderDate: order.orderDate,
+                    createdAt: order.createdAt,
+                    timestamp: order.timestamp,
+                    parsedDate: orderDate.toISOString(),
+                    currentDate: currentDate.toISOString()
+                });
                 
                 const orderYear = orderDate.getFullYear();
                 const orderMonth = orderDate.getMonth();
