@@ -742,31 +742,9 @@
                             console.log('⚠️ 계산된 포인트가 음수입니다. 원본 포인트 유지:', pointsPageUser.points);
                         }
                         
-                        // pointHistory 배열을 전역 변수에 저장
+                        // pointHistory 배열을 전역 변수에 저장 (정렬은 표시할 때 수행)
                         window.pointHistory = pointHistory;
                         console.log('✅ pointHistory 전역 저장 완료:', pointHistory.length, '건');
-                        
-                        // 최신 10건만 유지
-                        pointHistory = pointHistory
-                            .sort((a, b) => {
-                                // 안전한 타임스탬프 처리
-                                const getTimestamp = (item) => {
-                                    if (!item || !item.timestamp) return new Date(0);
-                                    
-                                    // Firestore Timestamp 객체인 경우
-                                    if (item.timestamp.toDate && typeof item.timestamp.toDate === 'function') {
-                                        return item.timestamp.toDate();
-                                    }
-                                    
-                                    // 일반 Date 객체나 문자열인 경우
-                                    return new Date(item.timestamp);
-                                };
-                                
-                                const aTime = getTimestamp(a);
-                                const bTime = getTimestamp(b);
-                                return bTime - aTime;
-                            })
-                            .slice(0, 10);
                     }
 
                     console.log('Firebase에서 포인트 이력 로드 완료:', pointHistory.length, '건');
@@ -831,10 +809,39 @@
                 return;
             }
 
+            // 포인트 이력을 최신 순으로 정렬 (최신이 맨 위에 오도록)
+            const sortedHistory = [...pointHistory].sort((a, b) => {
+                // 안전한 타임스탬프 처리
+                const getTimestamp = (item) => {
+                    if (!item || !item.timestamp) return new Date(0);
+                    
+                    // Firestore Timestamp 객체인 경우
+                    if (item.timestamp.toDate && typeof item.timestamp.toDate === 'function') {
+                        return item.timestamp.toDate();
+                    }
+                    
+                    // Date 객체인 경우
+                    if (item.timestamp instanceof Date) {
+                        return item.timestamp;
+                    }
+                    
+                    // 숫자나 문자열인 경우
+                    return new Date(item.timestamp);
+                };
+                
+                const timeA = getTimestamp(a);
+                const timeB = getTimestamp(b);
+                
+                // 최신 순으로 정렬 (큰 값이 먼저)
+                return timeB - timeA;
+            });
+            
+            console.log('포인트 이력 정렬 완료 (최신 순):', sortedHistory.length, '건');
+
             let historyHTML = '<div class="table-responsive"><table class="table table-hover">';
             historyHTML += '<thead><tr><th class="japanese-text">日付</th><th class="japanese-text">内容・注文詳細</th><th class="japanese-text">ポイント</th></tr></thead><tbody>';
             
-            pointHistory.forEach((item, index) => {
+            sortedHistory.forEach((item, index) => {
                 console.log(`이력 ${index + 1}:`, item);
                 
                 let date;
