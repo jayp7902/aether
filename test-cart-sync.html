@@ -101,13 +101,17 @@
             log('사용자 확인: ' + (user ? user.email : '없음'));
             
             if (user) {
-                userElement.textContent = user.email;
-                userElement.style.color = 'green';
-                log('✅ 로그인된 사용자 확인됨');
+                if (userElement) {
+                    userElement.textContent = user.email;
+                    userElement.style.color = 'green';
+                }
+                log('✅ 사용자 상태: 로그인됨 (' + user.email + ')');
             } else {
-                userElement.textContent = '로그인 안됨';
-                userElement.style.color = 'red';
-                log('❌ 로그인된 사용자 없음');
+                if (userElement) {
+                    userElement.textContent = '로그인 안됨';
+                    userElement.style.color = 'red';
+                }
+                log('❌ 사용자 상태: 로그인 안됨');
             }
             
             // Firebase 상태
@@ -116,16 +120,25 @@
             log('Firebase 상태: ' + (firebaseAvailable ? '사용 가능' : '사용 불가'));
             
             if (firebaseAvailable) {
-                firebaseElement.textContent = '사용 가능';
-                firebaseElement.style.color = 'green';
+                if (firebaseElement) {
+                    firebaseElement.textContent = '사용 가능';
+                    firebaseElement.style.color = 'green';
+                }
+                log('✅ Firebase 상태: 사용 가능');
             } else {
-                firebaseElement.textContent = '사용 불가';
-                firebaseElement.style.color = 'red';
+                if (firebaseElement) {
+                    firebaseElement.textContent = '사용 불가';
+                    firebaseElement.style.color = 'red';
+                }
+                log('❌ Firebase 상태: 사용 불가');
             }
             
             // 현재 카트
             const cart = JSON.parse(localStorage.getItem('aetherCart') || '[]');
-            document.getElementById('current-cart').textContent = `${cart.length}개 상품`;
+            const cartElement = document.getElementById('current-cart');
+            if (cartElement) {
+                cartElement.textContent = `${cart.length}개 상품`;
+            }
             log('현재 카트: ' + cart.length + '개 상품');
             
             // 동기화 가능 여부
@@ -135,11 +148,17 @@
             log('조건 확인: user=' + !!user + ', firebase=' + !!firebaseAvailable + ', service=' + !!window.CartSyncService);
             
             if (canSync) {
-                syncElement.textContent = '가능 (모바일-웹 동기화)';
-                syncElement.style.color = 'green';
+                if (syncElement) {
+                    syncElement.textContent = '가능 (모바일-웹 동기화)';
+                    syncElement.style.color = 'green';
+                }
+                log('✅ 동기화 상태: 가능 (모바일-웹 동기화)');
             } else {
-                syncElement.textContent = '불가능 (localStorage만 사용)';
-                syncElement.style.color = 'orange';
+                if (syncElement) {
+                    syncElement.textContent = '불가능 (localStorage만 사용)';
+                    syncElement.style.color = 'orange';
+                }
+                log('⚠️ 동기화 상태: 불가능 (localStorage만 사용)');
             }
         }
         
@@ -246,7 +265,7 @@
             updateStatus();
         }
         
-        function createUserCartDocument() {
+        async function createUserCartDocument() {
             log('🔧 Firebase userCarts 문서 강제 생성 시작');
             
             let user = firebase?.auth?.currentUser;
@@ -470,6 +489,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             log('🚀 카트 동기화 테스트 페이지 로드');
             log('📋 이 페이지는 테스트 페이지입니다. 로그인 없이도 사용 가능합니다.');
+            
+            // 즉시 상태 업데이트 (Firebase 초기화 전)
+            updateStatus();
             
             // Firebase 초기화 대기
             setTimeout(() => {
