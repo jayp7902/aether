@@ -571,7 +571,15 @@ async function initializePage() {
                             window.CartSyncService.setupCartListener(emailToUse);
                             
                             // 카트 카운트 업데이트
-                            updateCartCount();
+                            if (typeof updateCartCount === 'function') {
+                                updateCartCount();
+                            }
+                            
+                            // 페이지별 카트 새로고침 (필요한 경우)
+                            if (typeof renderCart === 'function') {
+                                console.log('🔄 카트 렌더링 새로고침');
+                                renderCart();
+                            }
                         }
                     } catch (error) {
                         console.warn('로그인 시 카트 동기화 실패:', error);
