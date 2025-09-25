@@ -901,7 +901,23 @@ class FirebaseService {
             return { success: true, user: userInfo };
         } catch (error) {
             console.error('Firebase 로그인 실패:', error);
-            console.log('Firebase 에러로 인해 localStorage로 폴백 시도');
+            
+            // Firebase Authentication 관련 에러는 구체적인 메시지를 반환
+            if (error.code && (
+                error.code === 'auth/user-not-found' ||
+                error.code === 'auth/wrong-password' ||
+                error.code === 'auth/invalid-email' ||
+                error.code === 'auth/invalid-login-credentials' ||
+                error.code === 'auth/user-disabled' ||
+                error.code === 'auth/too-many-requests' ||
+                error.code === 'auth/network-request-failed'
+            )) {
+                console.log('Firebase Authentication 에러 - 구체적인 에러 메시지 반환');
+                return { success: false, error: error.code, message: error.message };
+            }
+            
+            // 기타 에러의 경우에만 localStorage로 폴백
+            console.log('기타 Firebase 에러로 인해 localStorage로 폴백 시도');
             return this.loginUserOffline(email, password);
         }
     }
@@ -1785,7 +1801,19 @@ class FirebaseService {
             'auth/internal-error': 'システムエラーが発生しました。しばらく待ってから再試行してください。'
         };
         
-        return errorMessages[errorCode] || 'ログイン中にエラーが発生しました。もう一度お試しください。';
+        // 에러 코드가 없거나 알 수 없는 경우
+        if (!errorCode) {
+            return 'ログイン中にエラーが発生しました。もう一度お試しください。';
+        }
+        
+        // 에러 메시지 반환
+        const message = errorMessages[errorCode];
+        console.log('🔍 에러 메시지 현지화:', {
+            errorCode: errorCode,
+            message: message || '기본 메시지 사용'
+        });
+        
+        return message || 'ログイン中にエラーが発生しました。もう一度お試しください。';
     }
 
     // 관리자용 함수들
