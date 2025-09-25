@@ -13858,10 +13858,8 @@
                     });
                 });
                 
-                // 사용자 데이터 로드
-                const usersSnapshot = await firebase.firestore().collection('users')
-                    .where('createdAt', '>=', daysAgo)
-                    .get();
+                // 사용자 데이터 로드 (모든 사용자 데이터 로드)
+                const usersSnapshot = await firebase.firestore().collection('users').get();
                 
                 analyticsData.users = [];
                 usersSnapshot.forEach(doc => {
@@ -13873,10 +13871,8 @@
                     });
                 });
                 
-                // 포인트 이력 로드
-                const pointsSnapshot = await firebase.firestore().collection('pointHistory')
-                    .where('createdAt', '>=', daysAgo)
-                    .get();
+                // 포인트 이력 로드 (모든 포인트 이력 로드)
+                const pointsSnapshot = await firebase.firestore().collection('pointHistory').get();
                 
                 analyticsData.pointHistory = [];
                 pointsSnapshot.forEach(doc => {
@@ -13946,51 +13942,83 @@
 
         // 고객 지표 업데이트
         function updateCustomerMetrics() {
-            const period = document.getElementById('analytics-period')?.value || 30;
-            const daysAgo = new Date();
-            daysAgo.setDate(daysAgo.getDate() - parseInt(period));
+            if (!analyticsData || !analyticsData.users) {
+                console.warn('⚠️ analyticsData가 없습니다');
+                return;
+            }
             
-            // 신규 고객 (선택된 기간 내 가입)
-            const newCustomers = analyticsData.users.filter(user => 
-                user.createdAt >= daysAgo
-            ).length;
+            // 기간별 필터링된 주문
+            const filteredOrders = filterOrdersByPeriod(analyticsData.orders);
             
-            // 기존 고객 (선택된 기간 이전 가입)
-            const existingCustomers = analyticsData.users.filter(user => 
-                user.createdAt < daysAgo
-            ).length;
+            // 고객 분석 업데이트
+            const customerEmails = new Set();
+            const newCustomerEmails = new Set();
             
-            // 리피트 고객 (기존 고객 중 주문한 고객)
-            const customerEmails = new Set(analyticsData.orders.map(order => order.userEmail));
-            const returningCustomers = analyticsData.users.filter(user => 
-                user.createdAt < daysAgo && customerEmails.has(user.email)
-            ).length;
+            filteredOrders.forEach(order => {
+                const email = order.customerEmail || order.email || '';
+                if (email) {
+                    customerEmails.add(email);
+                    
+                    // 신규 고객 판단 (첫 주문인지 확인)
+                    const previousOrders = analyticsData.orders.filter(o => {
+                        const orderDate = o.orderDate && o.orderDate.seconds ? 
+                            new Date(o.orderDate.seconds * 1000) : new Date(o.orderDate || 0);
+                        const currentOrderDate = order.orderDate && order.orderDate.seconds ? 
+                            new Date(order.orderDate.seconds * 1000) : new Date(order.orderDate || 0);
+                        return o.customerEmail === email && orderDate < currentOrderDate;
+                    });
+                    
+                    if (previousOrders.length === 0) {
+                        newCustomerEmails.add(email);
+                    }
+                }
+            });
             
-            const repeatRate = existingCustomers > 0 ? (returningCustomers / existingCustomers * 100) : 0;
+            const totalCustomers = customerEmails.size;
+            const newCustomers = newCustomerEmails.size;
+            const returningCustomers = totalCustomers - newCustomers;
             
-            document.getElementById('new-customers').textContent = newCustomers.toLocaleString();
-            document.getElementById('returning-customers').textContent = returningCustomers.toLocaleString();
-            document.getElementById('repeat-rate').textContent = `${Math.round(repeatRate)}%`;
+            const repeatRate = totalCustomers > 0 ? Math.round((returningCustomers / totalCustomers) * 100) : 0;
+            
+            // DOM 업데이트
+            const newCustomersEl = document.getElementById('new-customers');
+            const returningCustomersEl = document.getElementById('returning-customers');
+            const repeatRateEl = document.getElementById('repeat-rate');
+            
+            if (newCustomersEl) newCustomersEl.textContent = newCustomers.toLocaleString();
+            if (returningCustomersEl) returningCustomersEl.textContent = returningCustomers.toLocaleString();
+            if (repeatRateEl) repeatRateEl.textContent = repeatRate + '%';
         }
 
         // 포인트 지표 업데이트
         function updatePointMetrics() {
+            if (!analyticsData || !analyticsData.orders) {
+                console.warn('⚠️ analyticsData가 없습니다');
+                return;
+            }
+            
+            // 기간별 필터링된 주문
+            const filteredOrders = filterOrdersByPeriod(analyticsData.orders);
+            
+            // 포인트 분석 업데이트
             let pointsEarned = 0;
             let pointsUsed = 0;
             
-            analyticsData.pointHistory.forEach(item => {
-                if (item.type === 'earn' || item.type === 'admin_add' || item.type === 'welcome_bonus') {
-                    pointsEarned += item.points || 0;
-                } else if (item.type === 'use' || item.type === 'admin_subtract') {
-                    pointsUsed += item.points || 0;
-                }
+            filteredOrders.forEach(order => {
+                pointsEarned += order.earnedPoints || 0;
+                pointsUsed += order.usedPoints || 0;
             });
             
-            const utilizationRate = pointsEarned > 0 ? (pointsUsed / pointsEarned * 100) : 0;
+            const pointsUtilization = pointsEarned > 0 ? Math.round((pointsUsed / pointsEarned) * 100) : 0;
             
-            document.getElementById('points-earned').textContent = pointsEarned.toLocaleString();
-            document.getElementById('points-used').textContent = pointsUsed.toLocaleString();
-            document.getElementById('points-utilization').textContent = `${Math.round(utilizationRate)}%`;
+            // DOM 업데이트
+            const pointsEarnedEl = document.getElementById('points-earned');
+            const pointsUsedEl = document.getElementById('points-used');
+            const pointsUtilizationEl = document.getElementById('points-utilization');
+            
+            if (pointsEarnedEl) pointsEarnedEl.textContent = pointsEarned.toLocaleString();
+            if (pointsUsedEl) pointsUsedEl.textContent = pointsUsed.toLocaleString();
+            if (pointsUtilizationEl) pointsUtilizationEl.textContent = pointsUtilization + '%';
         }
 
         // 인기 상품 TOP5 업데이트
