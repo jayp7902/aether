@@ -2458,26 +2458,74 @@
                 if (typeof firebase !== 'undefined' && firebase.firestore) {
                     const db = firebase.firestore();
                     
-                    // 먼저 사용자 ID로 검색 (캐시 무시하고 서버에서 직접 가져오기)
-                    let userDoc = await db.collection('users').doc(checkoutPageUser.uid).get({ source: 'server' });
-                    console.log('사용자 ID로 검색 결과 (서버에서):', userDoc.exists);
+                    // Firebase 연결 상태 먼저 확인
+                    console.log('🔍 Firebase 연결 상태 확인 중...');
+                    try {
+                        await db.collection('test').limit(1).get();
+                        console.log('✅ Firebase 연결 정상');
+                    } catch (connectionError) {
+                        console.error('❌ Firebase 연결 실패:', connectionError);
+                        console.log('Firebase 콘솔에서 "문서를 로드하는 중에 오류가 발생했습니다" 메시지와 연관될 수 있습니다.');
+                        currentUserPoints = 0;
+                        showPointSection();
+                        return;
+                    }
                     
-                    if (!userDoc.exists) {
-                        // 사용자 ID로 찾지 못한 경우 이메일로 검색
-                        console.log('사용자 ID로 찾지 못함, 이메일로 검색 시도');
-                        const emailQuery = await db.collection('users')
-                            .where('email', '==', checkoutPageUser.email)
-                            .limit(1)
-                            .get({ source: 'server' });
+                    // 먼저 이메일을 문서 ID로 검색 (포인트 페이지와 동일한 방식)
+                    let userDoc = null;
+                    try {
+                        userDoc = await db.collection('users').doc(checkoutPageUser.email).get({ source: 'server' });
+                        console.log('이메일을 문서 ID로 검색 결과 (서버에서):', userDoc.exists);
+                        console.log('이메일을 문서 ID로 검색한 문서 ID:', checkoutPageUser.email);
+                    } catch (emailDocError) {
+                        console.error('❌ 이메일을 문서 ID로 검색 실패:', emailDocError);
+                    }
+                    
+                    if (!userDoc || !userDoc.exists) {
+                        // 이메일 문서 ID로 찾지 못한 경우 UID로 검색
+                        console.log('이메일 문서 ID로 찾지 못함, UID로 검색 시도');
+                        try {
+                            userDoc = await db.collection('users').doc(checkoutPageUser.uid).get({ source: 'server' });
+                            console.log('UID로 검색 결과:', userDoc.exists);
+                            if (userDoc.exists) {
+                                console.log('UID로 사용자 찾음:', checkoutPageUser.uid);
+                            }
+                        } catch (uidError) {
+                            console.error('❌ UID로 검색 실패:', uidError);
+                        }
                         
-                        if (!emailQuery.empty) {
-                            userDoc = emailQuery.docs[0];
-                            console.log('이메일로 사용자 찾음:', userDoc.id);
+                        // UID로도 찾지 못한 경우 이메일 쿼리로 검색
+                        if (!userDoc || !userDoc.exists) {
+                            console.log('UID로도 찾지 못함, 이메일 쿼리로 검색 시도');
+                            try {
+                                const emailQuery = await db.collection('users')
+                                    .where('email', '==', checkoutPageUser.email)
+                                    .limit(1)
+                                    .get({ source: 'server' });
+                                
+                                if (!emailQuery.empty) {
+                                    userDoc = emailQuery.docs[0];
+                                    console.log('이메일 쿼리로 사용자 찾음:', userDoc.id);
+                                } else {
+                                    console.log('❌ 모든 방법으로도 사용자를 찾을 수 없음');
+                                }
+                            } catch (emailQueryError) {
+                                console.error('❌ 이메일 쿼리로 검색 실패:', emailQueryError);
+                            }
                         }
                     }
                     
-                    if (userDoc.exists) {
+                    if (userDoc && userDoc.exists) {
                         const userData = userDoc.data();
+                        console.log('🔍 사용자 데이터 상세 분석:');
+                        console.log('  - userData 전체:', userData);
+                        console.log('  - userData.points 값:', userData.points);
+                        console.log('  - userData.points 타입:', typeof userData.points);
+                        console.log('  - userData.points === undefined:', userData.points === undefined);
+                        console.log('  - userData.points === null:', userData.points === null);
+                        console.log('  - userData.points === 0:', userData.points === 0);
+                        console.log('  - userData 전체 키들:', Object.keys(userData));
+                        
                         const newPoints = userData.points || 0;
                         
                         // 포인트가 변경되었는지 확인 (포인트 페이지와 동일)
@@ -2495,7 +2543,9 @@
                         console.log('Firebase에서 포인트 정보 로드 (최신):', currentUserPoints);
                         console.log('사용자 데이터:', userData);
                     } else {
-                        console.log('사용자 문서가 존재하지 않습니다');
+                        console.log('❌ 사용자 문서가 존재하지 않습니다');
+                        console.log('  - userDoc 존재 여부:', !!userDoc);
+                        console.log('  - userDoc.exists:', userDoc ? userDoc.exists : 'userDoc가 null');
                         currentUserPoints = 0;
                         showPointSection();
                     }
