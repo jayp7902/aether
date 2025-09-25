@@ -14260,8 +14260,14 @@
         // 등급별 배지 생성 함수
         function generateTierBadge(tier) {
             const tierInfo = customerTiers[tier];
+            const tierNames = {
+                '일반': '一般',
+                '실버': 'シルバー',
+                '골드': 'ゴールド',
+                'VIP': 'VIP'
+            };
             return `<span class="badge" style="background-color: ${tierInfo.color}; color: white;">
-                <i class="${tierInfo.icon} me-1"></i>${tier}
+                <i class="${tierInfo.icon} me-1"></i>${tierNames[tier] || tier}
             </span>`;
         }
 
@@ -14448,11 +14454,16 @@
             if (!tbody) return;
             
             if (filteredCustomers.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">該当する顧客が見つかりません</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted">該当する顧客が見つかりません</td></tr>';
                 return;
             }
             
-            tbody.innerHTML = filteredCustomers.map(customer => {
+            // 최신 가입고객이 상단에 오도록 정렬 (최신순)
+            const sortedCustomers = [...filteredCustomers].sort((a, b) => {
+                return new Date(b.createdAt) - new Date(a.createdAt);
+            });
+            
+            tbody.innerHTML = sortedCustomers.map(customer => {
                 const joinDate = customer.createdAt.toLocaleDateString('ja-JP');
                 const statusBadge = customer.isVip ? 
                     '<span class="badge bg-warning">VIP</span>' :
