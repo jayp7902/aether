@@ -2995,7 +2995,8 @@ window.CartSyncService = {
         try {
             console.log('🛒 카트 리스너 설정 시도:', {
                 userEmail: userEmail,
-                firebaseAvailable: FirebaseService.isFirebaseAvailable()
+                firebaseAvailable: FirebaseService.isFirebaseAvailable(),
+                currentPage: window.location.pathname
             });
             
             if (!FirebaseService.isFirebaseAvailable() || !userEmail) {
