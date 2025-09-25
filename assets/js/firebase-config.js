@@ -3211,6 +3211,16 @@ window.CartSyncService = {
                 cartData: cartData
             });
             
+            // 사용자 UID 상세 디버깅
+            console.log('🔍 CartSyncService 사용자 UID 디버깅:', {
+                userId: userId,
+                userIdType: typeof userId,
+                userIdLength: userId?.length,
+                userIdFirst10: userId?.substring(0, 10),
+                userIdLast10: userId?.substring(userId.length - 10),
+                firebaseCurrentUser: firebase?.auth?.currentUser?.uid
+            });
+            
             if (!FirebaseService.isFirebaseAvailable() || !userId) {
                 console.log('Firebase 미사용 또는 사용자 없음 - localStorage만 사용');
                 return false;
