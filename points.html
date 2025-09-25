@@ -813,30 +813,54 @@
             const sortedHistory = [...pointHistory].sort((a, b) => {
                 // 안전한 타임스탬프 처리
                 const getTimestamp = (item) => {
-                    if (!item || !item.timestamp) return new Date(0);
-                    
-                    // Firestore Timestamp 객체인 경우
-                    if (item.timestamp.toDate && typeof item.timestamp.toDate === 'function') {
-                        return item.timestamp.toDate();
+                    if (!item || !item.timestamp) {
+                        console.warn('타임스탬프가 없는 항목:', item);
+                        return new Date(0);
                     }
                     
-                    // Date 객체인 경우
-                    if (item.timestamp instanceof Date) {
-                        return item.timestamp;
+                    try {
+                        // Firestore Timestamp 객체인 경우
+                        if (item.timestamp.toDate && typeof item.timestamp.toDate === 'function') {
+                            const date = item.timestamp.toDate();
+                            console.log('Firestore Timestamp:', item.timestamp, '→ Date:', date);
+                            return date;
+                        }
+                        
+                        // Date 객체인 경우
+                        if (item.timestamp instanceof Date) {
+                            console.log('Date 객체:', item.timestamp);
+                            return item.timestamp;
+                        }
+                        
+                        // 숫자나 문자열인 경우
+                        const date = new Date(item.timestamp);
+                        console.log('문자열/숫자:', item.timestamp, '→ Date:', date);
+                        return date;
+                    } catch (error) {
+                        console.error('타임스탬프 파싱 오류:', error, item.timestamp);
+                        return new Date(0);
                     }
-                    
-                    // 숫자나 문자열인 경우
-                    return new Date(item.timestamp);
                 };
                 
                 const timeA = getTimestamp(a);
                 const timeB = getTimestamp(b);
+                
+                console.log('정렬 비교:', {
+                    a: { timestamp: a.timestamp, parsed: timeA },
+                    b: { timestamp: b.timestamp, parsed: timeB },
+                    diff: timeB - timeA
+                });
                 
                 // 최신 순으로 정렬 (큰 값이 먼저)
                 return timeB - timeA;
             });
             
             console.log('포인트 이력 정렬 완료 (최신 순):', sortedHistory.length, '건');
+            console.log('정렬된 첫 3개 항목:', sortedHistory.slice(0, 3).map(item => ({
+                timestamp: item.timestamp,
+                type: item.type,
+                reason: item.reason
+            })));
 
             let historyHTML = '<div class="table-responsive"><table class="table table-hover">';
             historyHTML += '<thead><tr><th class="japanese-text">日付</th><th class="japanese-text">内容・注文詳細</th><th class="japanese-text">ポイント</th></tr></thead><tbody>';
@@ -909,32 +933,11 @@
                     description = item.description;
                 }
                 
-                // 주문 정보 표시 (orderAmount가 있는 경우)
-                if (item.orderAmount && (item.type === 'earn' || item.type === 'use')) {
-                    const orderAmount = item.orderAmount;
-                    const usedPoints = item.type === 'use' ? item.points : 0;
-                    const earnedPoints = item.type === 'earn' ? item.points : 0;
-                    const finalAmount = orderAmount - usedPoints;
-                    
-                    if (item.type === 'use' && usedPoints > 0) {
-                        // 포인트 사용 시: 총금액 - 포인트 사용금액 = 결제금액
-                        orderInfo = `<br><small class="text-muted">総額: ¥${orderAmount.toLocaleString()} - ポイント使用: ¥${usedPoints.toLocaleString()} = 支払額: ¥${finalAmount.toLocaleString()}</small>`;
-                        if (item.orderId) {
-                            orderInfo += `<br><small class="text-info">注文ID: ${item.orderId}</small>`;
-                        }
-                    } else if (item.type === 'earn' && earnedPoints > 0) {
-                        // 포인트 적립 시: 주문 금액 표시
-                        orderInfo = `<br><small class="text-muted">購入金額: ¥${orderAmount.toLocaleString()}</small>`;
-                        if (item.orderId) {
-                            orderInfo += `<br><small class="text-info">注文ID: ${item.orderId}</small>`;
-                        }
-                    }
-                }
-                
+                // 간단한 설명만 표시 (상세 정보 제거)
                 historyHTML += `
                     <tr>
                         <td class="japanese-text">${dateStr}</td>
-                        <td class="japanese-text">${description}${orderInfo}</td>
+                        <td class="japanese-text">${description}</td>
                         <td class="${pointsClass} japanese-text">${pointsStr}</td>
                     </tr>
                 `;
