@@ -529,6 +529,18 @@ async function initializePage() {
                 currentAuthUser = user;
                 await updateUserMenu();
                 console.log('인증 상태 변경:', user ? user.email : '로그아웃');
+                
+                // 로그인 시 방문 기록 저장
+                if (user && user.email) {
+                    try {
+                        await window.recordUserVisit(user.email, 'login', {
+                            loginTime: new Date().toISOString(),
+                            pageTitle: document.title
+                        });
+                    } catch (error) {
+                        console.warn('로그인 방문 기록 저장 실패:', error);
+                    }
+                }
             });
         }
         
@@ -552,6 +564,18 @@ async function initializeAuthUtils() {
             currentAuthUser = user;
             await updateUserMenu();
             console.log('auth-utils.js 인증 상태 변경:', user ? user.email : '로그아웃');
+            
+            // 로그인 시 방문 기록 저장
+            if (user && user.email) {
+                try {
+                    await window.recordUserVisit(user.email, 'login', {
+                        loginTime: new Date().toISOString(),
+                        pageTitle: document.title
+                    });
+                } catch (error) {
+                    console.warn('로그인 방문 기록 저장 실패:', error);
+                }
+            }
         });
     }
 }
