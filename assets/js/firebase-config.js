@@ -3202,41 +3202,40 @@ window.recordUserVisit = async function(userEmail, visitType = 'page_view', addi
 // Firebase 기반 카트 동기화 시스템
 window.CartSyncService = {
     // Firebase 카트 데이터 저장
-    async saveCartToFirebase(cartData, userId) {
+    async saveCartToFirebase(cartData, userEmail) {
         try {
             console.log('🛒 Firebase 카트 저장 시도:', {
-                userId: userId,
+                userEmail: userEmail,
                 cartLength: cartData?.length || 0,
                 firebaseAvailable: FirebaseService.isFirebaseAvailable(),
                 cartData: cartData
             });
             
-            // 사용자 UID 상세 디버깅
-            console.log('🔍 CartSyncService 사용자 UID 디버깅:', {
-                userId: userId,
-                userIdType: typeof userId,
-                userIdLength: userId?.length,
-                userIdFirst10: userId?.substring(0, 10),
-                userIdLast10: userId?.substring(userId.length - 10),
-                firebaseCurrentUser: firebase?.auth?.currentUser?.uid
+            // 사용자 이메일 상세 디버깅
+            console.log('🔍 CartSyncService 사용자 이메일 디버깅:', {
+                userEmail: userEmail,
+                userEmailType: typeof userEmail,
+                userEmailLength: userEmail?.length,
+                firebaseCurrentUserEmail: firebase?.auth?.currentUser?.email
             });
             
-            if (!FirebaseService.isFirebaseAvailable() || !userId) {
+            if (!FirebaseService.isFirebaseAvailable() || !userEmail) {
                 console.log('Firebase 미사용 또는 사용자 없음 - localStorage만 사용');
                 return false;
             }
             
             const db = firebase.firestore();
-            await db.collection('userCarts').doc(userId).set({
+            await db.collection('userCarts').doc(userEmail).set({
                 cart: cartData,
                 lastUpdated: new Date(),
+                userEmail: userEmail,
                 deviceInfo: {
                     userAgent: navigator.userAgent,
                     platform: navigator.platform
                 }
             });
             
-            console.log('✅ Firebase 카트 저장 완료:', userId, cartData.length, '개 상품');
+            console.log('✅ Firebase 카트 저장 완료 (이메일):', userEmail, cartData.length, '개 상품');
             return true;
         } catch (error) {
             console.error('❌ Firebase 카트 저장 실패:', error);
@@ -3245,24 +3244,24 @@ window.CartSyncService = {
     },
     
     // Firebase에서 카트 데이터 로드
-    async loadCartFromFirebase(userId) {
+    async loadCartFromFirebase(userEmail) {
         try {
             console.log('🛒 Firebase 카트 로드 시도:', {
-                userId: userId,
+                userEmail: userEmail,
                 firebaseAvailable: FirebaseService.isFirebaseAvailable()
             });
             
-            if (!FirebaseService.isFirebaseAvailable() || !userId) {
+            if (!FirebaseService.isFirebaseAvailable() || !userEmail) {
                 console.log('Firebase 미사용 또는 사용자 없음 - localStorage에서 로드');
                 return JSON.parse(localStorage.getItem('aetherCart') || '[]');
             }
             
             const db = firebase.firestore();
-            const cartDoc = await db.collection('userCarts').doc(userId).get();
+            const cartDoc = await db.collection('userCarts').doc(userEmail).get();
             
             if (cartDoc.exists) {
                 const cartData = cartDoc.data().cart || [];
-                console.log('✅ Firebase 카트 로드 완료:', userId, cartData.length, '개 상품');
+                console.log('✅ Firebase 카트 로드 완료 (이메일):', userEmail, cartData.length, '개 상품');
                 console.log('🛒 로드된 카트 데이터:', cartData);
                 
                 // localStorage에도 백업 저장
@@ -3280,7 +3279,7 @@ window.CartSyncService = {
     },
     
     // 카트 데이터 동기화 (저장 + 로드)
-    async syncCart(userId, cartData = null) {
+    async syncCart(userEmail, cartData = null) {
         try {
             // 현재 카트 데이터 가져오기
             if (!cartData) {
@@ -3288,15 +3287,15 @@ window.CartSyncService = {
             }
             
             // Firebase에 저장
-            const saved = await this.saveCartToFirebase(cartData, userId);
+            const saved = await this.saveCartToFirebase(cartData, userEmail);
             
             // Firebase에서 최신 데이터 로드
-            const latestCart = await this.loadCartFromFirebase(userId);
+            const latestCart = await this.loadCartFromFirebase(userEmail);
             
             // localStorage 업데이트
             localStorage.setItem('aetherCart', JSON.stringify(latestCart));
             
-            console.log('✅ 카트 동기화 완료:', latestCart.length, '개 상품');
+            console.log('✅ 카트 동기화 완료 (이메일):', latestCart.length, '개 상품');
             return latestCart;
         } catch (error) {
             console.error('❌ 카트 동기화 실패:', error);
@@ -3305,20 +3304,20 @@ window.CartSyncService = {
     },
     
     // 카트 리스너 설정 (실시간 동기화)
-    setupCartListener(userId) {
+    setupCartListener(userEmail) {
         try {
             console.log('🛒 카트 리스너 설정 시도:', {
-                userId: userId,
+                userEmail: userEmail,
                 firebaseAvailable: FirebaseService.isFirebaseAvailable()
             });
             
-            if (!FirebaseService.isFirebaseAvailable() || !userId) {
+            if (!FirebaseService.isFirebaseAvailable() || !userEmail) {
                 console.log('Firebase 미사용 - 카트 리스너 설정 안함');
                 return;
             }
             
             const db = firebase.firestore();
-            db.collection('userCarts').doc(userId).onSnapshot((doc) => {
+            db.collection('userCarts').doc(userEmail).onSnapshot((doc) => {
                 console.log('🔄 Firebase 카트 변경 감지:', doc.exists ? '문서 존재' : '문서 없음');
                 
                 if (doc.exists) {
@@ -3379,12 +3378,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (window.CartSyncService) {
                     console.log('🛒 전역 카트 동기화 시작');
                     
-                    // Firebase에서 카트 로드
-                    const syncedCart = await window.CartSyncService.syncCart(firebase.auth.currentUser.uid);
+                    // Firebase에서 카트 로드 (이메일 주소 사용)
+                    const syncedCart = await window.CartSyncService.syncCart(firebase.auth.currentUser.email);
                     console.log('✅ 전역 카트 동기화 완료:', syncedCart.length, '개 상품');
                     
-                    // 실시간 카트 리스너 설정
-                    window.CartSyncService.setupCartListener(firebase.auth.currentUser.uid);
+                    // 실시간 카트 리스너 설정 (이메일 주소 사용)
+                    window.CartSyncService.setupCartListener(firebase.auth.currentUser.email);
                     
                     // 카트 카운트 업데이트
                     if (typeof updateCartCount === 'function') {
