@@ -3095,19 +3095,34 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log('🛒 전역 카트 동기화 시작');
                     
                     // 사용할 이메일 주소 확인
-                    const emailToUse = firebase.auth.currentUser.email;
-                    console.log('🔍 전역 카트 동기화에 사용할 이메일:', emailToUse);
+                    let emailToUse = firebase.auth.currentUser.email;
                     
-                    // Firebase에서 카트 로드 (이메일 주소 사용)
-                    const syncedCart = await window.CartSyncService.syncCart(emailToUse);
-                    console.log('✅ 전역 카트 동기화 완료:', syncedCart.length, '개 상품');
+                    // Firebase Auth currentUser가 null인 경우 auth-utils.js에서 사용자 정보 확인
+                    if (!emailToUse && typeof getCurrentUser === 'function') {
+                        const authUtilsUser = getCurrentUser();
+                        if (authUtilsUser) {
+                            emailToUse = authUtilsUser.email;
+                            console.log('🔧 전역 카트 동기화: auth-utils.js에서 사용자 정보 사용:', emailToUse);
+                        }
+                    }
                     
-                    // 실시간 카트 리스너 설정 (이메일 주소 사용)
-                    window.CartSyncService.setupCartListener(emailToUse);
-                    
-                    // 카트 카운트 업데이트
-                    if (typeof updateCartCount === 'function') {
-                        updateCartCount();
+                    if (emailToUse) {
+                        console.log('🔍 전역 카트 동기화에 사용할 이메일:', emailToUse);
+                        
+                        // Firebase에서 카트 로드 (이메일 주소 사용)
+                        const syncedCart = await window.CartSyncService.syncCart(emailToUse);
+                        console.log('✅ 전역 카트 동기화 완료:', syncedCart.length, '개 상품');
+                        
+                        // 실시간 카트 리스너 설정 (이메일 주소 사용)
+                        window.CartSyncService.setupCartListener(emailToUse);
+                        console.log('🔄 전역 실시간 카트 리스너 설정 완료');
+                        
+                        // 카트 카운트 업데이트
+                        if (typeof updateCartCount === 'function') {
+                            updateCartCount();
+                        }
+                    } else {
+                        console.log('전역 카트 동기화 건너뜀 - 사용자 이메일 없음');
                     }
                 }
             }
