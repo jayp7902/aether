@@ -404,6 +404,10 @@ async function logout() {
         sessionStorage.removeItem('aetherLogin');
         console.log('로그인 상태 정보 제거 완료');
         
+        // 카트 초기화
+        localStorage.removeItem('aetherCart');
+        console.log('카트 초기화 완료');
+        
         // FirebaseService 로그아웃 호출 (있는 경우)
         if (typeof FirebaseService !== 'undefined') {
             await FirebaseService.logoutUser();
@@ -415,6 +419,13 @@ async function logout() {
         
         console.log('로그아웃 성공');
         showToast('ログアウトしました。', 'success', 2000);
+        
+        // 카트 개수 업데이트 (0으로 표시)
+        if (typeof updateCartCount === 'function') {
+            updateCartCount();
+            console.log('카트 개수 업데이트 완료');
+        }
+        
         await updateUserMenu();
         
         // 현재 페이지에 따라 적절한 페이지로 리다이렉트
@@ -428,9 +439,18 @@ async function logout() {
         localStorage.removeItem('aetherLoginStatus');
         localStorage.removeItem('aetherLogin');
         sessionStorage.removeItem('aetherLogin');
+        // 카트도 초기화
+        localStorage.removeItem('aetherCart');
         currentAuthUser = null;
         
         showToast('ログアウトしました。', 'success', 2000);
+        
+        // 카트 개수 업데이트 (0으로 표시)
+        if (typeof updateCartCount === 'function') {
+            updateCartCount();
+            console.log('카트 개수 업데이트 완료 (오류 후)');
+        }
+        
         await updateUserMenu();
         setTimeout(() => {
             redirectAfterLogout();
