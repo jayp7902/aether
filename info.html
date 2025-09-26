@@ -834,6 +834,34 @@
                             console.log('🔍 데스크톱 카트 현재 값:', desktopCartElement ? desktopCartElement.textContent : '요소 없음');
                             debugInfo.push('🔍 데스크톱 카트 현재 값: ' + (desktopCartElement ? desktopCartElement.textContent : '요소 없음'));
                             
+                            // updateCartCountDisplay 함수 직접 호출 테스트
+                            console.log('🔧 updateCartCountDisplay 함수 직접 호출 테스트');
+                            debugInfo.push('🔧 updateCartCountDisplay 함수 직접 호출 테스트');
+                            
+                            if (typeof updateCartCountDisplay === 'function') {
+                                updateCartCountDisplay(totalItems);
+                                console.log('✅ updateCartCountDisplay 함수 호출 완료');
+                                debugInfo.push('✅ updateCartCountDisplay 함수 호출 완료');
+                                
+                                // 호출 후 다시 확인
+                                setTimeout(() => {
+                                    const mobileCartAfter = document.getElementById('cart-count-mobile');
+                                    const desktopCartAfter = document.getElementById('cart-count');
+                                    console.log('🔍 함수 호출 후 모바일 카트 값:', mobileCartAfter ? mobileCartAfter.textContent : '요소 없음');
+                                    console.log('🔍 함수 호출 후 데스크톱 카트 값:', desktopCartAfter ? desktopCartAfter.textContent : '요소 없음');
+                                    
+                                    // 디버깅 정보 업데이트
+                                    const updatedDebugInfo = [
+                                        '🔍 함수 호출 후 모바일 카트 값: ' + (mobileCartAfter ? mobileCartAfter.textContent : '요소 없음'),
+                                        '🔍 함수 호출 후 데스크톱 카트 값: ' + (desktopCartAfter ? desktopCartAfter.textContent : '요소 없음')
+                                    ];
+                                    showMobileDebugInfo(updatedDebugInfo);
+                                }, 500);
+                            } else {
+                                console.warn('⚠️ updateCartCountDisplay 함수를 찾을 수 없음');
+                                debugInfo.push('⚠️ updateCartCountDisplay 함수를 찾을 수 없음');
+                            }
+                            
                         } else {
                             console.log('📝 Firebase 카트 문서 없음');
                             debugInfo.push('📝 Firebase 카트 문서 없음');
@@ -918,6 +946,40 @@
             document.body.appendChild(debugContainer);
         }
         
+        // 강제로 카트 수량을 업데이트하는 함수
+        window.forceUpdateCartCount = function(count) {
+            console.log('🔧 강제 카트 수량 업데이트:', count);
+            
+            // 모든 가능한 카트 아이콘 요소들 찾기
+            const cartSelectors = [
+                '#cart-count',
+                '#cart-count-mobile',
+                '.cart-count',
+                '.cart-count-mobile',
+                '[id*="cart-count"]',
+                '[class*="cart-count"]'
+            ];
+            
+            let updatedCount = 0;
+            cartSelectors.forEach(selector => {
+                const elements = document.querySelectorAll(selector);
+                elements.forEach(element => {
+                    element.textContent = count;
+                    updatedCount++;
+                    console.log('✅ 카트 요소 업데이트:', selector, element);
+                });
+            });
+            
+            console.log('✅ 강제 업데이트 완료:', updatedCount, '개 요소');
+            
+            // 디버깅 정보 표시
+            const debugInfo = [
+                '🔧 강제 카트 수량 업데이트: ' + count,
+                '✅ 업데이트된 요소 수: ' + updatedCount
+            ];
+            showMobileDebugInfo(debugInfo);
+        };
+        
         // 모바일에서 수동으로 테스트할 수 있는 버튼 추가
         function addMobileTestButton() {
             // 기존 테스트 버튼 제거
@@ -947,6 +1009,11 @@
             
             testButton.onclick = () => {
                 window.testFirebaseConnection();
+                
+                // 2초 후 강제 업데이트도 실행
+                setTimeout(() => {
+                    window.forceUpdateCartCount(2); // 테스트용으로 2로 설정
+                }, 2000);
             };
             
             // 화면에 추가
