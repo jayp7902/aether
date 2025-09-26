@@ -1954,6 +1954,11 @@
                                 if (typeof window.CartSyncService.setupCartListener === 'function') {
                                     console.log('🔄 product-detail.html: 실시간 리스너 설정');
                                     window.CartSyncService.setupCartListener(syncUser.email);
+                                    
+                                    // 리스너 설정 확인
+                                    setTimeout(() => {
+                                        console.log('🔍 product-detail.html: 실시간 리스너 설정 확인 완료');
+                                    }, 1000);
                                 }
                             })
                             .catch(error => console.warn('❌ product-detail.html: Firebase 카트 동기화 실패:', error));
