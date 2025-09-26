@@ -890,7 +890,7 @@
     </script>
     
     <!-- Authentication Utilities (firebase-config.js 로드 후) -->
-    <!-- auth-utils.js는 showQRCode 함수 정의 후에 로드 -->
+    <script src="assets/js/auth-utils.js"></script>
 
     <script>
         // 전역 변수
@@ -952,6 +952,12 @@
                 // Firebase 초기화 완료 후 인증 상태 확인
                 checkAuthState();
                 loadProductInfo();
+                
+                // Firebase 초기화 완료 후 사용자 메뉴도 업데이트
+                if (typeof window.updateUserMenu === 'function') {
+                    console.log('✅ Firebase 초기화 완료 후 사용자 메뉴 업데이트');
+                    window.updateUserMenu();
+                }
             }, 500);
         });
         
@@ -968,20 +974,33 @@
                 loadProductInfo();
             }
             
-            // 사용자 메뉴 초기화
-            if (typeof window.updateUserMenu === 'function') {
-                window.updateUserMenu();
-            } else {
-                console.log('updateUserMenu 함수를 찾을 수 없음, auth-utils.js 로드 대기');
-                // auth-utils.js 로드 대기
-                setTimeout(() => {
-                    if (typeof window.updateUserMenu === 'function') {
-                        window.updateUserMenu();
-                    }
-                }, 1000);
-            }
+            // 사용자 메뉴 초기화 (auth-utils.js 로드 대기)
+            waitForAuthUtilsAndUpdateMenu();
             
             console.log('페이지 로직 초기화 완료');
+        }
+
+        // auth-utils.js 로드 대기 및 사용자 메뉴 업데이트
+        function waitForAuthUtilsAndUpdateMenu() {
+            console.log('🔄 auth-utils.js 로드 대기 시작');
+            
+            let attempts = 0;
+            const maxAttempts = 50; // 5초 대기
+            
+            const checkAuthUtils = () => {
+                attempts++;
+                
+                if (typeof window.updateUserMenu === 'function') {
+                    console.log('✅ auth-utils.js 로드 완료, 사용자 메뉴 업데이트');
+                    window.updateUserMenu();
+                } else if (attempts >= maxAttempts) {
+                    console.warn('⚠️ auth-utils.js 로드 시간 초과, 사용자 메뉴 업데이트 건너뜀');
+                } else {
+                    setTimeout(checkAuthUtils, 100);
+                }
+            };
+            
+            checkAuthUtils();
         }
 
         // 인증 상태 확인
