@@ -1960,6 +1960,30 @@
                                         console.log('🔍 product-detail.html: 실시간 리스너 설정 확인 완료');
                                     }, 1000);
                                 }
+                                
+                                // 추가: Firebase 저장 후 즉시 모바일 동기화 확인
+                                console.log('🚀 product-detail.html: Firebase 저장 후 모바일 동기화 확인 시작');
+                                setTimeout(() => {
+                                    // Firebase에서 저장된 데이터 다시 확인
+                                    const db = firebase.firestore();
+                                    db.collection('userCarts').doc(syncUser.email).get()
+                                        .then((doc) => {
+                                            if (doc.exists) {
+                                                const data = doc.data();
+                                                console.log('🔍 product-detail.html: 저장 후 Firebase 데이터 확인:', {
+                                                    cartLength: data.cart ? data.cart.length : 0,
+                                                    lastUpdated: data.lastUpdated ? data.lastUpdated.toDate() : '없음',
+                                                    userEmail: data.userEmail
+                                                });
+                                                console.log('✅ product-detail.html: Firebase 저장 완료 - 모바일에서 감지 가능');
+                                            } else {
+                                                console.log('❌ product-detail.html: Firebase 저장 실패 - 문서 없음');
+                                            }
+                                        })
+                                        .catch(error => {
+                                            console.log('❌ product-detail.html: Firebase 저장 확인 실패:', error);
+                                        });
+                                }, 2000);
                             })
                             .catch(error => console.warn('❌ product-detail.html: Firebase 카트 동기화 실패:', error));
                     } else {
