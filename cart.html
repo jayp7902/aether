@@ -1075,6 +1075,41 @@
                     }
                 }, 1000);
                 
+                // 간단한 Firebase 카트 동기화 (추가)
+                setTimeout(async () => {
+                    console.log('🔄 cart.html: 간단한 Firebase 동기화 시도');
+                    try {
+                        let user = firebase?.auth?.currentUser;
+                        if (!user && typeof getCurrentUser === 'function') {
+                            user = getCurrentUser();
+                        }
+                        
+                        if (user && firebase?.firestore) {
+                            const db = firebase.firestore();
+                            const cartDoc = await db.collection('userCarts').doc(user.email).get();
+                            
+                            if (cartDoc.exists) {
+                                const firebaseData = cartDoc.data();
+                                const firebaseCart = firebaseData.cart || [];
+                                const localCart = JSON.parse(localStorage.getItem('aetherCart') || '[]');
+                                
+                                console.log('📦 cart.html 간단 동기화:');
+                                console.log('- Firebase 카트:', firebaseCart.length, '개');
+                                console.log('- 로컬 카트:', localCart.length, '개');
+                                
+                                if (firebaseCart.length !== localCart.length) {
+                                    console.log('🔄 cart.html: 카트 불일치 - Firebase 데이터로 업데이트');
+                                    localStorage.setItem('aetherCart', JSON.stringify(firebaseCart));
+                                    renderCart(); // 카트 다시 렌더링
+                                    console.log('✅ cart.html: 카트 동기화 완료');
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.log('❌ cart.html 간단 동기화 실패:', error);
+                    }
+                }, 3000);
+
                 // 카트 렌더링
                 renderCart();
                 
