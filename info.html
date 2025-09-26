@@ -1010,7 +1010,7 @@
             testButton.onclick = () => {
                 window.testFirebaseConnection();
                 
-                // 2초 후 강제 업데이트도 실행 (실제 카트 수량으로)
+                // 1초 후 강제 업데이트도 실행 (실제 카트 수량으로)
                 setTimeout(async () => {
                     try {
                         const currentUser = getCurrentUser();
@@ -1037,12 +1037,12 @@
             // 화면에 추가
             document.body.appendChild(testButton);
             
-            // 10초 후 자동 제거
+            // 5초 후 자동 제거 (시간 단축)
             setTimeout(() => {
                 if (testButton.parentNode) {
                     testButton.remove();
                 }
-            }, 10000);
+            }, 5000);
         }
 
         // 페이지 로드 시 초기화
@@ -1152,22 +1152,24 @@
             
             checkFirebase();
             
-            // 추가적인 카트 수량 업데이트 (페이지 로드 후)
+            // 추가적인 카트 수량 업데이트 (페이지 로드 후) - 시간 단축
             setTimeout(() => {
                 // 먼저 window.updateCartCount 시도
                 if (typeof window.updateCartCount === 'function') {
                     window.updateCartCount();
                 }
                 
-                // 모바일 테스트 버튼 추가 (2초 후)
-                addMobileTestButton();
-                
-                // Firebase 연결 테스트 (3초 후)
+                // 모바일 테스트 버튼 추가 (1초 후)
                 setTimeout(() => {
-                    window.testFirebaseConnection();
+                    addMobileTestButton();
                 }, 1000);
                 
-                // 5초 후 강제 업데이트도 시도 (백업)
+                // Firebase 연결 테스트 (1.5초 후)
+                setTimeout(() => {
+                    window.testFirebaseConnection();
+                }, 1500);
+                
+                // 2.5초 후 강제 업데이트도 시도 (백업)
                 setTimeout(async () => {
                     try {
                         const currentUser = getCurrentUser();
@@ -1183,8 +1185,8 @@
                     } catch (error) {
                         console.error('자동 강제 업데이트 중 오류:', error);
                     }
-                }, 5000);
-            }, 2000);
+                }, 2500);
+            }, 1000); // 2초 → 1초로 단축
         });
 
         // 로그아웃 함수
