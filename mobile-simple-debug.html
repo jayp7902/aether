@@ -304,17 +304,43 @@
                                         cartData = JSON.parse(localStorage.getItem('aetherCart') || '[]');
                                     }
                                     
-                                    // Firebase에 저장
-                                    await this.saveCartToFirebase(cartData, userEmail);
+                                    log('📦 로컬 카트 데이터: ' + cartData.length + '개 상품');
                                     
-                                    // Firebase에서 최신 데이터 로드
-                                    const latestCart = await this.loadCartFromFirebase(userEmail);
+                                    // Firebase에서 기존 카트 데이터 로드
+                                    const firebaseCart = await this.loadCartFromFirebase(userEmail);
+                                    log('📦 Firebase 카트 데이터: ' + firebaseCart.length + '개 상품');
+                                    
+                                    // 더 최신 데이터가 있는 쪽을 선택 (웹과 동일한 로직)
+                                    let finalCart = cartData;
+                                    
+                                    if (firebaseCart.length > 0 && cartData.length > 0) {
+                                        // 두 카트 모두 데이터가 있는 경우, 더 많은 상품이 있는 쪽을 선택
+                                        if (firebaseCart.length > cartData.length) {
+                                            log('🔄 Firebase 카트가 더 많음 - Firebase 카트 사용');
+                                            finalCart = firebaseCart;
+                                        } else if (cartData.length > firebaseCart.length) {
+                                            log('🔄 로컬 카트가 더 많음 - 로컬 카트 사용');
+                                            finalCart = cartData;
+                                        } else {
+                                            log('🔄 카트 개수 동일 - 로컬 카트 사용');
+                                            finalCart = cartData;
+                                        }
+                                    } else if (firebaseCart.length > 0) {
+                                        log('🔄 Firebase에만 데이터 있음 - Firebase 카트 사용');
+                                        finalCart = firebaseCart;
+                                    } else {
+                                        log('🔄 로컬에만 데이터 있음 - 로컬 카트 사용');
+                                        finalCart = cartData;
+                                    }
+                                    
+                                    // 최종 선택된 카트를 Firebase에 저장
+                                    await this.saveCartToFirebase(finalCart, userEmail);
                                     
                                     // localStorage 업데이트
-                                    localStorage.setItem('aetherCart', JSON.stringify(latestCart));
+                                    localStorage.setItem('aetherCart', JSON.stringify(finalCart));
                                     
-                                    log('✅ 카트 동기화 완료: ' + latestCart.length + '개 상품');
-                                    return latestCart;
+                                    log('✅ 카트 동기화 완료: ' + finalCart.length + '개 상품');
+                                    return finalCart;
                                 } catch (error) {
                                     log('❌ 카트 동기화 실패: ' + error.message);
                                     return JSON.parse(localStorage.getItem('aetherCart') || '[]');
@@ -343,6 +369,8 @@
                                             // 현재 카트와 다르면 업데이트
                                             if (JSON.stringify(cartData) !== JSON.stringify(currentCart)) {
                                                 log('🔄 카트 데이터 변경 감지 - 업데이트 중...');
+                                                log('🔄 변경 전 로컬 카트: ' + currentCart.length + '개 상품');
+                                                log('🔄 변경 후 Firebase 카트: ' + cartData.length + '개 상품');
                                                 localStorage.setItem('aetherCart', JSON.stringify(cartData));
                                                 log('✅ 카트 실시간 업데이트 완료: ' + cartData.length + '개 상품');
                                                 
