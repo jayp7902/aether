@@ -1778,7 +1778,12 @@
                     localStorage.setItem('aetherCart', JSON.stringify(cart));
                     
                     // Firebase 카트 동기화 (로그인된 사용자인 경우)
+                    console.log('🛒 product-detail.html: 카트 저장 후 Firebase 동기화 시도');
+                    console.log('🛒 product-detail.html: 저장된 카트 데이터:', cart.length, '개 상품');
+                    
                     let syncUser = firebase?.auth?.currentUser;
+                    console.log('🔍 product-detail.html: firebase.auth.currentUser:', syncUser ? syncUser.email : 'null');
+                    
                     if (!syncUser && typeof getCurrentUser === 'function') {
                         const authUtilsUser = getCurrentUser();
                         if (authUtilsUser) {
@@ -1787,12 +1792,16 @@
                         }
                     }
                     
+                    console.log('🔍 product-detail.html: 최종 동기화 사용자:', syncUser ? syncUser.email : '없음');
+                    console.log('🔍 product-detail.html: CartSyncService 존재:', !!window.CartSyncService);
+                    
                     if (syncUser && window.CartSyncService) {
+                        console.log('🛒 product-detail.html: Firebase 카트 저장 시작');
                         window.CartSyncService.saveCartToFirebase(cart, syncUser.email)
-                            .then(() => console.log('✅ Firebase 카트 동기화 완료'))
-                            .catch(error => console.warn('Firebase 카트 동기화 실패:', error));
+                            .then(() => console.log('✅ product-detail.html: Firebase 카트 동기화 완료'))
+                            .catch(error => console.warn('❌ product-detail.html: Firebase 카트 동기화 실패:', error));
                     } else {
-                        console.log('product-detail.html: Firebase 카트 동기화 건너뜀 - 사용자:', syncUser ? syncUser.email : '없음', 'CartSyncService:', !!window.CartSyncService);
+                        console.log('⚠️ product-detail.html: Firebase 카트 동기화 건너뜀 - 사용자:', syncUser ? syncUser.email : '없음', 'CartSyncService:', !!window.CartSyncService);
                     }
                     
                     // 카트 개수 업데이트
