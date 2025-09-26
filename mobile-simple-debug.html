@@ -83,6 +83,7 @@
         <button class="btn" onclick="testLoadFirebaseData()">Firebase 데이터 로드 테스트</button>
         <button class="btn" onclick="testWebSync()">웹 동기화 테스트</button>
         <button class="btn" onclick="testFirebaseConnection()">Firebase 연결 테스트</button>
+        <button class="btn" onclick="forceUpdateStatus()">강제 상태 업데이트</button>
         <button class="btn" onclick="goToCart()">카트 페이지</button>
     </div>
     
@@ -114,9 +115,14 @@
             
             try {
                 // 사용자 상태
-                let user = firebase?.auth?.currentUser;
-                if (!user && typeof getCurrentUser === 'function') {
-                    user = getCurrentUser();
+                let user = null;
+                try {
+                    user = firebase?.auth?.currentUser;
+                    if (!user && typeof getCurrentUser === 'function') {
+                        user = getCurrentUser();
+                    }
+                } catch (error) {
+                    log('사용자 상태 확인 실패: ' + error.message);
                 }
                 
                 const userStatus = document.getElementById('user-status');
@@ -131,7 +137,13 @@
                 }
                 
                 // Firebase 상태
-                const firebaseAvailable = window.FirebaseService?.isFirebaseAvailable();
+                let firebaseAvailable = false;
+                try {
+                    firebaseAvailable = window.FirebaseService?.isFirebaseAvailable();
+                } catch (error) {
+                    log('Firebase 상태 확인 실패: ' + error.message);
+                }
+                
                 const firebaseStatus = document.getElementById('firebase-status');
                 if (firebaseAvailable) {
                     firebaseStatus.textContent = '사용 가능';
@@ -144,7 +156,13 @@
                 }
                 
                 // 카트 상태
-                const cart = JSON.parse(localStorage.getItem('aetherCart') || '[]');
+                let cart = [];
+                try {
+                    cart = JSON.parse(localStorage.getItem('aetherCart') || '[]');
+                } catch (error) {
+                    log('카트 상태 확인 실패: ' + error.message);
+                }
+                
                 const cartStatus = document.getElementById('cart-status');
                 cartStatus.textContent = cart.length + '개 상품';
                 cartStatus.className = cart.length > 0 ? 'status-value good' : 'status-value warning';
@@ -808,6 +826,34 @@
                     }
                 }
                 
+                function forceUpdateStatus() {
+                    log('=== 강제 상태 업데이트 시작 ===');
+                    
+                    // 모든 상태 요소를 강제로 업데이트
+                    const userStatus = document.getElementById('user-status');
+                    const firebaseStatus = document.getElementById('firebase-status');
+                    const cartStatus = document.getElementById('cart-status');
+                    const syncStatus = document.getElementById('sync-status');
+                    
+                    // 기본값으로 설정
+                    userStatus.textContent = '확인 중...';
+                    userStatus.className = 'status-value warning';
+                    firebaseStatus.textContent = '확인 중...';
+                    firebaseStatus.className = 'status-value warning';
+                    cartStatus.textContent = '확인 중...';
+                    cartStatus.className = 'status-value warning';
+                    syncStatus.textContent = '확인 중...';
+                    syncStatus.className = 'status-value warning';
+                    
+                    log('상태 요소 초기화 완료');
+                    
+                    // 1초 후 실제 상태 업데이트
+                    setTimeout(() => {
+                        log('1초 후 실제 상태 업데이트 시작');
+                        updateStatus();
+                    }, 1000);
+                }
+                
                 function goToCart() {
                     log('카트 페이지로 이동');
                     window.location.href = 'cart.html';
@@ -945,6 +991,18 @@
                 log('초기 상태 업데이트 시작');
                 updateStatus();
             }, 100);
+            
+            // 추가: 1초 후에도 상태 업데이트
+            setTimeout(() => {
+                log('1초 후 상태 업데이트');
+                updateStatus();
+            }, 1000);
+            
+            // 추가: 3초 후에도 상태 업데이트
+            setTimeout(() => {
+                log('3초 후 상태 업데이트');
+                updateStatus();
+            }, 3000);
             
             // 스크립트 로드 대기
             const scriptsReady = await waitForScripts();
