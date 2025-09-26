@@ -1905,7 +1905,7 @@
                                     return finalCart;
                                 } catch (error) {
                                     console.log('❌ 카트 동기화 실패: ' + error.message);
-                                    return JSON.parse(localStorage.getItem('aetherCart') || '[]');
+                                    return [];
                                 }
                             },
                             
@@ -1924,14 +1924,16 @@
                                         
                                         if (doc.exists) {
                                             const cartData = doc.data().cart || [];
-                                            const currentCart = JSON.parse(localStorage.getItem('aetherCart') || '[]');
                                             
-                                            console.log('🛒 카트 비교: Firebase=' + cartData.length + '개, 로컬=' + currentCart.length + '개');
+                                            console.log('🛒 Firebase 카트 변경 감지: ' + cartData.length + '개 상품');
                                             
-                                            // 현재 카트와 다르면 업데이트
-                                            if (JSON.stringify(cartData) !== JSON.stringify(currentCart)) {
-                                                console.log('🔄 카트 데이터 변경 감지 - 업데이트 중...');
-                                                localStorage.setItem('aetherCart', JSON.stringify(cartData));
+                                            // Firebase 카트 변경 알림
+                                            console.log('🔄 카트 데이터 변경 감지 - 알림 전송 중...');
+                                            
+                                            // 각 페이지에서 자체적으로 카트를 관리하므로 여기서는 알림만
+                                            if (typeof window.onFirebaseCartChange === 'function') {
+                                                window.onFirebaseCartChange(cartData);
+                                            }
                                                 console.log('✅ 카트 실시간 업데이트 완료: ' + cartData.length + '개 상품');
                                                 
                                                 // 카트 카운트 업데이트
@@ -2048,22 +2050,11 @@
                         quantity: quantity
                     };
 
-                    // 기존 장바구니 가져오기
-                    let cart = JSON.parse(localStorage.getItem('aetherCart') || '[]');
-                    
-                    // 이미 있는 상품인지 확인
-                    const existingItemIndex = cart.findIndex(item => item.id === cartItem.id);
-                    
-                    if (existingItemIndex !== -1) {
-                        // 이미 있으면 수량 증가
-                        cart[existingItemIndex].quantity += quantity;
-                    } else {
-                        // 새 상품 추가
-                        cart.push(cartItem);
+                    // Firebase 카트에 상품 추가
+                    const success = await addToFirebaseCart(cartItem, quantity);
+                    if (!success) {
+                        return;
                     }
-
-                    // 장바구니 저장
-                    localStorage.setItem('aetherCart', JSON.stringify(cart));
                     
                     // 카트 개수 업데이트
                     if (typeof updateCartCount === 'function') {
@@ -2302,21 +2293,18 @@
 
         // 카트 개수 업데이트
         function updateCartCount() {
-            try {
-                const cart = JSON.parse(localStorage.getItem('aetherCart') || '[]');
-                const totalItems = cart.reduce((sum, item) => sum + (item.quantity || 1), 0);
-                
-                const cartCountElement = document.getElementById('cart-count');
-                if (cartCountElement) {
-                    cartCountElement.textContent = totalItems;
-                }
-                
-                const cartCountMobileElement = document.getElementById('cart-count-mobile');
-                if (cartCountMobileElement) {
-                    cartCountMobileElement.textContent = totalItems;
-                }
-            } catch (error) {
-                console.error('카트 개수 업데이트 실패:', error);
+            // Firebase 카트 개수는 각 페이지에서 직접 관리
+            // 여기서는 호환성만 유지
+            console.log('🔢 updateCartCount 호출 (Firebase 전용)');
+            
+            const cartCountElement = document.getElementById('cart-count');
+            if (cartCountElement && !cartCountElement.textContent) {
+                cartCountElement.textContent = '0';
+            }
+            
+            const cartCountMobileElement = document.getElementById('cart-count-mobile');
+            if (cartCountMobileElement && !cartCountMobileElement.textContent) {
+                cartCountMobileElement.textContent = '0';
             }
         }
 
