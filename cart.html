@@ -570,12 +570,16 @@
             // Firebase에 즉시 저장
             if (currentUser && window.CartSyncService) {
                 try {
-                    await window.CartSyncService.saveCart(currentUser.email, cart);
-                    console.log('✅ Firebase 카트 저장 완료:', cart.length, '개 상품');
+                    // syncCart 함수를 사용하여 더 안전하게 저장
+                    const syncedCart = await window.CartSyncService.syncCart(currentUser.email, cart);
+                    console.log('✅ Firebase 카트 동기화 완료:', syncedCart.length, '개 상품');
+                    
+                    // 동기화된 카트로 업데이트
+                    currentCart = syncedCart;
                     
                     // 실시간 리스너가 있는 경우 알림
                     if (window.onFirebaseCartChange) {
-                        window.onFirebaseCartChange(cart);
+                        window.onFirebaseCartChange(syncedCart);
                     }
                 } catch (error) {
                     console.error('❌ Firebase 카트 저장 실패:', error);
