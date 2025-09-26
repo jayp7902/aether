@@ -82,6 +82,7 @@
         <button class="btn" onclick="setupRealtimeListener()">실시간 리스너 설정</button>
         <button class="btn" onclick="testLoadFirebaseData()">Firebase 데이터 로드 테스트</button>
         <button class="btn" onclick="testWebSync()">웹 동기화 테스트</button>
+        <button class="btn" onclick="testFirebaseConnection()">Firebase 연결 테스트</button>
         <button class="btn" onclick="goToCart()">카트 페이지</button>
     </div>
     
@@ -693,6 +694,99 @@
                     }
                 }
                 
+                function testFirebaseConnection() {
+                    log('=== Firebase 연결 테스트 시작 ===');
+                    
+                    // 1. Firebase 객체 확인
+                    log('🔍 Firebase 객체 확인:');
+                    log('- firebase: ' + (typeof firebase !== 'undefined' ? '존재' : '없음'));
+                    log('- firebase.app: ' + (firebase?.app ? '존재' : '없음'));
+                    log('- firebase.firestore: ' + (firebase?.firestore ? '존재' : '없음'));
+                    log('- firebase.auth: ' + (firebase?.auth ? '존재' : '없음'));
+                    
+                    if (!firebase) {
+                        log('❌ Firebase 객체가 없습니다!');
+                        return;
+                    }
+                    
+                    // 2. Firestore 연결 테스트
+                    try {
+                        const db = firebase.firestore();
+                        log('✅ Firestore 객체 생성 성공');
+                        
+                        // 3. 사용자 인증 상태 확인
+                        const user = firebase.auth.currentUser;
+                        log('🔍 사용자 인증 상태:');
+                        log('- currentUser: ' + (user ? user.email : '없음'));
+                        log('- uid: ' + (user ? user.uid : '없음'));
+                        
+                        if (!user) {
+                            log('❌ 사용자가 로그인되지 않았습니다!');
+                            return;
+                        }
+                        
+                        // 4. Firestore 읽기 권한 테스트
+                        log('🔍 Firestore 읽기 권한 테스트 시작...');
+                        db.collection('userCarts').doc(user.email).get()
+                            .then((doc) => {
+                                log('✅ Firestore 읽기 권한 테스트 성공!');
+                                log('- 문서 존재: ' + doc.exists);
+                                log('- 문서 ID: ' + doc.id);
+                                
+                                if (doc.exists) {
+                                    const data = doc.data();
+                                    log('- 문서 데이터: ' + JSON.stringify(data, null, 2));
+                                    log('- 카트 상품 수: ' + (data.cart ? data.cart.length : 0));
+                                    log('- 마지막 업데이트: ' + (data.lastUpdated ? data.lastUpdated.toDate() : '없음'));
+                                    
+                                    // 5. localStorage와 비교
+                                    const localCart = JSON.parse(localStorage.getItem('aetherCart') || '[]');
+                                    log('📦 localStorage와 비교:');
+                                    log('- localStorage 카트: ' + localCart.length + '개 상품');
+                                    log('- Firebase 카트: ' + (data.cart ? data.cart.length : 0) + '개 상품');
+                                    
+                                    if (data.cart && data.cart.length > 0) {
+                                        log('🔄 Firebase 카트 데이터를 localStorage에 저장');
+                                        localStorage.setItem('aetherCart', JSON.stringify(data.cart));
+                                        log('✅ localStorage 업데이트 완료');
+                                        updateStatus();
+                                    }
+                                } else {
+                                    log('⚠️ Firebase 문서가 존재하지 않습니다');
+                                }
+                            })
+                            .catch((error) => {
+                                log('❌ Firestore 읽기 권한 테스트 실패:');
+                                log('- 에러 코드: ' + error.code);
+                                log('- 에러 메시지: ' + error.message);
+                                log('- 에러 상세: ' + JSON.stringify(error));
+                            });
+                            
+                    } catch (error) {
+                        log('❌ Firestore 객체 생성 실패:');
+                        log('- 에러: ' + error.message);
+                    }
+                    
+                    // 6. CartSyncService 확인
+                    log('🔍 CartSyncService 확인:');
+                    log('- CartSyncService: ' + (window.CartSyncService ? '존재' : '없음'));
+                    if (window.CartSyncService) {
+                        log('- loadCartFromFirebase: ' + (typeof window.CartSyncService.loadCartFromFirebase === 'function' ? '존재' : '없음'));
+                        log('- saveCartToFirebase: ' + (typeof window.CartSyncService.saveCartToFirebase === 'function' ? '존재' : '없음'));
+                        log('- syncCart: ' + (typeof window.CartSyncService.syncCart === 'function' ? '존재' : '없음'));
+                    }
+                    
+                    // 7. FirebaseService 확인
+                    log('🔍 FirebaseService 확인:');
+                    log('- FirebaseService: ' + (window.FirebaseService ? '존재' : '없음'));
+                    if (window.FirebaseService) {
+                        log('- isFirebaseAvailable: ' + (typeof window.FirebaseService.isFirebaseAvailable === 'function' ? '존재' : '없음'));
+                        if (typeof window.FirebaseService.isFirebaseAvailable === 'function') {
+                            log('- Firebase 사용 가능: ' + window.FirebaseService.isFirebaseAvailable());
+                        }
+                    }
+                }
+                
                 function goToCart() {
                     log('카트 페이지로 이동');
                     window.location.href = 'cart.html';
@@ -832,47 +926,52 @@
                         log('Firebase 초기화 대기 완료');
                         updateStatus();
                         
-                        // 자동으로 Firebase 데이터 로드 및 강력한 실시간 리스너 설정
+                        // 자동으로 Firebase 연결 테스트부터 시작
                         setTimeout(() => {
-                            log('자동 Firebase 데이터 로드 시작 (웹과 동일한 방식)');
-                            testLoadFirebaseData();
+                            log('자동 Firebase 연결 테스트 시작');
+                            testFirebaseConnection();
                             
                             setTimeout(() => {
-                                log('자동 강력한 실시간 리스너 설정 시작');
-                                setupRealtimeListener();
+                                log('자동 Firebase 데이터 로드 시작 (웹과 동일한 방식)');
+                                testLoadFirebaseData();
                                 
                                 setTimeout(() => {
-                                    log('자동 웹 동기화 테스트 시작 (CartSyncService 사용)');
-                                    testWebSync();
+                                    log('자동 강력한 실시간 리스너 설정 시작');
+                                    setupRealtimeListener();
                                     
                                     setTimeout(() => {
-                                        log('자동 CartSyncService.loadCartFromFirebase() 테스트 시작');
-                                        if (window.CartSyncService && typeof window.CartSyncService.loadCartFromFirebase === 'function') {
-                                            let user = firebase?.auth?.currentUser;
-                                            if (!user && typeof getCurrentUser === 'function') {
-                                                user = getCurrentUser();
+                                        log('자동 웹 동기화 테스트 시작 (CartSyncService 사용)');
+                                        testWebSync();
+                                        
+                                        setTimeout(() => {
+                                            log('자동 CartSyncService.loadCartFromFirebase() 테스트 시작');
+                                            if (window.CartSyncService && typeof window.CartSyncService.loadCartFromFirebase === 'function') {
+                                                let user = firebase?.auth?.currentUser;
+                                                if (!user && typeof getCurrentUser === 'function') {
+                                                    user = getCurrentUser();
+                                                }
+                                                if (user) {
+                                                    log('🔍 자동 CartSyncService.loadCartFromFirebase() 테스트: ' + user.email);
+                                                    window.CartSyncService.loadCartFromFirebase(user.email)
+                                                        .then((cartData) => {
+                                                            log('✅ 자동 CartSyncService.loadCartFromFirebase() 성공: ' + cartData.length + '개 상품');
+                                                            log('🛒 자동 로드된 카트 데이터: ' + JSON.stringify(cartData, null, 2));
+                                                            if (cartData.length > 0) {
+                                                                localStorage.setItem('aetherCart', JSON.stringify(cartData));
+                                                                log('✅ 자동 localStorage 업데이트 완료');
+                                                                updateStatus();
+                                                            }
+                                                        })
+                                                        .catch((error) => {
+                                                            log('❌ 자동 CartSyncService.loadCartFromFirebase() 실패: ' + error.message);
+                                                        });
+                                                }
+                                            } else {
+                                                log('❌ CartSyncService.loadCartFromFirebase() 함수 없음');
                                             }
-                                            if (user) {
-                                                log('🔍 자동 CartSyncService.loadCartFromFirebase() 테스트: ' + user.email);
-                                                window.CartSyncService.loadCartFromFirebase(user.email)
-                                                    .then((cartData) => {
-                                                        log('✅ 자동 CartSyncService.loadCartFromFirebase() 성공: ' + cartData.length + '개 상품');
-                                                        log('🛒 자동 로드된 카트 데이터: ' + JSON.stringify(cartData, null, 2));
-                                                        if (cartData.length > 0) {
-                                                            localStorage.setItem('aetherCart', JSON.stringify(cartData));
-                                                            log('✅ 자동 localStorage 업데이트 완료');
-                                                            updateStatus();
-                                                        }
-                                                    })
-                                                    .catch((error) => {
-                                                        log('❌ 자동 CartSyncService.loadCartFromFirebase() 실패: ' + error.message);
-                                                    });
-                                            }
-                                        } else {
-                                            log('❌ CartSyncService.loadCartFromFirebase() 함수 없음');
-                                        }
+                                        }, 2000);
                                     }, 2000);
-                                }, 2000);
+                                }, 1000);
                             }, 1000);
                         }, 2000);
                     } else {
