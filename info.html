@@ -785,59 +785,58 @@
 
                 // 이전 QR 코드 생성 함수들은 제거됨 - 포인트 페이지와 동일한 방식만 사용
 
-        // 카트 개수 업데이트 (Firebase 전용) - 전역 함수로 설정
-        window.updateCartCount = async function() {
-            console.log('🔢 info.html updateCartCount 호출');
+        // info.html에서는 auth-utils.js의 updateCartCount 함수를 사용
+        // 중복된 함수 제거로 충돌 방지
+        
+        // Firebase 연결 및 카트 수량 테스트 함수
+        window.testFirebaseConnection = async function() {
+            console.log('🔥 Firebase 연결 테스트 시작');
             
             try {
-                // 현재 로그인된 사용자 확인
-                const currentUser = getCurrentUser();
-                if (!currentUser) {
-                    console.log('📝 로그인되지 않은 사용자 - 카트 수량 0');
-                    updateCartCountDisplay(0);
-                    return;
-                }
-                
-                // Firebase에서 카트 수량 가져오기
+                // Firebase 사용 가능 여부 확인
                 if (typeof firebase !== 'undefined' && firebase.firestore && firebase.apps && firebase.apps.length > 0) {
-                    const db = firebase.firestore();
-                    const cartDoc = await db.collection('userCarts').doc(currentUser.email).get();
+                    console.log('✅ Firebase 사용 가능');
                     
-                    if (cartDoc.exists) {
-                        const cartData = cartDoc.data().cart || [];
-                        const totalItems = cartData.reduce((total, item) => total + (item.quantity || 1), 0);
-                        console.log('✅ info.html Firebase 카트 수량:', totalItems, '개');
-                        updateCartCountDisplay(totalItems);
+                    // 현재 사용자 확인
+                    const currentUser = getCurrentUser();
+                    if (currentUser) {
+                        console.log('✅ 현재 사용자:', currentUser.email);
+                        
+                        // 카트 데이터 직접 조회
+                        const db = firebase.firestore();
+                        const cartDoc = await db.collection('userCarts').doc(currentUser.email).get();
+                        
+                        if (cartDoc.exists) {
+                            const cartData = cartDoc.data().cart || [];
+                            console.log('✅ Firebase 카트 데이터:', cartData);
+                            console.log('✅ 카트 상품 수:', cartData.length);
+                            
+                            const totalItems = cartData.reduce((total, item) => total + (item.quantity || 1), 0);
+                            console.log('✅ 총 아이템 수:', totalItems);
+                            
+                            // 모바일 카트 아이콘 직접 확인
+                            const mobileCartElement = document.getElementById('cart-count-mobile');
+                            console.log('🔍 모바일 카트 아이콘 요소:', mobileCartElement);
+                            console.log('🔍 모바일 카트 현재 값:', mobileCartElement ? mobileCartElement.textContent : '요소 없음');
+                            
+                            // 데스크톱 카트 아이콘 직접 확인
+                            const desktopCartElement = document.getElementById('cart-count');
+                            console.log('🔍 데스크톱 카트 아이콘 요소:', desktopCartElement);
+                            console.log('🔍 데스크톱 카트 현재 값:', desktopCartElement ? desktopCartElement.textContent : '요소 없음');
+                            
+                        } else {
+                            console.log('📝 Firebase 카트 문서 없음');
+                        }
                     } else {
-                        console.log('📝 info.html Firebase 카트 없음 - 수량 0');
-                        updateCartCountDisplay(0);
+                        console.log('⚠️ 로그인된 사용자 없음');
                     }
                 } else {
-                    console.log('📝 info.html Firebase 사용 불가 - 수량 0');
-                    updateCartCountDisplay(0);
+                    console.log('❌ Firebase 사용 불가');
                 }
             } catch (error) {
-                console.warn('⚠️ info.html 카트 수량 업데이트 실패:', error);
-                updateCartCountDisplay(0);
+                console.error('❌ Firebase 연결 테스트 실패:', error);
             }
         };
-
-        // 카트 수량 표시 업데이트
-        function updateCartCountDisplay(count) {
-            // 데스크톱용 장바구니 카운트 업데이트
-            const cartCountElement = document.getElementById('cart-count');
-            if (cartCountElement) {
-                cartCountElement.textContent = count;
-            }
-            
-            // 모바일용 장바구니 카운트 업데이트
-            const cartCountMobileElement = document.getElementById('cart-count-mobile');
-            if (cartCountMobileElement) {
-                cartCountMobileElement.textContent = count;
-            }
-            
-            console.log('✅ info.html 카트 수량 표시 업데이트:', count, '개');
-        }
 
         // 페이지 로드 시 초기화
         document.addEventListener('DOMContentLoaded', function() {
@@ -949,6 +948,11 @@
             // 추가적인 카트 수량 업데이트 (페이지 로드 후)
             setTimeout(() => {
                 window.updateCartCount();
+                
+                // Firebase 연결 테스트 (3초 후)
+                setTimeout(() => {
+                    window.testFirebaseConnection();
+                }, 1000);
             }, 2000);
         });
 
