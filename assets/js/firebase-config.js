@@ -2906,8 +2906,22 @@ window.CartSyncService = {
                 isEmailFormat: userEmail?.includes('@')
             });
             
-            if (!FirebaseService.isFirebaseAvailable() || !userEmail) {
-                console.log('Firebase 미사용 또는 사용자 없음 - localStorage만 사용');
+            if (!userEmail) {
+                console.log('❌ 사용자 이메일 없음 - Firebase 카트 저장 실패');
+                return false;
+            }
+            
+            // Firebase 초기화 대기 (최대 5초)
+            let attempts = 0;
+            const maxAttempts = 50;
+            while (attempts < maxAttempts && !FirebaseService.isFirebaseAvailable()) {
+                console.log(`⏳ Firebase 초기화 대기 중... (${attempts + 1}/${maxAttempts})`);
+                await new Promise(resolve => setTimeout(resolve, 100));
+                attempts++;
+            }
+            
+            if (!FirebaseService.isFirebaseAvailable()) {
+                console.log('❌ Firebase 초기화 타임아웃 - localStorage만 사용');
                 return false;
             }
             
