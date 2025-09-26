@@ -167,19 +167,66 @@
         async function testSync() {
             log('동기화 테스트 시작');
             
+            // CartSyncService 로드 상태 확인
+            log('CartSyncService 상태: ' + (window.CartSyncService ? '존재' : '없음'));
+            if (!window.CartSyncService) {
+                log('CartSyncService 로드 대기 중...');
+                let attempts = 0;
+                while (attempts < 50 && !window.CartSyncService) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                    log('CartSyncService 로드 대기 중... (' + attempts + '/50)');
+                }
+                
+                if (!window.CartSyncService) {
+                    log('CartSyncService 로드 실패 - firebase-config.js 확인 필요');
+                    return;
+                } else {
+                    log('CartSyncService 로드 성공');
+                }
+            }
+            
             if (!firebase?.auth?.currentUser && typeof getCurrentUser === 'function') {
                 const user = getCurrentUser();
                 if (user) {
                     log('auth-utils.js에서 사용자 정보 사용: ' + user.email);
                     
-                    // Firebase Auth 상태 새로고침
+                    // Firebase Auth 상태 확인
                     if (firebase?.auth) {
                         try {
-                            await firebase.auth.authStateReady();
-                            log('Firebase Auth 상태 새로고침 완료');
+                            log('Firebase Auth 상태 확인 중...');
+                            const currentUser = firebase.auth.currentUser;
+                            log('firebase.auth.currentUser: ' + (currentUser ? currentUser.email : 'null'));
+                            
+                            // Firebase Auth 상태가 null인 경우 잠시 대기
+                            if (!currentUser) {
+                                log('Firebase Auth 상태 대기 중...');
+                                await new Promise(resolve => setTimeout(resolve, 1000));
+                                const refreshedUser = firebase.auth.currentUser;
+                                log('대기 후 firebase.auth.currentUser: ' + (refreshedUser ? refreshedUser.email : '여전히 null'));
+                            }
                         } catch (error) {
-                            log('Firebase Auth 새로고침 실패: ' + error.message);
+                            log('Firebase Auth 상태 확인 실패: ' + error.message);
                         }
+                    }
+                }
+            }
+            
+            // Firebase Auth currentUser가 여전히 null인 경우 auth-utils.js 사용자로 동기화 시도
+            let syncUser = firebase?.auth?.currentUser;
+            if (!syncUser && typeof getCurrentUser === 'function') {
+                const authUtilsUser = getCurrentUser();
+                if (authUtilsUser) {
+                    log('Firebase Auth currentUser가 null - auth-utils.js 사용자로 동기화 시도');
+                    log('동기화 사용자: ' + authUtilsUser.email);
+                    
+                    try {
+                        const syncedCart = await window.CartSyncService.syncCart(authUtilsUser.email);
+                        log('동기화 완료: ' + syncedCart.length + '개 상품');
+                        updateStatus();
+                        return;
+                    } catch (error) {
+                        log('auth-utils 사용자로 동기화 실패: ' + error.message);
                     }
                 }
             }
@@ -208,15 +255,53 @@
             window.location.href = 'cart.html';
         }
         
+        // 스크립트 로드 확인 함수
+        async function waitForScripts() {
+            log('스크립트 로드 확인 중...');
+            
+            let attempts = 0;
+            const maxAttempts = 100; // 10초 대기
+            
+            while (attempts < maxAttempts) {
+                const scriptsLoaded = {
+                    firebase: typeof firebase !== 'undefined',
+                    FirebaseService: typeof window.FirebaseService !== 'undefined',
+                    CartSyncService: typeof window.CartSyncService !== 'undefined',
+                    authUtils: typeof getCurrentUser !== 'undefined'
+                };
+                
+                log('스크립트 상태: firebase=' + scriptsLoaded.firebase + 
+                    ', FirebaseService=' + scriptsLoaded.FirebaseService + 
+                    ', CartSyncService=' + scriptsLoaded.CartSyncService + 
+                    ', authUtils=' + scriptsLoaded.authUtils);
+                
+                if (scriptsLoaded.firebase && scriptsLoaded.FirebaseService && scriptsLoaded.CartSyncService) {
+                    log('모든 필수 스크립트 로드 완료');
+                    return true;
+                }
+                
+                attempts++;
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
+            
+            log('스크립트 로드 타임아웃');
+            return false;
+        }
+        
         // 페이지 로드 시 초기화
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             log('페이지 로드 시작');
             
-            // 3초 후 상태 확인
-            setTimeout(() => {
+            // 스크립트 로드 대기
+            const scriptsReady = await waitForScripts();
+            
+            if (scriptsReady) {
                 log('Firebase 초기화 대기 완료');
                 updateStatus();
-            }, 3000);
+            } else {
+                log('스크립트 로드 실패 - 수동 새로고침 필요');
+                updateStatus();
+            }
         });
     </script>
 </body>
