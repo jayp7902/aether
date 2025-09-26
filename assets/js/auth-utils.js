@@ -404,9 +404,19 @@ async function logout() {
         sessionStorage.removeItem('aetherLogin');
         console.log('로그인 상태 정보 제거 완료');
         
-        // 카트 초기화
+        // 카트 완전 초기화
         localStorage.removeItem('aetherCart');
-        console.log('카트 초기화 완료');
+        console.log('카트 localStorage 제거 완료');
+        
+        // 실시간 리스너도 중단
+        if (window.cartRealtimeListener) {
+            window.cartRealtimeListener();
+            window.cartRealtimeListener = null;
+            console.log('카트 실시간 리스너 중단 완료');
+        }
+        
+        // 카트 업데이트 진행 중 플래그도 초기화
+        window.cartUpdateInProgress = false;
         
         // FirebaseService 로그아웃 호출 (있는 경우)
         if (typeof FirebaseService !== 'undefined') {
@@ -439,8 +449,14 @@ async function logout() {
         localStorage.removeItem('aetherLoginStatus');
         localStorage.removeItem('aetherLogin');
         sessionStorage.removeItem('aetherLogin');
-        // 카트도 초기화
+        // 카트 완전 초기화
         localStorage.removeItem('aetherCart');
+        // 실시간 리스너도 중단
+        if (window.cartRealtimeListener) {
+            window.cartRealtimeListener();
+            window.cartRealtimeListener = null;
+        }
+        window.cartUpdateInProgress = false;
         currentAuthUser = null;
         
         showToast('ログアウトしました。', 'success', 2000);
@@ -455,6 +471,86 @@ async function logout() {
         setTimeout(() => {
             redirectAfterLogout();
         }, 1000);
+    }
+}
+
+// 로그인 성공 시 계정별 카트 로드
+async function loadUserSpecificCart(userEmail) {
+    try {
+        console.log('=== 계정별 카트 로드 시작 ===');
+        console.log('대상 사용자:', userEmail);
+        
+        // 기존 카트 완전 초기화
+        localStorage.removeItem('aetherCart');
+        console.log('기존 카트 localStorage 제거');
+        
+        // 기존 실시간 리스너 중단
+        if (window.cartRealtimeListener) {
+            window.cartRealtimeListener();
+            window.cartRealtimeListener = null;
+            console.log('기존 실시간 리스너 중단');
+        }
+        
+        // Firebase에서 해당 사용자의 카트 로드
+        if (firebase?.firestore && userEmail) {
+            const db = firebase.firestore();
+            const cartDoc = await db.collection('userCarts').doc(userEmail).get();
+            
+            if (cartDoc.exists) {
+                const userData = cartDoc.data();
+                const userCart = userData.cart || [];
+                
+                console.log('Firebase에서 사용자 카트 로드:', userCart.length, '개 상품');
+                localStorage.setItem('aetherCart', JSON.stringify(userCart));
+                
+                // 새로운 실시간 리스너 설정
+                window.cartRealtimeListener = db.collection('userCarts').doc(userEmail).onSnapshot((doc) => {
+                    if (window.cartUpdateInProgress) {
+                        console.log('카트 업데이트 진행 중 - 실시간 동기화 건너뜀');
+                        return;
+                    }
+                    
+                    if (doc.exists) {
+                        const data = doc.data();
+                        const firebaseCart = data.cart || [];
+                        const localCart = JSON.parse(localStorage.getItem('aetherCart') || '[]');
+                        
+                        if (JSON.stringify(firebaseCart) !== JSON.stringify(localCart)) {
+                            console.log('실시간 카트 동기화:', firebaseCart.length, '개 상품');
+                            localStorage.setItem('aetherCart', JSON.stringify(firebaseCart));
+                            if (typeof updateCartCount === 'function') {
+                                updateCartCount();
+                            }
+                        }
+                    }
+                }, (error) => {
+                    console.error('실시간 리스너 오류:', error);
+                });
+                
+                console.log('새로운 실시간 리스너 설정 완료');
+            } else {
+                console.log('Firebase에 해당 사용자 카트 없음 - 빈 카트로 시작');
+                localStorage.setItem('aetherCart', '[]');
+            }
+        } else {
+            console.log('Firebase 사용 불가 - 빈 카트로 시작');
+            localStorage.setItem('aetherCart', '[]');
+        }
+        
+        // 카트 개수 업데이트
+        if (typeof updateCartCount === 'function') {
+            updateCartCount();
+            console.log('카트 개수 업데이트 완료');
+        }
+        
+        console.log('=== 계정별 카트 로드 완료 ===');
+    } catch (error) {
+        console.error('계정별 카트 로드 실패:', error);
+        // 실패 시 빈 카트로 시작
+        localStorage.setItem('aetherCart', '[]');
+        if (typeof updateCartCount === 'function') {
+            updateCartCount();
+        }
     }
 }
 
@@ -550,13 +646,17 @@ async function initializePage() {
                 await updateUserMenu();
                 console.log('인증 상태 변경:', user ? user.email : '로그아웃');
                 
-                // 로그인 시 방문 기록 저장 및 카트 동기화
+                // 로그인 시 방문 기록 저장 및 계정별 카트 로드
                 if (user && user.email) {
                     try {
                         await window.recordUserVisit(user.email, 'login', {
                             loginTime: new Date().toISOString(),
                             pageTitle: document.title
                         });
+                        
+                        // 계정별 카트 로드 (가장 우선)
+                        console.log('🛒 로그인 성공 - 계정별 카트 로드 시작');
+                        await loadUserSpecificCart(user.email);
                         
                         // 카트 동기화 설정
                         if (window.CartSyncService) {
@@ -604,6 +704,19 @@ async function initializePage() {
                     } catch (error) {
                         console.warn('로그인 시 카트 동기화 실패:', error);
                     }
+                } else {
+                    // 로그아웃 상태 - 카트 완전 초기화
+                    console.log('🚪 로그아웃 상태 감지 - 카트 초기화');
+                    localStorage.removeItem('aetherCart');
+                    if (window.cartRealtimeListener) {
+                        window.cartRealtimeListener();
+                        window.cartRealtimeListener = null;
+                    }
+                    window.cartUpdateInProgress = false;
+                    localStorage.setItem('aetherCart', '[]');
+                    if (typeof updateCartCount === 'function') {
+                        updateCartCount();
+                    }
                 }
             });
         }
@@ -629,13 +742,17 @@ async function initializeAuthUtils() {
             await updateUserMenu();
             console.log('auth-utils.js 인증 상태 변경:', user ? user.email : '로그아웃');
             
-            // 로그인 시 방문 기록 저장 및 카트 동기화
+            // 로그인 시 방문 기록 저장 및 계정별 카트 로드
             if (user && user.email) {
                 try {
                     await window.recordUserVisit(user.email, 'login', {
                         loginTime: new Date().toISOString(),
                         pageTitle: document.title
                     });
+                    
+                    // 계정별 카트 로드 (가장 우선)
+                    console.log('🛒 수동 초기화 - 계정별 카트 로드 시작');
+                    await loadUserSpecificCart(user.email);
                     
                     // 카트 동기화 설정
                     if (window.CartSyncService) {
@@ -653,6 +770,19 @@ async function initializeAuthUtils() {
                     }
                 } catch (error) {
                     console.warn('로그인 시 카트 동기화 실패 (auth-utils):', error);
+                }
+            } else {
+                // 로그아웃 상태 - 카트 완전 초기화
+                console.log('🚪 수동 초기화 - 로그아웃 상태 감지 - 카트 초기화');
+                localStorage.removeItem('aetherCart');
+                if (window.cartRealtimeListener) {
+                    window.cartRealtimeListener();
+                    window.cartRealtimeListener = null;
+                }
+                window.cartUpdateInProgress = false;
+                localStorage.setItem('aetherCart', '[]');
+                if (typeof updateCartCount === 'function') {
+                    updateCartCount();
                 }
             }
         });
