@@ -441,29 +441,32 @@
         }
         
         // 페이지 로드 시 초기화
-        document.addEventListener('DOMContentLoaded', async function() {
+        document.addEventListener('DOMContentLoaded', function() {
             log('🚀 모바일 디버깅 페이지 로드');
             log('📱 디바이스: ' + (navigator.userAgent.includes('Mobile') ? '모바일' : '데스크톱'));
             
-            // 스크립트 로드 대기
-            const scriptsReady = await waitForScripts();
+            // 즉시 상태 업데이트 (기본 상태 표시)
+            updateStatus();
             
-            if (scriptsReady) {
-                // Firebase 초기화 대기
-                setTimeout(() => {
-                    updateStatus();
-                    
-                    // Firebase Auth 상태 변경 감지
-                    if (firebase?.auth) {
-                        firebase.auth.onAuthStateChanged((user) => {
-                            log('🔐 인증 상태 변경: ' + (user ? user.email : '로그아웃'));
-                            updateStatus();
-                        });
-                    }
-                }, 1000);
-            } else {
-                log('❌ 스크립트 로드 실패 - 수동 새로고침 필요');
-            }
+            // Firebase 초기화 대기 (더 간단한 방식)
+            setTimeout(() => {
+                log('⏳ Firebase 초기화 대기 중...');
+                updateStatus();
+                
+                // Firebase Auth 상태 변경 감지
+                if (firebase?.auth) {
+                    firebase.auth.onAuthStateChanged((user) => {
+                        log('🔐 인증 상태 변경: ' + (user ? user.email : '로그아웃'));
+                        updateStatus();
+                    });
+                }
+            }, 2000);
+            
+            // 추가 대기 후 한 번 더 상태 업데이트
+            setTimeout(() => {
+                log('⏳ 추가 대기 후 상태 업데이트');
+                updateStatus();
+            }, 5000);
         });
     </script>
 </body>
