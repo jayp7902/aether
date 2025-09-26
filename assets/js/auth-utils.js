@@ -607,20 +607,36 @@ function showProfile() {
 
 // 카트 개수 업데이트
 function updateCartCount() {
-    const cart = JSON.parse(localStorage.getItem('aetherCart') || '[]');
+    console.log('🛒📊 updateCartCount 함수 시작');
+    
+    const cartData = localStorage.getItem('aetherCart') || '[]';
+    console.log('🔍 localStorage에서 가져온 카트 데이터:', cartData);
+    
+    const cart = JSON.parse(cartData);
+    console.log('🔍 파싱된 카트 배열:', cart);
+    
     const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+    console.log('🔢 계산된 총 아이템 개수:', totalItems);
     
     // 데스크톱용 장바구니 카운트 업데이트
     const cartCountElement = document.getElementById('cart-count');
     if (cartCountElement) {
+        console.log('🖥️ 데스크톱 카트 개수 업데이트:', cartCountElement.textContent, '→', totalItems);
         cartCountElement.textContent = totalItems;
+    } else {
+        console.log('❌ 데스크톱 카트 개수 엘리먼트 없음');
     }
     
     // 모바일용 장바구니 카운트 업데이트
     const cartCountMobileElement = document.getElementById('cart-count-mobile');
     if (cartCountMobileElement) {
+        console.log('📱 모바일 카트 개수 업데이트:', cartCountMobileElement.textContent, '→', totalItems);
         cartCountMobileElement.textContent = totalItems;
+    } else {
+        console.log('❌ 모바일 카트 개수 엘리먼트 없음');
     }
+    
+    console.log('🛒📊 updateCartCount 함수 완료');
 }
 
 // 로그인이 필요한 페이지에서 사용하는 함수
@@ -638,6 +654,22 @@ function requireAuth() {
 // 페이지 초기화 함수 (단순화)
 async function initializePage() {
     try {
+        console.log('🏗️ 페이지 초기화 시작');
+        
+        // 로그아웃 상태라면 카트 강제 초기화
+        console.log('🔍 초기 인증 상태 확인 중...');
+        
+        // 1초 후 인증 상태 확인하여 로그아웃 상태면 카트 초기화
+        setTimeout(() => {
+            const currentUser = getCurrentUser();
+            if (!currentUser) {
+                console.log('🚪 초기화 시 로그아웃 상태 감지 - 카트 강제 초기화');
+                localStorage.removeItem('aetherCart');
+                localStorage.setItem('aetherCart', '[]');
+                updateCartCount();
+            }
+        }, 1000);
+        
         // 카트 개수 업데이트
         updateCartCount();
         
@@ -683,22 +715,69 @@ async function initializePage() {
                     }
                 } else {
                     // 로그아웃 상태 - 카트 완전 초기화
-                    console.log('🚪 로그아웃 상태 감지 - 카트 초기화');
+                    console.log('🚪🚪🚪 로그아웃 상태 감지 - 카트 완전 초기화 시작 🚪🚪🚪');
+                    
+                    // 현재 카트 상태 확인
+                    const currentCart = localStorage.getItem('aetherCart');
+                    console.log('🔍 현재 localStorage 카트:', currentCart);
+                    
                     localStorage.removeItem('aetherCart');
+                    console.log('✅ localStorage aetherCart 제거 완료');
+                    
                     // 모든 실시간 리스너 중단
                     if (window.cartRealtimeListener) {
+                        console.log('🔄 기존 cartRealtimeListener 중단 중...');
                         window.cartRealtimeListener();
                         window.cartRealtimeListener = null;
+                        console.log('✅ cartRealtimeListener 중단 완료');
+                    } else {
+                        console.log('ℹ️ cartRealtimeListener 없음');
                     }
+                    
                     // CartSyncService 리스너도 중단
                     if (window.CartSyncService && window.CartSyncService.stopCartListener) {
+                        console.log('🔄 CartSyncService 리스너 중단 중...');
                         window.CartSyncService.stopCartListener();
+                        console.log('✅ CartSyncService 리스너 중단 완료');
+                    } else {
+                        console.log('ℹ️ CartSyncService 리스너 없음');
                     }
+                    
                     window.cartUpdateInProgress = false;
+                    console.log('✅ cartUpdateInProgress = false 설정');
+                    
                     localStorage.setItem('aetherCart', '[]');
-                    if (typeof updateCartCount === 'function') {
-                        updateCartCount();
+                    console.log('✅ 빈 카트 localStorage 설정 완료');
+                    
+                    // 카트 DOM 요소 직접 초기화
+                    const cartCountElement = document.getElementById('cart-count');
+                    const cartCountMobileElement = document.getElementById('cart-count-mobile');
+                    
+                    if (cartCountElement) {
+                        console.log('🔧 데스크톱 카트 직접 초기화:', cartCountElement.textContent, '→ 0');
+                        cartCountElement.textContent = '0';
                     }
+                    
+                    if (cartCountMobileElement) {
+                        console.log('🔧 모바일 카트 직접 초기화:', cartCountMobileElement.textContent, '→ 0');
+                        cartCountMobileElement.textContent = '0';
+                    }
+                    
+                    if (typeof updateCartCount === 'function') {
+                        console.log('🔄 updateCartCount 함수 호출 중...');
+                        updateCartCount();
+                        console.log('✅ updateCartCount 함수 호출 완료');
+                        
+                        // 최종 카트 개수 확인
+                        console.log('🔍 최종 카트 개수 엘리먼트 확인:', {
+                            desktop: cartCountElement ? cartCountElement.textContent : 'null',
+                            mobile: cartCountMobileElement ? cartCountMobileElement.textContent : 'null'
+                        });
+                    } else {
+                        console.log('❌ updateCartCount 함수 없음');
+                    }
+                    
+                    console.log('🚪🚪🚪 로그아웃 상태 카트 초기화 완료 🚪🚪🚪');
                 }
             });
         }
