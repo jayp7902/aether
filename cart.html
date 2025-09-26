@@ -693,6 +693,22 @@
             else if (cart[index].quantity > 10) cart[index].quantity = 10;
             saveCart(cart);
             renderCart();
+            
+            // Firebase 카트 동기화 (수량 변경 시)
+            let syncUser = firebase?.auth?.currentUser;
+            if (!syncUser && typeof getCurrentUser === 'function') {
+                const authUtilsUser = getCurrentUser();
+                if (authUtilsUser) {
+                    syncUser = authUtilsUser;
+                }
+            }
+            
+            if (syncUser && window.CartSyncService) {
+                window.CartSyncService.saveCartToFirebase(cart, syncUser.email)
+                    .then(() => console.log('✅ 카트 수량 변경 Firebase 동기화 완료'))
+                    .catch(error => console.warn('카트 수량 변경 Firebase 동기화 실패:', error));
+            }
+            
             // 카트 개수 업데이트
             if (typeof window.updateCartCount === 'function') {
                 window.updateCartCount();
@@ -705,6 +721,22 @@
                 cart.splice(index, 1);
                 saveCart(cart);
                 renderCart();
+                
+                // Firebase 카트 동기화 (상품 삭제 시)
+                let syncUser = firebase?.auth?.currentUser;
+                if (!syncUser && typeof getCurrentUser === 'function') {
+                    const authUtilsUser = getCurrentUser();
+                    if (authUtilsUser) {
+                        syncUser = authUtilsUser;
+                    }
+                }
+                
+                if (syncUser && window.CartSyncService) {
+                    window.CartSyncService.saveCartToFirebase(cart, syncUser.email)
+                        .then(() => console.log('✅ 상품 삭제 Firebase 동기화 완료'))
+                        .catch(error => console.warn('상품 삭제 Firebase 동기화 실패:', error));
+                }
+                
                 // 카트 개수 업데이트
                 if (typeof window.updateCartCount === 'function') {
                     window.updateCartCount();
