@@ -952,8 +952,7 @@
                     console.log('카트 개수 업데이트 완료');
                 }
                 
-                // 빈 카트로 설정
-                localStorage.setItem('aetherCart', '[]');
+                // Firebase 카트 초기화 (localStorage 사용 안함)
                 
                 // 토스트 메시지 표시
                 if (typeof window.showToast === 'function') {
@@ -970,9 +969,7 @@
             } catch (error) {
                 console.error('info.html 로그아웃 중 오류:', error);
                 
-                // 오류가 발생해도 강제로 카트 초기화
-                localStorage.removeItem('aetherCart');
-                localStorage.setItem('aetherCart', '[]');
+                // 오류가 발생해도 Firebase 카트 초기화
                 if (window.cartRealtimeListener) {
                     window.cartRealtimeListener();
                     window.cartRealtimeListener = null;
