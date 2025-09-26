@@ -2529,15 +2529,8 @@
                     const displayNameEl = document.getElementById('profile-display-name');
                     const displayEmailEl = document.getElementById('profile-display-email');
                     
-                    if (displayNameEl) {
-                        displayNameEl.textContent = userData.name;
-                    }
-                    
-                    if (displayEmailEl) {
-                        displayEmailEl.textContent = userData.email;
-                    }
-                    
-                    console.log('프로필 헤더 업데이트 완료');
+                    // 중복 제거됨 - updateProfileHeader 함수 사용
+                    console.log('프로필 헤더 업데이트 완료 (중복 제거됨)');
                 } else {
                     console.log('사용자 데이터를 찾을 수 없음 - 기본 정보 표시');
                     // 기본 정보 표시
