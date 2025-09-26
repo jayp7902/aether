@@ -706,7 +706,7 @@
                 const itemImage = item.image || 'assets/img/product-placeholder.jpg';
                 
                 // 상품 페이지 URL 생성 (상품 ID 사용)
-                const productUrl = `product-detail.html?id=${item.id}`;
+                const productUrl = item.id ? `product-detail.html?id=${item.id}` : '#';
                 
                 console.log('카트 아이템 렌더링:', {
                     index: index,
@@ -714,7 +714,9 @@
                     brand: itemBrand,
                     price: itemPrice,
                     quantity: itemQuantity,
-                    image: itemImage
+                    image: itemImage,
+                    productId: item.id,
+                    productUrl: productUrl
                 });
                 
                 // 옵션 정보 표시
@@ -737,10 +739,11 @@
                     '<div class="row align-items-center">' +
                     '<div class="col-md-2 col-2">' +
                     '<div class="product-image-container">' +
-                    '<img src="' + itemImage + '" alt="' + itemName + '" class="product-image" ' +
-                    'onclick="goToProduct(\'' + productUrl + '\')" style="cursor: pointer; transition: opacity 0.3s ease;" ' +
+                    '<img src="' + itemImage + '" alt="' + itemName + '" class="product-image clickable-product-image" ' +
+                    'data-product-url="' + productUrl + '" ' +
+                    'style="cursor: pointer; transition: opacity 0.3s ease; user-select: none;" ' +
                     'onmouseover="this.style.opacity=\'0.8\'" onmouseout="this.style.opacity=\'1\'" ' +
-                    'title="' + itemName + ' 상품 상세보기">' +
+                    'title="' + itemName + ' 상품 상세보기 (클릭하여 상세보기)">' +
                     '</div>' +
                     '</div>' +
                     '<div class="col-md-4 col-4">' +
@@ -767,6 +770,24 @@
             }).join('');
 
             updateTotals();
+            
+            // 상품 이미지 클릭 이벤트 리스너 추가
+            setTimeout(() => {
+                const productImages = document.querySelectorAll('.clickable-product-image');
+                console.log('🔗 상품 이미지 이벤트 리스너 설정:', productImages.length, '개');
+                
+                productImages.forEach((img, index) => {
+                    const productUrl = img.getAttribute('data-product-url');
+                    console.log('🔗 이미지', index, 'URL:', productUrl);
+                    
+                    img.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('🔗 이미지 클릭 이벤트 발생:', productUrl);
+                        goToProduct(productUrl);
+                    });
+                });
+            }, 100);
         }
 
         // 상품 페이지 URL 생성 함수 (더 이상 사용하지 않음 - product-detail.html?id= 형식 사용)
@@ -774,20 +795,25 @@
         // 상품 페이지로 이동하는 함수
         function goToProduct(url) {
             try {
-                console.log('🔗 상품 페이지 이동 시도:', url);
+                console.log('🔗 goToProduct 함수 호출됨');
+                console.log('🔗 전달된 URL:', url);
+                console.log('🔗 URL 타입:', typeof url);
+                console.log('🔗 URL 길이:', url ? url.length : 'null');
                 
                 if (!url || url === '#') {
                     console.warn('⚠️ 유효하지 않은 URL:', url);
-                    alert('상품 페이지를 찾을 수 없습니다.');
+                    alert('상품 페이지를 찾을 수 없습니다. 상품 ID가 없습니다.');
                     return;
                 }
                 
                 // product-detail.html로 이동
+                console.log('🔗 페이지 이동 시작:', url);
                 window.location.href = url;
                 console.log('✅ 상품 페이지 이동 완료:', url);
             } catch (error) {
                 console.error('❌ 상품 페이지 이동 실패:', error);
-                alert('상품 페이지로 이동할 수 없습니다.');
+                console.error('❌ 에러 상세:', error.message);
+                alert('상품 페이지로 이동할 수 없습니다: ' + error.message);
             }
         }
 
