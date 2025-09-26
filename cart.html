@@ -738,10 +738,12 @@
                 return '<div class="cart-item">' +
                     '<div class="row align-items-center">' +
                     '<div class="col-md-2 col-2">' +
-                    '<div class="product-image-container">' +
-                    '<img src="' + itemImage + '" alt="' + itemName + '" class="product-image clickable-product-image" ' +
-                    'data-product-url="' + productUrl + '" ' +
-                    'style="cursor: pointer; transition: opacity 0.3s ease; user-select: none;" ' +
+                    '<div class="product-image-container" onclick="console.log(\'컨테이너 클릭됨:\', \'' + productUrl + '\'); window.goToProduct(\'' + productUrl + '\')" style="cursor: pointer;">' +
+                    '<img src="' + itemImage + '" alt="' + itemName + '" class="product-image" ' +
+                    'onclick="console.log(\'이미지 클릭됨:\', \'' + productUrl + '\'); window.goToProduct(\'' + productUrl + '\')" ' +
+                    'onmousedown="console.log(\'이미지 마우스다운:\', \'' + productUrl + '\')" ' +
+                    'onmouseup="console.log(\'이미지 마우스업:\', \'' + productUrl + '\')" ' +
+                    'style="cursor: pointer; transition: opacity 0.3s ease; user-select: none; z-index: 10; position: relative;" ' +
                     'onmouseover="this.style.opacity=\'0.8\'" onmouseout="this.style.opacity=\'1\'" ' +
                     'title="' + itemName + ' 상품 상세보기 (클릭하여 상세보기)">' +
                     '</div>' +
@@ -770,30 +772,12 @@
             }).join('');
 
             updateTotals();
-            
-            // 상품 이미지 클릭 이벤트 리스너 추가
-            setTimeout(() => {
-                const productImages = document.querySelectorAll('.clickable-product-image');
-                console.log('🔗 상품 이미지 이벤트 리스너 설정:', productImages.length, '개');
-                
-                productImages.forEach((img, index) => {
-                    const productUrl = img.getAttribute('data-product-url');
-                    console.log('🔗 이미지', index, 'URL:', productUrl);
-                    
-                    img.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        console.log('🔗 이미지 클릭 이벤트 발생:', productUrl);
-                        goToProduct(productUrl);
-                    });
-                });
-            }, 100);
         }
 
         // 상품 페이지 URL 생성 함수 (더 이상 사용하지 않음 - product-detail.html?id= 형식 사용)
 
-        // 상품 페이지로 이동하는 함수
-        function goToProduct(url) {
+        // 상품 페이지로 이동하는 함수 (전역으로 설정)
+        window.goToProduct = function(url) {
             try {
                 console.log('🔗 goToProduct 함수 호출됨');
                 console.log('🔗 전달된 URL:', url);
@@ -815,7 +799,13 @@
                 console.error('❌ 에러 상세:', error.message);
                 alert('상품 페이지로 이동할 수 없습니다: ' + error.message);
             }
-        }
+        };
+        
+        // 테스트용 간단한 함수
+        window.testClick = function() {
+            console.log('🔗 테스트 클릭 함수 호출됨!');
+            alert('클릭이 작동합니다!');
+        };
 
         // 테스트용 상품 추가 함수 제거됨 - 실제 상품만 사용
 
