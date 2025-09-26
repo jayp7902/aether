@@ -3073,14 +3073,11 @@ window.CartSyncService = {
                     if (typeof renderCart === 'function') {
                         renderCart();
                     }
-                        if (typeof renderOrderItems === 'function') {
-                            renderOrderItems();
-                        }
-                        
-                        console.log('✅ 카트 실시간 업데이트 완료:', cartData.length, '개 상품');
-                    } else {
-                        console.log('🔄 카트 데이터 동일 - 업데이트 건너뜀');
+                    if (typeof renderOrderItems === 'function') {
+                        renderOrderItems();
                     }
+                    
+                    console.log('✅ 카트 실시간 업데이트 완료:', cartData.length, '개 상품');
                 }
             });
             
