@@ -1824,7 +1824,17 @@
         // 로그아웃
         async function logout() {
             try {
-                console.log('=== 로그아웃 시작 ===');
+                console.log('=== profile.html 로그아웃 시작 ===');
+                
+                // auth-utils.js의 로그아웃 함수 사용 (우선)
+                if (typeof window.logout === 'function' && window.logout.toString().includes('=== 로그아웃 시작 ===')) {
+                    console.log('auth-utils.js logout 함수 사용');
+                    await window.logout();
+                    return;
+                }
+                
+                // 직접 로그아웃 처리 (폴백)
+                console.log('profile.html 직접 로그아웃 처리 시작');
                 
                 // Firebase 로그아웃
                 if (typeof firebase !== 'undefined' && firebase.auth) {
@@ -1832,14 +1842,41 @@
                     console.log('Firebase 로그아웃 완료');
                 }
                 
-                // Firebase 전용 로그아웃 완료
-                console.log('Firebase 전용 로그아웃 완료');
+                // 카트 완전 초기화
+                localStorage.removeItem('aetherCart');
+                console.log('카트 localStorage 제거 완료');
+                
+                // 실시간 리스너도 중단
+                if (window.cartRealtimeListener) {
+                    window.cartRealtimeListener();
+                    window.cartRealtimeListener = null;
+                    console.log('카트 실시간 리스너 중단 완료');
+                }
+                
+                // 카트 업데이트 진행 중 플래그도 초기화
+                window.cartUpdateInProgress = false;
                 
                 // FirebaseService 로그아웃 호출 (있는 경우)
                 if (typeof FirebaseService !== 'undefined') {
                     await FirebaseService.logoutUser();
                     console.log('FirebaseService 로그아웃 완료');
                 }
+                
+                console.log('profile.html 로그아웃 성공');
+                
+                // 사용자 메뉴 업데이트
+                if (typeof window.updateUserMenu === 'function') {
+                    await window.updateUserMenu();
+                }
+                
+                // 카트 개수 업데이트 (0으로 표시)
+                if (typeof updateCartCount === 'function') {
+                    updateCartCount();
+                    console.log('카트 개수 업데이트 완료');
+                }
+                
+                // 빈 카트로 설정
+                localStorage.setItem('aetherCart', '[]');
                 
                 console.log('로그아웃 성공 - 홈페이지로 이동');
                 if (typeof showToast === 'function') {
@@ -1848,14 +1885,25 @@
                         window.location.href = 'index.html';
                     }, 1000);
                 } else {
-                alert('ログアウトしました。');
-                window.location.href = 'index.html';
+                    alert('ログアウトしました。');
+                    window.location.href = 'index.html';
                 }
                 
             } catch (error) {
-                console.error('로그아웃 중 오류:', error);
+                console.error('profile.html 로그아웃 중 오류:', error);
                 
-                // Firebase 전용 오류 처리 - localStorage 정리 제거됨
+                // 오류가 발생해도 강제로 카트 초기화
+                localStorage.removeItem('aetherCart');
+                localStorage.setItem('aetherCart', '[]');
+                if (window.cartRealtimeListener) {
+                    window.cartRealtimeListener();
+                    window.cartRealtimeListener = null;
+                }
+                window.cartUpdateInProgress = false;
+                
+                if (typeof updateCartCount === 'function') {
+                    updateCartCount();
+                }
                 
                 if (typeof showToast === 'function') {
                     showToast('ログアウトしました。', 'success', 2000);
@@ -1863,8 +1911,8 @@
                         window.location.href = 'index.html';
                     }, 1000);
                 } else {
-                alert('ログアウトしました。');
-                window.location.href = 'index.html';
+                    alert('ログアウトしました。');
+                    window.location.href = 'index.html';
                 }
             }
         }
