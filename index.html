@@ -1073,11 +1073,19 @@ https://templatemo.com/tm-559-aether
                 
                 let bestItems = [];
                 
-                // Firebase에서 데이터 로드 시도
-                if (window.firebase && window.firebase.firestore) {
-                    const snapshot = await window.firebase.firestore().collection('homepage_best_items').orderBy('order').get();
-                    bestItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    console.log('📊 Firebase에서 BEST ITEM 데이터 로드:', bestItems.length, '개');
+                // Firebase에서 데이터 로드 시도 (안전한 방식)
+                if (window.firebase && window.firebase.apps && window.firebase.apps.length > 0) {
+                    try {
+                        const snapshot = await window.firebase.firestore().collection('homepage_best_items').orderBy('order').get();
+                        bestItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        console.log('📊 Firebase에서 BEST ITEM 데이터 로드:', bestItems.length, '개');
+                    } catch (error) {
+                        console.warn('⚠️ Firebase BEST ITEM 데이터 로드 실패:', error.message);
+                        bestItems = [];
+                    }
+                } else {
+                    console.log('📝 Firebase가 초기화되지 않음 - BEST ITEM 데이터 로드 건너뜀');
+                    bestItems = [];
                 }
                 
                 // 데이터가 없으면 빈 배열로 설정 (Firebase 전용)
@@ -1246,13 +1254,21 @@ https://templatemo.com/tm-559-aether
                 
                 let footerData = {};
                 
-                // Firebase에서 데이터 로드 시도
-                if (window.firebase && window.firebase.firestore) {
-                    const snapshot = await window.firebase.firestore().collection('footer_content').limit(1).get();
-                    if (!snapshot.empty) {
-                        footerData = snapshot.docs[0].data();
-                        console.log('📊 Firebase에서 푸터 데이터 로드 완료');
+                // Firebase에서 데이터 로드 시도 (안전한 방식)
+                if (window.firebase && window.firebase.apps && window.firebase.apps.length > 0) {
+                    try {
+                        const snapshot = await window.firebase.firestore().collection('footer_content').limit(1).get();
+                        if (!snapshot.empty) {
+                            footerData = snapshot.docs[0].data();
+                            console.log('📊 Firebase에서 푸터 데이터 로드 완료');
+                        }
+                    } catch (error) {
+                        console.warn('⚠️ Firebase 푸터 데이터 로드 실패:', error.message);
+                        footerData = {};
                     }
+                } else {
+                    console.log('📝 Firebase가 초기화되지 않음 - 푸터 데이터 로드 건너뜀');
+                    footerData = {};
                 }
                 
                 // 데이터가 없으면 빈 객체로 설정 (Firebase 전용)
