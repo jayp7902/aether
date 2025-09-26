@@ -1787,9 +1787,15 @@
                 localStorage.removeItem('aetherLoginStatus');
                 localStorage.removeItem('aetherLogin');
                 sessionStorage.removeItem('aetherLogin');
-                // 카트 초기화
+                // 카트 완전 초기화
                 localStorage.removeItem('aetherCart');
-                console.log('localStorage 로그인 상태 및 카트 제거 완료');
+                // 실시간 리스너도 중단
+                if (window.cartRealtimeListener) {
+                    window.cartRealtimeListener();
+                    window.cartRealtimeListener = null;
+                }
+                window.cartUpdateInProgress = false;
+                console.log('localStorage 로그인 상태 및 카트 완전 제거 완료');
                 
                 // 전역 변수 초기화
                 currentUser = null;
