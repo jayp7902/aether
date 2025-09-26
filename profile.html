@@ -1875,8 +1875,7 @@
                     console.log('카트 개수 업데이트 완료');
                 }
                 
-                // 빈 카트로 설정
-                localStorage.setItem('aetherCart', '[]');
+                // Firebase 카트 초기화 (localStorage 사용 안함)
                 
                 console.log('로그아웃 성공 - 홈페이지로 이동');
                 if (typeof showToast === 'function') {
@@ -1892,9 +1891,7 @@
             } catch (error) {
                 console.error('profile.html 로그아웃 중 오류:', error);
                 
-                // 오류가 발생해도 강제로 카트 초기화
-                localStorage.removeItem('aetherCart');
-                localStorage.setItem('aetherCart', '[]');
+                // 오류가 발생해도 Firebase 카트 초기화
                 if (window.cartRealtimeListener) {
                     window.cartRealtimeListener();
                     window.cartRealtimeListener = null;
@@ -2126,24 +2123,23 @@
             }
         }
 
-        // 카트 개수 업데이트
+        // 카트 개수 업데이트 (Firebase 전용 - 호환성 유지)
         function updateCartCount() {
-            const cart = JSON.parse(localStorage.getItem('aetherCart') || '[]');
-            const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+            // Firebase 카트 개수는 각 페이지에서 직접 관리
+            // 여기서는 호환성만 유지
+            console.log('🔢 updateCartCount 호출 (Firebase 전용)');
             
-            // 데스크톱 카트 카운트 업데이트
+            // 데스크톱 카트 카운트 업데이트 (기본값 0)
             const cartCountElement = document.getElementById('cart-count');
-            if (cartCountElement) {
-                cartCountElement.textContent = totalItems;
+            if (cartCountElement && !cartCountElement.textContent) {
+                cartCountElement.textContent = '0';
             }
             
-            // 모바일 카트 카운트 업데이트
+            // 모바일 카트 카운트 업데이트 (기본값 0)
             const cartCountMobileElement = document.getElementById('cart-count-mobile');
-            if (cartCountMobileElement) {
-                cartCountMobileElement.textContent = totalItems;
+            if (cartCountMobileElement && !cartCountMobileElement.textContent) {
+                cartCountMobileElement.textContent = '0';
             }
-            
-            console.log('프로필 페이지 카트 카운트 업데이트:', totalItems, '개 상품');
         }
 
         // Firebase 연결 상태 체크
