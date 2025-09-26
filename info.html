@@ -788,262 +788,30 @@
         // info.html에서는 auth-utils.js의 updateCartCount 함수를 사용
         // 중복된 함수 제거로 충돌 방지
         
-        // Firebase 연결 및 카트 수량 테스트 함수 (모바일 디버깅용)
-        window.testFirebaseConnection = async function() {
-            console.log('🔥 Firebase 연결 테스트 시작');
-            
-            // 모바일에서도 확인할 수 있도록 화면에 디버깅 정보 표시
-            const debugInfo = [];
-            debugInfo.push('🔥 Firebase 연결 테스트 시작');
-            
+        // 카트 수량 동기화 함수 (간단한 버전)
+        window.syncCartCount = async function() {
             try {
-                // Firebase 사용 가능 여부 확인
-                if (typeof firebase !== 'undefined' && firebase.firestore && firebase.apps && firebase.apps.length > 0) {
-                    console.log('✅ Firebase 사용 가능');
-                    debugInfo.push('✅ Firebase 사용 가능');
-                    
-                    // 현재 사용자 확인
-                    const currentUser = getCurrentUser();
-                    if (currentUser) {
-                        console.log('✅ 현재 사용자:', currentUser.email);
-                        debugInfo.push('✅ 현재 사용자: ' + currentUser.email);
+                const currentUser = getCurrentUser();
+                if (currentUser && typeof firebase !== 'undefined' && firebase.firestore) {
+                    const db = firebase.firestore();
+                    const cartDoc = await db.collection('userCarts').doc(currentUser.email).get();
+                    if (cartDoc.exists) {
+                        const cartData = cartDoc.data().cart || [];
+                        const totalItems = cartData.reduce((total, item) => total + (item.quantity || 1), 0);
                         
-                        // 카트 데이터 직접 조회
-                        const db = firebase.firestore();
-                        const cartDoc = await db.collection('userCarts').doc(currentUser.email).get();
+                        // 카트 아이콘 업데이트
+                        const cartCountElement = document.getElementById('cart-count');
+                        const cartCountMobileElement = document.getElementById('cart-count-mobile');
                         
-                        if (cartDoc.exists) {
-                            const cartData = cartDoc.data().cart || [];
-                            console.log('✅ Firebase 카트 데이터:', cartData);
-                            console.log('✅ 카트 상품 수:', cartData.length);
-                            debugInfo.push('✅ 카트 상품 수: ' + cartData.length);
-                            
-                            const totalItems = cartData.reduce((total, item) => total + (item.quantity || 1), 0);
-                            console.log('✅ 총 아이템 수:', totalItems);
-                            debugInfo.push('✅ 총 아이템 수: ' + totalItems);
-                            
-                            // 모바일 카트 아이콘 직접 확인
-                            const mobileCartElement = document.getElementById('cart-count-mobile');
-                            console.log('🔍 모바일 카트 아이콘 요소:', mobileCartElement);
-                            console.log('🔍 모바일 카트 현재 값:', mobileCartElement ? mobileCartElement.textContent : '요소 없음');
-                            debugInfo.push('🔍 모바일 카트 현재 값: ' + (mobileCartElement ? mobileCartElement.textContent : '요소 없음'));
-                            
-                            // 데스크톱 카트 아이콘 직접 확인
-                            const desktopCartElement = document.getElementById('cart-count');
-                            console.log('🔍 데스크톱 카트 아이콘 요소:', desktopCartElement);
-                            console.log('🔍 데스크톱 카트 현재 값:', desktopCartElement ? desktopCartElement.textContent : '요소 없음');
-                            debugInfo.push('🔍 데스크톱 카트 현재 값: ' + (desktopCartElement ? desktopCartElement.textContent : '요소 없음'));
-                            
-                            // window.updateCartCount 함수 호출 테스트
-                            console.log('🔧 window.updateCartCount 함수 호출 테스트');
-                            debugInfo.push('🔧 window.updateCartCount 함수 호출 테스트');
-                            
-                            if (typeof window.updateCartCount === 'function') {
-                                window.updateCartCount();
-                                console.log('✅ window.updateCartCount 함수 호출 완료');
-                                debugInfo.push('✅ window.updateCartCount 함수 호출 완료');
-                                
-                                // 호출 후 다시 확인
-                                setTimeout(() => {
-                                    const mobileCartAfter = document.getElementById('cart-count-mobile');
-                                    const desktopCartAfter = document.getElementById('cart-count');
-                                    console.log('🔍 함수 호출 후 모바일 카트 값:', mobileCartAfter ? mobileCartAfter.textContent : '요소 없음');
-                                    console.log('🔍 함수 호출 후 데스크톱 카트 값:', desktopCartAfter ? desktopCartAfter.textContent : '요소 없음');
-                                    
-                                    // 디버깅 정보 업데이트
-                                    const updatedDebugInfo = [
-                                        '🔍 함수 호출 후 모바일 카트 값: ' + (mobileCartAfter ? mobileCartAfter.textContent : '요소 없음'),
-                                        '🔍 함수 호출 후 데스크톱 카트 값: ' + (desktopCartAfter ? desktopCartAfter.textContent : '요소 없음')
-                                    ];
-                                    showMobileDebugInfo(updatedDebugInfo);
-                                }, 500);
-                            } else {
-                                console.warn('⚠️ window.updateCartCount 함수를 찾을 수 없음');
-                                debugInfo.push('⚠️ window.updateCartCount 함수를 찾을 수 없음');
-                            }
-                            
-                        } else {
-                            console.log('📝 Firebase 카트 문서 없음');
-                            debugInfo.push('📝 Firebase 카트 문서 없음');
-                        }
-                    } else {
-                        console.log('⚠️ 로그인된 사용자 없음');
-                        debugInfo.push('⚠️ 로그인된 사용자 없음');
+                        if (cartCountElement) cartCountElement.textContent = totalItems;
+                        if (cartCountMobileElement) cartCountMobileElement.textContent = totalItems;
                     }
-                } else {
-                    console.log('❌ Firebase 사용 불가');
-                    debugInfo.push('❌ Firebase 사용 불가');
                 }
             } catch (error) {
-                console.error('❌ Firebase 연결 테스트 실패:', error);
-                debugInfo.push('❌ Firebase 연결 테스트 실패: ' + error.message);
+                console.error('카트 수량 동기화 실패:', error);
             }
-            
-            // 모바일에서 확인할 수 있도록 화면에 디버깅 정보 표시
-            showMobileDebugInfo(debugInfo);
         };
         
-        // 모바일 디버깅 정보를 화면에 표시하는 함수
-        function showMobileDebugInfo(debugInfo) {
-            // 기존 디버깅 정보 제거
-            const existingDebug = document.getElementById('mobile-debug-info');
-            if (existingDebug) {
-                existingDebug.remove();
-            }
-            
-            // 디버깅 정보 컨테이너 생성
-            const debugContainer = document.createElement('div');
-            debugContainer.id = 'mobile-debug-info';
-            debugContainer.style.cssText = `
-                position: fixed;
-                top: 10px;
-                right: 10px;
-                background: rgba(0, 0, 0, 0.8);
-                color: white;
-                padding: 10px;
-                border-radius: 5px;
-                font-size: 12px;
-                max-width: 300px;
-                z-index: 9999;
-                font-family: monospace;
-                line-height: 1.4;
-            `;
-            
-            // 디버깅 정보 추가
-            debugInfo.forEach(info => {
-                const infoElement = document.createElement('div');
-                infoElement.textContent = info;
-                debugContainer.appendChild(infoElement);
-            });
-            
-            // 닫기 버튼 추가
-            const closeButton = document.createElement('button');
-            closeButton.textContent = '✕';
-            closeButton.style.cssText = `
-                position: absolute;
-                top: 5px;
-                right: 5px;
-                background: red;
-                color: white;
-                border: none;
-                border-radius: 3px;
-                width: 20px;
-                height: 20px;
-                font-size: 12px;
-                cursor: pointer;
-            `;
-            closeButton.onclick = () => debugContainer.remove();
-            debugContainer.appendChild(closeButton);
-            
-            // 5초 후 자동 제거
-            setTimeout(() => {
-                if (debugContainer.parentNode) {
-                    debugContainer.remove();
-                }
-            }, 5000);
-            
-            // 화면에 추가
-            document.body.appendChild(debugContainer);
-        }
-        
-        // 강제로 카트 수량을 업데이트하는 함수
-        window.forceUpdateCartCount = function(count) {
-            console.log('🔧 강제 카트 수량 업데이트:', count);
-            
-            // 모든 가능한 카트 아이콘 요소들 찾기
-            const cartSelectors = [
-                '#cart-count',
-                '#cart-count-mobile',
-                '.cart-count',
-                '.cart-count-mobile',
-                '[id*="cart-count"]',
-                '[class*="cart-count"]'
-            ];
-            
-            let updatedCount = 0;
-            cartSelectors.forEach(selector => {
-                const elements = document.querySelectorAll(selector);
-                elements.forEach(element => {
-                    element.textContent = count;
-                    updatedCount++;
-                    console.log('✅ 카트 요소 업데이트:', selector, element);
-                });
-            });
-            
-            console.log('✅ 강제 업데이트 완료:', updatedCount, '개 요소');
-            
-            // 디버깅 정보 표시
-            const debugInfo = [
-                '🔧 강제 카트 수량 업데이트: ' + count,
-                '✅ 업데이트된 요소 수: ' + updatedCount
-            ];
-            showMobileDebugInfo(debugInfo);
-        };
-        
-        // 모바일에서 수동으로 테스트할 수 있는 버튼 추가
-        function addMobileTestButton() {
-            // 기존 테스트 버튼 제거
-            const existingButton = document.getElementById('mobile-test-button');
-            if (existingButton) {
-                existingButton.remove();
-            }
-            
-            // 테스트 버튼 생성
-            const testButton = document.createElement('button');
-            testButton.id = 'mobile-test-button';
-            testButton.textContent = '🔍 카트 테스트';
-            testButton.style.cssText = `
-                position: fixed;
-                bottom: 20px;
-                right: 20px;
-                background: #007bff;
-                color: white;
-                border: none;
-                border-radius: 25px;
-                padding: 10px 15px;
-                font-size: 14px;
-                z-index: 9998;
-                box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-                cursor: pointer;
-            `;
-            
-            testButton.onclick = () => {
-                window.testFirebaseConnection();
-                
-                // 1초 후 강제 업데이트도 실행 (실제 카트 수량으로)
-                setTimeout(async () => {
-                    try {
-                        const currentUser = getCurrentUser();
-                        if (currentUser && typeof firebase !== 'undefined' && firebase.firestore) {
-                            const db = firebase.firestore();
-                            const cartDoc = await db.collection('userCarts').doc(currentUser.email).get();
-                            if (cartDoc.exists) {
-                                const cartData = cartDoc.data().cart || [];
-                                const totalItems = cartData.reduce((total, item) => total + (item.quantity || 1), 0);
-                                window.forceUpdateCartCount(totalItems);
-                            } else {
-                                window.forceUpdateCartCount(0);
-                            }
-                        } else {
-                            window.forceUpdateCartCount(0);
-                        }
-                    } catch (error) {
-                        console.error('강제 업데이트 중 오류:', error);
-                        window.forceUpdateCartCount(0);
-                    }
-                }, 2000);
-            };
-            
-            // 화면에 추가
-            document.body.appendChild(testButton);
-            
-            // 5초 후 자동 제거 (시간 단축)
-            setTimeout(() => {
-                if (testButton.parentNode) {
-                    testButton.remove();
-                }
-            }, 5000);
-        }
 
         // 페이지 로드 시 초기화
         document.addEventListener('DOMContentLoaded', function() {
@@ -1152,41 +920,18 @@
             
             checkFirebase();
             
-            // 추가적인 카트 수량 업데이트 (페이지 로드 후) - 시간 단축
+            // 카트 수량 자동 동기화 (페이지 로드 후)
             setTimeout(() => {
-                // 먼저 window.updateCartCount 시도
+                // window.updateCartCount 시도
                 if (typeof window.updateCartCount === 'function') {
                     window.updateCartCount();
                 }
                 
-                // 모바일 테스트 버튼 추가 (1초 후)
+                // 백업 동기화 (1초 후)
                 setTimeout(() => {
-                    addMobileTestButton();
+                    window.syncCartCount();
                 }, 1000);
-                
-                // Firebase 연결 테스트 (1.5초 후)
-                setTimeout(() => {
-                    window.testFirebaseConnection();
-                }, 1500);
-                
-                // 2.5초 후 강제 업데이트도 시도 (백업)
-                setTimeout(async () => {
-                    try {
-                        const currentUser = getCurrentUser();
-                        if (currentUser && typeof firebase !== 'undefined' && firebase.firestore) {
-                            const db = firebase.firestore();
-                            const cartDoc = await db.collection('userCarts').doc(currentUser.email).get();
-                            if (cartDoc.exists) {
-                                const cartData = cartDoc.data().cart || [];
-                                const totalItems = cartData.reduce((total, item) => total + (item.quantity || 1), 0);
-                                window.forceUpdateCartCount(totalItems);
-                            }
-                        }
-                    } catch (error) {
-                        console.error('자동 강제 업데이트 중 오류:', error);
-                    }
-                }, 2500);
-            }, 1000); // 2초 → 1초로 단축
+            }, 500); // 0.5초로 단축
         });
 
         // 로그아웃 함수
