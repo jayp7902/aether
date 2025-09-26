@@ -677,23 +677,58 @@ function showProfile() {
     window.location.href = 'profile.html';
 }
 
-// 카트 개수 업데이트 (Firebase 전용 - 호환성 유지)
-function updateCartCount() {
-    // Firebase 카트 개수는 각 페이지에서 직접 관리
-    // 여기서는 호환성만 유지
+// 카트 개수 업데이트 (Firebase 전용)
+async function updateCartCount() {
     console.log('🔢 updateCartCount 호출 (Firebase 전용)');
     
-    // 데스크톱용 장바구니 카운트 업데이트 (기본값 0)
+    try {
+        // 현재 로그인된 사용자 확인
+        const currentUser = getCurrentUser();
+        if (!currentUser) {
+            console.log('📝 로그인되지 않은 사용자 - 카트 수량 0');
+            updateCartCountDisplay(0);
+            return;
+        }
+        
+        // Firebase에서 카트 수량 가져오기
+        if (typeof firebase !== 'undefined' && firebase.firestore && firebase.apps && firebase.apps.length > 0) {
+            const db = firebase.firestore();
+            const cartDoc = await db.collection('userCarts').doc(currentUser.email).get();
+            
+            if (cartDoc.exists) {
+                const cartData = cartDoc.data().cart || [];
+                const totalItems = cartData.reduce((total, item) => total + (item.quantity || 1), 0);
+                console.log('✅ Firebase 카트 수량:', totalItems, '개');
+                updateCartCountDisplay(totalItems);
+            } else {
+                console.log('📝 Firebase 카트 없음 - 수량 0');
+                updateCartCountDisplay(0);
+            }
+        } else {
+            console.log('📝 Firebase 사용 불가 - 수량 0');
+            updateCartCountDisplay(0);
+        }
+    } catch (error) {
+        console.warn('⚠️ 카트 수량 업데이트 실패:', error);
+        updateCartCountDisplay(0);
+    }
+}
+
+// 카트 수량 표시 업데이트
+function updateCartCountDisplay(count) {
+    // 데스크톱용 장바구니 카운트 업데이트
     const cartCountElement = document.getElementById('cart-count');
-    if (cartCountElement && !cartCountElement.textContent) {
-        cartCountElement.textContent = '0';
+    if (cartCountElement) {
+        cartCountElement.textContent = count;
     }
     
-    // 모바일용 장바구니 카운트 업데이트 (기본값 0)
+    // 모바일용 장바구니 카운트 업데이트
     const cartCountMobileElement = document.getElementById('cart-count-mobile');
-    if (cartCountMobileElement && !cartCountMobileElement.textContent) {
-        cartCountMobileElement.textContent = '0';
+    if (cartCountMobileElement) {
+        cartCountMobileElement.textContent = count;
     }
+    
+    console.log('✅ 카트 수량 표시 업데이트:', count, '개');
 }
 
 // 로그인이 필요한 페이지에서 사용하는 함수
