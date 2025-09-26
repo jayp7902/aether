@@ -1612,15 +1612,21 @@
             const cartCountElement = document.getElementById('cart-count');
             if (cartCountElement) {
                 cartCountElement.textContent = count;
+                console.log('✅ brand-template.html 데스크톱 카트 수량 업데이트:', count, '개');
+            } else {
+                console.warn('⚠️ brand-template.html 데스크톱 카트 아이콘을 찾을 수 없습니다');
             }
             
             // 모바일용 장바구니 카운트 업데이트
             const cartCountMobileElement = document.getElementById('cart-count-mobile');
             if (cartCountMobileElement) {
                 cartCountMobileElement.textContent = count;
+                console.log('✅ brand-template.html 모바일 카트 수량 업데이트:', count, '개');
+            } else {
+                console.warn('⚠️ brand-template.html 모바일 카트 아이콘을 찾을 수 없습니다');
             }
             
-            console.log('✅ brand-template.html 카트 수량 표시 업데이트:', count, '개');
+            console.log('✅ brand-template.html 카트 수량 표시 업데이트 완료:', count, '개');
         }
 
         // 商品詳細ページを開く
