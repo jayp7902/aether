@@ -635,6 +635,11 @@
             console.log('🔍 initializeBrandPage 함수 호출 시작');
             initializeBrandPage();
             console.log('✅ initializeBrandPage 함수 호출 완료');
+            
+            // 카트 수량 초기 업데이트
+            setTimeout(() => {
+                updateCartCount();
+            }, 2000);
         });
 
         // Firebase 초기화 완료 이벤트 리스너 추가
@@ -645,6 +650,11 @@
             setTimeout(() => {
                 console.log('Firebase 초기화 완료 후 인증 상태 재확인');
                 checkAuthState();
+                
+                // Firebase 초기화 완료 후 카트 수량도 업데이트
+                setTimeout(() => {
+                    updateCartCount();
+                }, 500);
             }, 100);
             
             // Firebase 초기화 완료 후 브랜드 정보와 상품 정보 다시 로드
