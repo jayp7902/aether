@@ -1213,28 +1213,7 @@
         }
         */
 
-        document.addEventListener('DOMContentLoaded', async function() {
-            try {
-                // Firebase 초기화 완료 대기
-                await new Promise((resolve) => {
-                    const checkFirebase = () => {
-                        if (typeof firebase !== 'undefined' && firebase.auth && firebase.firestore) {
-                            resolve();
-                        } else {
-                            setTimeout(checkFirebase, 100);
-                        }
-                    };
-                    checkFirebase();
-                });
-                
-                // Firebase 초기화 완료 후 사용자 메뉴 업데이트
-                console.log('Firebase 초기화 완료, 사용자 메뉴 업데이트 시도');
-                if (typeof window.updateUserMenu === 'function') {
-                    console.log('auth-utils.js updateUserMenu 함수 호출');
-                    window.updateUserMenu();
-                } else {
-                    console.warn('auth-utils.js updateUserMenu 함수를 찾을 수 없습니다');
-                }
+        // 중복된 DOMContentLoaded 이벤트 리스너 제거됨 - 아래의 이벤트 리스너 사용
                 
                 // 현재 사용자 정보 가져오기
                 const user = firebase.auth().currentUser;
@@ -3088,10 +3067,20 @@
                 // 인증 상태 확인 및 사용자 메뉴 업데이트
                 updateCartCount();
                 
+                // 추가 카트 수량 업데이트 (지연)
+                setTimeout(() => {
+                    updateCartCount();
+                }, 2000);
+                
                 // Firebase 초기화 완료 후 인증 상태 확인
                 if (firebaseReady) {
                     console.log('Firebase 준비됨, 인증 상태 확인');
                     checkAuthState();
+                    
+                    // Firebase 초기화 완료 후 카트 수량 업데이트
+                    setTimeout(() => {
+                        updateCartCount();
+                    }, 1000);
                 } else {
                     console.log('Firebase 준비 안됨, localStorage 기반으로 인증 상태 확인');
                     // Firebase가 준비되지 않은 경우 즉시 localStorage 기반으로 확인
@@ -3100,6 +3089,11 @@
                     if (typeof window.updateUserMenu === 'function') {
                         window.updateUserMenu();
                     }
+                    
+                    // localStorage 기반으로도 카트 수량 업데이트
+                    setTimeout(() => {
+                        updateCartCount();
+                    }, 1000);
                 }
                 
                 // Firebase 초기화 완료 후 프로필 전체 초기화
@@ -3685,20 +3679,7 @@
             }
         }
 
-        // 페이지 로드 시 실행 (하단)
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('하단 DOM 로드 이벤트 실행');
-            // 상단에서 이미 처리되므로 여기서는 장바구니만 업데이트
-            updateCartCount();
-            
-            // Firebase 초기화 완료 후 메뉴 업데이트 (한 번만)
-            setTimeout(async () => {
-                if (typeof FirebaseService !== 'undefined' && FirebaseService.isFirebaseAvailable()) {
-                    console.log('Firebase 준비됨, 메뉴 업데이트');
-                    await updateAdminMenuVisibility();
-                }
-            }, 2000);
-        });
+        // 중복된 DOMContentLoaded 이벤트 리스너 제거됨 - 위의 이벤트 리스너 사용
 
     </script>
     
