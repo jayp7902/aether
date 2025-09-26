@@ -408,11 +408,17 @@ async function logout() {
         localStorage.removeItem('aetherCart');
         console.log('카트 localStorage 제거 완료');
         
-        // 실시간 리스너도 중단
+        // 모든 실시간 리스너 중단
         if (window.cartRealtimeListener) {
             window.cartRealtimeListener();
             window.cartRealtimeListener = null;
-            console.log('카트 실시간 리스너 중단 완료');
+            console.log('cartRealtimeListener 중단 완료');
+        }
+        
+        // CartSyncService 리스너도 중단
+        if (window.CartSyncService && window.CartSyncService.stopCartListener) {
+            window.CartSyncService.stopCartListener();
+            console.log('CartSyncService 리스너 중단 완료');
         }
         
         // 카트 업데이트 진행 중 플래그도 초기화
@@ -451,10 +457,14 @@ async function logout() {
         sessionStorage.removeItem('aetherLogin');
         // 카트 완전 초기화
         localStorage.removeItem('aetherCart');
-        // 실시간 리스너도 중단
+        // 모든 실시간 리스너 중단
         if (window.cartRealtimeListener) {
             window.cartRealtimeListener();
             window.cartRealtimeListener = null;
+        }
+        // CartSyncService 리스너도 중단
+        if (window.CartSyncService && window.CartSyncService.stopCartListener) {
+            window.CartSyncService.stopCartListener();
         }
         window.cartUpdateInProgress = false;
         currentAuthUser = null;
@@ -484,12 +494,21 @@ async function loadUserSpecificCart(userEmail) {
         localStorage.removeItem('aetherCart');
         console.log('기존 카트 localStorage 제거');
         
-        // 기존 실시간 리스너 중단
+        // 모든 기존 실시간 리스너 중단
         if (window.cartRealtimeListener) {
             window.cartRealtimeListener();
             window.cartRealtimeListener = null;
-            console.log('기존 실시간 리스너 중단');
+            console.log('기존 cartRealtimeListener 중단');
         }
+        
+        // CartSyncService 리스너도 중단
+        if (window.CartSyncService && window.CartSyncService.stopCartListener) {
+            window.CartSyncService.stopCartListener();
+            console.log('기존 CartSyncService 리스너 중단');
+        }
+        
+        // 전역 카트 리스너 변수들 초기화
+        window.cartUpdateInProgress = false;
         
         // Firebase에서 해당 사용자의 카트 로드
         if (firebase?.firestore && userEmail) {
@@ -654,53 +673,11 @@ async function initializePage() {
                             pageTitle: document.title
                         });
                         
-                        // 계정별 카트 로드 (가장 우선)
+                        // 계정별 카트 로드 (단일 시스템)
                         console.log('🛒 로그인 성공 - 계정별 카트 로드 시작');
                         await loadUserSpecificCart(user.email);
                         
-                        // 카트 동기화 설정
-                        if (window.CartSyncService) {
-                            console.log('🛒 로그인 시 카트 동기화 시작');
-                            console.log('🔍 사용자 정보 디버깅:', {
-                                uid: user.uid,
-                                email: user.email,
-                                displayName: user.displayName,
-                                uidLength: user.uid?.length,
-                                uidType: typeof user.uid,
-                                uidFirst10: user.uid?.substring(0, 10),
-                                uidLast10: user.uid?.substring(user.uid.length - 10)
-                            });
-                            
-                            // Firebase Auth currentUser와 비교
-                            const firebaseCurrentUser = firebase?.auth?.currentUser;
-                            console.log('🔍 Firebase Auth currentUser 비교:', {
-                                same: firebaseCurrentUser?.uid === user.uid,
-                                firebaseUID: firebaseCurrentUser?.uid,
-                                firebaseEmail: firebaseCurrentUser?.email
-                            });
-                            
-                            // 전달할 이메일 주소 확인
-                            const emailToUse = user.email || firebaseCurrentUser?.email;
-                            console.log('🔍 카트 동기화에 사용할 이메일:', emailToUse);
-                            
-                            // Firebase에서 카트 로드 (이메일 주소 사용)
-                            const syncedCart = await window.CartSyncService.syncCart(emailToUse);
-                            console.log('✅ 카트 동기화 완료:', syncedCart.length, '개 상품');
-                            
-                            // 실시간 카트 리스너 설정 (이메일 주소 사용)
-                            window.CartSyncService.setupCartListener(emailToUse);
-                            
-                            // 카트 카운트 업데이트
-                            if (typeof updateCartCount === 'function') {
-                                updateCartCount();
-                            }
-                            
-                            // 페이지별 카트 새로고침 (필요한 경우)
-                            if (typeof renderCart === 'function') {
-                                console.log('🔄 카트 렌더링 새로고침');
-                                renderCart();
-                            }
-                        }
+                        // CartSyncService는 사용하지 않음 - loadUserSpecificCart에서 모든 처리 완료
                     } catch (error) {
                         console.warn('로그인 시 카트 동기화 실패:', error);
                     }
@@ -708,9 +685,14 @@ async function initializePage() {
                     // 로그아웃 상태 - 카트 완전 초기화
                     console.log('🚪 로그아웃 상태 감지 - 카트 초기화');
                     localStorage.removeItem('aetherCart');
+                    // 모든 실시간 리스너 중단
                     if (window.cartRealtimeListener) {
                         window.cartRealtimeListener();
                         window.cartRealtimeListener = null;
+                    }
+                    // CartSyncService 리스너도 중단
+                    if (window.CartSyncService && window.CartSyncService.stopCartListener) {
+                        window.CartSyncService.stopCartListener();
                     }
                     window.cartUpdateInProgress = false;
                     localStorage.setItem('aetherCart', '[]');
@@ -750,24 +732,11 @@ async function initializeAuthUtils() {
                         pageTitle: document.title
                     });
                     
-                    // 계정별 카트 로드 (가장 우선)
+                    // 계정별 카트 로드 (단일 시스템)
                     console.log('🛒 수동 초기화 - 계정별 카트 로드 시작');
                     await loadUserSpecificCart(user.email);
                     
-                    // 카트 동기화 설정
-                    if (window.CartSyncService) {
-                        console.log('🛒 로그인 시 카트 동기화 시작 (auth-utils)');
-                        
-                        // Firebase에서 카트 로드
-                        const syncedCart = await window.CartSyncService.syncCart(user.uid);
-                        console.log('✅ 카트 동기화 완료 (auth-utils):', syncedCart.length, '개 상품');
-                        
-                        // 실시간 카트 리스너 설정
-                        window.CartSyncService.setupCartListener(user.uid);
-                        
-                        // 카트 카운트 업데이트
-                        updateCartCount();
-                    }
+                    // CartSyncService는 사용하지 않음 - loadUserSpecificCart에서 모든 처리 완료
                 } catch (error) {
                     console.warn('로그인 시 카트 동기화 실패 (auth-utils):', error);
                 }
@@ -775,9 +744,14 @@ async function initializeAuthUtils() {
                 // 로그아웃 상태 - 카트 완전 초기화
                 console.log('🚪 수동 초기화 - 로그아웃 상태 감지 - 카트 초기화');
                 localStorage.removeItem('aetherCart');
+                // 모든 실시간 리스너 중단
                 if (window.cartRealtimeListener) {
                     window.cartRealtimeListener();
                     window.cartRealtimeListener = null;
+                }
+                // CartSyncService 리스너도 중단
+                if (window.CartSyncService && window.CartSyncService.stopCartListener) {
+                    window.CartSyncService.stopCartListener();
                 }
                 window.cartUpdateInProgress = false;
                 localStorage.setItem('aetherCart', '[]');
