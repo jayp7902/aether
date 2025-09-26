@@ -572,11 +572,18 @@
                 try {
                     await window.CartSyncService.saveCart(currentUser.email, cart);
                     console.log('✅ Firebase 카트 저장 완료:', cart.length, '개 상품');
+                    
+                    // 실시간 리스너가 있는 경우 알림
+                    if (window.onFirebaseCartChange) {
+                        window.onFirebaseCartChange(cart);
+                    }
                 } catch (error) {
                     console.error('❌ Firebase 카트 저장 실패:', error);
+                    throw error; // 에러를 다시 던져서 호출자가 처리할 수 있도록 함
                 }
             } else {
                 console.warn('⚠️ 사용자 정보 또는 CartSyncService 없음');
+                throw new Error('사용자 정보 또는 CartSyncService가 없습니다.');
             }
             
             // 카트 카운트 업데이트
@@ -750,26 +757,55 @@
 
         // 상품 페이지 URL 생성 함수
         function generateProductUrl(brand, productName) {
-            // 브랜드 이름 정규화
-            const normalizedBrand = brand.toUpperCase();
-            
-            // 상품 이름 정규화 (공백을 %20으로 인코딩)
-            const normalizedProductName = productName.trim();
-            
-            // URL 구성 (공백을 %20으로 인코딩)
-            const productUrl = `PRODUCTS%20PAGE/${normalizedBrand}/${encodeURIComponent(normalizedProductName)}.html`;
-            
-            return productUrl;
+            try {
+                console.log('🔗 상품 URL 생성 시작:', { brand, productName });
+                
+                // 브랜드 이름 정규화
+                const normalizedBrand = brand.toUpperCase();
+                
+                // 상품 이름 정규화 (공백을 %20으로 인코딩)
+                const normalizedProductName = productName.trim();
+                
+                // URL 구성 (공백을 %20으로 인코딩)
+                const productUrl = `PRODUCTS%20PAGE/${normalizedBrand}/${encodeURIComponent(normalizedProductName)}.html`;
+                
+                console.log('🔗 생성된 상품 URL:', productUrl);
+                return productUrl;
+            } catch (error) {
+                console.error('❌ 상품 URL 생성 실패:', error);
+                return '#';
+            }
         }
 
         // 상품 페이지로 이동하는 함수
         function goToProduct(url) {
-            window.location.href = url;
+            try {
+                console.log('🔗 상품 페이지 이동 시도:', url);
+                
+                if (!url || url === '#') {
+                    console.warn('⚠️ 유효하지 않은 URL:', url);
+                    alert('상품 페이지를 찾을 수 없습니다.');
+                    return;
+                }
+                
+                // URL이 상대 경로인지 확인
+                if (url.startsWith('PRODUCTS%20PAGE/')) {
+                    // 상대 경로로 변환
+                    const relativeUrl = url.replace('PRODUCTS%20PAGE/', 'PRODUCTS PAGE/');
+                    console.log('🔗 상대 경로로 변환:', relativeUrl);
+                    window.location.href = relativeUrl;
+                } else {
+                    window.location.href = url;
+                }
+            } catch (error) {
+                console.error('❌ 상품 페이지 이동 실패:', error);
+                alert('상품 페이지로 이동할 수 없습니다.');
+            }
         }
 
         // 테스트용 상품 추가 함수 제거됨 - 실제 상품만 사용
 
-        function updateQuantity(index, change) {
+        async function updateQuantity(index, change) {
             console.log('🔢 수량 변경 시작 - 인덱스:', index, '변경량:', change);
             
             const cart = getCart();
@@ -789,7 +825,15 @@
             
             console.log('🔢 변경 후 카트:', cart.length, '개 상품');
             
-            saveCart(cart);
+            try {
+                await saveCart(cart);
+                console.log('✅ 수량 변경 저장 완료');
+            } catch (error) {
+                console.error('❌ 수량 변경 저장 실패:', error);
+                alert('수량 변경 중 오류가 발생했습니다. 다시 시도해주세요.');
+                return;
+            }
+            
             renderCart();
             
             // Firebase 카트 동기화 (수량 변경 시)
@@ -853,11 +897,23 @@
                 console.log('🗑️ 삭제 후 카트:', currentCart.length, '개 상품');
                 
                 // Firebase에 즉시 저장
-                await saveCart(currentCart);
+                try {
+                    await saveCart(currentCart);
+                    console.log('✅ Firebase 삭제 저장 완료');
+                } catch (error) {
+                    console.error('❌ Firebase 삭제 저장 실패:', error);
+                    alert('삭제 중 오류가 발생했습니다. 다시 시도해주세요.');
+                    return;
+                }
                 
                 // 화면 업데이트
                 renderCart();
                 updateCartCount();
+                
+                // 실시간 리스너가 있는 경우 알림
+                if (window.onFirebaseCartChange) {
+                    window.onFirebaseCartChange(currentCart);
+                }
             }
         }
 
