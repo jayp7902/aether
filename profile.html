@@ -2170,32 +2170,27 @@
                 const displayNameEl = document.getElementById('profile-display-name');
                 const displayEmailEl = document.getElementById('profile-display-email');
                 
-                if (userData) {
+                if (userData && userData.name && userData.email) {
                     if (displayNameEl) {
-                        displayNameEl.textContent = userData.name || 'ゲスト';
+                        displayNameEl.textContent = userData.name;
                         console.log('프로필 이름 업데이트:', userData.name);
                     }
                     
                     if (displayEmailEl) {
-                        displayEmailEl.textContent = userData.email || '';
+                        displayEmailEl.textContent = userData.email;
                         console.log('프로필 이메일 업데이트:', userData.email);
                     }
                     
                     console.log('✅ 프로필 헤더 업데이트 완료');
                 } else {
-                    console.log('사용자 데이터 없음 - 기본 정보 표시');
-                    if (displayNameEl) {
-                        displayNameEl.textContent = 'ゲスト';
-                    }
-                    
-                    if (displayEmailEl) {
-                        displayEmailEl.textContent = '';
-                    }
-                    
-                    console.log('✅ 기본 프로필 헤더 표시 완료');
+                    console.log('사용자 데이터 없음 - 로그인 페이지로 리다이렉트');
+                    // 로그인되지 않은 사용자는 로그인 페이지로 리다이렉트
+                    window.location.href = 'login.html';
                 }
             } catch (error) {
                 console.error('프로필 헤더 업데이트 실패:', error);
+                // 오류 발생 시에도 로그인 페이지로 리다이렉트
+                window.location.href = 'login.html';
             }
         }
 
@@ -3111,10 +3106,11 @@
                 
                 // 프로필 헤더 업데이트 (지연)
                 setTimeout(() => {
-                    if (pointsPageUser) {
+                    if (pointsPageUser && pointsPageUser.name && pointsPageUser.email) {
                         updateProfileHeader(pointsPageUser);
                     } else {
-                        updateProfileHeader(null);
+                        console.log('사용자 데이터 없음 - 로그인 페이지로 리다이렉트');
+                        window.location.href = 'login.html';
                     }
                 }, 3000);
                 
@@ -3130,10 +3126,11 @@
                     
                     // Firebase 초기화 완료 후 프로필 헤더 업데이트
                     setTimeout(() => {
-                        if (pointsPageUser) {
+                        if (pointsPageUser && pointsPageUser.name && pointsPageUser.email) {
                             updateProfileHeader(pointsPageUser);
                         } else {
-                            updateProfileHeader(null);
+                            console.log('사용자 데이터 없음 - 로그인 페이지로 리다이렉트');
+                            window.location.href = 'login.html';
                         }
                     }, 1500);
                 } else {
@@ -3152,10 +3149,11 @@
                     
                     // localStorage 기반으로도 프로필 헤더 업데이트
                     setTimeout(() => {
-                        if (pointsPageUser) {
+                        if (pointsPageUser && pointsPageUser.name && pointsPageUser.email) {
                             updateProfileHeader(pointsPageUser);
                         } else {
-                            updateProfileHeader(null);
+                            console.log('사용자 데이터 없음 - 로그인 페이지로 리다이렉트');
+                            window.location.href = 'login.html';
                         }
                     }, 1500);
                 }
@@ -3579,9 +3577,9 @@
                         }
                     }
                 } else {
-                    console.log('사용자 데이터를 찾을 수 없음');
-                    // 기본 정보 표시
-                    updateProfileHeader(null);
+                    console.log('사용자 데이터를 찾을 수 없음 - 로그인 페이지로 리다이렉트');
+                    // 로그인되지 않은 사용자는 로그인 페이지로 리다이렉트
+                    window.location.href = 'login.html';
                 }
                 
             } catch (error) {
