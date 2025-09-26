@@ -1062,6 +1062,11 @@
                             // 실시간 카트 리스너 설정
                             window.CartSyncService.setupCartListener(syncUser.email);
                             console.log('🔄 cart.html 실시간 카트 리스너 설정 완료');
+                            
+                            // 리스너 설정 확인
+                            setTimeout(() => {
+                                console.log('🔍 cart.html: 실시간 리스너 설정 확인 완료');
+                            }, 1000);
                         } catch (error) {
                             console.warn('cart.html 카트 동기화 실패:', error);
                         }
