@@ -1101,9 +1101,22 @@
                 
                 console.log('cart.html 로그아웃 성공');
                 
+                // localStorage 완전 정리
+                localStorage.removeItem('aetherLoginStatus');
+                localStorage.removeItem('aetherLogin');
+                sessionStorage.removeItem('aetherLogin');
+                sessionStorage.removeItem('aetherLoginStatus');
+                Object.keys(localStorage).forEach(key => {
+                    if (key.startsWith('aether') && key !== 'aetherCart') {
+                        localStorage.removeItem(key);
+                    }
+                });
+                console.log('cart.html localStorage 완전 정리 완료');
+                
                 // 사용자 메뉴 업데이트
                 if (typeof window.updateUserMenu === 'function') {
                     await window.updateUserMenu();
+                    console.log('cart.html 사용자 메뉴 업데이트 완료');
                 }
                 
                 // 카트 개수 업데이트 (0으로 표시)
@@ -1111,6 +1124,35 @@
                     updateCartCount();
                     console.log('카트 개수 업데이트 완료');
                 }
+                
+                // DOM 직접 조작으로 확실히 메뉴 상태 변경
+                const logoutMenus = ['logout-menu', 'logout-menu-item', 'logout-menu-mobile', 'logout-menu-item-mobile'];
+                const profileMenus = ['profile-menu', 'profile-menu-mobile', 'points-menu', 'points-menu-mobile'];
+                const loginMenus = ['login-menu', 'login-menu-mobile', 'register-menu', 'register-menu-mobile'];
+                
+                logoutMenus.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.style.display = 'none';
+                        console.log(`cart.html ${id} 숨기기 완료`);
+                    }
+                });
+                
+                profileMenus.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.style.display = 'none';
+                        console.log(`cart.html ${id} 숨기기 완료`);
+                    }
+                });
+                
+                loginMenus.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.style.display = 'block';
+                        console.log(`cart.html ${id} 표시 완료`);
+                    }
+                });
                 
                 // 빈 카트로 렌더링
                 localStorage.setItem('aetherCart', '[]');
