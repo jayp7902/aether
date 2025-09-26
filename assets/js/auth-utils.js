@@ -398,11 +398,18 @@ async function logout() {
             console.log('Firebase 로그아웃 완료');
         }
         
-        // 모든 localStorage 로그인 상태 제거
+        // 모든 localStorage 로그인 상태 완전 제거
         localStorage.removeItem('aetherLoginStatus');
         localStorage.removeItem('aetherLogin');
         sessionStorage.removeItem('aetherLogin');
-        console.log('로그인 상태 정보 제거 완료');
+        sessionStorage.removeItem('aetherLoginStatus');
+        // 모든 Aether 관련 localStorage 항목 제거
+        Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('aether')) {
+                localStorage.removeItem(key);
+            }
+        });
+        console.log('로그인 상태 정보 완전 제거 완료');
         
         // 카트 완전 초기화
         localStorage.removeItem('aetherCart');
@@ -436,7 +443,47 @@ async function logout() {
             console.log('카트 개수 업데이트 완료');
         }
         
+        // 사용자 메뉴 즉시 업데이트 (로그아웃 상태로)
+        console.log('로그아웃 후 사용자 메뉴 업데이트 시작');
         await updateUserMenu();
+        console.log('로그아웃 후 사용자 메뉴 업데이트 완료');
+        
+        // 추가로 DOM 직접 조작으로 확실히 로그아웃 메뉴 숨기기
+        const logoutMenus = ['logout-menu', 'logout-menu-item', 'logout-menu-mobile', 'logout-menu-item-mobile'];
+        const profileMenus = ['profile-menu', 'profile-menu-mobile', 'points-menu', 'points-menu-mobile'];
+        const loginMenus = ['login-menu', 'login-menu-mobile', 'register-menu', 'register-menu-mobile'];
+        
+        logoutMenus.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style.display = 'none';
+                console.log(`로그아웃 메뉴 ${id} 숨기기 완료`);
+            }
+        });
+        
+        profileMenus.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style.display = 'none';
+                console.log(`프로필 메뉴 ${id} 숨기기 완료`);
+            }
+        });
+        
+        loginMenus.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style.display = 'block';
+                console.log(`로그인 메뉴 ${id} 표시 완료`);
+            }
+        });
+        
+        // 사용자 이름 요소 초기화
+        const userNameElement = document.getElementById('user-name');
+        if (userNameElement) {
+            userNameElement.textContent = '';
+            userNameElement.classList.add('d-none');
+            console.log('사용자 이름 요소 초기화 완료');
+        }
         
         // 현재 페이지에 따라 적절한 페이지로 리다이렉트
         setTimeout(() => {
@@ -445,10 +492,18 @@ async function logout() {
     } catch (error) {
         console.error('로그아웃 중 오류 발생:', error);
         
-        // 오류가 발생해도 강제로 로그인 상태 제거
+        // 오류가 발생해도 강제로 로그인 상태 완전 제거
         localStorage.removeItem('aetherLoginStatus');
         localStorage.removeItem('aetherLogin');
         sessionStorage.removeItem('aetherLogin');
+        sessionStorage.removeItem('aetherLoginStatus');
+        // 모든 Aether 관련 localStorage 항목 제거
+        Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('aether')) {
+                localStorage.removeItem(key);
+            }
+        });
+        console.log('오류 후 로그인 상태 정보 완전 제거 완료');
         // 카트 완전 초기화
         localStorage.removeItem('aetherCart');
         // 실시간 리스너도 중단
@@ -467,7 +522,47 @@ async function logout() {
             console.log('카트 개수 업데이트 완료 (오류 후)');
         }
         
+        // 사용자 메뉴 즉시 업데이트 (로그아웃 상태로)
+        console.log('오류 후 사용자 메뉴 업데이트 시작');
         await updateUserMenu();
+        console.log('오류 후 사용자 메뉴 업데이트 완료');
+        
+        // 추가로 DOM 직접 조작으로 확실히 로그아웃 메뉴 숨기기
+        const logoutMenus = ['logout-menu', 'logout-menu-item', 'logout-menu-mobile', 'logout-menu-item-mobile'];
+        const profileMenus = ['profile-menu', 'profile-menu-mobile', 'points-menu', 'points-menu-mobile'];
+        const loginMenus = ['login-menu', 'login-menu-mobile', 'register-menu', 'register-menu-mobile'];
+        
+        logoutMenus.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style.display = 'none';
+                console.log(`오류 후 로그아웃 메뉴 ${id} 숨기기 완료`);
+            }
+        });
+        
+        profileMenus.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style.display = 'none';
+                console.log(`오류 후 프로필 메뉴 ${id} 숨기기 완료`);
+            }
+        });
+        
+        loginMenus.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.style.display = 'block';
+                console.log(`오류 후 로그인 메뉴 ${id} 표시 완료`);
+            }
+        });
+        
+        // 사용자 이름 요소 초기화
+        const userNameElement = document.getElementById('user-name');
+        if (userNameElement) {
+            userNameElement.textContent = '';
+            userNameElement.classList.add('d-none');
+            console.log('오류 후 사용자 이름 요소 초기화 완료');
+        }
         setTimeout(() => {
             redirectAfterLogout();
         }, 1000);
