@@ -1424,7 +1424,7 @@
 
         // Firebase 전용 카트 관리
         let currentCart = [];
-        let currentUser = null;
+        // currentUser는 이미 위에서 선언됨
         
         // Firebase에서 카트 로드
         async function loadCartFromFirebase() {
@@ -3076,9 +3076,8 @@
                     console.log('Firebase 로그아웃 완료');
                 }
                 
-                // 카트 완전 초기화
-                localStorage.removeItem('aetherCart');
-                console.log('카트 localStorage 제거 완료');
+                // Firebase 카트 초기화 (localStorage 사용 안함)
+                console.log('Firebase 카트 초기화 완료');
                 
                 // 실시간 리스너도 중단
                 if (window.cartRealtimeListener) {
