@@ -716,19 +716,29 @@ window.updateCartCount = async function() {
 
 // 카트 수량 표시 업데이트
 function updateCartCountDisplay(count) {
+    console.log('🔧 updateCartCountDisplay 호출됨, 수량:', count);
+    
     // 데스크톱용 장바구니 카운트 업데이트
     const cartCountElement = document.getElementById('cart-count');
+    console.log('🔧 데스크톱 카트 요소:', cartCountElement);
     if (cartCountElement) {
         cartCountElement.textContent = count;
+        console.log('✅ 데스크톱 카트 수량 업데이트:', count);
+    } else {
+        console.warn('⚠️ 데스크톱 카트 요소를 찾을 수 없음');
     }
     
     // 모바일용 장바구니 카운트 업데이트
     const cartCountMobileElement = document.getElementById('cart-count-mobile');
+    console.log('🔧 모바일 카트 요소:', cartCountMobileElement);
     if (cartCountMobileElement) {
         cartCountMobileElement.textContent = count;
+        console.log('✅ 모바일 카트 수량 업데이트:', count);
+    } else {
+        console.warn('⚠️ 모바일 카트 요소를 찾을 수 없음');
     }
     
-    console.log('✅ 카트 수량 표시 업데이트:', count, '개');
+    console.log('✅ 카트 수량 표시 업데이트 완료:', count, '개');
 }
 
 // 로그인이 필요한 페이지에서 사용하는 함수
