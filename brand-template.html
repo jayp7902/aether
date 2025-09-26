@@ -1787,7 +1787,9 @@
                 localStorage.removeItem('aetherLoginStatus');
                 localStorage.removeItem('aetherLogin');
                 sessionStorage.removeItem('aetherLogin');
-                console.log('localStorage 로그인 상태 제거 완료');
+                // 카트 초기화
+                localStorage.removeItem('aetherCart');
+                console.log('localStorage 로그인 상태 및 카트 제거 완료');
                 
                 // 전역 변수 초기화
                 currentUser = null;
@@ -1795,6 +1797,12 @@
                 // 사용자 메뉴 업데이트
                 if (typeof window.updateUserMenu === 'function') {
                     await window.updateUserMenu();
+                }
+                
+                // 카트 개수 업데이트 (0으로 표시)
+                if (typeof window.updateCartCount === 'function') {
+                    window.updateCartCount();
+                    console.log('카트 개수 업데이트 완료');
                 }
                 
                 // 토스트 메시지 표시
