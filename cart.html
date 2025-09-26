@@ -879,12 +879,7 @@
             }
             
             // auth-utils.js의 updateCartCount는 호출하지 않음 (무한 재귀 방지)
-            // 대신 localStorage에 빈 카트만 설정 (호환성)
-            try {
-                localStorage.setItem('aetherCart', JSON.stringify(currentCart));
-            } catch (e) {
-                console.warn('localStorage 설정 실패:', e);
-            }
+            // localStorage 사용 안함 - Firebase 전용
         }
 
         function updateTotals() {
