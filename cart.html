@@ -559,10 +559,21 @@
             localStorage.setItem('aetherCart', JSON.stringify(cart));
             
             // Firebase 카트 동기화 (로그인된 사용자인 경우)
-            if (firebase?.auth?.currentUser && window.CartSyncService) {
-                window.CartSyncService.saveCartToFirebase(cart, firebase.auth.currentUser.email)
-                    .then(() => console.log('✅ Firebase 카트 동기화 완료'))
-                    .catch(error => console.warn('Firebase 카트 동기화 실패:', error));
+            let syncUser = firebase?.auth?.currentUser;
+            if (!syncUser && typeof getCurrentUser === 'function') {
+                const authUtilsUser = getCurrentUser();
+                if (authUtilsUser) {
+                    syncUser = authUtilsUser;
+                }
+            }
+            
+            if (syncUser && window.CartSyncService) {
+                window.CartSyncService.syncCart(syncUser.email, cart)
+                    .then((syncedCart) => {
+                        console.log('✅ saveCart Firebase 동기화 완료:', syncedCart.length, '개 상품');
+                        localStorage.setItem('aetherCart', JSON.stringify(syncedCart));
+                    })
+                    .catch(error => console.warn('saveCart Firebase 동기화 실패:', error));
             }
         }
 
@@ -704,8 +715,11 @@
             }
             
             if (syncUser && window.CartSyncService) {
-                window.CartSyncService.saveCartToFirebase(cart, syncUser.email)
-                    .then(() => console.log('✅ 카트 수량 변경 Firebase 동기화 완료'))
+                window.CartSyncService.syncCart(syncUser.email, cart)
+                    .then((syncedCart) => {
+                        console.log('✅ 카트 수량 변경 Firebase 동기화 완료:', syncedCart.length, '개 상품');
+                        localStorage.setItem('aetherCart', JSON.stringify(syncedCart));
+                    })
                     .catch(error => console.warn('카트 수량 변경 Firebase 동기화 실패:', error));
             }
             
@@ -732,8 +746,11 @@
                 }
                 
                 if (syncUser && window.CartSyncService) {
-                    window.CartSyncService.saveCartToFirebase(cart, syncUser.email)
-                        .then(() => console.log('✅ 상품 삭제 Firebase 동기화 완료'))
+                    window.CartSyncService.syncCart(syncUser.email, cart)
+                        .then((syncedCart) => {
+                            console.log('✅ 상품 삭제 Firebase 동기화 완료:', syncedCart.length, '개 상품');
+                            localStorage.setItem('aetherCart', JSON.stringify(syncedCart));
+                        })
                         .catch(error => console.warn('상품 삭제 Firebase 동기화 실패:', error));
                 }
                 
