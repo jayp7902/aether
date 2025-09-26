@@ -834,14 +834,14 @@
                             console.log('🔍 데스크톱 카트 현재 값:', desktopCartElement ? desktopCartElement.textContent : '요소 없음');
                             debugInfo.push('🔍 데스크톱 카트 현재 값: ' + (desktopCartElement ? desktopCartElement.textContent : '요소 없음'));
                             
-                            // updateCartCountDisplay 함수 직접 호출 테스트
-                            console.log('🔧 updateCartCountDisplay 함수 직접 호출 테스트');
-                            debugInfo.push('🔧 updateCartCountDisplay 함수 직접 호출 테스트');
+                            // window.updateCartCount 함수 호출 테스트
+                            console.log('🔧 window.updateCartCount 함수 호출 테스트');
+                            debugInfo.push('🔧 window.updateCartCount 함수 호출 테스트');
                             
-                            if (typeof updateCartCountDisplay === 'function') {
-                                updateCartCountDisplay(totalItems);
-                                console.log('✅ updateCartCountDisplay 함수 호출 완료');
-                                debugInfo.push('✅ updateCartCountDisplay 함수 호출 완료');
+                            if (typeof window.updateCartCount === 'function') {
+                                window.updateCartCount();
+                                console.log('✅ window.updateCartCount 함수 호출 완료');
+                                debugInfo.push('✅ window.updateCartCount 함수 호출 완료');
                                 
                                 // 호출 후 다시 확인
                                 setTimeout(() => {
@@ -858,8 +858,8 @@
                                     showMobileDebugInfo(updatedDebugInfo);
                                 }, 500);
                             } else {
-                                console.warn('⚠️ updateCartCountDisplay 함수를 찾을 수 없음');
-                                debugInfo.push('⚠️ updateCartCountDisplay 함수를 찾을 수 없음');
+                                console.warn('⚠️ window.updateCartCount 함수를 찾을 수 없음');
+                                debugInfo.push('⚠️ window.updateCartCount 함수를 찾을 수 없음');
                             }
                             
                         } else {
@@ -1010,9 +1010,27 @@
             testButton.onclick = () => {
                 window.testFirebaseConnection();
                 
-                // 2초 후 강제 업데이트도 실행
-                setTimeout(() => {
-                    window.forceUpdateCartCount(2); // 테스트용으로 2로 설정
+                // 2초 후 강제 업데이트도 실행 (실제 카트 수량으로)
+                setTimeout(async () => {
+                    try {
+                        const currentUser = getCurrentUser();
+                        if (currentUser && typeof firebase !== 'undefined' && firebase.firestore) {
+                            const db = firebase.firestore();
+                            const cartDoc = await db.collection('userCarts').doc(currentUser.email).get();
+                            if (cartDoc.exists) {
+                                const cartData = cartDoc.data().cart || [];
+                                const totalItems = cartData.reduce((total, item) => total + (item.quantity || 1), 0);
+                                window.forceUpdateCartCount(totalItems);
+                            } else {
+                                window.forceUpdateCartCount(0);
+                            }
+                        } else {
+                            window.forceUpdateCartCount(0);
+                        }
+                    } catch (error) {
+                        console.error('강제 업데이트 중 오류:', error);
+                        window.forceUpdateCartCount(0);
+                    }
                 }, 2000);
             };
             
@@ -1136,7 +1154,10 @@
             
             // 추가적인 카트 수량 업데이트 (페이지 로드 후)
             setTimeout(() => {
-                window.updateCartCount();
+                // 먼저 window.updateCartCount 시도
+                if (typeof window.updateCartCount === 'function') {
+                    window.updateCartCount();
+                }
                 
                 // 모바일 테스트 버튼 추가 (2초 후)
                 addMobileTestButton();
@@ -1145,6 +1166,24 @@
                 setTimeout(() => {
                     window.testFirebaseConnection();
                 }, 1000);
+                
+                // 5초 후 강제 업데이트도 시도 (백업)
+                setTimeout(async () => {
+                    try {
+                        const currentUser = getCurrentUser();
+                        if (currentUser && typeof firebase !== 'undefined' && firebase.firestore) {
+                            const db = firebase.firestore();
+                            const cartDoc = await db.collection('userCarts').doc(currentUser.email).get();
+                            if (cartDoc.exists) {
+                                const cartData = cartDoc.data().cart || [];
+                                const totalItems = cartData.reduce((total, item) => total + (item.quantity || 1), 0);
+                                window.forceUpdateCartCount(totalItems);
+                            }
+                        }
+                    } catch (error) {
+                        console.error('자동 강제 업데이트 중 오류:', error);
+                    }
+                }, 5000);
             }, 2000);
         });
 
