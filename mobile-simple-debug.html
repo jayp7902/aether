@@ -112,54 +112,75 @@
         function updateStatus() {
             log('상태 업데이트 시작');
             
-            // 사용자 상태
-            let user = firebase?.auth?.currentUser;
-            if (!user && typeof getCurrentUser === 'function') {
-                user = getCurrentUser();
-            }
-            
-            const userStatus = document.getElementById('user-status');
-            if (user) {
-                userStatus.textContent = user.email;
-                userStatus.className = 'status-value good';
-                log('사용자: ' + user.email);
-            } else {
-                userStatus.textContent = '로그인 안됨';
+            try {
+                // 사용자 상태
+                let user = firebase?.auth?.currentUser;
+                if (!user && typeof getCurrentUser === 'function') {
+                    user = getCurrentUser();
+                }
+                
+                const userStatus = document.getElementById('user-status');
+                if (user) {
+                    userStatus.textContent = user.email;
+                    userStatus.className = 'status-value good';
+                    log('사용자: ' + user.email);
+                } else {
+                    userStatus.textContent = '로그인 안됨';
+                    userStatus.className = 'status-value bad';
+                    log('사용자: 로그인 안됨');
+                }
+                
+                // Firebase 상태
+                const firebaseAvailable = window.FirebaseService?.isFirebaseAvailable();
+                const firebaseStatus = document.getElementById('firebase-status');
+                if (firebaseAvailable) {
+                    firebaseStatus.textContent = '사용 가능';
+                    firebaseStatus.className = 'status-value good';
+                    log('Firebase: 사용 가능');
+                } else {
+                    firebaseStatus.textContent = '사용 불가';
+                    firebaseStatus.className = 'status-value bad';
+                    log('Firebase: 사용 불가');
+                }
+                
+                // 카트 상태
+                const cart = JSON.parse(localStorage.getItem('aetherCart') || '[]');
+                const cartStatus = document.getElementById('cart-status');
+                cartStatus.textContent = cart.length + '개 상품';
+                cartStatus.className = cart.length > 0 ? 'status-value good' : 'status-value warning';
+                log('카트: ' + cart.length + '개 상품');
+                
+                // 동기화 상태
+                const canSync = user && firebaseAvailable && window.CartSyncService;
+                const syncStatus = document.getElementById('sync-status');
+                if (canSync) {
+                    syncStatus.textContent = '가능';
+                    syncStatus.className = 'status-value good';
+                    log('동기화: 가능');
+                } else {
+                    syncStatus.textContent = '불가능';
+                    syncStatus.className = 'status-value bad';
+                    log('동기화: 불가능');
+                }
+                
+                log('상태 업데이트 완료');
+            } catch (error) {
+                log('상태 업데이트 실패: ' + error.message);
+                
+                // 에러 발생 시 기본값 설정
+                const userStatus = document.getElementById('user-status');
+                const firebaseStatus = document.getElementById('firebase-status');
+                const cartStatus = document.getElementById('cart-status');
+                const syncStatus = document.getElementById('sync-status');
+                
+                userStatus.textContent = '에러';
                 userStatus.className = 'status-value bad';
-                log('사용자: 로그인 안됨');
-            }
-            
-            // Firebase 상태
-            const firebaseAvailable = window.FirebaseService?.isFirebaseAvailable();
-            const firebaseStatus = document.getElementById('firebase-status');
-            if (firebaseAvailable) {
-                firebaseStatus.textContent = '사용 가능';
-                firebaseStatus.className = 'status-value good';
-                log('Firebase: 사용 가능');
-            } else {
-                firebaseStatus.textContent = '사용 불가';
+                firebaseStatus.textContent = '에러';
                 firebaseStatus.className = 'status-value bad';
-                log('Firebase: 사용 불가');
-            }
-            
-            // 카트 상태
-            const cart = JSON.parse(localStorage.getItem('aetherCart') || '[]');
-            const cartStatus = document.getElementById('cart-status');
-            cartStatus.textContent = cart.length + '개 상품';
-            cartStatus.className = cart.length > 0 ? 'status-value good' : 'status-value warning';
-            log('카트: ' + cart.length + '개 상품');
-            
-            // 동기화 상태
-            const canSync = user && firebaseAvailable && window.CartSyncService;
-            const syncStatus = document.getElementById('sync-status');
-            if (canSync) {
-                syncStatus.textContent = '가능';
-                syncStatus.className = 'status-value good';
-                log('동기화: 가능');
-            } else {
-                syncStatus.textContent = '불가능';
+                cartStatus.textContent = '에러';
+                cartStatus.className = 'status-value bad';
+                syncStatus.textContent = '에러';
                 syncStatus.className = 'status-value bad';
-                log('동기화: 불가능');
             }
         }
         
@@ -918,6 +939,12 @@
         // 페이지 로드 시 초기화
         document.addEventListener('DOMContentLoaded', async function() {
             log('페이지 로드 시작');
+            
+            // 즉시 상태 업데이트 (스크립트 로드 전에)
+            setTimeout(() => {
+                log('초기 상태 업데이트 시작');
+                updateStatus();
+            }, 100);
             
             // 스크립트 로드 대기
             const scriptsReady = await waitForScripts();
