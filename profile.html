@@ -1307,6 +1307,34 @@
                         updateCartCount();
                     }
                     
+                    // Firebase 카트 동기화 (로그인된 사용자인 경우)
+                    let syncUser = firebase?.auth?.currentUser;
+                    if (!syncUser && typeof getCurrentUser === 'function') {
+                        const authUtilsUser = getCurrentUser();
+                        if (authUtilsUser) {
+                            syncUser = authUtilsUser;
+                            console.log('🔧 profile.html: auth-utils.js에서 사용자 정보 사용:', authUtilsUser.email);
+                        }
+                    }
+                    
+                    if (syncUser && window.CartSyncService) {
+                        try {
+                            console.log('🛒 profile.html Firebase 카트 동기화 시작');
+                            window.CartSyncService.syncCart(syncUser.email)
+                                .then((syncedCart) => {
+                                    console.log('✅ profile.html 카트 동기화 완료:', syncedCart.length, '개 상품');
+                                    updateCartCount();
+                                })
+                                .catch(error => {
+                                    console.warn('profile.html 카트 동기화 실패:', error);
+                                });
+                        } catch (error) {
+                            console.warn('profile.html 카트 동기화 실패:', error);
+                        }
+                    } else {
+                        console.log('profile.html: Firebase 카트 동기화 건너뜀 - 사용자:', syncUser ? syncUser.email : '없음', 'CartSyncService:', !!window.CartSyncService);
+                    }
+                    
                     // 모바일 QR코드 제어 초기화
                     if (typeof setupMobileQRCodeControl === 'function') {
                         setupMobileQRCodeControl();
@@ -2054,10 +2082,20 @@
         function updateCartCount() {
             const cart = JSON.parse(localStorage.getItem('aetherCart') || '[]');
             const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+            
+            // 데스크톱 카트 카운트 업데이트
             const cartCountElement = document.getElementById('cart-count');
             if (cartCountElement) {
                 cartCountElement.textContent = totalItems;
             }
+            
+            // 모바일 카트 카운트 업데이트
+            const cartCountMobileElement = document.getElementById('cart-count-mobile');
+            if (cartCountMobileElement) {
+                cartCountMobileElement.textContent = totalItems;
+            }
+            
+            console.log('프로필 페이지 카트 카운트 업데이트:', totalItems, '개 상품');
         }
 
         // Firebase 연결 상태 체크
@@ -3502,14 +3540,7 @@
             }
         }
 
-        // 장바구니 개수 업데이트
-        function updateCartCount() {
-            const cartCount = document.getElementById('cart-count');
-            if (cartCount) {
-                const cart = JSON.parse(localStorage.getItem('aetherCart') || '[]');
-                cartCount.textContent = cart.length;
-            }
-        }
+        // 중복된 updateCartCount 함수 제거됨 - 위의 함수 사용
 
         // 기존 중복된 프로필 사진 업로드 함수 제거됨 - 위의 새로운 함수 사용
         
