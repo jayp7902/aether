@@ -984,6 +984,26 @@
             console.log('페이지 로직 초기화 완료');
         }
 
+        // 인증 상태 확인
+        function checkAuthState() {
+            console.log('🔐 인증 상태 확인 시작');
+            
+            try {
+                // Firebase Auth에서 현재 사용자 확인
+                if (firebase && firebase.auth && firebase.auth().currentUser) {
+                    const user = firebase.auth().currentUser;
+                    console.log('✅ 로그인된 사용자:', user.email);
+                    return user;
+                } else {
+                    console.log('ℹ️ 로그인되지 않은 사용자');
+                    return null;
+                }
+            } catch (error) {
+                console.warn('⚠️ 인증 상태 확인 실패:', error);
+                return null;
+            }
+        }
+
         // 상품 정보 로드
         async function loadProductInfo() {
             const productId = getProductIdFromUrl();
@@ -995,64 +1015,39 @@
             }
             
             try {
-                // Firestore에서 상품 정보 가져오기
+                // Firestore에서 상품 정보 가져오기 (안전한 방식)
                 if (typeof firebase !== 'undefined' && firebase.firestore && firebase.apps && firebase.apps.length > 0) {
-                    console.log('Firebase 앱 초기화 확인됨, Firestore 쿼리 시도');
+                    console.log('🔥 Firebase 앱 초기화 확인됨, 상품 정보 로드 시도');
+                    
                     try {
                         const db = firebase.firestore();
                         
-                        // 먼저 상품 ID로 직접 검색
-                        let productDoc = await db.collection('products').doc(productId).get();
-                        
-                        // 상품 ID로 찾지 못한 경우, 상품 코드로 검색
-                        if (!productDoc.exists) {
-                            console.log('상품 ID로 찾지 못함, 상품 코드로 검색 시도');
-                            const productsQuery = await db.collection('products')
-                                .where('code', '==', productId)
-                                .where('status', '==', 'active')
-                                .get();
-                            
-                            if (!productsQuery.empty) {
-                                productDoc = productsQuery.docs[0];
-                                console.log('상품 코드로 검색 성공');
-                            }
-                        }
+                        // 상품 ID로 직접 검색
+                        const productDoc = await db.collection('products').doc(productId).get();
                         
                         if (productDoc.exists) {
                             productInfo = {
                                 id: productDoc.id,
                                 ...productDoc.data()
                             };
-                            console.log('Firebase에서 상품 정보 로드 완료:', productInfo);
+                            console.log('✅ Firebase에서 상품 정보 로드 완료:', productInfo.nameKr || productInfo.nameJp);
                             displayProductInfo();
                             return;
                         } else {
-                            console.log('Firebase에서 상품을 찾을 수 없음, 전체 상품 목록 확인');
-                            
-                            // 전체 상품 목록을 가져와서 디버그 정보 출력
-                            try {
-                                const allProductsQuery = await db.collection('products').get();
-                                console.log('전체 상품 목록:', allProductsQuery.docs.map(doc => ({
-                                    id: doc.id,
-                                    code: doc.data().code,
-                                    nameKr: doc.data().nameKr,
-                                    nameJp: doc.data().nameJp,
-                                    brandCode: doc.data().brandCode
-                                })));
-                            } catch (debugError) {
-                                console.log('전체 상품 목록 조회 실패:', debugError.message);
-                            }
-                            
-                            console.log('기본 데이터 사용');
+                            console.log('⚠️ Firebase에서 상품을 찾을 수 없음:', productId);
+                            showProductNotFound();
+                            return;
                         }
                     } catch (firebaseError) {
-                        console.log('Firebase 상품 로드 실패, 기본 데이터 사용:', firebaseError.message);
+                        console.warn('⚠️ Firebase 상품 로드 실패:', firebaseError.message);
+                        showProductNotFound();
+                        return;
                     }
+                } else {
+                    console.log('📝 Firebase가 초기화되지 않음 - 상품 로드 건너뜀');
+                    showProductNotFound();
+                    return;
                 }
-                
-                // Firebase에서 상품을 찾을 수 없음
-                console.log('❌ Firebase에서 상품을 찾을 수 없습니다:', productId);
-                showProductNotFound();
                 
             } catch (error) {
                 console.error('상품 정보 로드 실패:', error);
