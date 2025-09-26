@@ -362,10 +362,12 @@
                                         log('🔄 Firebase 카트 변경 감지: ' + (doc.exists ? '문서 존재' : '문서 없음'));
                                         
                                         if (doc.exists) {
-                                            const cartData = doc.data().cart || [];
+                                            const data = doc.data();
+                                            const cartData = data.cart || [];
                                             const currentCart = JSON.parse(localStorage.getItem('aetherCart') || '[]');
                                             
                                             log('🛒 카트 비교: Firebase=' + cartData.length + '개, 로컬=' + currentCart.length + '개');
+                                            log('🕐 마지막 업데이트: ' + (data.lastUpdated ? data.lastUpdated.toDate() : '없음'));
                                             
                                             // 현재 카트와 다르면 업데이트
                                             if (JSON.stringify(cartData) !== JSON.stringify(currentCart)) {
@@ -374,6 +376,7 @@
                                                 log('🔄 변경 후 Firebase 카트: ' + cartData.length + '개 상품');
                                                 localStorage.setItem('aetherCart', JSON.stringify(cartData));
                                                 log('✅ 카트 실시간 업데이트 완료: ' + cartData.length + '개 상품');
+                                                log('✅ 웹에서 카트 변경사항 감지됨 - 모바일 동기화 완료');
                                                 
                                                 // 상태 업데이트
                                                 updateStatus();
@@ -486,6 +489,14 @@
                             if (doc.exists) {
                                 const data = doc.data();
                                 log('- 실시간 카트 상품 수: ' + (data.cart ? data.cart.length : 0));
+                                log('- 마지막 업데이트: ' + (data.lastUpdated ? data.lastUpdated.toDate() : '없음'));
+                                
+                                // 실시간으로 localStorage 업데이트
+                                if (data.cart && data.cart.length > 0) {
+                                    log('🔄 실시간 리스너: localStorage 업데이트');
+                                    localStorage.setItem('aetherCart', JSON.stringify(data.cart));
+                                    updateStatus();
+                                }
                             }
                         },
                         (error) => {
