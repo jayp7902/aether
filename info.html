@@ -785,8 +785,8 @@
 
                 // 이전 QR 코드 생성 함수들은 제거됨 - 포인트 페이지와 동일한 방식만 사용
 
-        // 카트 개수 업데이트 (Firebase 전용)
-        async function updateCartCount() {
+        // 카트 개수 업데이트 (Firebase 전용) - 전역 함수로 설정
+        window.updateCartCount = async function() {
             console.log('🔢 info.html updateCartCount 호출');
             
             try {
@@ -820,7 +820,7 @@
                 console.warn('⚠️ info.html 카트 수량 업데이트 실패:', error);
                 updateCartCountDisplay(0);
             }
-        }
+        };
 
         // 카트 수량 표시 업데이트
         function updateCartCountDisplay(count) {
@@ -890,7 +890,7 @@
                             
                             // 사용자 메뉴 업데이트 후 카트 수량도 업데이트
                             setTimeout(() => {
-                                updateCartCount();
+                                window.updateCartCount();
                             }, 500);
                         } else {
                             console.warn('info.html - updateUserMenu 함수를 찾을 수 없습니다');
@@ -945,6 +945,11 @@
             };
             
             checkFirebase();
+            
+            // 추가적인 카트 수량 업데이트 (페이지 로드 후)
+            setTimeout(() => {
+                window.updateCartCount();
+            }, 2000);
         });
 
         // 로그아웃 함수
@@ -1393,6 +1398,11 @@
                 if (typeof window.updateUserMenu === 'function') {
                     console.log('info.html - 두 번째 초기화에서 updateUserMenu 함수 호출');
                     window.updateUserMenu();
+                    
+                    // 사용자 메뉴 업데이트 후 카트 수량도 업데이트
+                    setTimeout(() => {
+                        window.updateCartCount();
+                    }, 500);
                 }
             }, 1000);
         });
