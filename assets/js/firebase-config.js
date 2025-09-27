@@ -950,6 +950,57 @@ class FirebaseService {
                 return { success: false, error: error.code, message: error.message };
             }
             
+            // auth/internal-error인 경우 실제 에러 메시지를 파싱
+            if (error.code === 'auth/internal-error' && error.message) {
+                console.log('auth/internal-error 파싱 시도:', error.message);
+                
+                try {
+                    // JSON 파싱 시도
+                    const errorData = JSON.parse(error.message);
+                    console.log('파싱된 에러 데이터:', errorData);
+                    
+                    if (errorData.error && errorData.error.message) {
+                        const actualError = errorData.error.message;
+                        console.log('실제 에러 메시지:', actualError);
+                        
+                        // INVALID_LOGIN_CREDENTIALS인 경우 비밀번호 오류로 처리
+                        if (actualError === 'INVALID_LOGIN_CREDENTIALS') {
+                            console.log('INVALID_LOGIN_CREDENTIALS 감지 - 비밀번호 오류로 처리');
+                            
+                            // 이메일 존재 여부 확인
+                            try {
+                                const signInMethods = await auth.fetchSignInMethodsForEmail(email);
+                                console.log('✅ 이메일은 존재함 - 비밀번호가 틀림');
+                                console.log('🔍 사용 가능한 로그인 방법:', signInMethods);
+                                return { 
+                                    success: false, 
+                                    error: 'auth/wrong-password', 
+                                    message: 'パスワードが一致しません。' 
+                                };
+                            } catch (emailError) {
+                                console.log('🔍 fetchSignInMethodsForEmail 에러:', emailError);
+                                if (emailError.code === 'auth/user-not-found') {
+                                    console.log('❌ 이메일이 존재하지 않음');
+                                    return { 
+                                        success: false, 
+                                        error: 'auth/user-not-found', 
+                                        message: 'このメールアドレスは登録されていません。' 
+                                    };
+                                } else {
+                                    return { 
+                                        success: false, 
+                                        error: 'auth/invalid-login-credentials', 
+                                        message: 'メールアドレスまたはパスワードが一致しません。' 
+                                    };
+                                }
+                            }
+                        }
+                    }
+                } catch (parseError) {
+                    console.log('JSON 파싱 실패:', parseError);
+                }
+            }
+            
             // 기타 에러의 경우 Firebase 에러 그대로 반환
             console.log('기타 Firebase 에러:', error.code, error.message);
             return { success: false, error: error.code || 'auth/unknown-error', message: error.message };
