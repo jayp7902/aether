@@ -930,13 +930,12 @@ class FirebaseService {
                                 message: 'パスワードが一致しません。' 
                             };
                         } else {
-                            // signInMethods가 빈 배열인 경우 - fetchSignInMethodsForEmail이 신뢰할 수 없으므로
-                            // 기본적으로 비밀번호 오류로 처리 (사용자에게 더 친화적)
-                            console.log('⚠️ fetchSignInMethodsForEmail이 빈 배열 반환 - 기본적으로 비밀번호 오류로 처리 (기존 경로)');
+                            // signInMethods가 빈 배열인 경우 - 실제로 이메일이 존재하지 않을 가능성이 높음
+                            console.log('❌ 이메일이 존재하지 않음 (빈 배열, 기존 경로) - v2.6 수정');
                             return { 
                                 success: false, 
-                                error: 'auth/wrong-password', 
-                                message: 'パスワードが一致しません。' 
+                                error: 'auth/user-not-found', 
+                                message: 'このメールアドレスは登録されていません。' 
                             };
                         }
                     } catch (emailError) {
@@ -976,14 +975,17 @@ class FirebaseService {
                         const actualError = errorData.error.message;
                         console.log('실제 에러 메시지:', actualError);
                         
-                        // INVALID_LOGIN_CREDENTIALS인 경우 간단한 처리
+                        // INVALID_LOGIN_CREDENTIALS인 경우 더 정확한 처리
                         if (actualError === 'INVALID_LOGIN_CREDENTIALS') {
-                            console.log('🔍 INVALID_LOGIN_CREDENTIALS 감지 - v2.5 새 로직 실행');
+                            console.log('🔍 INVALID_LOGIN_CREDENTIALS 감지 - v2.6 정확한 이메일 확인');
                             
+                            // Firebase Admin SDK를 사용할 수 없으므로, 다른 방법으로 이메일 존재 여부 확인
                             // fetchSignInMethodsForEmail로 이메일 존재 여부 확인 시도
                             try {
                                 const signInMethods = await auth.fetchSignInMethodsForEmail(email);
                                 console.log('🔍 fetchSignInMethodsForEmail 결과:', signInMethods);
+                                console.log('🔍 signInMethods 타입:', typeof signInMethods);
+                                console.log('🔍 signInMethods 길이:', signInMethods ? signInMethods.length : 'undefined');
                                 
                                 // signInMethods가 빈 배열이 아니면 이메일이 존재함 (비밀번호 오류)
                                 if (signInMethods && signInMethods.length > 0) {
@@ -994,17 +996,19 @@ class FirebaseService {
                                         message: 'パスワードが一致しません。' 
                                     };
                                 } else {
-                                    // signInMethods가 빈 배열인 경우 - fetchSignInMethodsForEmail이 신뢰할 수 없으므로
-                                    // 기본적으로 비밀번호 오류로 처리 (사용자에게 더 친화적)
-                                    console.log('⚠️ fetchSignInMethodsForEmail이 빈 배열 반환 - 기본적으로 비밀번호 오류로 처리');
+                                    // signInMethods가 빈 배열인 경우 - 실제로 이메일이 존재하지 않을 가능성이 높음
+                                    console.log('❌ 이메일이 존재하지 않음 (빈 배열) - v2.6 수정');
                                     return { 
                                         success: false, 
-                                        error: 'auth/wrong-password', 
-                                        message: 'パスワードが一致しません。' 
+                                        error: 'auth/user-not-found', 
+                                        message: 'このメールアドレスは登録されていません。' 
                                     };
                                 }
                             } catch (emailError) {
                                 console.log('🔍 fetchSignInMethodsForEmail 에러:', emailError);
+                                console.log('🔍 에러 코드:', emailError.code);
+                                console.log('🔍 에러 메시지:', emailError.message);
+                                
                                 if (emailError.code === 'auth/user-not-found') {
                                     console.log('❌ 이메일이 존재하지 않음 (에러로 확인)');
                                     return { 
@@ -2887,8 +2891,8 @@ function setGlobalFirebaseObjects() {
     }
 }
 
-// FirebaseService 로드 확인 로그 - v2.5 (로그인 에러 처리 개선)
-console.log('🔥🔥🔥 FirebaseService 전역 export 완료 - v2.5 (새 프로젝트 aether-fixed) 🔥🔥🔥');
+// FirebaseService 로드 확인 로그 - v2.6 (이메일 존재 여부 정확한 감지)
+console.log('🔥🔥🔥 FirebaseService 전역 export 완료 - v2.6 (새 프로젝트 aether-fixed) 🔥🔥🔥');
 console.log('window.FirebaseService:', typeof window.FirebaseService);
 console.log('window.FirebaseService_getOrCreateQRToken:', typeof window.FirebaseService_getOrCreateQRToken);
 console.log('usePoints 함수 확인:', typeof FirebaseService.usePoints);
