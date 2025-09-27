@@ -911,52 +911,20 @@ class FirebaseService {
             )) {
                 console.log('Firebase Authentication 에러 - 구체적인 에러 메시지 반환:', error.code);
                 
-                // invalid-login-credentials는 더 구체적으로 처리
+                // invalid-login-credentials는 더 안전하게 처리
                 if (error.code === 'auth/invalid-login-credentials') {
-                    console.log('🔍 invalid-login-credentials 에러 - v2.5 기존 경로 실행');
+                    console.log('🔍 invalid-login-credentials 에러 - v2.7 안전한 처리 (기존 경로)');
                     console.log('🔍 확인할 이메일:', email);
                     
-                    // 이메일 존재 여부 확인
-                    try {
-                        const signInMethods = await auth.fetchSignInMethodsForEmail(email);
-                        console.log('🔍 사용 가능한 로그인 방법 (기존 경로):', signInMethods);
-                        
-                        // signInMethods가 빈 배열이 아니면 이메일이 존재함 (비밀번호 오류)
-                        if (signInMethods && signInMethods.length > 0) {
-                            console.log('✅ 이메일은 존재함 - 비밀번호가 틀림 (기존 경로)');
-                            return { 
-                                success: false, 
-                                error: 'auth/wrong-password', 
-                                message: 'パスワードが一致しません。' 
-                            };
-                        } else {
-                            // signInMethods가 빈 배열인 경우 - 실제로 이메일이 존재하지 않을 가능성이 높음
-                            console.log('❌ 이메일이 존재하지 않음 (빈 배열, 기존 경로) - v2.6 수정');
-                            return { 
-                                success: false, 
-                                error: 'auth/user-not-found', 
-                                message: 'このメールアドレスは登録されていません。' 
-                            };
-                        }
-                    } catch (emailError) {
-                        console.log('🔍 fetchSignInMethodsForEmail 에러:', emailError);
-                        if (emailError.code === 'auth/user-not-found') {
-                            console.log('❌ 이메일이 존재하지 않음');
-                            return { 
-                                success: false, 
-                                error: 'auth/user-not-found', 
-                                message: 'このメールアドレスは登録されていません。' 
-                            };
-                        } else {
-                            console.log('⚠️ 기타 이메일 확인 에러:', emailError.code);
-                            // 기타 에러의 경우 원래 에러 메시지 사용
-                            return { 
-                                success: false, 
-                                error: error.code, 
-                                message: error.message 
-                            };
-                        }
-                    }
+                    // fetchSignInMethodsForEmail이 신뢰할 수 없으므로 안전한 처리
+                    console.log('⚠️ fetchSignInMethodsForEmail 신뢰할 수 없음 - 기본적으로 비밀번호 오류로 처리 (기존 경로)');
+                    console.log('💡 사용자 친화적 접근: 대부분의 경우 비밀번호 오류이므로 기본 처리');
+                    
+                    return { 
+                        success: false, 
+                        error: 'auth/wrong-password', 
+                        message: 'メールアドレスまたはパスワードが一致しません。' 
+                    };
                 }
                 
                 return { success: false, error: error.code, message: error.message };
@@ -975,55 +943,32 @@ class FirebaseService {
                         const actualError = errorData.error.message;
                         console.log('실제 에러 메시지:', actualError);
                         
-                        // INVALID_LOGIN_CREDENTIALS인 경우 더 정확한 처리
+                        // INVALID_LOGIN_CREDENTIALS인 경우 - 더 안전한 방법으로 처리
                         if (actualError === 'INVALID_LOGIN_CREDENTIALS') {
-                            console.log('🔍 INVALID_LOGIN_CREDENTIALS 감지 - v2.6 정확한 이메일 확인');
+                            console.log('🔍 INVALID_LOGIN_CREDENTIALS 감지 - v2.7 안전한 처리');
                             
-                            // Firebase Admin SDK를 사용할 수 없으므로, 다른 방법으로 이메일 존재 여부 확인
-                            // fetchSignInMethodsForEmail로 이메일 존재 여부 확인 시도
+                            // fetchSignInMethodsForEmail이 신뢰할 수 없으므로, 다른 방법 사용
+                            // sendPasswordResetEmail을 실제로 호출하지 않고 에러만 확인
                             try {
-                                const signInMethods = await auth.fetchSignInMethodsForEmail(email);
-                                console.log('🔍 fetchSignInMethodsForEmail 결과:', signInMethods);
-                                console.log('🔍 signInMethods 타입:', typeof signInMethods);
-                                console.log('🔍 signInMethods 길이:', signInMethods ? signInMethods.length : 'undefined');
+                                // 실제로는 이메일을 보내지 않고, 에러만 확인하는 방법
+                                // 하지만 이 방법도 이메일을 보내므로, 더 간단한 방법 사용
                                 
-                                // signInMethods가 빈 배열이 아니면 이메일이 존재함 (비밀번호 오류)
-                                if (signInMethods && signInMethods.length > 0) {
-                                    console.log('✅ 이메일은 존재함 - 비밀번호가 틀림');
-                                    return { 
-                                        success: false, 
-                                        error: 'auth/wrong-password', 
-                                        message: 'パスワードが一致しません。' 
-                                    };
-                                } else {
-                                    // signInMethods가 빈 배열인 경우 - 실제로 이메일이 존재하지 않을 가능성이 높음
-                                    console.log('❌ 이메일이 존재하지 않음 (빈 배열) - v2.6 수정');
-                                    return { 
-                                        success: false, 
-                                        error: 'auth/user-not-found', 
-                                        message: 'このメールアドレスは登録されていません。' 
-                                    };
-                                }
-                            } catch (emailError) {
-                                console.log('🔍 fetchSignInMethodsForEmail 에러:', emailError);
-                                console.log('🔍 에러 코드:', emailError.code);
-                                console.log('🔍 에러 메시지:', emailError.message);
+                                console.log('⚠️ fetchSignInMethodsForEmail 신뢰할 수 없음 - 기본적으로 비밀번호 오류로 처리');
+                                console.log('💡 사용자 친화적 접근: 대부분의 경우 비밀번호 오류이므로 기본 처리');
                                 
-                                if (emailError.code === 'auth/user-not-found') {
-                                    console.log('❌ 이메일이 존재하지 않음 (에러로 확인)');
-                                    return { 
-                                        success: false, 
-                                        error: 'auth/user-not-found', 
-                                        message: 'このメールアドレスは登録されていません。' 
-                                    };
-                                } else {
-                                    console.log('❌ 기타 에러로 이메일 확인 불가 - 기본적으로 비밀번호 오류로 처리');
-                                    return { 
-                                        success: false, 
-                                        error: 'auth/wrong-password', 
-                                        message: 'パスワードが一致しません。' 
-                                    };
-                                }
+                                return { 
+                                    success: false, 
+                                    error: 'auth/wrong-password', 
+                                    message: 'メールアドレスまたはパスワードが一致しません。' 
+                                };
+                                
+                            } catch (error) {
+                                console.log('❌ 이메일 확인 중 오류:', error);
+                                return { 
+                                    success: false, 
+                                    error: 'auth/wrong-password', 
+                                    message: 'メールアドレスまたはパスワードが一致しません。' 
+                                };
                             }
                         }
                         
@@ -2891,8 +2836,8 @@ function setGlobalFirebaseObjects() {
     }
 }
 
-// FirebaseService 로드 확인 로그 - v2.6 (이메일 존재 여부 정확한 감지)
-console.log('🔥🔥🔥 FirebaseService 전역 export 완료 - v2.6 (새 프로젝트 aether-fixed) 🔥🔥🔥');
+// FirebaseService 로드 확인 로그 - v2.7 (안전한 로그인 에러 처리)
+console.log('🔥🔥🔥 FirebaseService 전역 export 완료 - v2.7 (새 프로젝트 aether-fixed) 🔥🔥🔥');
 console.log('window.FirebaseService:', typeof window.FirebaseService);
 console.log('window.FirebaseService_getOrCreateQRToken:', typeof window.FirebaseService_getOrCreateQRToken);
 console.log('usePoints 함수 확인:', typeof FirebaseService.usePoints);
