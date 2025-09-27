@@ -123,7 +123,8 @@ async function checkAdminPermission(email) {
     // Firebase가 사용 가능한 경우 Firebase에서 관리자 권한 확인
     try {
         const isAdmin = await FirebaseService.isAdmin(email);
-        console.log(`관리자 권한 확인 (Firebase): ${email} - ${isAdmin ? '관리자' : '일반 사용자'}`);
+        // 보안상 사용자 이메일은 로그에 출력하지 않음
+        console.log(`관리자 권한 확인 (Firebase): ${isAdmin ? '관리자' : '일반 사용자'}`);
         return isAdmin;
     } catch (error) {
         console.error('Firebase 관리자 권한 확인 실패:', error);
@@ -197,15 +198,13 @@ async function updateUserMenu() {
         const userEmail = (user && user.email) || (loginStatus && loginStatus.email);
         let isAdmin = false;
         
-        console.log('🔍 auth-utils.js 관리자 권한 확인 시작:', userEmail);
-        console.log('🔍 user 객체:', user);
-        console.log('🔍 loginStatus 객체:', loginStatus);
+        // 보안상 사용자 정보는 로그에 출력하지 않음
+        console.log('🔍 관리자 권한 확인 시작');
         
         if (userEmail) {
             try {
-                console.log('🔍 checkAdminPermission 함수 호출 시작');
                 isAdmin = await checkAdminPermission(userEmail);
-                console.log('🔍 checkAdminPermission 결과:', isAdmin);
+                console.log('✅ 관리자 권한 확인 완료');
             } catch (error) {
                 console.error('❌ 관리자 권한 확인 실패:', error);
                 isAdmin = false;
