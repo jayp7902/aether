@@ -1618,7 +1618,7 @@ class FirebaseService {
     static getLocalizedErrorMessage(errorCode) {
         const errorMessages = {
             'auth/user-not-found': 'このメールアドレスは登録されていません。',
-            'auth/wrong-password': 'パスワードが一致しません。',
+            'auth/wrong-password': 'メールアドレスまたはパスワードが一致しません。',
             'auth/invalid-email': 'メールアドレスの形式が正しくありません。',
             'auth/invalid-login-credentials': 'メールアドレスまたはパスワードが一致しません。',
             'auth/user-disabled': 'このアカウントは無効化されています。',
@@ -2836,8 +2836,8 @@ function setGlobalFirebaseObjects() {
     }
 }
 
-// FirebaseService 로드 확인 로그 - v2.7 (안전한 로그인 에러 처리)
-console.log('🔥🔥🔥 FirebaseService 전역 export 완료 - v2.7 (새 프로젝트 aether-fixed) 🔥🔥🔥');
+// FirebaseService 로드 확인 로그 - v2.8 (에러 메시지 일관성 수정)
+console.log('🔥🔥🔥 FirebaseService 전역 export 완료 - v2.8 (새 프로젝트 aether-fixed) 🔥🔥🔥');
 console.log('window.FirebaseService:', typeof window.FirebaseService);
 console.log('window.FirebaseService_getOrCreateQRToken:', typeof window.FirebaseService_getOrCreateQRToken);
 console.log('usePoints 함수 확인:', typeof FirebaseService.usePoints);
