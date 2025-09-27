@@ -642,24 +642,13 @@ class FirebaseService {
             // Firestore에서 관리자 이메일 목록 조회
             const adminDoc = await db.collection('admins').doc('admin-emails').get();
             
-            console.log('📄 관리자 문서 조회 결과:', adminDoc.exists);
-            console.log('📄 관리자 문서 ID:', adminDoc.id);
-            console.log('📄 관리자 문서 데이터:', adminDoc.data());
-            
             if (adminDoc.exists) {
                 const adminData = adminDoc.data();
                 const adminEmails = adminData.emails || [];
                 
-                console.log('📧 관리자 이메일 목록:', adminEmails);
-                console.log('📧 관리자 이메일 목록 타입:', typeof adminEmails);
-                console.log('📧 관리자 이메일 목록 길이:', adminEmails.length);
-                console.log('🔍 확인할 이메일:', userEmail);
-                console.log('🔍 이메일 타입:', typeof userEmail);
-                
                 const isAdmin = adminEmails.includes(userEmail);
-                console.log(`🎯 관리자 권한 확인 결과: ${userEmail} - ${isAdmin ? '✅ 관리자' : '❌ 일반 사용자'}`);
-                console.log(`🎯 includes 결과:`, adminEmails.includes(userEmail));
-                console.log(`🎯 정확한 비교:`, adminEmails.map(email => `"${email}" === "${userEmail}"`));
+                // 보안상 관리자 이메일 목록은 로그에 출력하지 않음
+                console.log(`🎯 관리자 권한 확인: ${isAdmin ? '✅ 관리자' : '❌ 일반 사용자'}`);
                 return isAdmin;
             } else {
                 console.log('❌ 관리자 문서가 존재하지 않습니다.');
