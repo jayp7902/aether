@@ -919,23 +919,46 @@ class FirebaseService {
                     // 이메일 존재 여부 확인
                     try {
                         const signInMethods = await auth.fetchSignInMethodsForEmail(email);
-                        console.log('🔍 사용 가능한 로그인 방법:', signInMethods);
+                        console.log('🔍 사용 가능한 로그인 방법 (기존 경로):', signInMethods);
                         
-                        // signInMethods가 빈 배열이면 이메일이 존재하지 않음
-                        if (signInMethods.length === 0) {
-                            console.log('❌ 이메일이 존재하지 않음 (빈 배열)');
-                            return { 
-                                success: false, 
-                                error: 'auth/user-not-found', 
-                                message: 'このメールアドレスは登録されていません。' 
-                            };
-                        } else {
+                        // signInMethods가 빈 배열이 아니면 이메일이 존재함 (비밀번호 오류)
+                        if (signInMethods && signInMethods.length > 0) {
                             console.log('✅ 이메일은 존재함 - 비밀번호가 틀림 (기존 경로)');
                             return { 
                                 success: false, 
                                 error: 'auth/wrong-password', 
                                 message: 'パスワードが一致しません。' 
                             };
+                        } else {
+                            console.log('⚠️ signInMethods가 빈 배열 - 추가 확인 필요 (기존 경로)');
+                            
+                            // 패스워드 리셋을 시도해서 이메일 존재 여부 재확인
+                            try {
+                                await auth.sendPasswordResetEmail(email);
+                                console.log('✅ 패스워드 리셋 이메일 전송 성공 - 이메일 존재함, 비밀번호 오류 (기존 경로)');
+                                return { 
+                                    success: false, 
+                                    error: 'auth/wrong-password', 
+                                    message: 'パスワードが一致しません。' 
+                                };
+                            } catch (resetError) {
+                                if (resetError.code === 'auth/user-not-found') {
+                                    console.log('❌ 패스워드 리셋 실패 - 이메일이 존재하지 않음 (기존 경로)');
+                                    return { 
+                                        success: false, 
+                                        error: 'auth/user-not-found', 
+                                        message: 'このメールアドレスは登録されていません。' 
+                                    };
+                                } else {
+                                    console.log('⚠️ 패스워드 리셋 기타 에러 (기존 경로):', resetError.code);
+                                    // 기본적으로 비밀번호 오류로 처리
+                                    return { 
+                                        success: false, 
+                                        error: 'auth/wrong-password', 
+                                        message: 'パスワードが一致しません。' 
+                                    };
+                                }
+                            }
                         }
                     } catch (emailError) {
                         console.log('🔍 fetchSignInMethodsForEmail 에러:', emailError);
@@ -974,30 +997,54 @@ class FirebaseService {
                         const actualError = errorData.error.message;
                         console.log('실제 에러 메시지:', actualError);
                         
-                        // INVALID_LOGIN_CREDENTIALS인 경우 비밀번호 오류로 처리
+                        // INVALID_LOGIN_CREDENTIALS인 경우 이메일 존재 여부 확인
                         if (actualError === 'INVALID_LOGIN_CREDENTIALS') {
-                            console.log('INVALID_LOGIN_CREDENTIALS 감지 - 비밀번호 오류로 처리');
+                            console.log('INVALID_LOGIN_CREDENTIALS 감지 - 이메일 존재 여부 확인');
                             
-                            // 이메일 존재 여부 확인
+                            // fetchSignInMethodsForEmail로 이메일 존재 여부 확인
                             try {
                                 const signInMethods = await auth.fetchSignInMethodsForEmail(email);
-                                console.log('🔍 사용 가능한 로그인 방법:', signInMethods);
+                                console.log('🔍 fetchSignInMethodsForEmail 결과:', signInMethods);
                                 
-                                // signInMethods가 빈 배열이면 이메일이 존재하지 않음
-                                if (signInMethods.length === 0) {
-                                    console.log('❌ 이메일이 존재하지 않음 (빈 배열)');
-                                    return { 
-                                        success: false, 
-                                        error: 'auth/user-not-found', 
-                                        message: 'このメールアドレスは登録されていません。' 
-                                    };
-                                } else {
-                                    console.log('✅ 이메일은 존재함 - 비밀번호가 틀림 (새 로직)');
+                                // signInMethods가 빈 배열이 아니면 이메일이 존재함 (비밀번호 오류)
+                                if (signInMethods && signInMethods.length > 0) {
+                                    console.log('✅ 이메일은 존재함 - 비밀번호가 틀림');
                                     return { 
                                         success: false, 
                                         error: 'auth/wrong-password', 
                                         message: 'パスワードが一致しません。' 
                                     };
+                                } else {
+                                    // signInMethods가 빈 배열이면 이메일이 존재하지 않을 가능성이 높음
+                                    console.log('⚠️ signInMethods가 빈 배열 - 추가 확인 필요');
+                                    
+                                    // 패스워드 리셋을 시도해서 이메일 존재 여부 재확인
+                                    try {
+                                        await auth.sendPasswordResetEmail(email);
+                                        console.log('✅ 패스워드 리셋 이메일 전송 성공 - 이메일 존재함, 비밀번호 오류');
+                                        return { 
+                                            success: false, 
+                                            error: 'auth/wrong-password', 
+                                            message: 'パスワードが一致しません。' 
+                                        };
+                                    } catch (resetError) {
+                                        if (resetError.code === 'auth/user-not-found') {
+                                            console.log('❌ 패스워드 리셋 실패 - 이메일이 존재하지 않음');
+                                            return { 
+                                                success: false, 
+                                                error: 'auth/user-not-found', 
+                                                message: 'このメールアドレスは登録されていません。' 
+                                            };
+                                        } else {
+                                            console.log('⚠️ 패스워드 리셋 기타 에러:', resetError.code);
+                                            // 기본적으로 비밀번호 오류로 처리
+                                            return { 
+                                                success: false, 
+                                                error: 'auth/wrong-password', 
+                                                message: 'パスワードが一致しません。' 
+                                            };
+                                        }
+                                    }
                                 }
                             } catch (emailError) {
                                 console.log('🔍 fetchSignInMethodsForEmail 에러:', emailError);
@@ -1009,11 +1056,11 @@ class FirebaseService {
                                         message: 'このメールアドレスは登録されていません。' 
                                     };
                                 } else {
-                                    console.log('❌ 기타 에러로 이메일 확인 불가');
+                                    console.log('❌ 기타 에러로 이메일 확인 불가 - 기본적으로 비밀번호 오류로 처리');
                                     return { 
                                         success: false, 
-                                        error: 'auth/invalid-login-credentials', 
-                                        message: 'メールアドレスまたはパスワードが一致しません。' 
+                                        error: 'auth/wrong-password', 
+                                        message: 'パスワードが一致しません。' 
                                     };
                                 }
                             }
