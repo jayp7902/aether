@@ -924,7 +924,7 @@ class FirebaseService {
                         return { 
                             success: false, 
                             error: 'auth/wrong-password', 
-                            message: 'パスワードが間違っています。' 
+                            message: 'パスワードが一致しません。' 
                         };
                     } catch (emailError) {
                         console.log('🔍 fetchSignInMethodsForEmail 에러:', emailError);
@@ -1583,9 +1583,9 @@ class FirebaseService {
     static getLocalizedErrorMessage(errorCode) {
         const errorMessages = {
             'auth/user-not-found': 'このメールアドレスは登録されていません。',
-            'auth/wrong-password': 'パスワードが間違っています。',
+            'auth/wrong-password': 'パスワードが一致しません。',
             'auth/invalid-email': 'メールアドレスの形式が正しくありません。',
-            'auth/invalid-login-credentials': 'メールアドレスまたはパスワードが正しくありません。',
+            'auth/invalid-login-credentials': 'メールアドレスまたはパスワードが一致しません。',
             'auth/user-disabled': 'このアカウントは無効化されています。',
             'auth/too-many-requests': 'ログイン試行回数が多すぎます。しばらく待ってから再試行してください。',
             'auth/network-request-failed': 'ネットワークエラーが発生しました。接続を確認してください。',
