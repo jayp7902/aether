@@ -930,12 +930,13 @@ class FirebaseService {
                                 message: 'パスワードが一致しません。' 
                             };
                         } else {
-                            // signInMethods가 빈 배열인 경우 - 이메일이 존재하지 않을 가능성이 높음
-                            console.log('❌ 이메일이 존재하지 않음 (빈 배열, 기존 경로)');
+                            // signInMethods가 빈 배열인 경우 - fetchSignInMethodsForEmail이 신뢰할 수 없으므로
+                            // 기본적으로 비밀번호 오류로 처리 (사용자에게 더 친화적)
+                            console.log('⚠️ fetchSignInMethodsForEmail이 빈 배열 반환 - 기본적으로 비밀번호 오류로 처리 (기존 경로)');
                             return { 
                                 success: false, 
-                                error: 'auth/user-not-found', 
-                                message: 'このメールアドレスは登録されていません。' 
+                                error: 'auth/wrong-password', 
+                                message: 'パスワードが一致しません。' 
                             };
                         }
                     } catch (emailError) {
@@ -975,11 +976,11 @@ class FirebaseService {
                         const actualError = errorData.error.message;
                         console.log('실제 에러 메시지:', actualError);
                         
-                        // INVALID_LOGIN_CREDENTIALS인 경우 이메일 존재 여부 확인
+                        // INVALID_LOGIN_CREDENTIALS인 경우 간단한 처리
                         if (actualError === 'INVALID_LOGIN_CREDENTIALS') {
-                            console.log('INVALID_LOGIN_CREDENTIALS 감지 - 이메일 존재 여부 확인');
+                            console.log('INVALID_LOGIN_CREDENTIALS 감지 - 기본적으로 비밀번호 오류로 처리');
                             
-                            // fetchSignInMethodsForEmail로 이메일 존재 여부 확인
+                            // fetchSignInMethodsForEmail로 이메일 존재 여부 확인 시도
                             try {
                                 const signInMethods = await auth.fetchSignInMethodsForEmail(email);
                                 console.log('🔍 fetchSignInMethodsForEmail 결과:', signInMethods);
@@ -993,12 +994,13 @@ class FirebaseService {
                                         message: 'パスワードが一致しません。' 
                                     };
                                 } else {
-                                    // signInMethods가 빈 배열인 경우 - 이메일이 존재하지 않을 가능성이 높음
-                                    console.log('❌ 이메일이 존재하지 않음 (빈 배열)');
+                                    // signInMethods가 빈 배열인 경우 - fetchSignInMethodsForEmail이 신뢰할 수 없으므로
+                                    // 기본적으로 비밀번호 오류로 처리 (사용자에게 더 친화적)
+                                    console.log('⚠️ fetchSignInMethodsForEmail이 빈 배열 반환 - 기본적으로 비밀번호 오류로 처리');
                                     return { 
                                         success: false, 
-                                        error: 'auth/user-not-found', 
-                                        message: 'このメールアドレスは登録されていません。' 
+                                        error: 'auth/wrong-password', 
+                                        message: 'パスワードが一致しません。' 
                                     };
                                 }
                             } catch (emailError) {
