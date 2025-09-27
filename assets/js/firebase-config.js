@@ -930,7 +930,7 @@ class FirebaseService {
                                 message: 'このメールアドレスは登録されていません。' 
                             };
                         } else {
-                            console.log('✅ 이메일은 존재함 - 비밀번호가 틀림');
+                            console.log('✅ 이메일은 존재함 - 비밀번호가 틀림 (기존 경로)');
                             return { 
                                 success: false, 
                                 error: 'auth/wrong-password', 
@@ -992,7 +992,7 @@ class FirebaseService {
                                         message: 'このメールアドレスは登録されていません。' 
                                     };
                                 } else {
-                                    console.log('✅ 이메일은 존재함 - 비밀번호가 틀림');
+                                    console.log('✅ 이메일은 존재함 - 비밀번호가 틀림 (새 로직)');
                                     return { 
                                         success: false, 
                                         error: 'auth/wrong-password', 
@@ -1018,6 +1018,14 @@ class FirebaseService {
                                 }
                             }
                         }
+                        
+                        // auth/internal-error에서 처리한 경우 여기서 종료
+                        console.log('🔄 auth/internal-error 처리 완료, 함수 종료');
+                        return { 
+                            success: false, 
+                            error: 'auth/invalid-login-credentials', 
+                            message: 'メールアドレスまたはパスワードが一致しません。' 
+                        };
                     }
                 } catch (parseError) {
                     console.log('JSON 파싱 실패:', parseError);
