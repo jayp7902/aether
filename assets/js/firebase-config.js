@@ -919,13 +919,24 @@ class FirebaseService {
                     // 이메일 존재 여부 확인
                     try {
                         const signInMethods = await auth.fetchSignInMethodsForEmail(email);
-                        console.log('✅ 이메일은 존재함 - 비밀번호가 틀림');
                         console.log('🔍 사용 가능한 로그인 방법:', signInMethods);
-                        return { 
-                            success: false, 
-                            error: 'auth/wrong-password', 
-                            message: 'パスワードが一致しません。' 
-                        };
+                        
+                        // signInMethods가 빈 배열이면 이메일이 존재하지 않음
+                        if (signInMethods.length === 0) {
+                            console.log('❌ 이메일이 존재하지 않음 (빈 배열)');
+                            return { 
+                                success: false, 
+                                error: 'auth/user-not-found', 
+                                message: 'このメールアドレスは登録されていません。' 
+                            };
+                        } else {
+                            console.log('✅ 이메일은 존재함 - 비밀번호가 틀림');
+                            return { 
+                                success: false, 
+                                error: 'auth/wrong-password', 
+                                message: 'パスワードが一致しません。' 
+                            };
+                        }
                     } catch (emailError) {
                         console.log('🔍 fetchSignInMethodsForEmail 에러:', emailError);
                         if (emailError.code === 'auth/user-not-found') {
@@ -970,23 +981,35 @@ class FirebaseService {
                             // 이메일 존재 여부 확인
                             try {
                                 const signInMethods = await auth.fetchSignInMethodsForEmail(email);
-                                console.log('✅ 이메일은 존재함 - 비밀번호가 틀림');
                                 console.log('🔍 사용 가능한 로그인 방법:', signInMethods);
-                                return { 
-                                    success: false, 
-                                    error: 'auth/wrong-password', 
-                                    message: 'パスワードが一致しません。' 
-                                };
-                            } catch (emailError) {
-                                console.log('🔍 fetchSignInMethodsForEmail 에러:', emailError);
-                                if (emailError.code === 'auth/user-not-found') {
-                                    console.log('❌ 이메일이 존재하지 않음');
+                                
+                                // signInMethods가 빈 배열이면 이메일이 존재하지 않음
+                                if (signInMethods.length === 0) {
+                                    console.log('❌ 이메일이 존재하지 않음 (빈 배열)');
                                     return { 
                                         success: false, 
                                         error: 'auth/user-not-found', 
                                         message: 'このメールアドレスは登録されていません。' 
                                     };
                                 } else {
+                                    console.log('✅ 이메일은 존재함 - 비밀번호가 틀림');
+                                    return { 
+                                        success: false, 
+                                        error: 'auth/wrong-password', 
+                                        message: 'パスワードが一致しません。' 
+                                    };
+                                }
+                            } catch (emailError) {
+                                console.log('🔍 fetchSignInMethodsForEmail 에러:', emailError);
+                                if (emailError.code === 'auth/user-not-found') {
+                                    console.log('❌ 이메일이 존재하지 않음 (에러로 확인)');
+                                    return { 
+                                        success: false, 
+                                        error: 'auth/user-not-found', 
+                                        message: 'このメールアドレスは登録されていません。' 
+                                    };
+                                } else {
+                                    console.log('❌ 기타 에러로 이메일 확인 불가');
                                     return { 
                                         success: false, 
                                         error: 'auth/invalid-login-credentials', 
