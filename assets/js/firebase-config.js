@@ -913,7 +913,7 @@ class FirebaseService {
                 
                 // invalid-login-credentials는 더 구체적으로 처리
                 if (error.code === 'auth/invalid-login-credentials') {
-                    console.log('🔍 invalid-login-credentials 에러 - 이메일 존재 여부 확인 중...');
+                    console.log('🔍 invalid-login-credentials 에러 - v2.5 기존 경로 실행');
                     console.log('🔍 확인할 이메일:', email);
                     
                     // 이메일 존재 여부 확인
@@ -978,7 +978,7 @@ class FirebaseService {
                         
                         // INVALID_LOGIN_CREDENTIALS인 경우 간단한 처리
                         if (actualError === 'INVALID_LOGIN_CREDENTIALS') {
-                            console.log('INVALID_LOGIN_CREDENTIALS 감지 - 기본적으로 비밀번호 오류로 처리');
+                            console.log('🔍 INVALID_LOGIN_CREDENTIALS 감지 - v2.5 새 로직 실행');
                             
                             // fetchSignInMethodsForEmail로 이메일 존재 여부 확인 시도
                             try {
@@ -2887,8 +2887,8 @@ function setGlobalFirebaseObjects() {
     }
 }
 
-// FirebaseService 로드 확인 로그 - v2.2 (usePoints 함수 포함)
-console.log('🔥🔥🔥 FirebaseService 전역 export 완료 - v2.4 (새 프로젝트 aether-fixed) 🔥🔥🔥');
+// FirebaseService 로드 확인 로그 - v2.5 (로그인 에러 처리 개선)
+console.log('🔥🔥🔥 FirebaseService 전역 export 완료 - v2.5 (새 프로젝트 aether-fixed) 🔥🔥🔥');
 console.log('window.FirebaseService:', typeof window.FirebaseService);
 console.log('window.FirebaseService_getOrCreateQRToken:', typeof window.FirebaseService_getOrCreateQRToken);
 console.log('usePoints 함수 확인:', typeof FirebaseService.usePoints);
