@@ -290,6 +290,143 @@
             color: #6c757d;
         }
 
+        /* 바코드 스캐너 스타일 */
+        .barcode-scanner-container {
+            position: relative;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+            min-height: 400px;
+        }
+
+        .scanner-viewport {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            background: #000;
+        }
+
+        .scanner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .scanner-frame {
+            width: 250px;
+            height: 150px;
+            position: relative;
+        }
+
+        .scanner-corners {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        .corner {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #fff;
+        }
+
+        .corner.top-left {
+            top: 0;
+            left: 0;
+            border-right: none;
+            border-bottom: none;
+            border-top-left-radius: 8px;
+        }
+
+        .corner.top-right {
+            top: 0;
+            right: 0;
+            border-left: none;
+            border-bottom: none;
+            border-top-right-radius: 8px;
+        }
+
+        .corner.bottom-left {
+            bottom: 0;
+            left: 0;
+            border-right: none;
+            border-top: none;
+            border-bottom-left-radius: 8px;
+        }
+
+        .corner.bottom-right {
+            bottom: 0;
+            right: 0;
+            border-left: none;
+            border-top: none;
+            border-bottom-right-radius: 8px;
+        }
+
+        .scanner-status {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 15;
+        }
+
+        .status-text {
+            color: #fff;
+            font-weight: 500;
+            margin-bottom: 10px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+
+        .scanner-loading {
+            display: flex;
+            justify-content: center;
+        }
+
+        #barcode-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .manual-input-section {
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+        }
+
+        /* 스캔 성공 애니메이션 */
+        .scan-success {
+            animation: scanSuccess 0.5s ease-in-out;
+        }
+
+        @keyframes scanSuccess {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); background: rgba(40, 167, 69, 0.3); }
+            100% { transform: scale(1); }
+        }
+
+        /* 카메라 권한 요청 스타일 */
+        .camera-permission {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+
+        .camera-permission i {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #adb5bd;
+        }
+
         .point-history-item:hover {
             background-color: #f8f9fa;
         }
@@ -1458,14 +1595,232 @@
             }
         }
 
-        // 상품 바코드 스캔 (실제 구현은 카메라 API 사용)
+        // 바코드 스캔 모달 열기
         function scanProductBarcode() {
-            // 실제 구현에서는 카메라를 통한 바코드 스캔 기능을 추가할 수 있습니다
-            const barcodeInput = document.getElementById('product-barcode');
-            const scannedBarcode = prompt('バーコードをスキャンまたは手動入力してください:');
-            if (scannedBarcode) {
-                barcodeInput.value = scannedBarcode;
+            const modal = new bootstrap.Modal(document.getElementById('barcodeScannerModal'));
+            modal.show();
+            startBarcodeScanner();
+        }
+
+        // 바코드 스캐너 변수들
+        let barcodeStream = null;
+        let barcodeScanning = false;
+        let barcodeScanInterval = null;
+
+        // 바코드 스캐너 시작
+        async function startBarcodeScanner() {
+            try {
+                updateScannerStatus('カメラを起動中...', true);
+                
+                // 카메라 접근 권한 요청
+                barcodeStream = await navigator.mediaDevices.getUserMedia({
+                    video: {
+                        facingMode: 'environment', // 후면 카메라 우선
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                });
+                
+                const video = document.getElementById('barcode-video');
+                video.srcObject = barcodeStream;
+                video.style.display = 'block';
+                
+                video.onloadedmetadata = () => {
+                    video.play();
+                    updateScannerStatus('バーコードをスキャン中...', false);
+                    startBarcodeDetection();
+                };
+                
+                // 카메라 전환 버튼 표시
+                document.getElementById('switch-camera-btn').style.display = 'inline-block';
+                
+            } catch (error) {
+                console.error('카메라 접근 오류:', error);
+                updateScannerStatus('カメラアクセスが拒否されました', false);
+                showCameraPermissionMessage();
             }
+        }
+
+        // 바코드 감지 시작
+        function startBarcodeDetection() {
+            if (barcodeScanning) return;
+            
+            barcodeScanning = true;
+            const video = document.getElementById('barcode-video');
+            const canvas = document.getElementById('barcode-canvas');
+            const context = canvas.getContext('2d');
+            
+            barcodeScanInterval = setInterval(() => {
+                if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    
+                    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                    
+                    try {
+                        // jsQR 라이브러리를 사용한 바코드 감지
+                        const code = jsQR(imageData.data, imageData.width, imageData.height);
+                        
+                        if (code) {
+                            handleBarcodeDetected(code.data);
+                        }
+                    } catch (error) {
+                        console.error('바코드 감지 오류:', error);
+                    }
+                }
+            }, 100); // 100ms마다 스캔
+        }
+
+        // 바코드 감지 시 처리
+        function handleBarcodeDetected(barcodeData) {
+            console.log('바코드 감지:', barcodeData);
+            
+            // 스캔 성공 애니메이션
+            const scannerFrame = document.querySelector('.scanner-frame');
+            scannerFrame.classList.add('scan-success');
+            
+            // 성공 상태 표시
+            updateScannerStatus('バーコードを検出しました！', false);
+            
+            // 잠시 후 결과 처리
+            setTimeout(() => {
+                processBarcodeResult(barcodeData);
+            }, 500);
+        }
+
+        // 바코드 결과 처리
+        function processBarcodeResult(barcodeData) {
+            // 상품 정보 필드에 바코드 값 입력
+            document.getElementById('product-barcode').value = barcodeData;
+            
+            // 모달 닫기
+            closeBarcodeScanner();
+            
+            // 성공 메시지 표시
+            showStoreAlert(`バーコードを読み取りました: ${barcodeData}`, 'success');
+        }
+
+        // 수동 바코드 입력 확인
+        function confirmManualBarcode() {
+            const manualInput = document.getElementById('manual-barcode-input');
+            const barcodeValue = manualInput.value.trim();
+            
+            if (barcodeValue) {
+                processBarcodeResult(barcodeValue);
+            } else {
+                showStoreAlert('バーコードを入力してください', 'warning');
+            }
+        }
+
+        // 카메라 전환
+        async function switchCamera() {
+            try {
+                // 현재 스트림 정지
+                if (barcodeStream) {
+                    barcodeStream.getTracks().forEach(track => track.stop());
+                }
+                
+                updateScannerStatus('カメラを切替中...', true);
+                
+                // 다른 카메라로 전환 (전면/후면)
+                const currentConstraints = barcodeStream.getVideoTracks()[0].getConstraints();
+                const newConstraints = {
+                    video: {
+                        facingMode: currentConstraints.facingMode === 'environment' ? 'user' : 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    }
+                };
+                
+                barcodeStream = await navigator.mediaDevices.getUserMedia(newConstraints);
+                
+                const video = document.getElementById('barcode-video');
+                video.srcObject = barcodeStream;
+                
+                video.onloadedmetadata = () => {
+                    video.play();
+                    updateScannerStatus('バーコードをスキャン中...', false);
+                    startBarcodeDetection();
+                };
+                
+            } catch (error) {
+                console.error('카메라 전환 오류:', error);
+                updateScannerStatus('カメラ切替に失敗しました', false);
+            }
+        }
+
+        // 스캐너 상태 업데이트
+        function updateScannerStatus(message, showLoading) {
+            const statusText = document.getElementById('scanner-status-text');
+            const loading = document.getElementById('scanner-loading');
+            
+            statusText.textContent = message;
+            loading.style.display = showLoading ? 'block' : 'none';
+        }
+
+        // 카메라 권한 요청 메시지 표시
+        function showCameraPermissionMessage() {
+            const viewport = document.getElementById('barcode-scanner-viewport');
+            viewport.innerHTML = `
+                <div class="camera-permission">
+                    <i class="fas fa-camera"></i>
+                    <h5 class="japanese-heading">カメラアクセスが必要です</h5>
+                    <p class="japanese-text">バーコードをスキャンするには、カメラへのアクセスを許可してください。</p>
+                    <button class="btn btn-primary" onclick="startBarcodeScanner()">
+                        <i class="fas fa-camera me-2"></i>再試行
+                    </button>
+                </div>
+            `;
+        }
+
+        // 바코드 스캐너 종료
+        function closeBarcodeScanner() {
+            // 스캔 중지
+            barcodeScanning = false;
+            if (barcodeScanInterval) {
+                clearInterval(barcodeScanInterval);
+                barcodeScanInterval = null;
+            }
+            
+            // 카메라 스트림 정지
+            if (barcodeStream) {
+                barcodeStream.getTracks().forEach(track => track.stop());
+                barcodeStream = null;
+            }
+            
+            // 비디오 요소 초기화
+            const video = document.getElementById('barcode-video');
+            video.style.display = 'none';
+            video.srcObject = null;
+            
+            // 모달 닫기
+            const modal = bootstrap.Modal.getInstance(document.getElementById('barcodeScannerModal'));
+            if (modal) {
+                modal.hide();
+            }
+            
+            // 상태 초기화
+            updateScannerStatus('カメラを起動中...', true);
+            document.getElementById('manual-barcode-input').value = '';
+            document.getElementById('switch-camera-btn').style.display = 'none';
+            
+            // 스캐너 뷰포트 초기화
+            const viewport = document.getElementById('barcode-scanner-viewport');
+            viewport.innerHTML = `
+                <div class="scanner-overlay">
+                    <div class="scanner-frame">
+                        <div class="scanner-corners">
+                            <div class="corner top-left"></div>
+                            <div class="corner top-right"></div>
+                            <div class="corner bottom-left"></div>
+                            <div class="corner bottom-right"></div>
+                        </div>
+                    </div>
+                </div>
+                <video id="barcode-video" autoplay playsinline style="display: none;"></video>
+                <canvas id="barcode-canvas" style="display: none;"></canvas>
+            `;
         }
 
         // 수동 포인트 추가
@@ -2665,13 +3020,83 @@
         window.navigateDate = navigateDate;
         window.changePeriodType = changePeriodType;
         window.goToToday = goToToday;
+        window.scanProductBarcode = scanProductBarcode;
+        window.closeBarcodeScanner = closeBarcodeScanner;
+        window.switchCamera = switchCamera;
+        window.confirmManualBarcode = confirmManualBarcode;
 
         // 페이지 언로드 시 카메라 및 실시간 동기화 정리
         window.addEventListener('beforeunload', function() {
             stopScanner();
             stopRealTimePointSync();
             stopHistoryListener();
+            closeBarcodeScanner();
         });
     </script>
+
+    <!-- Barcode Scanner Modal -->
+    <div class="modal fade" id="barcodeScannerModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title japanese-heading">
+                        <i class="fas fa-barcode me-2"></i>バーコードスキャナー
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="closeBarcodeScanner()"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <!-- 카메라 영역 -->
+                    <div class="barcode-scanner-container">
+                        <div id="barcode-scanner-viewport" class="scanner-viewport">
+                            <div class="scanner-overlay">
+                                <div class="scanner-frame">
+                                    <div class="scanner-corners">
+                                        <div class="corner top-left"></div>
+                                        <div class="corner top-right"></div>
+                                        <div class="corner bottom-left"></div>
+                                        <div class="corner bottom-right"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <video id="barcode-video" autoplay playsinline style="display: none;"></video>
+                            <canvas id="barcode-canvas" style="display: none;"></canvas>
+                        </div>
+                        
+                        <!-- 스캔 상태 표시 -->
+                        <div class="scanner-status">
+                            <div id="scanner-status-text" class="status-text japanese-text">カメラを起動中...</div>
+                            <div class="scanner-loading" id="scanner-loading">
+                                <div class="spinner-border text-light" role="status">
+                                    <span class="visually-hidden">読み込み中...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 수동 입력 영역 -->
+                    <div class="manual-input-section p-3">
+                        <div class="text-center mb-3">
+                            <small class="text-muted japanese-text">または手動で入力</small>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="manual-barcode-input" 
+                                   placeholder="バーコードを手動で入力">
+                            <button class="btn btn-outline-secondary" type="button" onclick="confirmManualBarcode()">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" onclick="closeBarcodeScanner()">
+                        <i class="fas fa-times me-2"></i>キャンセル
+                    </button>
+                    <button type="button" class="btn btn-outline-primary" id="switch-camera-btn" onclick="switchCamera()" style="display: none;">
+                        <i class="fas fa-sync-alt me-2"></i>カメラ切替
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html> 
