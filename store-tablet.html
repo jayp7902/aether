@@ -76,7 +76,7 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             display: none;
         }
-
+        
         .point-history-overview-main {
             background: white;
             border-radius: 15px;
@@ -397,7 +397,7 @@
             height: 100%;
             object-fit: cover;
         }
-
+        
         .manual-input-section {
             background: #f8f9fa;
             border-top: 1px solid #e9ecef;
@@ -726,7 +726,7 @@
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h3 class="japanese-heading mb-0">
                     <i class="fas fa-chart-line me-2"></i>ポイント利用状況
-                </h3>
+            </h3>
                 <div>
                     <button class="btn btn-secondary btn-sm me-2" onclick="refreshPointHistory()">
                         <i class="fas fa-sync-alt me-1"></i>データ更新
@@ -1355,7 +1355,7 @@
                 if (emailRegex.test(email)) {
                     searchUserByEmail(email);
                     emailInput.value = '';
-                } else {
+            } else {
                     alert('有効なメールアドレスを入力してください。');
                 }
             } else {
@@ -1989,7 +1989,7 @@
                 const productInfo = document.getElementById('product-barcode').value;
                 if (!productInfo || productInfo.trim() === '') {
                     showStoreAlert('商品情報を入力してください', 'warning');
-                    return;
+                return;
                 }
             }
             
@@ -2105,9 +2105,9 @@
                 } else {
                     console.log('오늘 통계 데이터 없음, 새로 시작');
                     todayStats = { customers: 0, points: 0, transactions: [] };
-                }
-                
-                updateStatsDisplay();
+            }
+            
+            updateStatsDisplay();
             } catch (error) {
                 console.error('통계 로드 실패:', error);
                 todayStats = { customers: 0, points: 0, transactions: [] };
@@ -2120,7 +2120,7 @@
             try {
                 // 포인트가 양수인 경우에만 고객 수 증가 (새로운 포인트 적립)
                 if (pointsChange > 0) {
-                    todayStats.customers++;
+            todayStats.customers++;
                 }
                 todayStats.points += pointsChange;
                 
@@ -2159,7 +2159,7 @@
             } catch (error) {
                 console.error('통계 업데이트 실패:', error);
                 // 로컬 업데이트는 유지
-                updateStatsDisplay();
+            updateStatsDisplay();
             }
         }
 
@@ -2252,7 +2252,7 @@
                         // balanceAfter가 있으면 그것을 사용, 없으면 적립-사용 계산
                         if (latestBalanceAfter > 0) {
                             calculatedPoints = latestBalanceAfter;
-                        } else {
+                } else {
                             calculatedPoints = earnedPoints - usedPoints;
                         }
                     } else {
@@ -2487,8 +2487,10 @@
                 });
 
                 const points = item.points || 0;
-                const pointsStr = points > 0 ? `+${points}` : `${points}`;
-                const pointsClass = points > 0 ? 'positive' : 'negative';
+                const isEarn = item.type === 'earn' || item.type === 'admin_add' || item.type === 'welcome_bonus' || item.type === 'purchase_points';
+                const isUse = item.type === 'use' || item.type === 'admin_subtract';
+                const pointsStr = isEarn ? `+${points}` : `-${Math.abs(points)}`;
+                const pointsClass = isEarn ? 'positive' : 'negative';
 
                 let description = '';
                 if (item.reason) {
@@ -2565,12 +2567,12 @@
                 
                 usersSnapshot.forEach((doc, index) => {
                     const user = doc.data();
-                    console.log(`${index + 1}. ${user.email}`);
+                console.log(`${index + 1}. ${user.email}`);
                     console.log(`   uid: ${doc.id}`);
-                    console.log(`   qrToken: ${user.qrToken || '없음'}`);
-                    console.log(`   points: ${user.points || 0}`);
-                });
-                
+                console.log(`   qrToken: ${user.qrToken || '없음'}`);
+                console.log(`   points: ${user.points || 0}`);
+            });
+            
                 // 현재 로그인 상태 확인
                 const currentUser = firebase.auth().currentUser;
                 if (currentUser) {
