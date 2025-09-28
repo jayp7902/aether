@@ -609,15 +609,6 @@
                             <option value="use">使用</option>
                         </select>
                     </div>
-                    <div class="col-md-6">
-                        <label class="form-label japanese-text">検索</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="search-customer" placeholder="顧客メールアドレスで検索">
-                            <button class="btn btn-outline-secondary" onclick="searchCustomerHistory()">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -1268,6 +1259,15 @@
         // 포인트 적립 실행 함수
         async function executeAddPurchasePoints(amount, points) {
             try {
+                console.log('=== 포인트 부여 시작 ===');
+                console.log('부여 정보:', {
+                    고객UID: currentCustomer.uid,
+                    고객이메일: currentCustomer.email,
+                    부여포인트: points,
+                    구매금액: amount,
+                    설명: `店舗購入 ¥${amount.toLocaleString()}`
+                });
+                
                 showStoreAlert('ポイントを付与中...', 'info');
                 
                 const result = await FirebaseService.addPoints(
@@ -1276,18 +1276,26 @@
                     `店舗購入 ¥${amount.toLocaleString()}`
                 );
                 
+                console.log('FirebaseService.addPoints 결과:', result);
+                
                 if (result.success) {
+                    console.log('포인트 부여 성공!');
+                    
                     // 고객 포인트 업데이트
                     currentCustomer.points += points;
                     document.getElementById('customer-points').textContent = currentCustomer.points.toLocaleString();
+                    console.log('고객 포인트 업데이트:', currentCustomer.points);
                     
                     // 통계 업데이트
+                    console.log('통계 업데이트 시작...');
                     await updateTodayStats(points, `店舗購入 ¥${amount.toLocaleString()}`, currentCustomer.email);
+                    console.log('통계 업데이트 완료');
                     
                     // 성공 메시지
                     showStoreAlert(`${points}ポイントを付与しました！`, 'success');
                     
                     // 포인트 이력 새로고침
+                    console.log('고객 포인트 이력 새로고침...');
                     loadCustomerPointHistory();
                     
                     // 폼 초기화
@@ -1296,6 +1304,7 @@
                     document.querySelectorAll('.quick-amount-btn').forEach(btn => btn.classList.remove('active'));
                     
                 } else {
+                    console.error('포인트 부여 실패:', result.error);
                     showStoreAlert('ポイント付与に失敗しました。', 'danger');
                 }
                 
@@ -1928,7 +1937,12 @@
         // 전체 포인트 이력 로드
         async function loadAllPointHistory() {
             try {
-                console.log('전체 포인트 이력 로드 시작');
+                console.log('=== 포인트 이력 로드 시작 ===');
+                console.log('Firebase 상태 확인:', {
+                    firebase: typeof firebase,
+                    firestore: typeof firebase?.firestore,
+                    auth: typeof firebase?.auth
+                });
                 
                 // 로딩 표시
                 const historyList = document.getElementById('point-history-list');
@@ -1942,11 +1956,14 @@
                 `;
 
                 // Firebase에서 포인트 이력 가져오기
+                console.log('pointHistory 컬렉션 쿼리 시작...');
                 const snapshot = await firebase.firestore().collection('pointHistory').get();
+                console.log('쿼리 완료, 문서 수:', snapshot.size);
                 
                 allPointHistory = [];
                 snapshot.forEach(doc => {
                     const data = doc.data();
+                    console.log('문서 데이터:', doc.id, data);
                     allPointHistory.push({
                         id: doc.id,
                         ...data,
@@ -1958,6 +1975,7 @@
                 allPointHistory.sort((a, b) => b.createdAt - a.createdAt);
                 
                 console.log('포인트 이력 로드 완료:', allPointHistory.length, '개');
+                console.log('이력 데이터:', allPointHistory);
                 
                 // 초기 필터 적용
                 filterPointHistory();
@@ -1967,9 +1985,15 @@
                 
             } catch (error) {
                 console.error('포인트 이력 로드 오류:', error);
+                console.error('오류 상세:', {
+                    message: error.message,
+                    code: error.code,
+                    stack: error.stack
+                });
                 document.getElementById('point-history-list').innerHTML = `
                     <div class="text-center py-4">
                         <p class="japanese-text text-danger">履歴の読み込みに失敗しました</p>
+                        <p class="japanese-text text-muted small">${error.message}</p>
                         <button class="btn btn-outline-secondary btn-sm" onclick="loadAllPointHistory()">再試行</button>
                     </div>
                 `;
@@ -1979,14 +2003,26 @@
         // 실시간 이력 리스너 시작
         function startHistoryListener() {
             if (historyListener) {
+                console.log('기존 리스너 정리');
                 historyListener();
             }
             
+            console.log('실시간 포인트 이력 리스너 시작...');
             historyListener = firebase.firestore()
                 .collection('pointHistory')
                 .onSnapshot((snapshot) => {
-                    console.log('실시간 포인트 이력 변경 감지');
+                    console.log('실시간 포인트 이력 변경 감지:', {
+                        변경사항: snapshot.docChanges().length,
+                        전체문서수: snapshot.size,
+                        변경된문서들: snapshot.docChanges().map(change => ({
+                            type: change.type,
+                            docId: change.doc.id,
+                            data: change.doc.data()
+                        }))
+                    });
                     loadAllPointHistory();
+                }, (error) => {
+                    console.error('실시간 리스너 오류:', error);
                 });
         }
 
@@ -2002,9 +2038,8 @@
         function filterPointHistory() {
             const periodFilter = document.getElementById('period-filter').value;
             const typeFilter = document.getElementById('type-filter').value;
-            const searchTerm = document.getElementById('search-customer').value.toLowerCase();
 
-            console.log('필터 적용:', { periodFilter, typeFilter, searchTerm });
+            console.log('필터 적용:', { periodFilter, typeFilter });
 
             let filtered = [...allPointHistory];
 
@@ -2046,15 +2081,6 @@
                         item.type === 'admin_subtract'
                     );
                 }
-            }
-
-            // 검색 필터
-            if (searchTerm) {
-                filtered = filtered.filter(item => 
-                    (item.userEmail && item.userEmail.toLowerCase().includes(searchTerm)) ||
-                    (item.userId && item.userId.toLowerCase().includes(searchTerm)) ||
-                    (item.customerEmail && item.customerEmail.toLowerCase().includes(searchTerm))
-                );
             }
 
             filteredPointHistory = filtered;
@@ -2157,10 +2183,6 @@
             document.getElementById('total-customers').textContent = customers.size.toLocaleString();
         }
 
-        // 고객 검색
-        function searchCustomerHistory() {
-            filterPointHistory();
-        }
 
         // 이력 새로고침
         function refreshPointHistory() {
@@ -2170,7 +2192,6 @@
 
         // 전역 함수 노출
         window.filterPointHistory = filterPointHistory;
-        window.searchCustomerHistory = searchCustomerHistory;
         window.refreshPointHistory = refreshPointHistory;
 
         // 페이지 언로드 시 카메라 및 실시간 동기화 정리
