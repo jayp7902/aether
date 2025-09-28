@@ -263,6 +263,29 @@
             color: #343a40;
             margin-bottom: 5px;
         }
+        
+        /* 알림 애니메이션 */
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
 
         .point-amount {
             font-weight: bold;
@@ -539,6 +562,155 @@
             transactions: []
         };
         let realTimeListener = null; // 실시간 동기화 리스너
+        
+        // 커스텀 확인 모달 생성 (관리자 대시보드와 동일)
+        function createCustomConfirmModal(title, message, confirmText, cancelText, onConfirm, onCancel) {
+            const modalId = 'customConfirmModal';
+            
+            // 기존 모달 제거
+            const existingModal = document.getElementById(modalId);
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            const modalHtml = `
+                <div class="modal fade" id="${modalId}" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content border-0 shadow-lg" style="border-radius: 12px; background: #ffffff;">
+                            <div class="modal-body p-4">
+                                <div class="text-center">
+                                    <div class="mb-3">
+                                        <i class="fas fa-question-circle" style="font-size: 3rem; color: #6c757d;"></i>
+                                    </div>
+                                    <h5 class="modal-title mb-3" style="color: #212529; font-weight: 600;">${title}</h5>
+                                    <p class="text-muted mb-0" style="line-height: 1.5;">${message}</p>
+                                </div>
+                                <div class="d-flex gap-3 justify-content-center">
+                                    <button type="button" class="btn btn-outline-secondary px-4 py-2" style="border-radius: 8px; font-weight: 500;" onclick="closeCustomConfirmModal(false)">
+                                        ${cancelText || 'キャンセル'}
+                                    </button>
+                                    <button type="button" class="btn btn-dark px-4 py-2" style="border-radius: 8px; font-weight: 500;" onclick="closeCustomConfirmModal(true)">
+                                        ${confirmText || '確認'}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            const modal = new bootstrap.Modal(document.getElementById(modalId));
+            
+            // 이벤트 핸들러 저장
+            window.currentConfirmModal = {
+                modal: modal,
+                onConfirm: onConfirm,
+                onCancel: onCancel
+            };
+            
+            modal.show();
+        }
+        
+        // 커스텀 확인 모달 닫기
+        function closeCustomConfirmModal(confirmed) {
+            const modalElement = document.getElementById('customConfirmModal');
+            if (modalElement) {
+                const modal = bootstrap.Modal.getInstance(modalElement);
+                modal.hide();
+                
+                if (confirmed && window.currentConfirmModal && window.currentConfirmModal.onConfirm) {
+                    window.currentConfirmModal.onConfirm();
+                } else if (!confirmed && window.currentConfirmModal && window.currentConfirmModal.onCancel) {
+                    window.currentConfirmModal.onCancel();
+                }
+                
+                // 정리
+                window.currentConfirmModal = null;
+                setTimeout(() => {
+                    if (modalElement && modalElement.parentNode) {
+                        modalElement.remove();
+                    }
+                }, 300);
+            }
+        }
+        
+        // 스토어 알림 표시 (관리자 대시보드와 동일한 스타일)
+        function showStoreAlert(message, type = 'info') {
+            console.log('showStoreAlert 호출됨:', message, type);
+            
+            // 모노톤 색상 매핑
+            const colorMap = {
+                'success': { bg: '#f8f9fa', border: '#343a40', text: '#343a40' },
+                'danger': { bg: '#f8f9fa', border: '#6c757d', text: '#343a40' },
+                'warning': { bg: '#f8f9fa', border: '#495057', text: '#343a40' },
+                'info': { bg: '#f8f9fa', border: '#6c757d', text: '#343a40' }
+            };
+            
+            const colors = colorMap[type] || colorMap['info'];
+            
+            // 기존 알림 제거
+            const existingAlert = document.querySelector('.store-custom-alert');
+            if (existingAlert) {
+                existingAlert.remove();
+            }
+            
+            // 새 알림 생성
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'store-custom-alert';
+            alertDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                min-width: 300px;
+                max-width: 400px;
+                background: ${colors.bg};
+                border: 1px solid ${colors.border};
+                border-radius: 8px;
+                padding: 12px 16px;
+                color: ${colors.text};
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+                font-size: 14px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                animation: slideInRight 0.3s ease-out;
+            `;
+            
+            // 아이콘 설정
+            const iconMap = {
+                'success': 'fas fa-check-circle',
+                'danger': 'fas fa-exclamation-triangle',
+                'warning': 'fas fa-exclamation-circle',
+                'info': 'fas fa-info-circle'
+            };
+            
+            const icon = iconMap[type] || iconMap['info'];
+            
+            alertDiv.innerHTML = `
+                <div style="display: flex; align-items: center;">
+                    <i class="${icon}" style="margin-right: 8px; font-size: 16px;"></i>
+                    <span>${message}</span>
+                </div>
+                <button onclick="this.parentElement.remove()" style="background: none; border: none; color: inherit; cursor: pointer; font-size: 16px; margin-left: 8px;">&times;</button>
+            `;
+            
+            document.body.appendChild(alertDiv);
+            
+            // 5초 후 자동 제거
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.style.animation = 'slideOutRight 0.3s ease-in';
+                    setTimeout(() => {
+                        if (alertDiv.parentNode) {
+                            alertDiv.remove();
+                        }
+                    }, 300);
+                }
+            }, 5000);
+        }
 
         // 페이지 로드 시 초기화
         document.addEventListener('DOMContentLoaded', async function() {
@@ -897,16 +1069,25 @@
             const points = parseInt(document.getElementById('points-to-add').value);
             
             if (!amount || points <= 0) {
-                alert('購入金額を入力してください。');
+                showStoreAlert('購入金額を入力してください', 'warning');
                 return;
             }
             
-            if (!confirm(`${points}ポイントを付与しますか？\n購入金額: ¥${amount.toLocaleString()}`)) {
-                return;
-            }
+            createCustomConfirmModal(
+                'ポイント付与確認',
+                `${points}ポイントを付与しますか？<br><small class="text-muted">購入金額: ¥${amount.toLocaleString()}</small>`,
+                'ポイント付与',
+                'キャンセル',
+                () => executeAddPurchasePoints(amount, points),
+                () => {}
+            );
             
+        }
+        
+        // 포인트 적립 실행 함수
+        async function executeAddPurchasePoints(amount, points) {
             try {
-                showLoading();
+                showStoreAlert('ポイントを付与中...', 'info');
                 
                 const result = await FirebaseService.addPoints(
                     currentCustomer.uid,
@@ -914,10 +1095,8 @@
                     `店舗購入 ¥${amount.toLocaleString()}`
                 );
                 
-                hideLoading();
-                
                 if (result.success) {
-                    // 고객 포인트 업데이트 (Firebase에서 자동으로 실시간 업데이트됨)
+                    // 고객 포인트 업데이트
                     currentCustomer.points += points;
                     document.getElementById('customer-points').textContent = currentCustomer.points.toLocaleString();
                     
@@ -925,7 +1104,7 @@
                     await updateTodayStats(points, `店舗購入 ¥${amount.toLocaleString()}`, currentCustomer.email);
                     
                     // 성공 메시지
-                    alert(`${points}ポイントを付与しました！`);
+                    showStoreAlert(`${points}ポイントを付与しました！`, 'success');
                     
                     // 포인트 이력 새로고침
                     loadCustomerPointHistory();
@@ -936,13 +1115,12 @@
                     document.querySelectorAll('.quick-amount-btn').forEach(btn => btn.classList.remove('active'));
                     
                 } else {
-                    alert('ポイント付与に失敗しました。\n' + result.error);
+                    showStoreAlert('ポイント付与に失敗しました。', 'danger');
                 }
                 
             } catch (error) {
-                hideLoading();
                 console.error('포인트 적립 실패:', error);
-                alert('ポイント付与中にエラーが発生しました。');
+                showStoreAlert('ポイント付与中にエラーが発生しました。', 'danger');
             }
         }
 
@@ -952,16 +1130,25 @@
             const reason = document.getElementById('point-reason').value;
             
             if (!points || points <= 0) {
-                alert('ポイント数を入力してください。');
+                showStoreAlert('ポイント数を入力してください', 'warning');
                 return;
             }
             
-            if (!confirm(`${points}ポイントを追加しますか？\n理由: ${reason}`)) {
-                return;
-            }
+            createCustomConfirmModal(
+                'ポイント追加確認',
+                `${points}ポイントを追加しますか？<br><small class="text-muted">理由: ${reason}</small>`,
+                'ポイント追加',
+                'キャンセル',
+                () => executeAddManualPoints(points, reason),
+                () => {}
+            );
             
+        }
+        
+        // 수동 포인트 추가 실행 함수
+        async function executeAddManualPoints(points, reason) {
             try {
-                showLoading();
+                showStoreAlert('ポイントを追加中...', 'info');
                 
                 const result = await FirebaseService.addPoints(
                     currentCustomer.uid,
@@ -969,27 +1156,22 @@
                     reason
                 );
                 
-                hideLoading();
-                
                 if (result.success) {
                     currentCustomer.points += points;
                     document.getElementById('customer-points').textContent = currentCustomer.points.toLocaleString();
-                    
                     await updateTodayStats(points, reason, currentCustomer.email);
-                    alert(`${points}ポイントを追加しました！`);
+                    showStoreAlert(`${points}ポイントを追加しました！`, 'success');
+                    document.getElementById('manual-points').value = '';
                     
                     // 포인트 이력 새로고침
                     loadCustomerPointHistory();
-                    
-                    document.getElementById('manual-points').value = '';
                 } else {
-                    alert('ポイント追加に失敗しました。\n' + result.error);
+                    showStoreAlert('ポイント追加に失敗しました。', 'danger');
                 }
                 
             } catch (error) {
-                hideLoading();
                 console.error('수동 포인트 추가 실패:', error);
-                alert('ポイント追加中にエラーが発生しました。');
+                showStoreAlert('ポイント追加中にエラーが発生しました。', 'danger');
             }
         }
 
@@ -999,21 +1181,30 @@
             const reason = document.getElementById('point-reason').value;
             
             if (!points || points <= 0) {
-                alert('ポイント数を入力してください。');
+                showStoreAlert('ポイント数を入力してください', 'warning');
                 return;
             }
             
             if (currentCustomer.points < points) {
-                alert('お客様のポイントが不足しています。');
+                showStoreAlert('お客様のポイントが不足しています。', 'warning');
                 return;
             }
             
-            if (!confirm(`${points}ポイントを差し引きますか？\n理由: ${reason}`)) {
-                return;
-            }
+            createCustomConfirmModal(
+                'ポイント差引確認',
+                `${points}ポイントを差し引きますか？<br><small class="text-muted">理由: ${reason}</small>`,
+                'ポイント差引',
+                'キャンセル',
+                () => executeSubtractManualPoints(points, reason),
+                () => {}
+            );
             
+        }
+        
+        // 수동 포인트 차감 실행 함수
+        async function executeSubtractManualPoints(points, reason) {
             try {
-                showLoading();
+                showStoreAlert('ポイントを差し引き中...', 'info');
                 
                 const result = await FirebaseService.usePoints(
                     currentCustomer.uid,
@@ -1021,27 +1212,24 @@
                     reason
                 );
                 
-                hideLoading();
-                
                 if (result.success) {
-                    currentCustomer.points -= points;
+                    // 서버에서 반환된 정확한 포인트 값 사용
+                    currentCustomer.points = result.points;
                     document.getElementById('customer-points').textContent = currentCustomer.points.toLocaleString();
                     
                     await updateTodayStats(-points, reason, currentCustomer.email);
-                    alert(`${points}ポイントを差し引きました。`);
+                    showStoreAlert(`${points}ポイントを差し引きました。`, 'success');
+                    document.getElementById('manual-points').value = '';
                     
                     // 포인트 이력 새로고침
                     loadCustomerPointHistory();
-                    
-                    document.getElementById('manual-points').value = '';
                 } else {
-                    alert('ポイント差引に失敗しました。\n' + result.error);
+                    showStoreAlert(`ポイント差引に失敗しました: ${result.error || '不明なエラー'}`, 'danger');
                 }
                 
             } catch (error) {
-                hideLoading();
                 console.error('수동 포인트 차감 실패:', error);
-                alert('ポイント差引中にエラーが発生しました。');
+                showStoreAlert('ポイント差引中にエラーが発生しました。', 'danger');
             }
         }
 
@@ -1385,6 +1573,17 @@
                     description = item.reason;
                 } else if (item.description) {
                     description = item.description;
+                }
+                
+                // 한글 텍스트를 일본어로 변경
+                if (description.includes('신규 가입 웰컴 보너스')) {
+                    description = description.replace('신규 가입 웰컴 보너스', '新規登録ウェルカムボーナス');
+                }
+                if (description.includes('웰컴 보너스')) {
+                    description = description.replace('웰컴 보너스', 'ウェルカムボーナス');
+                }
+                if (description.includes('신규 가입')) {
+                    description = description.replace('신규 가입', '新規登録');
                 }
 
                 return `
