@@ -572,9 +572,9 @@
                     <div class="col-md-3">
                         <label class="form-label japanese-text">期間タイプ</label>
                         <select class="form-select" id="period-type-filter" onchange="changePeriodType()">
-                            <option value="day">日別</option>
+                            <option value="day" selected>日別</option>
                             <option value="week">週別</option>
-                            <option value="month" selected>月別</option>
+                            <option value="month">月別</option>
                         </select>
                     </div>
                     <div class="col-md-3">
@@ -1948,7 +1948,7 @@
         let filteredPointHistory = [];
         let historyListener = null;
         let currentViewDate = new Date();
-        let currentPeriodType = 'month'; // 기본적으로 월별로 표시 // day, week, month
+        let currentPeriodType = 'day'; // 기본적으로 일별로 표시 // day, week, month
 
         // 페이지 로드 시 포인트 이용현황 자동 로드
         function initializePointHistory() {
