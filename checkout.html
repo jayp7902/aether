@@ -1067,7 +1067,11 @@
         
         // 페이지 로드 시 초기화
         document.addEventListener('DOMContentLoaded', async function() {
+            // 모바일 감지
+            const isMobile = window.innerWidth <= 768;
             console.log('🚀 체크아웃 페이지 초기화 시작');
+            console.log('📱 모바일 여부:', isMobile);
+            console.log('📱 화면 크기:', window.innerWidth + 'x' + window.innerHeight);
             
             // Firebase 전용 초기화
             console.log('🔄 Firebase 전용 체크아웃 초기화 시작');
@@ -1144,6 +1148,15 @@
                     console.log('🏠 배송정보 로드 시작');
                             await loadProfileAddress();
                     console.log('🏠 배송정보 로드 완료');
+                    
+                    // 모바일에서 정보 로드 실패 시 재시도
+                    if (isMobile) {
+                        console.log('📱 모바일에서 배송정보 재시도 (1초 후)');
+                        setTimeout(async () => {
+                            await loadProfileAddress();
+                            console.log('📱 모바일 배송정보 재시도 완료');
+                        }, 1000);
+                    }
                     
                     // 포인트 정보 로드 (포인트 페이지와 동일한 방식)
                     await loadPointsLikePointsPageWithUser(checkoutPageUser);
@@ -1756,7 +1769,11 @@
         // 프로필 주소 로드 (Firebase 전용)
         async function loadProfileAddress() {
             try {
+                // 모바일 감지
+                const isMobile = window.innerWidth <= 768;
                 console.log('=== Firebase 주소 자동 입력 시작 ===');
+                console.log('📱 모바일 여부:', isMobile);
+                console.log('📱 화면 크기:', window.innerWidth + 'x' + window.innerHeight);
                 
                 // currentUser 확인 (체크아웃 페이지 초기화에서 설정됨)
                 if (!currentUser) {
@@ -1806,7 +1823,7 @@
                 console.log('- addressData.address2:', addressData.address2);
                 
                 // 배송 정보 필드 자동 입력 (다양한 필드명 및 중첩 구조 지원)
-                const fields = {
+                    const fields = {
                     'shipping-name': userData.name || userData.displayName || userData.fullName || currentUser.email.split('@')[0],
                     'shipping-phone': addressData.phone || addressData.phoneNumber || userData.phone || userData.phoneNumber || '',
                     'shipping-postal': addressData.postal || addressData.postalCode || addressData.zip || addressData.zipCode || '',
@@ -1875,12 +1892,15 @@
                         filledCount++;
                         updatedCount++;
                         console.log(`✅ ${fieldId} 자동 입력/업데이트:`, value);
+                        console.log(`📱 ${fieldId} DOM 요소 확인:`, field);
                     } else if (field && !value) {
                         console.log(`⚠️ ${fieldId} - 저장된 정보 없음`);
+                        console.log(`📱 ${fieldId} DOM 요소 확인:`, field);
                     } else if (!field) {
                         console.log(`❌ ${fieldId} - DOM 요소를 찾을 수 없음`);
-                        }
-                    });
+                        console.log(`📱 ${fieldId} 전체 DOM 검색:`, document.querySelectorAll(`#${fieldId}`));
+                    }
+                });
                     
                     // 카드 정보도 로드 (다양한 필드명 지원)
                 if (userData.savedCardInfo || userData.cardInfo || userData.paymentInfo) {
@@ -1905,7 +1925,11 @@
         // 저장된 카드 정보 로드
         async function loadSavedCardInfo(userData) {
             try {
+                // 모바일 감지
+                const isMobile = window.innerWidth <= 768;
                 console.log('=== 카드 정보 로드 시작 ===');
+                console.log('📱 모바일 여부:', isMobile);
+                console.log('📱 화면 크기:', window.innerWidth + 'x' + window.innerHeight);
                 console.log('🔍 사용자 데이터 키들:', Object.keys(userData));
                 
                 let cardInfo = null;
@@ -2501,7 +2525,7 @@
                         // 주문은 성공했으므로 카드 저장 실패로 인해 전체 실패하지 않음
                         if (typeof showToast === 'function') {
                             showToast('カード情報の保存に失敗しましたが、注文は正常に処理されました。', 'warning', 3000);
-                        }
+                    }
                     }
                 } else {
                     console.log('📝 카드 결제가 아니므로 카드 정보 저장 건너뜀');
