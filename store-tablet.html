@@ -263,6 +263,132 @@
             color: #343a40;
             margin-bottom: 5px;
         }
+
+        /* 포인트 이용현황 스타일 */
+        .point-history-overview {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .filter-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e9ecef;
+        }
+
+        .stats-summary {
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e9ecef;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 900;
+            color: #343a40;
+            margin-bottom: 5px;
+        }
+
+        .stat-number.positive {
+            color: #343a40 !important;
+        }
+
+        .stat-number.negative {
+            color: #6c757d !important;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .history-list-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e9ecef;
+        }
+
+        .history-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #6c757d;
+        }
+
+        .history-item.earn {
+            border-left-color: #343a40;
+        }
+
+        .history-item.use {
+            border-left-color: #6c757d;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .history-customer {
+            font-weight: 600;
+            color: #343a40;
+            font-size: 0.9rem;
+        }
+
+        .history-date {
+            color: #6c757d;
+            font-size: 0.8rem;
+        }
+
+        .history-details {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-description {
+            flex: 1;
+            color: #495057;
+            font-size: 0.9rem;
+        }
+
+        .history-points {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .history-points.earn {
+            color: #343a40 !important;
+        }
+
+        .history-points.use {
+            color: #6c757d !important;
+        }
         
         /* 알림 애니메이션 */
         @keyframes slideInRight {
@@ -445,9 +571,14 @@
 
         <!-- Point Actions -->
         <div class="point-actions" id="point-actions">
-            <h3 class="japanese-heading mb-4">
-                <i class="fas fa-coins me-2"></i>ポイント管理
-            </h3>
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="japanese-heading mb-0">
+                    <i class="fas fa-coins me-2"></i>ポイント管理
+                </h3>
+                <button class="btn btn-outline-secondary btn-sm" onclick="showPointHistory()">
+                    <i class="fas fa-chart-line me-1"></i>利用状況
+                </button>
+            </div>
             
             <div class="row">
                 <div class="col-md-6">
@@ -562,6 +693,101 @@
     
     <!-- QR Code Scanner Library -->
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+
+    <!-- 포인트 이용현황 섹션 -->
+    <div class="point-history-overview" id="point-history-overview" style="display: none;">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="japanese-heading mb-0">
+                    <i class="fas fa-chart-line me-2"></i>ポイント利用状況
+                </h3>
+                <button class="btn btn-outline-secondary btn-sm" onclick="hidePointHistory()">
+                    <i class="fas fa-arrow-left me-1"></i>戻る
+                </button>
+            </div>
+
+            <!-- 필터 섹션 -->
+            <div class="filter-section mb-4">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label class="form-label japanese-text">期間選択</label>
+                        <select class="form-select" id="period-filter" onchange="filterPointHistory()">
+                            <option value="today">今日</option>
+                            <option value="week">今週</option>
+                            <option value="month">今月</option>
+                            <option value="year">今年</option>
+                            <option value="all">全て</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label japanese-text">タイプ</label>
+                        <select class="form-select" id="type-filter" onchange="filterPointHistory()">
+                            <option value="all">全て</option>
+                            <option value="earn">付与</option>
+                            <option value="use">使用</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label japanese-text">検索</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="search-customer" placeholder="顧客メールアドレスで検索">
+                            <button class="btn btn-outline-secondary" onclick="searchCustomerHistory()">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 통계 요약 -->
+            <div class="stats-summary mb-4">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-number" id="total-transactions">0</div>
+                            <div class="stat-label japanese-text">総取引数</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-number positive" id="total-earned">0</div>
+                            <div class="stat-label japanese-text">総付与ポイント</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-number negative" id="total-used">0</div>
+                            <div class="stat-label japanese-text">総使用ポイント</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-number" id="total-customers">0</div>
+                            <div class="stat-label japanese-text">顧客数</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 포인트 이력 리스트 -->
+            <div class="history-list-container">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="japanese-heading mb-0">取引履歴</h5>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="refreshPointHistory()">
+                        <i class="fas fa-sync-alt me-1"></i>更新
+                    </button>
+                </div>
+                <div class="history-list" id="point-history-list">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-secondary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="japanese-text mt-2">履歴を読み込み中...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         let scanner = null;
@@ -1680,10 +1906,282 @@
         window.generateTestQRToken = generateTestQRToken;
         window.testQRCode = testQRCode;
         
+        // 포인트 이용현황 관련 변수
+        let allPointHistory = [];
+        let filteredPointHistory = [];
+        let historyListener = null;
+
+        // 포인트 이용현황 표시
+        function showPointHistory() {
+            console.log('포인트 이용현황 표시');
+            document.getElementById('point-actions').style.display = 'none';
+            document.getElementById('point-history-overview').style.display = 'block';
+            loadAllPointHistory();
+        }
+
+        // 포인트 이용현황 숨기기
+        function hidePointHistory() {
+            console.log('포인트 이용현황 숨기기');
+            document.getElementById('point-history-overview').style.display = 'none';
+            document.getElementById('point-actions').style.display = 'block';
+            stopHistoryListener();
+        }
+
+        // 전체 포인트 이력 로드
+        async function loadAllPointHistory() {
+            try {
+                console.log('전체 포인트 이력 로드 시작');
+                
+                // 로딩 표시
+                const historyList = document.getElementById('point-history-list');
+                historyList.innerHTML = `
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-secondary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="japanese-text mt-2">履歴を読み込み中...</p>
+                    </div>
+                `;
+
+                // Firebase에서 포인트 이력 가져오기
+                const snapshot = await firebase.firestore().collection('pointHistory').get();
+                
+                allPointHistory = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    allPointHistory.push({
+                        id: doc.id,
+                        ...data,
+                        createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(data.createdAt || data.timestamp)
+                    });
+                });
+
+                // 최신순으로 정렬
+                allPointHistory.sort((a, b) => b.createdAt - a.createdAt);
+                
+                console.log('포인트 이력 로드 완료:', allPointHistory.length, '개');
+                
+                // 초기 필터 적용
+                filterPointHistory();
+                
+                // 실시간 리스너 시작
+                startHistoryListener();
+                
+            } catch (error) {
+                console.error('포인트 이력 로드 오류:', error);
+                document.getElementById('point-history-list').innerHTML = `
+                    <div class="text-center py-4">
+                        <p class="japanese-text text-danger">履歴の読み込みに失敗しました</p>
+                        <button class="btn btn-outline-secondary btn-sm" onclick="loadAllPointHistory()">再試行</button>
+                    </div>
+                `;
+            }
+        }
+
+        // 실시간 이력 리스너 시작
+        function startHistoryListener() {
+            if (historyListener) {
+                historyListener();
+            }
+            
+            historyListener = firebase.firestore()
+                .collection('pointHistory')
+                .onSnapshot((snapshot) => {
+                    console.log('실시간 포인트 이력 변경 감지');
+                    loadAllPointHistory();
+                });
+        }
+
+        // 실시간 이력 리스너 정지
+        function stopHistoryListener() {
+            if (historyListener) {
+                historyListener();
+                historyListener = null;
+            }
+        }
+
+        // 포인트 이력 필터링
+        function filterPointHistory() {
+            const periodFilter = document.getElementById('period-filter').value;
+            const typeFilter = document.getElementById('type-filter').value;
+            const searchTerm = document.getElementById('search-customer').value.toLowerCase();
+
+            console.log('필터 적용:', { periodFilter, typeFilter, searchTerm });
+
+            let filtered = [...allPointHistory];
+
+            // 기간 필터
+            if (periodFilter !== 'all') {
+                const now = new Date();
+                const filterDate = new Date();
+                
+                switch (periodFilter) {
+                    case 'today':
+                        filterDate.setHours(0, 0, 0, 0);
+                        break;
+                    case 'week':
+                        filterDate.setDate(now.getDate() - 7);
+                        break;
+                    case 'month':
+                        filterDate.setMonth(now.getMonth() - 1);
+                        break;
+                    case 'year':
+                        filterDate.setFullYear(now.getFullYear() - 1);
+                        break;
+                }
+                
+                filtered = filtered.filter(item => item.createdAt >= filterDate);
+            }
+
+            // 타입 필터
+            if (typeFilter !== 'all') {
+                if (typeFilter === 'earn') {
+                    filtered = filtered.filter(item => 
+                        item.type === 'earn' || 
+                        item.type === 'admin_add' || 
+                        item.type === 'welcome_bonus' ||
+                        item.type === 'purchase_points'
+                    );
+                } else if (typeFilter === 'use') {
+                    filtered = filtered.filter(item => 
+                        item.type === 'use' || 
+                        item.type === 'admin_subtract'
+                    );
+                }
+            }
+
+            // 검색 필터
+            if (searchTerm) {
+                filtered = filtered.filter(item => 
+                    (item.userEmail && item.userEmail.toLowerCase().includes(searchTerm)) ||
+                    (item.userId && item.userId.toLowerCase().includes(searchTerm)) ||
+                    (item.customerEmail && item.customerEmail.toLowerCase().includes(searchTerm))
+                );
+            }
+
+            filteredPointHistory = filtered;
+            displayFilteredHistory();
+            updateStatsSummary();
+        }
+
+        // 필터링된 이력 표시
+        function displayFilteredHistory() {
+            const historyList = document.getElementById('point-history-list');
+            
+            if (filteredPointHistory.length === 0) {
+                historyList.innerHTML = `
+                    <div class="text-center py-4">
+                        <p class="japanese-text text-muted">該当する履歴がありません</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '';
+            filteredPointHistory.forEach(item => {
+                const isEarn = item.type === 'earn' || item.type === 'admin_add' || item.type === 'welcome_bonus' || item.type === 'purchase_points';
+                const isUse = item.type === 'use' || item.type === 'admin_subtract';
+                
+                const customerEmail = item.userEmail || item.customerEmail || item.userId || '不明';
+                const dateStr = item.createdAt.toLocaleDateString('ja-JP') + ' ' + item.createdAt.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+                const points = item.points || 0;
+                const description = getPointDescription(item);
+                
+                html += `
+                    <div class="history-item ${isEarn ? 'earn' : 'use'}">
+                        <div class="history-header">
+                            <span class="history-customer">${customerEmail}</span>
+                            <span class="history-date">${dateStr}</span>
+                        </div>
+                        <div class="history-details">
+                            <span class="history-description">${description}</span>
+                            <span class="history-points ${isEarn ? 'earn' : 'use'}">
+                                ${isEarn ? '+' : '-'}${points.toLocaleString()}P
+                            </span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            historyList.innerHTML = html;
+        }
+
+        // 포인트 설명 생성
+        function getPointDescription(item) {
+            const type = item.type;
+            const reason = item.reason || '';
+            const description = item.description || '';
+            
+            switch (type) {
+                case 'earn':
+                    return reason || 'ポイント付与';
+                case 'use':
+                    return reason || 'ポイント使用';
+                case 'admin_add':
+                    return reason || '管理者によるポイント付与';
+                case 'admin_subtract':
+                    return reason || '管理者によるポイント減算';
+                case 'welcome_bonus':
+                    return '新規登録ウェルカムボーナス';
+                case 'purchase_points':
+                    return `購入ポイント付与（3%）${reason ? ' - ' + reason : ''}`;
+                default:
+                    return description || reason || 'ポイント取引';
+            }
+        }
+
+        // 통계 요약 업데이트
+        function updateStatsSummary() {
+            let totalTransactions = filteredPointHistory.length;
+            let totalEarned = 0;
+            let totalUsed = 0;
+            let customers = new Set();
+
+            filteredPointHistory.forEach(item => {
+                const customerEmail = item.userEmail || item.customerEmail || item.userId;
+                if (customerEmail) {
+                    customers.add(customerEmail);
+                }
+
+                const points = item.points || 0;
+                const isEarn = item.type === 'earn' || item.type === 'admin_add' || item.type === 'welcome_bonus' || item.type === 'purchase_points';
+                
+                if (isEarn) {
+                    totalEarned += points;
+                } else {
+                    totalUsed += points;
+                }
+            });
+
+            document.getElementById('total-transactions').textContent = totalTransactions.toLocaleString();
+            document.getElementById('total-earned').textContent = totalEarned.toLocaleString();
+            document.getElementById('total-used').textContent = totalUsed.toLocaleString();
+            document.getElementById('total-customers').textContent = customers.size.toLocaleString();
+        }
+
+        // 고객 검색
+        function searchCustomerHistory() {
+            filterPointHistory();
+        }
+
+        // 이력 새로고침
+        function refreshPointHistory() {
+            console.log('포인트 이력 새로고침');
+            loadAllPointHistory();
+        }
+
+        // 전역 함수 노출
+        window.showPointHistory = showPointHistory;
+        window.hidePointHistory = hidePointHistory;
+        window.filterPointHistory = filterPointHistory;
+        window.searchCustomerHistory = searchCustomerHistory;
+        window.refreshPointHistory = refreshPointHistory;
+
         // 페이지 언로드 시 카메라 및 실시간 동기화 정리
         window.addEventListener('beforeunload', function() {
             stopScanner();
             stopRealTimePointSync();
+            stopHistoryListener();
         });
     </script>
 </body>
