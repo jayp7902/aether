@@ -2119,7 +2119,11 @@
         // 프로필 정보 자동 로드 함수
         async function loadSavedProfileInfo() {
             try {
+                // 모바일 감지
+                const isMobile = window.innerWidth <= 768;
                 console.log('저장된 프로필 정보 로드 시작');
+                console.log('📱 모바일 여부:', isMobile);
+                console.log('📱 화면 크기:', window.innerWidth + 'x' + window.innerHeight);
                 
                 let profileData = null;
                 
@@ -2218,6 +2222,11 @@
                     
                     // 주소 정보 (최신 주문에서 자동 입력)
                     const address = profileData.address || profileData.lastUsedAddress;
+                    console.log('🔍 프로필 페이지 주소 정보 로드:');
+                    console.log('- address 객체:', address);
+                    console.log('- address.postal:', address?.postal);
+                    console.log('- address.postalCode:', address?.postalCode);
+                    
                     if (address) {
                         const postalField = document.getElementById('postal-code');
                         const prefectureField = document.getElementById('prefecture');
@@ -2225,11 +2234,42 @@
                         const address1Field = document.getElementById('address1');
                         const address2Field = document.getElementById('address2');
                         
-                        if (postalField && !postalField.value && address.postal) postalField.value = address.postal;
+                        if (postalField && !postalField.value) {
+                            if (address.postal) {
+                                postalField.value = address.postal;
+                                console.log('✅ 우편번호 로드 (postal):', address.postal);
+                            } else if (address.postalCode) {
+                                postalField.value = address.postalCode;
+                                console.log('✅ 우편번호 로드 (postalCode):', address.postalCode);
+                            }
+                        } else if (postalField && postalField.value) {
+                            console.log('⚠️ 우편번호 필드에 이미 값이 있음:', postalField.value);
+                        } else if (!postalField) {
+                            console.log('❌ 우편번호 필드를 찾을 수 없음');
+                        }
                         if (prefectureField && !prefectureField.value && address.prefecture) prefectureField.value = address.prefecture;
                         if (cityField && !cityField.value && address.city) cityField.value = address.city;
                         if (address1Field && !address1Field.value && address.address1) address1Field.value = address.address1;
                         if (address2Field && !address2Field.value && address.address2) address2Field.value = address.address2;
+                    } else {
+                        console.log('⚠️ 저장된 주소 정보가 없음');
+                    }
+                    
+                    // 모바일에서 우편번호 로드 실패 시 재시도
+                    if (isMobile && address) {
+                        console.log('📱 모바일에서 우편번호 재시도 (2초 후)');
+                        setTimeout(() => {
+                            const postalField = document.getElementById('postal-code');
+                            if (postalField && !postalField.value) {
+                                if (address.postal) {
+                                    postalField.value = address.postal;
+                                    console.log('📱 모바일 우편번호 재시도 성공 (postal):', address.postal);
+                                } else if (address.postalCode) {
+                                    postalField.value = address.postalCode;
+                                    console.log('📱 모바일 우편번호 재시도 성공 (postalCode):', address.postalCode);
+                                }
+                            }
+                        }, 2000);
                     }
                     
                     console.log('프로필 정보 자동 입력 완료');
