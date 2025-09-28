@@ -13624,10 +13624,12 @@
                     const pointHistory = [];
                     historySnapshot.forEach(doc => {
                         const data = doc.data();
-                        // userId 또는 userEmail로 매칭
+                        // userId 또는 userEmail로 매칭 (모든 가능한 식별자 확인)
                         if (data.userId === currentCustomer.uid || 
                             data.userEmail === currentCustomer.email ||
-                            data.userId === currentCustomer.email) {
+                            data.userId === currentCustomer.email ||
+                            data.userId === currentCustomer.documentId ||
+                            data.userEmail === currentCustomer.uid) {
                             
                         pointHistory.push({
                             id: doc.id,
