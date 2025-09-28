@@ -77,6 +77,14 @@
             display: none;
         }
         
+        .point-management {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: none;
+        }
+        
         #scanner-video {
             width: 100%;
             max-width: 400px;
@@ -124,9 +132,10 @@
         }
         
         .points-display {
-            font-size: 2.5rem;
-            font-weight: bold;
+            font-size: 5rem;
+            font-weight: 900;
             margin: 10px 0;
+            line-height: 1.2;
         }
         
         .transaction-history {
@@ -327,14 +336,14 @@
         <!-- Point Actions -->
         <div class="point-actions" id="point-actions">
             <h3 class="japanese-heading mb-4">
-                <i class="fas fa-coins me-2"></i>ポイント操作
+                <i class="fas fa-coins me-2"></i>ポイント管理
             </h3>
             
             <div class="row">
                 <div class="col-md-6">
                     <div class="card">
                         <div class="card-header">
-                            <h5 class="japanese-heading mb-0">ポイント付与</h5>
+                            <h5 class="japanese-heading mb-0">購入ポイント付与</h5>
                         </div>
                         <div class="card-body">
                             <div class="mb-3">
@@ -351,15 +360,14 @@
                             </div>
                             
                             <div class="mb-3">
-                                <label class="form-label japanese-text">付与ポイント</label>
+                                <label class="form-label japanese-text">付与ポイント（3%）</label>
                                 <div class="input-group">
                                     <input type="number" class="form-control amount-input" id="points-to-add" readonly>
                                     <span class="input-group-text">P</span>
                                 </div>
-                                <small class="japanese-text text-muted">購入金額の3%がポイント</small>
                             </div>
                             
-                            <button class="btn btn-dark btn-large w-100" onclick="addPoints()">
+                            <button class="btn btn-dark btn-large w-100" onclick="addPurchasePoints()">
                                 <i class="fas fa-plus me-2"></i>ポイント付与
                             </button>
                         </div>
@@ -380,10 +388,12 @@
                             <div class="mb-3">
                                 <label class="form-label japanese-text">理由</label>
                                 <select class="form-control" id="point-reason">
+                                    <option value="店舗購入">店舗購入</option>
                                     <option value="特別付与">特別付与</option>
                                     <option value="イベント特典">イベント特典</option>
                                     <option value="誕生日特典">誕生日特典</option>
                                     <option value="キャンペーン">キャンペーン</option>
+                                    <option value="ポイント使用">ポイント使用</option>
                                     <option value="修正">修正</option>
                                     <option value="その他">その他</option>
                                 </select>
@@ -697,7 +707,7 @@
         }
 
         // 포인트 적립
-        async function addPoints() {
+        async function addPurchasePoints() {
             const amount = parseInt(document.getElementById('purchase-amount').value);
             const points = parseInt(document.getElementById('points-to-add').value);
             
@@ -706,7 +716,7 @@
                 return;
             }
             
-            if (!confirm(`${points}ポイントを付与しますか？`)) {
+            if (!confirm(`${points}ポイントを付与しますか？\n購入金額: ¥${amount.toLocaleString()}`)) {
                 return;
             }
             
