@@ -1042,9 +1042,34 @@
             console.log('🔄 Firebase 전용 체크아웃 초기화 시작');
             
             try {
-                // 1단계: 카트 확인 (가장 먼저)
+                // 1단계: Firebase 사용자 확인 및 카트 로드 (가장 먼저)
+                console.log('1️⃣ Firebase 사용자 및 카트 로드 시작');
+                
+                // Firebase 사용자 확인
+                if (firebase?.auth?.currentUser) {
+                    currentUser = {
+                        email: firebase.auth().currentUser.email,
+                        uid: firebase.auth().currentUser.uid
+                    };
+                    console.log('✅ Firebase 사용자 설정:', currentUser.email);
+                } else if (typeof getCurrentUser === 'function') {
+                    const authUser = getCurrentUser();
+                    if (authUser) {
+                        currentUser = authUser;
+                        console.log('✅ auth-utils 사용자 설정:', currentUser.email);
+                    }
+                }
+                
+                // Firebase에서 카트 로드
+                if (currentUser) {
+                    const firebaseCart = await loadCartFromFirebase();
+                    currentCart = firebaseCart;
+                    console.log('✅ Firebase 카트 로드 완료:', currentCart.length, '개 상품');
+                }
+                
+                // 2단계: 카트 확인 (Firebase 로드 후)
                 let cart = getCart();
-                console.log('1️⃣ 카트 확인 - 현재 카트 상태:', cart);
+                console.log('2️⃣ 카트 확인 - Firebase 로드 후 카트 상태:', cart);
                 
                 if (!cart || cart.length === 0) {
                     console.log('⚠️ 카트가 비어있습니다. cart.html로 리디렉션합니다.');
@@ -1053,17 +1078,17 @@
                 }
                 console.log('✅ 카트 데이터 확인 완료:', cart.length, '개 상품');
 
-                // 2단계: 기본 UI 업데이트
-                console.log('2️⃣ 기본 UI 업데이트 시작');
+                // 3단계: 기본 UI 업데이트
+                console.log('3️⃣ 기본 UI 업데이트 시작');
                 updateUserMenu();
                 updateCartCount();
 
-                // 3단계: 카트 상품 렌더링 (Firebase 초기화 전에)
-                console.log('3️⃣ 카트 상품 렌더링 시작');
+                // 4단계: 카트 상품 렌더링
+                console.log('4️⃣ 카트 상품 렌더링 시작');
                 renderOrderItems();
 
-                // 4단계: Firebase 초기화 (선택사항)
-                console.log('4️⃣ Firebase 초기화 시도');
+                // 5단계: 추가 Firebase 초기화 (선택사항)
+                console.log('5️⃣ 추가 Firebase 초기화 시도');
                 try {
                     await window.waitForFirebaseComplete();
                     console.log('✅ Firebase 초기화 완료');
@@ -3152,41 +3177,8 @@
         document.addEventListener('DOMContentLoaded', async function() {
             checkAuthState();
             
-            // Firebase 사용자 설정 및 카트 로드
-            setTimeout(async () => {
-                try {
-                    // Firebase 사용자 확인
-                    if (firebase?.auth?.currentUser) {
-                        currentUser = {
-                            email: firebase.auth().currentUser.email,
-                            uid: firebase.auth().currentUser.uid
-                        };
-                        console.log('✅ Firebase 사용자 설정:', currentUser.email);
-                    } else if (typeof getCurrentUser === 'function') {
-                        const authUser = getCurrentUser();
-                        if (authUser) {
-                            currentUser = authUser;
-                            console.log('✅ auth-utils 사용자 설정:', currentUser.email);
-                        }
-                    }
-                    
-                    if (currentUser) {
-                        // Firebase에서 카트 로드
-                        const firebaseCart = await loadCartFromFirebase();
-                        currentCart = firebaseCart;
-                        console.log('✅ Firebase 카트 로드 완료:', currentCart.length, '개 상품');
-                        
-                        // 카트가 비어있으면 cart.html로 리다이렉트
-                        if (currentCart.length === 0) {
-                            alert('カートが空です。商品を追加してください。');
-                            window.location.href = 'cart.html';
-                            return;
-                        }
-                    } else {
-                        console.log('⚠️ 로그인된 사용자 없음 - cart.html로 리다이렉트');
-                        window.location.href = 'cart.html';
-                        return;
-                    }
+            // 중복된 Firebase 로드 코드 제거 (위에서 이미 처리됨)
+            console.log('✅ Firebase 카트 로드는 이미 완료됨 - 중복 처리 생략');
                     
                     // UI 업데이트
                     updateCartCount();
