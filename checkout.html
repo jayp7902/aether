@@ -1132,7 +1132,9 @@
                     
                     console.log('✅ 체크아웃 페이지 사용자 설정:', checkoutPageUser);
                     
+                    console.log('🏠 배송정보 로드 시작');
                     await loadProfileAddress();
+                    console.log('🏠 배송정보 로드 완료');
                     
                     // 포인트 정보 로드 (포인트 페이지와 동일한 방식)
                     await loadPointsLikePointsPageWithUser(checkoutPageUser);
@@ -1742,75 +1744,82 @@
             return cleaned;
         }
 
-        // 프로필 주소 로드
+        // 프로필 주소 로드 (Firebase 전용)
         async function loadProfileAddress() {
             try {
-                console.log('=== 주소 자동 입력 시작 ===');
+                console.log('=== Firebase 주소 자동 입력 시작 ===');
                 
-                // 현재 로그인 상태 디버깅
-                const loginStatus = JSON.parse(localStorage.getItem('aetherLoginStatus') || '{}');
-                const aetherUsers = JSON.parse(localStorage.getItem('aetherUsers') || '[]');
-                console.log('로그인 상태:', loginStatus);
-                console.log('저장된 사용자 수:', aetherUsers.length);
-                console.log('Firebase 사용자:', firebase?.auth?.()?.currentUser?.email || '없음');
+                // currentUser 확인 (체크아웃 페이지 초기화에서 설정됨)
+                if (!currentUser) {
+                    console.log('❌ currentUser가 설정되지 않음');
+                    showAlert('shipping-alert', 'ユーザー情報を読み込み中です...', 'info');
+                    return;
+                }
                 
-                let userData = null;
-                let addressData = null;
+                console.log('✅ Firebase 사용자 확인:', currentUser.email);
                 
-                // Firebase 사용자 확인
-                const user = firebase.auth && firebase.auth().currentUser;
-                if (user) {
-                    try {
-                        const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
-                        if (userDoc.exists) {
-                            userData = userDoc.data();
-                            addressData = userData.lastUsedAddress || userData;
-                            console.log('Firebase에서 주소 정보 로드 성공');
-                        }
-                    } catch (firebaseError) {
-                        console.warn('Firebase 주소 로드 실패:', firebaseError);
+                // Firebase에서 사용자 문서 조회 (이메일 기반)
+                const db = firebase.firestore();
+                const userDoc = await db.collection('users').doc(currentUser.email).get();
+                
+                if (!userDoc.exists) {
+                    console.log('❌ Firebase에 사용자 문서가 없음');
+                    showAlert('shipping-alert', 'ユーザー情報が見つかりません。', 'warning');
+                    return;
+                }
+                
+                const userData = userDoc.data();
+                console.log('✅ Firebase 사용자 데이터 로드 완료:', userData);
+                
+                // 배송 주소 정보 확인 (여러 필드명 지원)
+                const addressData = userData.shippingAddress || 
+                                   userData.lastUsedAddress || 
+                                   userData.address || 
+                                   userData;
+                
+                console.log('✅ 배송 주소 데이터:', addressData);
+                
+                // 배송 정보 필드 자동 입력
+                const fields = {
+                    'shipping-name': userData.name || userData.displayName || currentUser.email.split('@')[0],
+                    'shipping-phone': addressData.phone || userData.phone || '',
+                    'shipping-postal': addressData.postal || addressData.postalCode || '',
+                    'shipping-prefecture': addressData.prefecture || addressData.state || '',
+                    'shipping-city': addressData.city || '',
+                    'shipping-address1': addressData.address1 || addressData.address || '',
+                    'shipping-address2': addressData.address2 || addressData.addressDetail || ''
+                };
+                
+                console.log('🔧 배송 정보 필드 매핑:', fields);
+                
+                // 비어있는 필드만 자동 입력
+                let filledCount = 0;
+                Object.entries(fields).forEach(([fieldId, value]) => {
+                    const field = document.getElementById(fieldId);
+                    if (field && !field.value && value) {
+                        field.value = value;
+                        filledCount++;
+                        console.log(`✅ ${fieldId} 자동 입력:`, value);
                     }
-                }
+                });
                 
-                // Firebase 전용 - localStorage 폴백 제거됨
-                if (!userData) {
-                    console.log('Firebase에서 사용자 정보를 찾을 수 없음');
-                }
-                
-                // 주소 정보 자동 입력
-                if (userData && addressData) {
-                    const userName = userData.name || userData.email?.split('@')[0] || '';
-                    
-                    const fields = {
-                        'shipping-name': userName,
-                        'shipping-phone': addressData.phone || userData.phone || '',
-                        'shipping-postal': addressData.postal || '',
-                        'shipping-prefecture': addressData.prefecture || '',
-                        'shipping-city': addressData.city || '',
-                        'shipping-address1': addressData.address1 || '',
-                        'shipping-address2': addressData.address2 || ''
-                    };
-                    
-                    // 비어있는 필드만 자동 입력
-                    Object.entries(fields).forEach(([fieldId, value]) => {
-                        const field = document.getElementById(fieldId);
-                        if (field && !field.value && value) {
-                            field.value = value;
-                            console.log(`${fieldId} 자동 입력:`, value);
-                        }
-                    });
-                    
-                    // 카드 정보도 로드
+                // 카드 정보도 로드
+                if (userData.cardInfo || userData.paymentInfo) {
                     await loadSavedCardInfo(userData);
-                    
-                    showAlert('shipping-alert', '保存された情報を自動入力しました。', 'success');
-                } else {
-                    console.log('저장된 주소 정보가 없음');
-                    showAlert('shipping-alert', 'ログインして保存された情報を使用してください。', 'info');
                 }
+                
+                if (filledCount > 0) {
+                    showAlert('shipping-alert', `保存された情報を${filledCount}件自動入力しました。`, 'success');
+                    console.log(`✅ ${filledCount}개 필드 자동 입력 완료`);
+                } else {
+                    console.log('📝 모든 필드가 이미 입력되어 있거나 저장된 정보가 없음');
+                    showAlert('shipping-alert', '保存された住所情報がありません。', 'info');
+                }
+                
             } catch (error) {
-                console.error('주소 자동 입력 오류:', error);
-                showAlert('shipping-alert', '住所情報の読み込みに失敗しました。', 'warning');
+                console.error('❌ Firebase 주소 자동 입력 오류:', error);
+                console.error('❌ 오류 상세:', error.message);
+                showAlert('shipping-alert', '住所情報の読み込みに失敗しました。', 'danger');
             }
         }
         
@@ -2424,35 +2433,51 @@
             privacyModal.show();
         }
 
-        // 사용자 프로필 정보 로드
+        // 사용자 프로필 정보 로드 (Firebase 전용, 이메일 기반)
         async function loadUserProfile() {
             try {
-                const user = firebase.auth().currentUser;
-                if (!user) {
-                    console.warn('사용자가 로그인되어 있지 않습니다');
+                if (!currentUser) {
+                    console.warn('❌ currentUser가 설정되지 않음');
                     return;
                 }
 
-                const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+                console.log('🔍 loadUserProfile 시작:', currentUser.email);
+
+                const db = firebase.firestore();
+                const userDoc = await db.collection('users').doc(currentUser.email).get();
+                
                 if (!userDoc.exists) {
-                    console.log('사용자 프로필이 없습니다');
+                    console.log('❌ Firebase에 사용자 프로필이 없음');
                     return;
                 }
 
                 const userData = userDoc.data();
+                console.log('✅ 사용자 프로필 데이터 로드:', userData);
                 
-                // 배송 정보 필드에 프로필 정보 설정
-                if (userData.shippingAddress) {
-                    document.getElementById('shipping-name').value = userData.shippingAddress.name || '';
-                    document.getElementById('shipping-phone').value = userData.shippingAddress.phone || '';
-                    document.getElementById('shipping-postal').value = userData.shippingAddress.postal || '';
-                    document.getElementById('shipping-prefecture').value = userData.shippingAddress.prefecture || '';
-                    document.getElementById('shipping-city').value = userData.shippingAddress.city || '';
-                    document.getElementById('shipping-address1').value = userData.shippingAddress.address || '';
-                    document.getElementById('shipping-address2').value = userData.shippingAddress.addressDetail || '';
+                // 배송 정보 필드에 프로필 정보 설정 (여러 필드명 지원)
+                const addressData = userData.shippingAddress || userData.lastUsedAddress || userData;
+                
+                if (addressData) {
+                    const fields = {
+                        'shipping-name': userData.name || userData.displayName || currentUser.email.split('@')[0],
+                        'shipping-phone': addressData.phone || userData.phone || '',
+                        'shipping-postal': addressData.postal || addressData.postalCode || '',
+                        'shipping-prefecture': addressData.prefecture || addressData.state || '',
+                        'shipping-city': addressData.city || '',
+                        'shipping-address1': addressData.address1 || addressData.address || '',
+                        'shipping-address2': addressData.address2 || addressData.addressDetail || ''
+                    };
+                    
+                    // 필드 업데이트
+                    Object.entries(fields).forEach(([fieldId, value]) => {
+                        const field = document.getElementById(fieldId);
+                        if (field && value) {
+                            field.value = value;
+                        }
+                    });
                 }
 
-                console.log('프로필 정보 로드 완료');
+                console.log('✅ 프로필 정보 로드 완료');
             } catch (error) {
                 console.error('프로필 정보 로드 실패:', error);
             }
