@@ -81,8 +81,8 @@
         }
         
         .form-control:focus {
-            border-color: #343a40;
-            box-shadow: 0 0 0 0.2rem rgba(52, 58, 64, 0.25);
+            border-color: #6c757d;
+            box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.25);
         }
         
         .input-group-text {
@@ -101,6 +101,16 @@
         
         .mb-3 {
             margin-bottom: 1.5rem !important;
+        }
+        
+        .btn-login {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+        
+        .btn-login:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
         }
         
         .btn-large {
@@ -325,12 +335,13 @@
                     </div>
                 </div>
 
-                <div class="text-center mt-4">
-                    <button type="button" class="btn btn-outline-secondary btn-large me-3" onclick="backToModeSelector()">
+                <button type="submit" class="btn btn-login btn-dark w-100 japanese-text">
+                    <i class="fas fa-user-plus me-2"></i>会員登録
+                </button>
+
+                <div class="text-center mt-3">
+                    <button type="button" class="btn btn-outline-secondary" onclick="backToModeSelector()">
                         <i class="fas fa-arrow-left me-2"></i>戻る
-                    </button>
-                    <button type="submit" class="btn btn-dark btn-large">
-                        <i class="fas fa-user-plus me-2"></i>会員登録
                     </button>
                 </div>
             </form>
