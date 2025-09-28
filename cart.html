@@ -524,11 +524,11 @@
                             <strong id="total">¥0</strong>
                         </div>
                         <div class="d-grid gap-2">
-                            <button onclick="proceedToCheckout()" class="btn btn-secondary btn-lg japanese-text" id="checkout-btn" style="display: none;">
+                            <button type="button" class="btn btn-secondary btn-lg japanese-text" id="checkout-btn" style="display: none;">
                                 <i class="fas fa-credit-card me-2"></i>ご注文手続きへ
                             </button>
                             <!-- 테스트 버튼 추가 -->
-                            <button onclick="testCheckoutNavigation()" class="btn btn-outline-secondary btn-sm japanese-text" id="test-checkout-btn" style="display: none; margin-top: 10px;">
+                            <button type="button" class="btn btn-outline-secondary btn-sm japanese-text" id="test-checkout-btn" style="display: none; margin-top: 10px;">
                                 <i class="fas fa-bug me-2"></i>테스트: 체크아웃 이동
                             </button>
                             <a href="shop.html" class="btn btn-outline-secondary japanese-text">お買い物を続ける</a>
@@ -999,13 +999,20 @@
         }
 
         // 전역에서 접근 가능하도록 함수 등록
-        window.proceedToCheckout = async function() {
+        window.proceedToCheckout = async function(event) {
+            // 기본 이벤트 동작 방지
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
             console.log('🚀🚀🚀 proceedToCheckout 함수 시작 🚀🚀🚀');
             console.log('🔍 현재 상태 확인:');
             console.log('- currentCart 길이:', currentCart.length);
             console.log('- currentUser:', currentUser ? currentUser.email : '없음');
             console.log('- Firebase 상태:', firebase?.apps?.length > 0 ? '초기화됨' : '초기화 안됨');
             console.log('- 함수 호출 스택:', new Error().stack);
+            console.log('- 이벤트 객체:', event);
             
             // 버튼 로딩 상태로 변경
             const checkoutBtn = document.getElementById('checkout-btn');
@@ -1135,12 +1142,19 @@
         }
         
         // 테스트: 체크아웃 페이지 이동 함수 (전역 등록)
-        window.testCheckoutNavigation = function() {
+        window.testCheckoutNavigation = function(event) {
+            // 기본 이벤트 동작 방지
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            
             console.log('🧪🧪🧪 테스트 체크아웃 이동 시작 🧪🧪🧪');
             console.log('🔍 테스트 상태:');
             console.log('- 현재 URL:', window.location.href);
             console.log('- currentCart:', currentCart);
             console.log('- currentUser:', currentUser);
+            console.log('- 이벤트 객체:', event);
             
             // 여러 방법으로 페이지 이동 시도
             console.log('🚀 방법 1: window.location.href 시도');
@@ -1442,8 +1456,16 @@
                         if (checkoutBtn) {
                             // 기존 이벤트 리스너 제거
                             checkoutBtn.removeEventListener('click', window.proceedToCheckout);
-                            // 새 이벤트 리스너 추가
-                            checkoutBtn.addEventListener('click', window.proceedToCheckout);
+                            
+                            // 디버깅용 클릭 이벤트 먼저 추가
+                            checkoutBtn.addEventListener('click', function(event) {
+                                console.log('🖱️ checkout-btn 클릭 감지됨!', event);
+                                console.log('🖱️ 이벤트 타입:', event.type);
+                                console.log('🖱️ 타겟 요소:', event.target);
+                                console.log('🖱️ proceedToCheckout 함수 호출 시작');
+                                window.proceedToCheckout(event);
+                            });
+                            
                             console.log('🔧 checkout-btn 이벤트 리스너 등록 완료');
                             
                             if (currentCart.length > 0) {
@@ -1460,8 +1482,16 @@
                         if (testCheckoutBtn) {
                             // 기존 이벤트 리스너 제거
                             testCheckoutBtn.removeEventListener('click', window.testCheckoutNavigation);
-                            // 새 이벤트 리스너 추가
-                            testCheckoutBtn.addEventListener('click', window.testCheckoutNavigation);
+                            
+                            // 디버깅용 클릭 이벤트 먼저 추가
+                            testCheckoutBtn.addEventListener('click', function(event) {
+                                console.log('🖱️ test-checkout-btn 클릭 감지됨!', event);
+                                console.log('🖱️ 이벤트 타입:', event.type);
+                                console.log('🖱️ 타겟 요소:', event.target);
+                                console.log('🖱️ testCheckoutNavigation 함수 호출 시작');
+                                window.testCheckoutNavigation(event);
+                            });
+                            
                             console.log('🔧 test-checkout-btn 이벤트 리스너 등록 완료');
                         }
                         
