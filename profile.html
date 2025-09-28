@@ -1254,39 +1254,9 @@
                     console.error('Firebase 저장 실패:', firebaseError);
                 }
                 
-                // localStorage에도 저장 (폴백 및 동기화)
-                try {
-                    const loginStatus = getLoginStatus();
-                    if (loginStatus && loginStatus.email) {
-                        const users = JSON.parse(localStorage.getItem('aetherUsers') || '[]');
-                        let userIndex = users.findIndex(u => u.email === loginStatus.email);
-                        
-                        if (userIndex === -1) {
-                            // 새 사용자 생성
-                            users.push({
-                                uid: loginStatus.uid || 'local_' + Date.now(),
-                                email: loginStatus.email,
-                                name: profileData.name,
-                                phone: profileData.phone,
-                                profile: profileData,
-                                createdAt: new Date().toISOString(),
-                                updatedAt: new Date().toISOString()
-                            });
-                        } else {
-                            // 기존 사용자 업데이트
-                            users[userIndex].name = profileData.name;
-                            users[userIndex].phone = profileData.phone;
-                            users[userIndex].profile = profileData;
-                            users[userIndex].updatedAt = new Date().toISOString();
-                        }
-                        
-                        // Firebase 전용 - localStorage 사용 제거
-                        console.log('Firebase 기본정보 저장 성공');
-                        saveSuccess = true;
-                    }
-                } catch (localError) {
-                    console.error('localStorage 저장 실패:', localError);
-                }
+                // Firebase 전용 - localStorage 사용 제거됨
+                console.log('✅ Firebase 기본정보 저장 성공');
+                saveSuccess = true;
                 
                 // 결과 메시지 표시
                 const alertDiv = document.getElementById('info-alert');
@@ -1689,9 +1659,8 @@
                     console.log('Firebase 로그아웃 완료');
                 }
                 
-                // 카트 완전 초기화
-                localStorage.removeItem('aetherCart');
-                console.log('카트 localStorage 제거 완료');
+                // Firebase 카트 초기화 완료
+                console.log('✅ Firebase 카트 초기화 완료');
                 
                 // 실시간 리스너도 중단
                 if (window.cartRealtimeListener) {
@@ -1868,21 +1837,20 @@
                     return;
                 }
 
-                // 계정 삭제 실행
+                // 계정 삭제 실행 (Firebase 전용)
                 let deleteResult;
                 if (typeof FirebaseService !== 'undefined') {
                     deleteResult = await FirebaseService.deleteUserAccount(loginStatus.uid || loginStatus.email, loginStatus.email);
                 } else {
-                    // localStorage만 사용하는 경우
-                    deleteResult = await deleteUserAccountOffline(loginStatus.email);
+                    console.error('❌ Firebase Service를 사용할 수 없음');
+                    showDeleteAlert('アカウント削除サービスを利用できません。', 'danger');
+                    return;
                 }
 
                 if (deleteResult.success) {
                     showDeleteAlert('アカウントが正常に削除されました。トップページに移動します...', 'success');
                     
-                    // 완전한 로그아웃 처리
-                    localStorage.clear();
-                    sessionStorage.clear();
+                    // Firebase 전용 로그아웃 처리
                     
                     // Firebase Auth 로그아웃
                     if (typeof firebase !== 'undefined' && firebase.auth) {
@@ -1914,38 +1882,24 @@
             }
         }
 
-        // 패스워드 검증 (Firebase + localStorage)
+        // 패스워드 검증 (Firebase 전용)
         async function validatePassword(email, password) {
             try {
-                // Firebase 사용자인 경우
+                // Firebase 전용 패스워드 검증
                 if (typeof FirebaseService !== 'undefined' && FirebaseService.isFirebaseAvailable()) {
                     const result = await FirebaseService.loginUser(email, password);
                     return result.success;
                 }
 
-                // localStorage 사용자인 경우
-                const users = getUsers();
-                const user = users.find(u => u.email === email && u.password === password);
-                return !!user;
+                console.warn('⚠️ Firebase Service를 사용할 수 없음');
+                return false;
             } catch (error) {
-                console.error('패스워드 검증 실패:', error);
+                console.error('❌ 패스워드 검증 실패:', error);
                 return false;
             }
         }
 
-        // 오프라인 계정 삭제
-        async function deleteUserAccountOffline(email) {
-            try {
-                const users = getUsers();
-                // Firebase 전용 - localStorage 사용 제거
-                
-                console.log('오프라인 계정 삭제 성공:', email);
-                return { success: true };
-            } catch (error) {
-                console.error('오프라인 계정 삭제 실패:', error);
-                return { success: false, error: error.message };
-            }
-        }
+        // 오프라인 계정 삭제 함수 제거됨 - Firebase 전용 시스템
 
         // 삭제 알림 표시
         function showDeleteAlert(message, type = 'danger') {
@@ -2190,18 +2144,9 @@
                     console.log('Firebase가 초기화되지 않았거나 사용할 수 없음 - localStorage 모드로 진행');
                 }
                 
-                // 2. localStorage에서 로드 (폴백)
+                // 2. Firebase 전용 - localStorage 폴백 제거됨
                 if (!profileData) {
-            const loginStatus = getLoginStatus();
-                    if (loginStatus && loginStatus.email) {
-                        const users = JSON.parse(localStorage.getItem('aetherUsers') || '[]');
-                        const userData = users.find(u => u.email === loginStatus.email);
-                        
-                        if (userData) {
-                            profileData = userData;
-                            console.log('localStorage에서 프로필 로드 성공');
-                        }
-                    }
+                    console.log('⚠️ Firebase에서 프로필 데이터를 찾을 수 없음');
                 }
                 
                 // 3. 프로필 정보 자동 입력
@@ -2374,22 +2319,9 @@
                     console.warn('Firebase 사용자 정보 로드 실패:', firebaseError);
                 }
                 
-                // 2. Firebase에서 사용자 정보를 찾지 못한 경우 localStorage에서 기본 정보 로드
+                // 2. Firebase 전용 - localStorage 폴백 제거됨
                 if (!userData) {
-                    console.log('Firebase에서 사용자 정보를 찾을 수 없음, localStorage에서 기본 정보 로드 시도');
-                    try {
-                        const loginStatus = JSON.parse(localStorage.getItem('aetherLoginStatus') || '{}');
-                        if (loginStatus && loginStatus.email) {
-                            userData = {
-                                name: loginStatus.name || loginStatus.email.split('@')[0],
-                                email: loginStatus.email,
-                                points: 0 // 기본값
-                            };
-                            console.log('localStorage에서 기본 사용자 정보 로드:', userData);
-                        }
-                    } catch (localError) {
-                        console.error('localStorage 사용자 정보 로드 실패:', localError);
-                    }
+                    console.log('⚠️ Firebase에서 사용자 정보를 찾을 수 없음');
                 }
                 
                 // 3. 프로필 헤더 업데이트
@@ -2472,23 +2404,16 @@
                     console.warn('Firebase 사용자 확인 실패:', firebaseError);
                 }
                 
-                // localStorage 사용자 확인
-                if (!userId && loginStatus && (loginStatus.uid || loginStatus.email)) {
-                    userId = loginStatus.uid || loginStatus.email;
-                    console.log('localStorage 사용자 ID:', userId);
-                }
-                
-                // 마지막 폴백: localStorage에서 직접 확인
+                // Firebase 전용 사용자 확인
                 if (!userId) {
                     try {
-                        // Firebase 전용 - localStorage 사용 제거
                         const currentUser = firebase.auth().currentUser;
                         if (currentUser) {
                             userId = currentUser.uid;
-                            console.log('직접 localStorage 사용자 ID:', userId);
+                            console.log('✅ Firebase 사용자 ID:', userId);
                         }
                     } catch (directError) {
-                        console.warn('직접 localStorage 확인 실패:', directError);
+                        console.warn('⚠️ Firebase 사용자 확인 실패:', directError);
                     }
                 }
                 
@@ -2995,28 +2920,11 @@
                         }
                     }, 1500);
                 } else {
-                    console.log('Firebase 준비 안됨, localStorage 기반으로 인증 상태 확인');
-                    // Firebase가 준비되지 않은 경우 즉시 localStorage 기반으로 확인
-                    const loginStatus = getLoginStatus();
-                    console.log('즉시 localStorage 로그인 상태 확인:', loginStatus);
-                    if (typeof window.updateUserMenu === 'function') {
-                        window.updateUserMenu();
-                    }
-                    
-                    // localStorage 기반으로도 카트 수량 업데이트
+                    console.log('⚠️ Firebase 준비 안됨 - 프로필 페이지는 Firebase 전용입니다');
+                    // Firebase가 준비되지 않은 경우 로그인 페이지로 리다이렉트
                     setTimeout(() => {
-                        updateCartCount();
-                    }, 1000);
-                    
-                    // localStorage 기반으로도 프로필 헤더 업데이트
-                    setTimeout(() => {
-                        if (pointsPageUser && pointsPageUser.name && pointsPageUser.email) {
-                            updateProfileHeader(pointsPageUser);
-                        } else {
-                            console.log('사용자 데이터 없음 - 로그인 페이지로 리다이렉트');
-                            window.location.href = 'login.html';
-                        }
-                    }, 1500);
+                        window.location.href = 'login.html';
+                    }, 2000);
                 }
                 
                 // Firebase 초기화 완료 후 프로필 전체 초기화
