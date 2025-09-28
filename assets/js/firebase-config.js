@@ -2292,11 +2292,22 @@ class FirebaseService {
                         전체데이터: userData
                     });
                     
+                    // 사용자 데이터에 일관된 식별자 추가
+                    const userResult = {
+                        uid: userData.email || userDoc.id, // 이메일을 우선 사용, 없으면 문서 ID
+                        email: userData.email,
+                        name: userData.name,
+                        points: userData.points || 0,
+                        phone: userData.phone,
+                        documentId: userDoc.id, // 실제 문서 ID도 보관
+                        ...userData
+                    };
+                    
                     // 포인트 이력에서 실제 포인트 계산
                     let calculatedPoints = userData.points || 0;
                     try {
                         console.log('포인트 이력에서 실제 포인트 계산 시작...');
-                        console.log('검색 조건: userId =', userDoc.id, ', userEmail =', userData.email);
+                        console.log('검색 조건:', `userId = ${userResult.uid} , userEmail = ${userResult.email} , documentId = ${userResult.documentId}`);
                         
                         // 전체 포인트 이력을 가져와서 여러 조건으로 필터링
                         const pointHistorySnapshot = await db.collection('pointHistory').get();
@@ -2307,10 +2318,12 @@ class FirebaseService {
                         
                         pointHistorySnapshot.forEach(doc => {
                             const historyData = doc.data();
-                            // userId 또는 userEmail로 매칭
-                            if (historyData.userId === userDoc.id || 
-                                historyData.userEmail === userData.email ||
-                                historyData.userId === userData.email) {
+                            // userId 또는 userEmail로 매칭 (모든 가능한 식별자 확인)
+                            if (historyData.userId === userResult.uid || 
+                                historyData.userEmail === userResult.email ||
+                                historyData.userId === userResult.email ||
+                                historyData.userId === userResult.documentId ||
+                                historyData.userEmail === userResult.uid) {
                                 
                                 foundHistories.push({
                                     docId: doc.id,
@@ -2355,15 +2368,12 @@ class FirebaseService {
                         console.warn('포인트 이력 계산 실패:', pointError);
                     }
                     
+                    // 계산된 포인트로 사용자 결과 업데이트
+                    userResult.points = calculatedPoints;
+                    
                     return { 
                         success: true, 
-                        user: {
-                            uid: userDoc.id,
-                            name: userData.name,
-                            email: userData.email,
-                            points: calculatedPoints,
-                            phone: userData.phone
-                        }
+                        user: userResult
                     };
                 }
             } catch (error) {
