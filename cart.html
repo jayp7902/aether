@@ -621,9 +621,11 @@
                         // 현재 카트와 비교
                         if (JSON.stringify(currentCart) !== JSON.stringify(firebaseCart)) {
                             console.log('🔄 카트 데이터 변경됨 - 업데이트 시작');
+                            console.log('🔄 변경 전:', currentCart.length, '개 → 변경 후:', firebaseCart.length, '개');
                             currentCart = firebaseCart;
                             renderCart();
                             updateCartCount();
+                            console.log('✅ Firebase 실시간 리스너 카트 업데이트 완료');
                         } else {
                             console.log('🔄 카트 데이터 동일 - 업데이트 건너뜀');
                         }
@@ -998,9 +1000,25 @@
                 // Firebase에서 직접 카트 확인 (백업)
                 if (cartData.length === 0 && currentUser && firebase?.firestore) {
                     console.log('🔄 카트가 비어있음 - Firebase에서 직접 확인');
-                    const firebaseCart = await loadCartFromFirebase();
-                    cartData = firebaseCart;
-                    console.log('🔄 Firebase에서 로드한 카트:', cartData.length, '개 상품');
+                    
+                    // Firebase 완전 초기화 확인
+                    if (firebase.apps && firebase.apps.length > 0) {
+                        const firebaseCart = await loadCartFromFirebase();
+                        cartData = firebaseCart;
+                        console.log('🔄 Firebase에서 로드한 카트:', cartData.length, '개 상품');
+                        
+                        // 로드된 카트로 currentCart 업데이트
+                        if (cartData.length > 0) {
+                            currentCart = cartData;
+                            console.log('🔄 currentCart 업데이트 완료:', currentCart.length, '개 상품');
+                            
+                            // 카트 렌더링 및 버튼 상태 업데이트
+                            renderCart();
+                            updateCartCount();
+                        }
+                    } else {
+                        console.log('⚠️ Firebase 앱이 아직 초기화되지 않음');
+                    }
                 }
                 
                 if (cartData.length === 0) {
@@ -1388,6 +1406,15 @@
                 // 즉시 실행
                 initializeUserAndCart();
                 
+                // Firebase 초기화 완료 이벤트 리스너 추가
+                window.addEventListener('firebaseInitialized', async () => {
+                    console.log('🔥 Firebase 초기화 완료 이벤트 수신 - 카트 재초기화');
+                    if (currentCart.length === 0 || !currentUser) {
+                        console.log('🔄 Firebase 초기화 후 카트 재로드');
+                        await initializeUserAndCart();
+                    }
+                });
+                
                 // 백업으로 1초 후에도 실행 (안전장치)
                 setTimeout(async () => {
                     if (currentCart.length === 0 && !currentUser) {
@@ -1395,6 +1422,14 @@
                         await initializeUserAndCart();
                     }
                 }, 1000);
+                
+                // 추가 백업으로 3초 후에도 실행
+                setTimeout(async () => {
+                    if (currentCart.length === 0 && currentUser) {
+                        console.log('🔄 3초 후 카트 재로드 실행');
+                        await initializeUserAndCart();
+                    }
+                }, 3000);
                 
                 // 사용자 메뉴 업데이트
                 if (typeof window.updateUserMenu === 'function') {
