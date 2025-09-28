@@ -942,7 +942,7 @@
                 if (result.success) {
                     console.log('QR코드 처리 성공, 사용자 정보:', result.user);
                     currentCustomer = result.user;
-                    await showCustomerInfo();
+                    showCustomerInfo();
                 } else {
                     console.error('QR코드 처리 실패:', result.error);
                     alert('有効なQRコードではありません。\n' + result.error + '\n\nQRコード: ' + cleanQRData);
@@ -957,99 +957,23 @@
             }
         }
 
-        // 고객 정보 표시
-        async function showCustomerInfo() {
+        // 고객 정보 표시 (관리자 대시보드와 동일)
+        function showCustomerInfo() {
             document.getElementById('scanner-section').style.display = 'none';
             document.getElementById('customer-info').style.display = 'block';
             document.getElementById('point-actions').style.display = 'block';
             
-            // 고객 기본 정보 업데이트
+            console.log('showCustomerInfo 호출됨, currentCustomer:', currentCustomer);
+            console.log('포인트 값:', currentCustomer.points, '타입:', typeof currentCustomer.points);
+            
+            // 고객 정보 업데이트
             document.getElementById('customer-name').textContent = currentCustomer.name || 'お客様';
             document.getElementById('customer-email').textContent = currentCustomer.email || '';
             document.getElementById('customer-phone').textContent = currentCustomer.phone || '';
             
-            // Firebase에서 최신 포인트 정보 직접 조회 (관리자 대시보드와 동일한 방식)
-            try {
-                console.log('스토어 태블릿: 최신 포인트 정보 조회 시작:', currentCustomer.email);
-                
-                // 여러 방법으로 사용자 정보 조회 시도
-                let userData = null;
-                let latestPoints = 0;
-                
-                // 1. 이메일을 문서 ID로 사용하여 조회
-                try {
-                    const userDoc = await firebase.firestore().collection('users').doc(currentCustomer.email).get();
-                    if (userDoc.exists) {
-                        userData = userDoc.data();
-                        latestPoints = userData.points || 0;
-                        console.log('스토어 태블릿: 이메일 문서 ID로 조회 성공:', latestPoints);
-                    }
-                } catch (emailError) {
-                    console.warn('이메일 문서 ID 조회 실패:', emailError);
-                }
-                
-                // 2. UID로 조회 시도 (이메일 조회가 실패한 경우)
-                if (!userData && currentCustomer.uid) {
-                    try {
-                        const userDocByUid = await firebase.firestore().collection('users').doc(currentCustomer.uid).get();
-                        if (userDocByUid.exists) {
-                            userData = userDocByUid.data();
-                            latestPoints = userData.points || 0;
-                            console.log('스토어 태블릿: UID 문서 ID로 조회 성공:', latestPoints);
-                        }
-                    } catch (uidError) {
-                        console.warn('UID 문서 ID 조회 실패:', uidError);
-                    }
-                }
-                
-                // 3. 포인트 이력에서 실제 포인트 계산 (최후의 수단)
-                if (!userData || latestPoints === 0) {
-                    try {
-                        console.log('스토어 태블릿: 포인트 이력에서 실제 포인트 계산 시작');
-                        const pointHistorySnapshot = await firebase.firestore().collection('pointHistory')
-                            .where('userId', '==', currentCustomer.uid)
-                            .or('userEmail', '==', currentCustomer.email)
-                            .get();
-                        
-                        let calculatedPoints = 0;
-                        pointHistorySnapshot.forEach(doc => {
-                            const data = doc.data();
-                            if (data.pointsChange) {
-                                calculatedPoints += data.pointsChange;
-                            }
-                        });
-                        
-                        if (calculatedPoints > 0) {
-                            latestPoints = calculatedPoints;
-                            console.log('스토어 태블릿: 포인트 이력에서 계산된 포인트:', latestPoints);
-                        }
-                    } catch (historyError) {
-                        console.warn('포인트 이력 조회 실패:', historyError);
-                    }
-                }
-                
-                console.log('스토어 태블릿: 최종 포인트 정보:', {
-                    기존포인트: currentCustomer.points,
-                    최신포인트: latestPoints,
-                    변경량: latestPoints - (currentCustomer.points || 0)
-                });
-                
-                // currentCustomer 정보 업데이트
-                currentCustomer.points = latestPoints;
-                if (userData) {
-                    currentCustomer.name = userData.name || currentCustomer.name;
-                    currentCustomer.phone = userData.phone || currentCustomer.phone;
-                }
-                
-                // UI 업데이트
-                document.getElementById('customer-points').textContent = latestPoints.toLocaleString();
-                document.getElementById('customer-name').textContent = currentCustomer.name || 'お客様';
-                document.getElementById('customer-phone').textContent = currentCustomer.phone || '';
-                
-            } catch (error) {
-                console.error('스토어 태블릿: 최신 포인트 정보 조회 실패:', error);
-                document.getElementById('customer-points').textContent = (currentCustomer.points || 0).toLocaleString();
-            }
+            const pointsValue = currentCustomer.points || 0;
+            console.log('표시할 포인트 값:', pointsValue);
+            document.getElementById('customer-points').textContent = pointsValue.toLocaleString();
             
             // 실시간 포인트 동기화 시작
             startRealTimePointSync();
@@ -1439,7 +1363,7 @@
             // 예: 토스트 메시지, 애니메이션 등
         }
 
-        // 고객 포인트 이력 로드
+        // 고객 포인트 이력 로드 (관리자 대시보드와 동일)
         async function loadCustomerPointHistory() {
             if (!currentCustomer || !currentCustomer.uid) {
                 console.log('고객 정보가 없어서 포인트 이력을 로드할 수 없습니다.');
@@ -1449,79 +1373,89 @@
             try {
                 console.log('고객 포인트 이력 로드 시작:', currentCustomer.uid);
                 
-                // Firebase에서 포인트 이력 조회
-                const historySnapshot = await firebase.firestore().collection('pointHistory').get();
-                
-                const pointHistory = [];
-                historySnapshot.forEach(doc => {
-                    const data = doc.data();
-                    // userId 또는 userEmail로 매칭
-                    if (data.userId === currentCustomer.uid || 
-                        data.userEmail === currentCustomer.email ||
-                        data.userId === currentCustomer.email) {
-                        
+                if (FirebaseService.isFirebaseAvailable()) {
+                    // 전체 포인트 이력을 가져와서 여러 조건으로 필터링
+                    console.log('포인트 이력 검색 조건:', {
+                        userId: currentCustomer.uid,
+                        userEmail: currentCustomer.email
+                    });
+                    
+                    const historySnapshot = await firebase.firestore().collection('pointHistory').get();
+                    
+                    const pointHistory = [];
+                    historySnapshot.forEach(doc => {
+                        const data = doc.data();
+                        // userId 또는 userEmail로 매칭
+                        if (data.userId === currentCustomer.uid || 
+                            data.userEmail === currentCustomer.email ||
+                            data.userId === currentCustomer.email) {
+                            
                         pointHistory.push({
                             id: doc.id,
                             ...data
                         });
-                    }
-                });
-                
-                // 클라이언트에서 정렬 및 제한 (최신순)
-                pointHistory.sort((a, b) => {
-                    const getTimestamp = (item) => {
-                        if (!item) return new Date(0);
-                        
-                        // createdAt이 Firestore Timestamp인 경우
-                        if (item.createdAt && item.createdAt.toDate && typeof item.createdAt.toDate === 'function') {
-                            return item.createdAt.toDate();
                         }
-                        
-                        // timestamp가 Firestore Timestamp인 경우
-                        if (item.timestamp && item.timestamp.toDate && typeof item.timestamp.toDate === 'function') {
-                            return item.timestamp.toDate();
-                        }
-                        
-                        // createdAt이 일반 날짜 문자열이나 숫자인 경우
-                        if (item.createdAt) {
-                            const date = new Date(item.createdAt);
-                            if (!isNaN(date.getTime())) {
-                                return date;
-                            }
-                        }
-                        
-                        // timestamp가 일반 날짜 문자열이나 숫자인 경우
-                        if (item.timestamp) {
-                            const date = new Date(item.timestamp);
-                            if (!isNaN(date.getTime())) {
-                                return date;
-                            }
-                        }
-                        
-                        // 기본값으로 현재 시간 사용
-                        return new Date();
-                    };
-                    
-                    // 최신순 정렬 (b - a)
-                    return getTimestamp(b) - getTimestamp(a);
-                }).slice(0, 10);
-                
-                console.log('Firebase에서 포인트 이력 로드 완료:', pointHistory.length, '건');
-                
-                // 정렬 결과 확인을 위한 로그
-                if (pointHistory.length > 0) {
-                    console.log('포인트 이력 정렬 결과 (최신순):');
-                    pointHistory.forEach((item, index) => {
-                        const timestamp = item.createdAt || item.timestamp;
-                        console.log(`${index + 1}. ${item.reason || item.description} - ${timestamp}`);
                     });
+                    
+                    // 클라이언트에서 정렬 및 제한 (최신순)
+                    pointHistory.sort((a, b) => {
+                        const getTimestamp = (item) => {
+                            if (!item) return new Date(0);
+                            
+                            // createdAt이 Firestore Timestamp인 경우
+                            if (item.createdAt && item.createdAt.toDate && typeof item.createdAt.toDate === 'function') {
+                                return item.createdAt.toDate();
+                            }
+                            
+                            // timestamp가 Firestore Timestamp인 경우
+                            if (item.timestamp && item.timestamp.toDate && typeof item.timestamp.toDate === 'function') {
+                                return item.timestamp.toDate();
+                            }
+                            
+                            // createdAt이 일반 날짜 문자열이나 숫자인 경우
+                            if (item.createdAt) {
+                                const date = new Date(item.createdAt);
+                                if (!isNaN(date.getTime())) {
+                                    return date;
+                                }
+                            }
+                            
+                            // timestamp가 일반 날짜 문자열이나 숫자인 경우
+                            if (item.timestamp) {
+                                const date = new Date(item.timestamp);
+                                if (!isNaN(date.getTime())) {
+                                    return date;
+                                }
+                            }
+                            
+                            // 기본값으로 현재 시간 사용
+                            return new Date();
+                        };
+                        
+                        // 최신순 정렬 (b - a)
+                        return getTimestamp(b) - getTimestamp(a);
+                    }).slice(0, 10);
+                    
+                    console.log('Firebase에서 포인트 이력 로드 완료:', pointHistory.length, '건');
+                    
+                    // 정렬 결과 확인을 위한 로그
+                    if (pointHistory.length > 0) {
+                        console.log('포인트 이력 정렬 결과 (최신순):');
+                        pointHistory.forEach((item, index) => {
+                            const timestamp = item.createdAt || item.timestamp;
+                            console.log(`${index + 1}. ${item.reason || item.description} - ${timestamp}`);
+                        });
+                    }
+                    
+                    displayCustomerPointHistory(pointHistory);
+                } else {
+                    // Firebase에서 포인트 이력 로드
+                    console.log('🔥 Firebase에서 포인트 이력 로드:', currentCustomer.email);
+                    displayCustomerPointHistory([]);
                 }
-                
-                displayCustomerPointHistory(pointHistory);
-                
             } catch (error) {
                 console.error('포인트 이력 로드 실패:', error);
-                alert('ポイント履歴の読み込みに失敗しました');
+                showStoreAlert('ポイント履歴の読み込みに失敗しました', 'danger');
             }
         }
 
@@ -1628,11 +1562,11 @@
             container.innerHTML = historyHTML;
         }
 
-        // 포인트 이력 새로고침
+        // 포인트 이력 새로고침 (관리자 대시보드와 동일)
         function refreshCustomerPointHistory() {
             if (currentCustomer && currentCustomer.uid) {
                 loadCustomerPointHistory();
-                alert('ポイント履歴を更新しました');
+                showStoreAlert('ポイント履歴を更新しました', 'success');
             }
         }
 
