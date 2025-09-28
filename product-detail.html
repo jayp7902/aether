@@ -1012,12 +1012,12 @@
             const checkAuthUtils = () => {
                 attempts++;
                 
-                if (typeof window.updateUserMenu === 'function') {
+            if (typeof window.updateUserMenu === 'function') {
                     console.log('✅ auth-utils.js 로드 완료, 사용자 메뉴 업데이트');
-                    window.updateUserMenu();
+                window.updateUserMenu();
                 } else if (attempts >= maxAttempts) {
                     console.warn('⚠️ auth-utils.js 로드 시간 초과, 사용자 메뉴 업데이트 건너뜀');
-                } else {
+            } else {
                     setTimeout(checkAuthUtils, 100);
                 }
             };
@@ -1773,7 +1773,7 @@
                 return false;
             }
         }
-
+        
         function initializeCartButtons() {
             console.log('카트 버튼 기능 초기화');
             
@@ -1940,21 +1940,21 @@
             const scrollBtn = document.getElementById('scroll-to-top-btn');
             
             if (scrollBtn) {
-                // 스크롤 이벤트 리스너
-                window.addEventListener('scroll', function() {
+            // 스크롤 이벤트 리스너
+            window.addEventListener('scroll', function() {
                     if (window.pageYOffset > 300) {
                         scrollBtn.style.display = 'block';
-                    } else {
+                } else {
                         scrollBtn.style.display = 'none';
                     }
                 });
                 
                 // 클릭 이벤트 리스너
                 scrollBtn.addEventListener('click', function() {
-                    window.scrollTo({
-                        top: 0,
-                        behavior: 'smooth'
-                    });
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
                 });
                 
                 console.log('✅ 상단으로 이동 버튼 초기화 완료');
@@ -2005,9 +2005,9 @@
                 if (!currentUser) {
                     console.log('📝 로그인되지 않은 사용자 - 카트 수량 0');
                     updateCartCountDisplay(0);
-                    return;
-                }
-                
+                return;
+            }
+            
                 // Firebase에서 카트 수량 가져오기
                 if (typeof firebase !== 'undefined' && firebase.firestore && firebase.apps && firebase.apps.length > 0) {
                     const db = firebase.firestore();
