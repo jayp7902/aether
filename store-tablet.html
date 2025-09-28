@@ -1303,12 +1303,9 @@
                 realTimeListener = null;
             }
             
-            // 포인트 이력 실시간 리스너 설정 (관리자 대시보드와 동일한 방식)
+            // 포인트 이력 실시간 리스너 설정 (전체 포인트 이력에서 필터링)
             realTimeListener = firebase.firestore()
                 .collection('pointHistory')
-                .where('userId', '==', currentCustomer.uid)
-                .or('userEmail', '==', currentCustomer.email)
-                .or('userId', '==', currentCustomer.email)
                 .onSnapshot(async (snapshot) => {
                     console.log('실시간 포인트 이력 변경 감지');
                     
@@ -1319,10 +1316,19 @@
                     
                     snapshot.forEach(doc => {
                         const data = doc.data();
-                        if (data.type === 'earn' || data.type === 'admin_add' || data.type === 'welcome_bonus') {
-                            earnedPoints += data.points || 0;
-                        } else if (data.type === 'use' || data.type === 'admin_subtract') {
-                            usedPoints += data.points || 0;
+                        
+                        // 현재 고객과 관련된 포인트 이력만 처리
+                        if (data.userId === currentCustomer.uid || 
+                            data.userEmail === currentCustomer.email ||
+                            data.userId === currentCustomer.email ||
+                            data.userId === currentCustomer.documentId ||
+                            data.userEmail === currentCustomer.uid) {
+                            
+                            if (data.type === 'earn' || data.type === 'admin_add' || data.type === 'welcome_bonus') {
+                                earnedPoints += data.points || 0;
+                            } else if (data.type === 'use' || data.type === 'admin_subtract') {
+                                usedPoints += data.points || 0;
+                            }
                         }
                     });
                     
