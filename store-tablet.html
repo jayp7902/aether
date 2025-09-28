@@ -549,26 +549,6 @@
                 </div>
             </div>
 
-            <!-- 포인트 이력 섹션 -->
-            <div class="point-history-section mt-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="japanese-heading mb-0">
-                        <i class="fas fa-history me-2"></i>ポイント履歴
-                    </h5>
-                    <button class="btn btn-outline-secondary btn-sm" onclick="refreshCustomerPointHistory()">
-                        <i class="fas fa-sync-alt me-1"></i>更新
-                    </button>
-                </div>
-                
-                <div class="point-history-container">
-                    <div id="customer-point-history" class="point-history-list">
-                        <div class="text-center text-muted py-4">
-                            <i class="fas fa-history fa-2x mb-2"></i>
-                            <p class="japanese-text">ポイント履歴がありません</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
             <div class="text-center">
                 <button class="btn btn-outline-secondary btn-large" onclick="resetScanner()">
@@ -1263,7 +1243,7 @@
             startRealTimePointSync();
             
             // 포인트 이력 로드
-            loadCustomerPointHistory();
+            // loadCustomerPointHistory(); // 제거됨 - 전체 포인트 이용현황에서 확인 가능
             
             // 성공 애니메이션
             document.getElementById('customer-info').classList.add('success-animation');
@@ -1355,7 +1335,7 @@
                     
                     // 포인트 이력 새로고침
                     console.log('고객 포인트 이력 새로고침...');
-                    loadCustomerPointHistory();
+                    // loadCustomerPointHistory(); // 제거됨 - 전체 포인트 이용현황에서 확인 가능
                     
                     // 폼 초기화
                     document.getElementById('purchase-amount').value = '';
@@ -1413,7 +1393,7 @@
                     document.getElementById('manual-points').value = '';
                     
                     // 포인트 이력 새로고침
-                    loadCustomerPointHistory();
+                    // loadCustomerPointHistory(); // 제거됨 - 전체 포인트 이용현황에서 확인 가능
                 } else {
                     showStoreAlert('ポイント追加に失敗しました。', 'danger');
                 }
@@ -1471,7 +1451,7 @@
                     document.getElementById('manual-points').value = '';
                     
                     // 포인트 이력 새로고침
-                    loadCustomerPointHistory();
+                    // loadCustomerPointHistory(); // 제거됨 - 전체 포인트 이용현황에서 확인 가능
                 } else {
                     showStoreAlert(`ポイント差引に失敗しました: ${result.error || '不明なエラー'}`, 'danger');
                 }
@@ -1653,7 +1633,7 @@
                         document.getElementById('customer-points').textContent = calculatedPoints.toLocaleString();
                         
                         // 포인트 이력도 새로고침
-                        loadCustomerPointHistory();
+                        // loadCustomerPointHistory(); // 제거됨 - 전체 포인트 이용현황에서 확인 가능
                         
                         // 포인트 변경 알림
                         const changeAmount = calculatedPoints - (currentCustomer.points || 0);
@@ -1685,7 +1665,8 @@
         }
 
         // 고객 포인트 이력 로드 (관리자 대시보드와 동일)
-        async function loadCustomerPointHistory() {
+        // 개별 고객 포인트 이력 함수 제거됨 - 전체 포인트 이용현황에서 확인 가능
+        async function removed_loadCustomerPointHistory() {
             if (!currentCustomer || !currentCustomer.uid) {
                 console.log('고객 정보가 없어서 포인트 이력을 로드할 수 없습니다.');
                 return;
@@ -1770,11 +1751,11 @@
                         });
                     }
                     
-                    displayCustomerPointHistory(pointHistory);
+                    // displayCustomerPointHistory(pointHistory); // 제거됨
                 } else {
                     // Firebase에서 포인트 이력 로드
                     console.log('🔥 Firebase에서 포인트 이력 로드:', currentCustomer.email);
-                    displayCustomerPointHistory([]);
+                    // displayCustomerPointHistory([]); // 제거됨
                 }
             } catch (error) {
                 console.error('포인트 이력 로드 실패:', error);
@@ -1782,8 +1763,8 @@
             }
         }
 
-        // 고객 포인트 이력 표시
-        function displayCustomerPointHistory(history) {
+        // displayCustomerPointHistory 함수 제거됨 - 전체 포인트 이용현황에서 확인 가능
+        function removed_displayCustomerPointHistory(history) {
             const container = document.getElementById('customer-point-history');
             
             if (!container) {
@@ -1886,12 +1867,7 @@
         }
 
         // 포인트 이력 새로고침 (관리자 대시보드와 동일)
-        function refreshCustomerPointHistory() {
-            if (currentCustomer && currentCustomer.uid) {
-                loadCustomerPointHistory();
-                showStoreAlert('ポイント履歴を更新しました', 'success');
-            }
-        }
+        // refreshCustomerPointHistory 함수 제거됨 - 전체 포인트 이용현황에서 확인 가능
 
         // 로딩 표시
         function showLoading() {
