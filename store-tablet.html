@@ -1650,32 +1650,60 @@
             const canvas = document.getElementById('barcode-canvas');
             const context = canvas.getContext('2d');
             
+            // 캔버스 최적화 설정
+            canvas.width = 640;  // 고정 크기로 성능 향상
+            canvas.height = 480;
+            
             barcodeScanInterval = setInterval(() => {
                 if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    // 비디오 크기에 맞춰 캔버스 크기 조정
+                    const videoWidth = video.videoWidth;
+                    const videoHeight = video.videoHeight;
                     
-                    const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                    
-                    try {
-                        // jsQR 라이브러리를 사용한 바코드 감지
-                        const code = jsQR(imageData.data, imageData.width, imageData.height);
+                    if (videoWidth && videoHeight) {
+                        canvas.width = Math.min(videoWidth, 640);  // 최대 640px로 제한
+                        canvas.height = Math.min(videoHeight, 480); // 최대 480px로 제한
                         
-                        if (code) {
-                            handleBarcodeDetected(code.data);
+                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                        
+                        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+                        
+                        try {
+                            // jsQR 라이브러리를 사용한 바코드 감지
+                            const code = jsQR(imageData.data, imageData.width, imageData.height, {
+                                inversionAttempts: "dontInvert",
+                            });
+                            
+                            if (code && code.data && code.data.trim() !== '') {
+                                console.log('바코드 감지됨:', code.data);
+                                handleBarcodeDetected(code.data);
+                            }
+                        } catch (error) {
+                            console.error('바코드 감지 오류:', error);
                         }
-                    } catch (error) {
-                        console.error('바코드 감지 오류:', error);
                     }
                 }
-            }, 100); // 100ms마다 스캔
+            }, 500); // 500ms마다 스캔 (더 안정적인 성능)
         }
 
         // 바코드 감지 시 처리
         function handleBarcodeDetected(barcodeData) {
             console.log('=== 바코드 감지 성공 ===');
             console.log('감지된 바코드:', barcodeData);
+            console.log('바코드 길이:', barcodeData ? barcodeData.length : 0);
+            console.log('바코드 타입:', typeof barcodeData);
+            
+            // 바코드 데이터 유효성 검사
+            if (!barcodeData || typeof barcodeData !== 'string' || barcodeData.trim() === '') {
+                console.warn('유효하지 않은 바코드 데이터:', barcodeData);
+                return;
+            }
+            
+            // 최소 길이 검사 (일반적으로 바코드는 8자리 이상)
+            if (barcodeData.length < 3) {
+                console.warn('바코드가 너무 짧습니다:', barcodeData);
+                return;
+            }
             
             // 스캔 중지 (중복 감지 방지)
             barcodeScanning = false;
@@ -1695,7 +1723,7 @@
             
             // 즉시 결과 처리 (지연 시간 단축)
             setTimeout(() => {
-                processBarcodeResult(barcodeData);
+                processBarcodeResult(barcodeData.trim());
             }, 200);
         }
 
@@ -1703,48 +1731,67 @@
         function processBarcodeResult(barcodeData) {
             console.log('=== 바코드 결과 처리 시작 ===');
             console.log('처리할 바코드:', barcodeData);
+            console.log('바코드 데이터 유효성:', {
+                exists: !!barcodeData,
+                type: typeof barcodeData,
+                length: barcodeData ? barcodeData.length : 0,
+                trimmed: barcodeData ? barcodeData.trim() : ''
+            });
+            
+            // 바코드 데이터 재검증
+            if (!barcodeData || typeof barcodeData !== 'string' || barcodeData.trim() === '') {
+                console.error('❌ 처리할 바코드 데이터가 유효하지 않습니다:', barcodeData);
+                showStoreAlert('유효하지 않은 바코드입니다', 'danger');
+                return;
+            }
+            
+            const trimmedBarcode = barcodeData.trim();
             
             // 상품 정보 필드 찾기 및 값 입력
             const productBarcodeField = document.getElementById('product-barcode');
             if (productBarcodeField) {
                 // 기존 값 지우고 새 값 입력
                 productBarcodeField.value = '';
-                productBarcodeField.value = barcodeData;
                 
-                // 필드 포커스 및 하이라이트
-                productBarcodeField.focus();
-                productBarcodeField.style.backgroundColor = '#d4edda';
+                // 약간의 지연 후 값 설정 (DOM 업데이트 보장)
                 setTimeout(() => {
-                    productBarcodeField.style.backgroundColor = '';
-                }, 1000);
-                
-                console.log('✅ 상품 정보 필드에 바코드 입력 완료:', barcodeData);
-                console.log('✅ 필드 값 확인:', productBarcodeField.value);
-                
-                // 입력 이벤트 발생 (필드 변경 감지)
-                productBarcodeField.dispatchEvent(new Event('input', { bubbles: true }));
-                productBarcodeField.dispatchEvent(new Event('change', { bubbles: true }));
-                
-                // 상품 정보 필드가 표시되어 있는지 확인
-                const productInfoField = document.getElementById('product-info-field');
-                if (productInfoField && productInfoField.style.display === 'none') {
-                    console.log('⚠️ 상품 정보 필드가 숨겨져 있습니다. 표시합니다.');
-                    productInfoField.style.display = 'block';
-                }
+                    productBarcodeField.value = trimmedBarcode;
+                    
+                    // 필드 포커스 및 하이라이트
+                    productBarcodeField.focus();
+                    productBarcodeField.style.backgroundColor = '#d4edda';
+                    setTimeout(() => {
+                        productBarcodeField.style.backgroundColor = '';
+                    }, 1000);
+                    
+                    console.log('✅ 상품 정보 필드에 바코드 입력 완료:', trimmedBarcode);
+                    console.log('✅ 필드 값 확인:', productBarcodeField.value);
+                    
+                    // 입력 이벤트 발생 (필드 변경 감지)
+                    productBarcodeField.dispatchEvent(new Event('input', { bubbles: true }));
+                    productBarcodeField.dispatchEvent(new Event('change', { bubbles: true }));
+                    
+                    // 상품 정보 필드가 표시되어 있는지 확인
+                    const productInfoField = document.getElementById('product-info-field');
+                    if (productInfoField && productInfoField.style.display === 'none') {
+                        console.log('⚠️ 상품 정보 필드가 숨겨져 있습니다. 표시합니다.');
+                        productInfoField.style.display = 'block';
+                    }
+                    
+                    // 모달 닫기
+                    closeBarcodeScanner();
+                    
+                    // 성공 메시지 표시
+                    showStoreAlert(`バーコードを読み取りました: ${trimmedBarcode}`, 'success');
+                    
+                    console.log('=== 바코드 결과 처리 완료 ===');
+                }, 100);
                 
             } else {
                 console.error('❌ 상품 정보 필드를 찾을 수 없습니다');
                 showStoreAlert('상품 정보 필드를 찾을 수 없습니다', 'danger');
                 return;
             }
-            
-            // 모달 닫기
-            closeBarcodeScanner();
-            
-            // 성공 메시지 표시
-            showStoreAlert(`バーコードを読み取りました: ${barcodeData}`, 'success');
-            
-            console.log('=== 바코드 결과 처리 완료 ===');
         }
 
         // 수동 바코드 입력 확인
