@@ -1672,11 +1672,14 @@
                 .onSnapshot(async (snapshot) => {
                     console.log('실시간 포인트 이력 변경 감지');
                     
-                    // 포인트 이력에서 실제 포인트 재계산
+                    // 포인트 이력에서 실제 포인트 재계산 (관리자 페이지와 동일한 로직)
                     let calculatedPoints = 0;
                     let earnedPoints = 0;
                     let usedPoints = 0;
+                    let latestBalanceAfter = 0;
                     
+                    // 최신 포인트 이력 찾기 (balanceAfter 필드 사용)
+                    const customerHistories = [];
                     snapshot.forEach(doc => {
                         const data = doc.data();
                         
@@ -1687,6 +1690,12 @@
                             data.userId === currentCustomer.documentId ||
                             data.userEmail === currentCustomer.uid) {
                             
+                            customerHistories.push({
+                                ...data,
+                                createdAt: data.createdAt || data.timestamp,
+                                docId: doc.id
+                            });
+                            
                             if (data.type === 'earn' || data.type === 'admin_add' || data.type === 'welcome_bonus') {
                                 earnedPoints += data.points || 0;
                             } else if (data.type === 'use' || data.type === 'admin_subtract') {
@@ -1695,13 +1704,33 @@
                         }
                     });
                     
-                    calculatedPoints = earnedPoints - usedPoints;
+                    // createdAt 기준으로 정렬하여 최신 balanceAfter 값 찾기
+                    if (customerHistories.length > 0) {
+                        customerHistories.sort((a, b) => {
+                            const aTime = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(a.createdAt);
+                            const bTime = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(b.createdAt);
+                            return bTime - aTime; // 최신순
+                        });
+                        
+                        // 가장 최근의 balanceAfter 값 사용
+                        latestBalanceAfter = customerHistories[0].balanceAfter || customerHistories[0].balance || 0;
+                        
+                        // balanceAfter가 있으면 그것을 사용, 없으면 적립-사용 계산
+                        if (latestBalanceAfter > 0) {
+                            calculatedPoints = latestBalanceAfter;
+                        } else {
+                            calculatedPoints = earnedPoints - usedPoints;
+                        }
+                    } else {
+                        calculatedPoints = earnedPoints - usedPoints;
+                    }
                     
                     console.log('실시간 포인트 재계산:', {
                         이전: currentCustomer.points,
                         현재: calculatedPoints,
                         적립: earnedPoints,
                         사용: usedPoints,
+                        최신balanceAfter: latestBalanceAfter,
                         변경량: calculatedPoints - currentCustomer.points
                     });
                     
@@ -1713,8 +1742,8 @@
                         // UI 업데이트
                         document.getElementById('customer-points').textContent = calculatedPoints.toLocaleString();
                         
-                        // 포인트 이력도 새로고침
-                        // loadCustomerPointHistory(); // 제거됨 - 전체 포인트 이용현황에서 확인 가능
+                        // 포인트 이력 다시 로드
+                        loadCustomerPointHistory();
                         
                         // 포인트 변경 알림
                         const changeAmount = calculatedPoints - (currentCustomer.points || 0);
@@ -1830,13 +1859,30 @@
                             const timestamp = item.createdAt || item.timestamp;
                             console.log(`${index + 1}. ${item.reason || item.description} - ${timestamp}`);
                         });
+                        
+                        // 최신 포인트 계산 (balanceAfter 사용)
+                        const latestItem = pointHistory[0];
+                        const calculatedPoints = latestItem.balanceAfter || latestItem.balance || currentCustomer.points;
+                        
+                        // 포인트가 다르면 업데이트
+                        if (currentCustomer.points !== calculatedPoints) {
+                            console.log('포인트 업데이트:', {
+                                이전: currentCustomer.points,
+                                현재: calculatedPoints,
+                                balanceAfter: latestItem.balanceAfter,
+                                balance: latestItem.balance
+                            });
+                            
+                            currentCustomer.points = calculatedPoints;
+                            document.getElementById('customer-points').textContent = calculatedPoints.toLocaleString();
+                        }
                     }
                     
-                    // displayCustomerPointHistory(pointHistory); // 제거됨
+                    displayCustomerPointHistory(pointHistory);
                 } else {
                     // Firebase에서 포인트 이력 로드
                     console.log('🔥 Firebase에서 포인트 이력 로드:', currentCustomer.email);
-                    // displayCustomerPointHistory([]); // 제거됨
+                    displayCustomerPointHistory([]);
                 }
             } catch (error) {
                 console.error('포인트 이력 로드 실패:', error);
