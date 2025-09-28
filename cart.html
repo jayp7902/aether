@@ -524,12 +524,19 @@
                             <strong id="total">¥0</strong>
                         </div>
                         <div class="d-grid gap-2">
-                            <button type="button" class="btn btn-secondary btn-lg japanese-text" id="checkout-btn" style="display: none;">
+                            <button type="button" class="btn btn-secondary btn-lg japanese-text" id="checkout-btn" style="display: none;" 
+                                    onclick="console.log('주문수속 버튼 클릭됨!'); event.preventDefault(); window.proceedToCheckout && window.proceedToCheckout(event);">
                                 <i class="fas fa-credit-card me-2"></i>ご注文手続きへ
                             </button>
                             <!-- 테스트 버튼 추가 -->
-                            <button type="button" class="btn btn-outline-secondary btn-sm japanese-text" id="test-checkout-btn" style="display: none; margin-top: 10px;">
+                            <button type="button" class="btn btn-outline-secondary btn-sm japanese-text" id="test-checkout-btn" style="display: none; margin-top: 10px;"
+                                    onclick="console.log('테스트 버튼 클릭됨!'); event.preventDefault(); window.testCheckoutNavigation && window.testCheckoutNavigation(event);">
                                 <i class="fas fa-bug me-2"></i>테스트: 체크아웃 이동
+                            </button>
+                            <!-- 추가 디버깅 버튼 -->
+                            <button type="button" class="btn btn-outline-dark btn-sm japanese-text" style="margin-top: 10px;"
+                                    onclick="console.log('직접 이동 버튼 클릭됨!'); window.location.href='checkout.html';">
+                                <i class="fas fa-arrow-right me-2"></i>직접 체크아웃 이동
                             </button>
                             <a href="shop.html" class="btn btn-outline-secondary japanese-text">お買い物を続ける</a>
                         </div>
@@ -561,6 +568,12 @@
         // Firebase 전용 카트 관리 - localStorage 사용하지 않음
         let currentCart = [];
         let currentUser = null;
+        
+        // 즉시 전역 함수 등록 (HTML onclick에서 사용)
+        window.directCheckout = function() {
+            console.log('🚀 직접 체크아웃 이동 함수 호출');
+            window.location.href = 'checkout.html';
+        };
         
         function getCart() { 
             console.log('🛒 getCart 호출 - Firebase 카트 반환:', currentCart.length, '개 상품');
