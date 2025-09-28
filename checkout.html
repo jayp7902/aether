@@ -1060,7 +1060,7 @@
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('🚀 체크아웃 페이지 초기화 시작');
             
-            // Firebase 전용 초기화 - localStorage 정리 제거됨
+            // Firebase 전용 초기화
             console.log('🔄 Firebase 전용 체크아웃 초기화 시작');
             
             try {
@@ -2078,18 +2078,13 @@
                 // 현재 사용자 정보 가져오기
                 let currentUser = null;
                 try {
+                    // Firebase 전용 사용자 확인
                     if (firebase.auth && firebase.auth().currentUser) {
                         currentUser = firebase.auth().currentUser;
+                        console.log('✅ Firebase 사용자 확인됨:', currentUser.email);
                     } else {
-                        // localStorage에서 로그인 상태 확인
-                        const loginStatus = JSON.parse(localStorage.getItem('aetherLoginStatus') || '{}');
-                        if (loginStatus.email) {
-                            currentUser = {
-                                uid: loginStatus.email,
-                                email: loginStatus.email,
-                                displayName: loginStatus.name || 'Guest'
-                            };
-                        }
+                        console.log('❌ Firebase에 로그인된 사용자 없음');
+                        currentUser = null;
                     }
                 } catch (error) {
                     console.log('사용자 정보 가져오기 실패:', error);
@@ -2305,7 +2300,7 @@
                             console.log('ℹ️ 포인트 적립 없음 - 적립 이력 저장 건너뜀');
                         }
 
-                        // Firebase 전용 사용 - localStorage 사용 안함
+                        // Firebase 전용 주문 처리 완료
                         console.log('✅ Firebase 전용 주문 처리 완료:', {
                             orderId: orderId,
                             userId: user.uid,
@@ -2587,7 +2582,7 @@
                 }
             } catch (error) {
                 console.error('❌ Firebase 포인트 정보 로드 실패:', error);
-                console.log('⚠️ Firebase 전용 시스템 - localStorage 폴백 사용 안함');
+                console.log('⚠️ Firebase 전용 시스템 - 포인트 로드 실패');
                 currentUserPoints = 0;
                 showPointSection();
             }
@@ -2786,10 +2781,10 @@
             }
         }
         
-        // 사용자 포인트 로드 (Firebase 전용) - localStorage 사용 안함
+        // 사용자 포인트 로드 (Firebase 전용)
         async function loadUserPointsOffline() {
             try {
-                console.log('🔍 Firebase 전용 포인트 시스템 - localStorage 사용 안함');
+                console.log('🔍 Firebase 전용 포인트 시스템');
                 console.log('ℹ️ 포인트는 Firebase에서만 로드됩니다');
                 
                 // Firebase에서 이미 로드된 포인트 사용
@@ -3040,7 +3035,7 @@
                 }
                 
                 // Firebase 전용 시스템
-                console.log('⚠️ Firebase 전용 시스템 - localStorage 사용 안함');
+                console.log('⚠️ Firebase 전용 시스템 - 포인트 로드 실패');
                 console.log('포인트 로드 실패 - Firebase 연결을 확인하세요');
                 
             } catch (error) {
@@ -3142,7 +3137,7 @@
                     console.log('Firebase 로그아웃 완료');
                 }
                 
-                // Firebase 카트 초기화 (localStorage 사용 안함)
+                // Firebase 카트 초기화 완료
                 console.log('Firebase 카트 초기화 완료');
                 
                 // 실시간 리스너도 중단
