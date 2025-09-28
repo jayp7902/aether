@@ -587,8 +587,8 @@
                     <button class="btn btn-secondary btn-sm me-2" onclick="refreshPointHistory()">
                         <i class="fas fa-sync-alt me-1"></i>データ更新
                     </button>
-                    <button class="btn btn-secondary btn-sm" onclick="initializePointHistory()">
-                        <i class="fas fa-play me-1"></i>初期化
+                    <button class="btn btn-dark btn-sm" onclick="initializePointHistory()">
+                        <i class="fas fa-play me-1"></i>手動初期化
                     </button>
                 </div>
             </div>
@@ -992,24 +992,44 @@
             await waitForFirebaseInit();
             
             // Firebase 완전 초기화 후 포인트 이용현황 초기화
-            const initPointHistory = () => {
+            const initPointHistory = (retryCount = 0) => {
                 try {
+                    console.log(`=== 포인트 이용현황 초기화 시도 ${retryCount + 1}회 ===`);
+                    
                     // Firebase가 완전히 초기화되었는지 확인
+                    const firebaseStatus = {
+                        firebase: !!firebase,
+                        firestore: !!(firebase && firebase.firestore),
+                        auth: !!(firebase && firebase.auth)
+                    };
+                    
+                    console.log('Firebase 상태:', firebaseStatus);
+                    
                     if (firebase && firebase.firestore && firebase.auth) {
-                        console.log('Firebase 완전 초기화 확인됨, 포인트 이용현황 초기화 시작');
+                        console.log('✅ Firebase 완전 초기화 확인됨, 포인트 이용현황 초기화 시작');
                         initializePointHistory();
                     } else {
-                        console.log('Firebase 아직 초기화 중, 1초 후 재시도...');
-                        setTimeout(initPointHistory, 1000);
+                        console.log('⏳ Firebase 아직 초기화 중, 1초 후 재시도...');
+                        if (retryCount < 10) {
+                            setTimeout(() => initPointHistory(retryCount + 1), 1000);
+                        } else {
+                            console.error('❌ 포인트 이용현황 초기화 최대 재시도 횟수 초과');
+                        }
                     }
                 } catch (error) {
-                    console.error('포인트 이용현황 초기화 오류:', error);
-                    setTimeout(initPointHistory, 2000);
+                    console.error('❌ 포인트 이용현황 초기화 오류:', error);
+                    if (retryCount < 5) {
+                        setTimeout(() => initPointHistory(retryCount + 1), 2000);
+                    }
                 }
             };
             
             // 3초 후 포인트 이용현황 초기화 시작
-            setTimeout(initPointHistory, 3000);
+            console.log('포인트 이용현황 초기화 타이머 설정 (3초 후)');
+            setTimeout(() => {
+                console.log('타이머 실행: 포인트 이용현황 초기화 시도');
+                initPointHistory();
+            }, 3000);
             
             // Firebase가 완전히 초기화된 후 통계 로드
             setTimeout(async () => {
