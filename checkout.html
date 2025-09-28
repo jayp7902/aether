@@ -1820,6 +1820,7 @@
                 console.log('- userData.name:', userData.name);
                 console.log('- userData.phone:', userData.phone);
                 console.log('- addressData.postal:', addressData.postal);
+                console.log('- addressData.postalCode:', addressData.postalCode);
                 console.log('- addressData.prefecture:', addressData.prefecture);
                 console.log('- addressData.city:', addressData.city);
                 console.log('- addressData.address1:', addressData.address1);
@@ -1836,7 +1837,11 @@
                     }
                     if (!fields['shipping-postal'] && nestedAddress.postal) {
                         fields['shipping-postal'] = nestedAddress.postal;
-                        console.log('📮 중첩된 address에서 우편번호 가져옴:', nestedAddress.postal);
+                        console.log('📮 중첩된 address에서 우편번호 가져옴 (postal):', nestedAddress.postal);
+                    }
+                    if (!fields['shipping-postal'] && nestedAddress.postalCode) {
+                        fields['shipping-postal'] = nestedAddress.postalCode;
+                        console.log('📮 중첩된 address에서 우편번호 가져옴 (postalCode):', nestedAddress.postalCode);
                     }
                     if (!fields['shipping-prefecture'] && nestedAddress.prefecture) {
                         fields['shipping-prefecture'] = nestedAddress.prefecture;
