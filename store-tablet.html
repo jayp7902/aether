@@ -583,9 +583,14 @@
                 <h3 class="japanese-heading mb-0">
                     <i class="fas fa-chart-line me-2"></i>ポイント利用状況
                 </h3>
-                <button class="btn btn-outline-secondary btn-sm" onclick="refreshPointHistory()">
-                    <i class="fas fa-sync-alt me-1"></i>更新
-                </button>
+                <div>
+                    <button class="btn btn-secondary btn-sm me-2" onclick="refreshPointHistory()">
+                        <i class="fas fa-sync-alt me-1"></i>データ更新
+                    </button>
+                    <button class="btn btn-secondary btn-sm" onclick="initializePointHistory()">
+                        <i class="fas fa-play me-1"></i>初期化
+                    </button>
+                </div>
             </div>
 
             <!-- 날짜 네비게이션 및 필터 섹션 -->
@@ -2021,7 +2026,9 @@
                 console.log('이력 데이터:', allPointHistory);
                 
                 // 초기 필터 적용
+                console.log('초기 필터 적용 시작...');
                 filterPointHistory();
+                console.log('초기 필터 적용 완료');
                 
                 // 실시간 리스너 시작
                 startHistoryListener();
@@ -2229,9 +2236,14 @@
 
         // 필터링된 이력 표시
         function displayFilteredHistory() {
+            console.log('=== 이력 표시 시작 ===');
+            console.log('필터링된 이력 개수:', filteredPointHistory.length);
+            
             const historyList = document.getElementById('point-history-list');
+            console.log('historyList 요소:', historyList);
             
             if (filteredPointHistory.length === 0) {
+                console.log('표시할 이력이 없음');
                 historyList.innerHTML = `
                     <div class="text-center py-4">
                         <p class="japanese-text text-muted">該当する履歴がありません</p>
@@ -2241,7 +2253,9 @@
             }
 
             let html = '';
-            filteredPointHistory.forEach(item => {
+            console.log('HTML 생성 시작...');
+            
+            filteredPointHistory.forEach((item, index) => {
                 const isEarn = item.type === 'earn' || item.type === 'admin_add' || item.type === 'welcome_bonus' || item.type === 'purchase_points';
                 const isUse = item.type === 'use' || item.type === 'admin_subtract';
                 
@@ -2249,6 +2263,15 @@
                 const dateStr = item.createdAt.toLocaleDateString('ja-JP') + ' ' + item.createdAt.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
                 const points = item.points || 0;
                 const description = getPointDescription(item);
+                
+                console.log(`이력 ${index + 1}:`, {
+                    customerEmail,
+                    dateStr,
+                    points,
+                    description,
+                    isEarn,
+                    isUse
+                });
                 
                 html += `
                     <div class="history-item ${isEarn ? 'earn' : 'use'}">
@@ -2266,7 +2289,11 @@
                 `;
             });
 
+            console.log('생성된 HTML 길이:', html.length);
+            console.log('HTML 내용:', html.substring(0, 200) + '...');
+            
             historyList.innerHTML = html;
+            console.log('이력 표시 완료');
         }
 
         // 포인트 설명 생성
@@ -2295,6 +2322,9 @@
 
         // 통계 요약 업데이트
         function updateStatsSummary() {
+            console.log('=== 통계 요약 업데이트 시작 ===');
+            console.log('필터링된 이력 개수:', filteredPointHistory.length);
+            
             let totalTransactions = filteredPointHistory.length;
             let totalEarned = 0;
             let totalUsed = 0;
@@ -2316,10 +2346,32 @@
                 }
             });
 
-            document.getElementById('total-transactions').textContent = totalTransactions.toLocaleString();
-            document.getElementById('total-earned').textContent = totalEarned.toLocaleString();
-            document.getElementById('total-used').textContent = totalUsed.toLocaleString();
-            document.getElementById('total-customers').textContent = customers.size.toLocaleString();
+            console.log('계산된 통계:', {
+                totalTransactions,
+                totalEarned,
+                totalUsed,
+                customers: customers.size
+            });
+
+            // DOM 요소 업데이트
+            const transactionsEl = document.getElementById('total-transactions');
+            const earnedEl = document.getElementById('total-earned');
+            const usedEl = document.getElementById('total-used');
+            const customersEl = document.getElementById('total-customers');
+
+            console.log('DOM 요소 확인:', {
+                transactionsEl,
+                earnedEl,
+                usedEl,
+                customersEl
+            });
+
+            if (transactionsEl) transactionsEl.textContent = totalTransactions.toLocaleString();
+            if (earnedEl) earnedEl.textContent = totalEarned.toLocaleString();
+            if (usedEl) usedEl.textContent = totalUsed.toLocaleString();
+            if (customersEl) customersEl.textContent = customers.size.toLocaleString();
+
+            console.log('통계 요약 업데이트 완료');
         }
 
 
