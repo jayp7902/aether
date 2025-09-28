@@ -1206,6 +1206,9 @@
             document.getElementById('customer-info').style.display = 'block';
             document.getElementById('point-actions').style.display = 'block';
             
+            // 전체 포인트 이용현황 섹션 숨기기
+            document.getElementById('point-history-overview-main').style.display = 'none';
+            
             console.log('showCustomerInfo 호출됨, currentCustomer:', currentCustomer);
             console.log('포인트 값:', currentCustomer.points, '타입:', typeof currentCustomer.points);
             
@@ -1459,6 +1462,9 @@
             document.getElementById('scanner-section').style.display = 'block';
             document.getElementById('customer-info').style.display = 'none';
             document.getElementById('point-actions').style.display = 'none';
+            
+            // 전체 포인트 이용현황 섹션 다시 표시
+            document.getElementById('point-history-overview-main').style.display = 'block';
             
             // 폼 초기화
             document.getElementById('purchase-amount').value = '';
