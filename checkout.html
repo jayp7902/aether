@@ -1055,7 +1055,7 @@
             console.warn('⚠️ Firebase 초기화 시간 초과');
             return false;
         }
-
+        
         // 페이지 로드 시 초기화
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('🚀 체크아웃 페이지 초기화 시작');
@@ -1133,7 +1133,7 @@
                     console.log('✅ 체크아웃 페이지 사용자 설정:', checkoutPageUser);
                     
                     console.log('🏠 배송정보 로드 시작');
-                    await loadProfileAddress();
+                            await loadProfileAddress();
                     console.log('🏠 배송정보 로드 완료');
                     
                     // 포인트 정보 로드 (포인트 페이지와 동일한 방식)
@@ -1797,7 +1797,7 @@
                 console.log('- addressData.address2:', addressData.address2);
                 
                 // 배송 정보 필드 자동 입력 (다양한 필드명 및 중첩 구조 지원)
-                const fields = {
+                    const fields = {
                     'shipping-name': userData.name || userData.displayName || userData.fullName || currentUser.email.split('@')[0],
                     'shipping-phone': addressData.phone || addressData.phoneNumber || userData.phone || userData.phoneNumber || '',
                     'shipping-postal': addressData.postal || addressData.postalCode || addressData.zip || addressData.zipCode || '',
@@ -1845,11 +1845,11 @@
                 let filledCount = 0;
                 let updatedCount = 0;
                 
-                Object.entries(fields).forEach(([fieldId, value]) => {
-                    const field = document.getElementById(fieldId);
+                    Object.entries(fields).forEach(([fieldId, value]) => {
+                        const field = document.getElementById(fieldId);
                     if (field && value) {
                         // 저장된 정보가 있으면 항상 업데이트 (기존 값이 있어도 덮어쓰기)
-                        field.value = value;
+                            field.value = value;
                         filledCount++;
                         updatedCount++;
                         console.log(`✅ ${fieldId} 자동 입력/업데이트:`, value);
@@ -1857,14 +1857,16 @@
                         console.log(`⚠️ ${fieldId} - 저장된 정보 없음`);
                     } else if (!field) {
                         console.log(`❌ ${fieldId} - DOM 요소를 찾을 수 없음`);
-                    }
-                });
-                
-                // 카드 정보도 로드
-                if (userData.cardInfo || userData.paymentInfo) {
+                        }
+                    });
+                    
+                    // 카드 정보도 로드 (다양한 필드명 지원)
+                if (userData.savedCardInfo || userData.cardInfo || userData.paymentInfo) {
                     await loadSavedCardInfo(userData);
+                } else {
+                    console.log('📝 저장된 카드 정보가 없음 - 수동 입력 필요');
                 }
-                
+                    
                 if (filledCount > 0) {
                     showAlert('shipping-alert', `保存された配送情報を${filledCount}件自動入力しました。`, 'success');
                     console.log(`✅ ${filledCount}개 배송정보 필드 자동 입력/업데이트 완료`);
@@ -1884,22 +1886,34 @@
         async function loadSavedCardInfo(userData) {
             try {
                 console.log('=== 카드 정보 로드 시작 ===');
-                console.log('사용자 데이터:', userData);
+                console.log('🔍 사용자 데이터 키들:', Object.keys(userData));
                 
                 let cardInfo = null;
                 
-                // 사용자 데이터에서 카드 정보 찾기
+                // 사용자 데이터에서 카드 정보 찾기 (우선순위 순)
                 if (userData.savedCardInfo) {
                     cardInfo = userData.savedCardInfo;
-                    console.log('savedCardInfo에서 카드 정보 발견:', cardInfo);
+                    console.log('✅ savedCardInfo에서 카드 정보 발견:', cardInfo);
                 } else if (userData.paymentInfo) {
                     cardInfo = userData.paymentInfo;
-                    console.log('paymentInfo에서 카드 정보 발견:', cardInfo);
+                    console.log('✅ paymentInfo에서 카드 정보 발견:', cardInfo);
+                } else if (userData.cardInfo) {
+                    cardInfo = userData.cardInfo;
+                    console.log('✅ cardInfo에서 카드 정보 발견:', cardInfo);
                 } else {
-                    console.log('저장된 카드 정보가 없음');
+                    console.log('📝 저장된 카드 정보가 없음');
                 }
                 
                 if (cardInfo) {
+                    console.log('🔍 카드 정보 상세 분석:');
+                    console.log('- cardInfo 키들:', Object.keys(cardInfo));
+                    console.log('- cardNumber 존재:', !!cardInfo.cardNumber);
+                    console.log('- cardExpiry 존재:', !!cardInfo.cardExpiry);
+                    console.log('- cardName 존재:', !!cardInfo.cardName);
+                    console.log('- cardCvc 존재:', !!cardInfo.cardCvc);
+                    
+                    let filledCount = 0;
+                    
                     // 카드 정보 자동 입력
                     const cardFields = {
                         'card-number': cardInfo.cardNumber || '',
@@ -1909,33 +1923,62 @@
                     
                     Object.entries(cardFields).forEach(([fieldId, value]) => {
                         const field = document.getElementById(fieldId);
-                        if (field && !field.value && value) {
+                        if (field && value) {
+                            // 카드 번호는 마스킹 처리
+                            if (fieldId === 'card-number' && value.length >= 4) {
+                                // 카드 번호 마스킹 (앞 4자리와 뒤 4자리만 표시)
+                                const maskedNumber = value.substring(0, 4) + ' **** **** ' + value.substring(value.length - 4);
+                                field.value = maskedNumber;
+                                field.dataset.originalNumber = value; // 원본 값 저장
+                                console.log(`✅ ${fieldId} 마스킹 처리:`, maskedNumber);
+                            } else {
                             field.value = value;
-                            console.log(`${fieldId} 자동 입력:`, value);
+                                console.log(`✅ ${fieldId} 자동 입력:`, value);
+                            }
+                            filledCount++;
+                        } else if (field && !value) {
+                            console.log(`⚠️ ${fieldId} - 저장된 정보 없음`);
+                        } else if (!field) {
+                            console.log(`❌ ${fieldId} - DOM 요소를 찾을 수 없음`);
                         }
                     });
                     
                     // CVC는 보안상 별표로 표시
                     const cvcField = document.getElementById('card-cvv');
-                    if (cvcField && !cvcField.value && cardInfo.cardCvc) {
+                    if (cvcField && cardInfo.cardCvc) {
                         const maskedCvc = '*'.repeat(cardInfo.cardCvc.length);
                         cvcField.value = maskedCvc;
                         cvcField.dataset.originalCvc = cardInfo.cardCvc; // 원본 값 저장
-                        console.log('CVC 별표 마스킹 적용');
+                        filledCount++;
+                        console.log('✅ CVC 별표 마스킹 적용:', maskedCvc);
                     }
                     
-                    console.log('카드 정보 자동 입력 완료');
+                    if (filledCount > 0) {
+                        console.log(`✅ ${filledCount}개 카드 정보 필드 자동 입력 완료`);
+                        showAlert('payment-alert', `保存されたカード情報を${filledCount}件自動入力しました。`, 'success');
                 } else {
-                    console.log('저장된 카드 정보가 없음');
+                        console.log('📝 저장된 카드 정보가 있지만 필드에 입력할 수 없음');
+                    }
+                } else {
+                    console.log('📝 저장된 카드 정보가 없음 - 수동 입력 필요');
                 }
             } catch (error) {
-                console.error('카드 정보 로드 오류:', error);
+                console.error('❌ 카드 정보 로드 오류:', error);
+                showAlert('payment-alert', 'カード情報の読み込みに失敗しました。', 'danger');
             }
         }
         
         // 카드 정보 저장
         async function saveCardInfo(cardData) {
             try {
+                console.log('=== 카드 정보 저장 시작 ===');
+                console.log('🔍 저장할 카드 데이터:', {
+                    cardNumber: cardData.cardNumber ? cardData.cardNumber.substring(0, 4) + '****' : '없음',
+                    cardExpiry: cardData.cardExpiry || '없음',
+                    cardName: cardData.cardName || '없음',
+                    cardCvc: cardData.cardCvc ? '***' : '없음'
+                });
+                
                 // Firebase에서 현재 로그인된 사용자 확인
                 if (typeof firebase !== 'undefined' && 
                     firebase.auth && 
@@ -1946,23 +1989,38 @@
                     const user = firebase.auth().currentUser;
                     if (user && user.email) {
                         try {
+                            // 카드 정보를 안전하게 저장 (CVC는 별도 처리)
+                            const safeCardData = {
+                                cardNumber: cardData.cardNumber,
+                                cardExpiry: cardData.cardExpiry,
+                                cardName: cardData.cardName,
+                                cardCvc: cardData.cardCvc, // 실제 환경에서는 암호화 필요
+                                paymentMethod: cardData.paymentMethod || 'credit',
+                                savedAt: new Date().toISOString()
+                            };
+                            
                             await firebase.firestore().collection('users').doc(user.email).update({
-                                savedCardInfo: cardData,
+                                savedCardInfo: safeCardData,
                                 cardInfoUpdatedAt: new Date().toISOString()
                             });
-                            console.log('Firebase에 카드 정보 저장 성공');
+                            
+                            console.log('✅ Firebase에 카드 정보 저장 성공:', user.email);
+                            console.log('🔍 저장된 카드 정보 구조:', Object.keys(safeCardData));
+                            
                         } catch (firebaseError) {
-                            console.warn('Firebase 카드 정보 저장 실패:', firebaseError);
+                            console.error('❌ Firebase 카드 정보 저장 실패:', firebaseError);
+                            throw firebaseError;
                         }
                     } else {
-                        console.log('로그인되지 않은 사용자는 카드 정보를 저장하지 않음');
+                        console.log('⚠️ 로그인되지 않은 사용자는 카드 정보를 저장하지 않음');
                     }
                 } else {
-                    console.log('Firebase가 초기화되지 않음');
+                    console.log('❌ Firebase가 초기화되지 않음');
                 }
                 
             } catch (error) {
-                console.error('카드 정보 저장 오류:', error);
+                console.error('❌ 카드 정보 저장 오류:', error);
+                throw error;
             }
         }
 
@@ -2409,12 +2467,24 @@
                 // 카드 정보 저장 (로그인된 사용자에게만)
                 if (paymentData && paymentData.paymentMethod === 'credit') {
                     try {
+                        console.log('💳 카드 정보 저장 시작...');
                         await saveCardInfo(paymentData);
-                        console.log('카드 정보 저장 완료');
+                        console.log('✅ 카드 정보 저장 완료 - 다음 주문 시 자동 입력됩니다');
+                        
+                        // 사용자에게 카드 정보 저장 완료 알림
+                        if (typeof showToast === 'function') {
+                            showToast('カード情報が保存されました。次回の注文時に自動入力されます。', 'success', 3000);
+                        }
+                        
                     } catch (cardSaveError) {
-                        console.warn('카드 정보 저장 실패:', cardSaveError);
+                        console.warn('⚠️ 카드 정보 저장 실패:', cardSaveError);
                         // 주문은 성공했으므로 카드 저장 실패로 인해 전체 실패하지 않음
+                        if (typeof showToast === 'function') {
+                            showToast('カード情報の保存に失敗しましたが、注文は正常に処理されました。', 'warning', 3000);
+                        }
                     }
+                } else {
+                    console.log('📝 카드 결제가 아니므로 카드 정보 저장 건너뜀');
                 }
                 
                 // 카트 비우기
@@ -3189,7 +3259,7 @@
                 console.log('checkout.html 직접 로그아웃 처리 시작');
                 
                 // Firebase 로그아웃
-                if (typeof firebase !== 'undefined' && firebase.auth) {
+            if (typeof firebase !== 'undefined' && firebase.auth) {
                     await firebase.auth().signOut();
                     console.log('Firebase 로그아웃 완료');
                 }
@@ -3249,7 +3319,7 @@
                 window.cartUpdateInProgress = false;
                 
                 if (typeof updateCartCount === 'function') {
-                    updateCartCount();
+            updateCartCount();
                 }
                 
                 if (typeof window.showToast === 'function') {
