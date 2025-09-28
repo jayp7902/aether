@@ -2137,7 +2137,7 @@
             } catch (error) {
                 console.error('통계 로드 실패:', error);
                 todayStats = { customers: 0, points: 0, transactions: [] };
-                updateStatsDisplay();
+            updateStatsDisplay();
             }
         }
 
@@ -2661,7 +2661,7 @@
                     }
                     
                     return itemDate >= start && itemDate <= end;
-                } catch (error) {
+            } catch (error) {
                     console.error('날짜 변환 오류:', error, item);
                     return false;
                 }
