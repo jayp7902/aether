@@ -1674,37 +1674,66 @@
 
         // 바코드 감지 시 처리
         function handleBarcodeDetected(barcodeData) {
-            console.log('바코드 감지:', barcodeData);
+            console.log('=== 바코드 감지 성공 ===');
+            console.log('감지된 바코드:', barcodeData);
+            
+            // 스캔 중지 (중복 감지 방지)
+            barcodeScanning = false;
+            if (barcodeScanInterval) {
+                clearInterval(barcodeScanInterval);
+                barcodeScanInterval = null;
+            }
             
             // 스캔 성공 애니메이션
             const scannerFrame = document.querySelector('.scanner-frame');
-            scannerFrame.classList.add('scan-success');
+            if (scannerFrame) {
+                scannerFrame.classList.add('scan-success');
+            }
             
             // 성공 상태 표시
             updateScannerStatus('バーコードを検出しました！', false);
             
-            // 잠시 후 결과 처리
+            // 즉시 결과 처리 (지연 시간 단축)
             setTimeout(() => {
                 processBarcodeResult(barcodeData);
-            }, 500);
+            }, 200);
         }
 
         // 바코드 결과 처리
         function processBarcodeResult(barcodeData) {
-            // 상품 정보 필드에 바코드 값 입력
-            document.getElementById('product-barcode').value = barcodeData;
+            console.log('=== 바코드 결과 처리 시작 ===');
+            console.log('처리할 바코드:', barcodeData);
+            
+            // 상품 정보 필드 찾기 및 값 입력
+            const productBarcodeField = document.getElementById('product-barcode');
+            if (productBarcodeField) {
+                productBarcodeField.value = barcodeData;
+                console.log('✅ 상품 정보 필드에 바코드 입력 완료:', barcodeData);
+                
+                // 입력 이벤트 발생 (필드 변경 감지)
+                productBarcodeField.dispatchEvent(new Event('input', { bubbles: true }));
+                productBarcodeField.dispatchEvent(new Event('change', { bubbles: true }));
+            } else {
+                console.error('❌ 상품 정보 필드를 찾을 수 없습니다');
+                showStoreAlert('상품 정보 필드를 찾을 수 없습니다', 'danger');
+                return;
+            }
             
             // 모달 닫기
             closeBarcodeScanner();
             
             // 성공 메시지 표시
             showStoreAlert(`バーコードを読み取りました: ${barcodeData}`, 'success');
+            
+            console.log('=== 바코드 결과 처리 완료 ===');
         }
 
         // 수동 바코드 입력 확인
         function confirmManualBarcode() {
             const manualInput = document.getElementById('manual-barcode-input');
             const barcodeValue = manualInput.value.trim();
+            
+            console.log('수동 바코드 입력:', barcodeValue);
             
             if (barcodeValue) {
                 processBarcodeResult(barcodeValue);
