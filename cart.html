@@ -1132,6 +1132,45 @@
             updateCartTotal();
         }
 
+        // 카트 총액 계산 및 버튼 상태 업데이트 함수
+        function updateCartTotal() {
+            const cart = getCart();
+            
+            // 총액 계산
+            let subtotal = 0;
+            cart.forEach(item => {
+                subtotal += item.price * item.quantity;
+            });
+            
+            // 화면에 총액 업데이트
+            const subtotalElement = document.getElementById('subtotal');
+            const totalElement = document.getElementById('total');
+            
+            if (subtotalElement) {
+                subtotalElement.textContent = '¥' + subtotal.toLocaleString();
+            }
+            if (totalElement) {
+                totalElement.textContent = '¥' + subtotal.toLocaleString();
+            }
+            
+            // 주문 수속 버튼 상태 업데이트
+            const checkoutBtn = document.getElementById('checkout-btn');
+            
+            if (checkoutBtn) {
+                if (cart.length === 0) {
+                    checkoutBtn.style.display = 'none';
+                    console.log('⚠️ 주문 수속 버튼 숨김 (카트 비어있음)');
+                } else {
+                    checkoutBtn.style.display = 'block';
+                    console.log('✅ 주문 수속 버튼 표시 (카트에 상품 있음)');
+                }
+            } else {
+                console.warn('⚠️ checkout-btn 요소를 찾을 수 없음');
+            }
+            
+            console.log('카트 총액 업데이트:', subtotal, '원, 상품 수:', cart.length);
+        }
+
         // 사용자 및 카트 초기화 함수
         async function initializeUserAndCart() {
             try {
