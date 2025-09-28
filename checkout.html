@@ -1057,6 +1057,20 @@
                     const firebaseCart = await loadCartFromFirebase();
                     currentCart = firebaseCart;
                     console.log('✅ Firebase 카트 로드 완료:', currentCart.length, '개 상품');
+                    
+                    // 추가: CartSyncService를 통한 카트 동기화 시도
+                    if (window.CartSyncService && firebase?.auth?.currentUser) {
+                        try {
+                            console.log('🔄 CartSyncService를 통한 추가 동기화 시도');
+                            const syncedCart = await window.CartSyncService.syncCart(firebase.auth.currentUser.email);
+                            if (syncedCart && syncedCart.length > 0) {
+                                currentCart = syncedCart;
+                                console.log('✅ CartSyncService 동기화 성공:', currentCart.length, '개 상품');
+                            }
+                        } catch (error) {
+                            console.warn('⚠️ CartSyncService 동기화 실패:', error);
+                        }
+                    }
                 }
                 
                 // 2단계: 카트 확인 (Firebase 로드 후)
@@ -1064,8 +1078,13 @@
                 console.log('2️⃣ 카트 확인 - Firebase 로드 후 카트 상태:', cart);
                 
                 if (!cart || cart.length === 0) {
-                    console.log('⚠️ 카트가 비어있습니다. cart.html로 리디렉션합니다.');
-                    window.location.href = 'cart.html';
+                    console.log('⚠️ 카트가 비어있습니다. 3초 후 cart.html로 리디렉션합니다.');
+                    console.log('🔄 카트 상태:', {cart: cart, length: cart?.length, currentCart: currentCart, currentCartLength: currentCart?.length});
+                    
+                    // 3초 대기 후 리다이렉트 (사용자가 확인할 수 있도록)
+                    setTimeout(() => {
+                        window.location.href = 'cart.html';
+                    }, 3000);
                     return;
                 }
                 console.log('✅ 카트 데이터 확인 완료:', cart.length, '개 상품');
@@ -1430,8 +1449,13 @@
             console.log('로드된 카트 데이터:', cart);
             
             if (!cart || cart.length === 0) {
-                console.log('⚠️ 카트가 비어있습니다. cart.html로 리디렉션합니다.');
-                window.location.href = 'cart.html';
+                console.log('⚠️ loadCartItems: 카트가 비어있습니다. 3초 후 cart.html로 리디렉션합니다.');
+                console.log('🔄 loadCartItems 카트 상태:', {cart: cart, length: cart?.length});
+                
+                // 3초 대기 후 리다이렉트
+                setTimeout(() => {
+                    window.location.href = 'cart.html';
+                }, 3000);
                 return;
             }
             
