@@ -544,16 +544,30 @@
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('=== 스토어 태블릿 페이지 초기화 시작 ===');
             
-            // Firebase 초기화 대기
-            await waitForFirebaseInit();
-            
             updateDateTime();
             setInterval(updateDateTime, 1000);
             
-            // Firebase 기반 통계 로드
-            await loadTodayStats();
-            
             setupPurchaseAmountListener();
+            
+            // Firebase 초기화 대기 (더 안전한 방식)
+            await waitForFirebaseInit();
+            
+            // Firebase가 완전히 초기화된 후 통계 로드
+            setTimeout(async () => {
+                try {
+                    await loadTodayStats();
+                } catch (error) {
+                    console.error('통계 로드 실패 (재시도):', error);
+                    // 1초 후 재시도
+                    setTimeout(async () => {
+                        try {
+                            await loadTodayStats();
+                        } catch (retryError) {
+                            console.error('통계 로드 재시도 실패:', retryError);
+                        }
+                    }, 1000);
+                }
+            }, 500);
             
             // URL에서 QR코드 확인
             checkUrlForQRCode();
@@ -564,16 +578,25 @@
         // Firebase 초기화 대기 함수
         async function waitForFirebaseInit() {
             return new Promise((resolve) => {
-                if (window.firebase && firebase.auth) {
+                if (window.firebase && firebase.auth && firebase.firestore) {
                     console.log('Firebase 이미 초기화됨');
                     resolve();
                 } else {
                     console.log('Firebase 초기화 대기 중...');
+                    let attempts = 0;
+                    const maxAttempts = 50; // 5초 대기
+                    
                     const checkFirebase = setInterval(() => {
-                        if (window.firebase && firebase.auth) {
+                        attempts++;
+                        
+                        if (window.firebase && firebase.auth && firebase.firestore) {
                             clearInterval(checkFirebase);
                             console.log('Firebase 초기화 완료');
                             resolve();
+                        } else if (attempts >= maxAttempts) {
+                            clearInterval(checkFirebase);
+                            console.error('Firebase 초기화 타임아웃');
+                            resolve(); // 타임아웃이어도 계속 진행
                         }
                     }, 100);
                 }
@@ -754,33 +777,79 @@
             try {
                 console.log('스토어 태블릿: 최신 포인트 정보 조회 시작:', currentCustomer.email);
                 
-                // 이메일을 문서 ID로 사용하여 최신 사용자 정보 조회
-                const userDoc = await firebase.firestore().collection('users').doc(currentCustomer.email).get();
+                // 여러 방법으로 사용자 정보 조회 시도
+                let userData = null;
+                let latestPoints = 0;
                 
-                if (userDoc.exists) {
-                    const userData = userDoc.data();
-                    const latestPoints = userData.points || 0;
-                    
-                    console.log('스토어 태블릿: 최신 포인트 정보 조회 완료:', {
-                        기존포인트: currentCustomer.points,
-                        최신포인트: latestPoints,
-                        변경량: latestPoints - (currentCustomer.points || 0)
-                    });
-                    
-                    // currentCustomer 정보 업데이트
-                    currentCustomer.points = latestPoints;
+                // 1. 이메일을 문서 ID로 사용하여 조회
+                try {
+                    const userDoc = await firebase.firestore().collection('users').doc(currentCustomer.email).get();
+                    if (userDoc.exists) {
+                        userData = userDoc.data();
+                        latestPoints = userData.points || 0;
+                        console.log('스토어 태블릿: 이메일 문서 ID로 조회 성공:', latestPoints);
+                    }
+                } catch (emailError) {
+                    console.warn('이메일 문서 ID 조회 실패:', emailError);
+                }
+                
+                // 2. UID로 조회 시도 (이메일 조회가 실패한 경우)
+                if (!userData && currentCustomer.uid) {
+                    try {
+                        const userDocByUid = await firebase.firestore().collection('users').doc(currentCustomer.uid).get();
+                        if (userDocByUid.exists) {
+                            userData = userDocByUid.data();
+                            latestPoints = userData.points || 0;
+                            console.log('스토어 태블릿: UID 문서 ID로 조회 성공:', latestPoints);
+                        }
+                    } catch (uidError) {
+                        console.warn('UID 문서 ID 조회 실패:', uidError);
+                    }
+                }
+                
+                // 3. 포인트 이력에서 실제 포인트 계산 (최후의 수단)
+                if (!userData || latestPoints === 0) {
+                    try {
+                        console.log('스토어 태블릿: 포인트 이력에서 실제 포인트 계산 시작');
+                        const pointHistorySnapshot = await firebase.firestore().collection('pointHistory')
+                            .where('userId', '==', currentCustomer.uid)
+                            .or('userEmail', '==', currentCustomer.email)
+                            .get();
+                        
+                        let calculatedPoints = 0;
+                        pointHistorySnapshot.forEach(doc => {
+                            const data = doc.data();
+                            if (data.pointsChange) {
+                                calculatedPoints += data.pointsChange;
+                            }
+                        });
+                        
+                        if (calculatedPoints > 0) {
+                            latestPoints = calculatedPoints;
+                            console.log('스토어 태블릿: 포인트 이력에서 계산된 포인트:', latestPoints);
+                        }
+                    } catch (historyError) {
+                        console.warn('포인트 이력 조회 실패:', historyError);
+                    }
+                }
+                
+                console.log('스토어 태블릿: 최종 포인트 정보:', {
+                    기존포인트: currentCustomer.points,
+                    최신포인트: latestPoints,
+                    변경량: latestPoints - (currentCustomer.points || 0)
+                });
+                
+                // currentCustomer 정보 업데이트
+                currentCustomer.points = latestPoints;
+                if (userData) {
                     currentCustomer.name = userData.name || currentCustomer.name;
                     currentCustomer.phone = userData.phone || currentCustomer.phone;
-                    
-                    // UI 업데이트
-                    document.getElementById('customer-points').textContent = latestPoints.toLocaleString();
-                    document.getElementById('customer-name').textContent = currentCustomer.name || 'お客様';
-                    document.getElementById('customer-phone').textContent = currentCustomer.phone || '';
-                    
-                } else {
-                    console.warn('스토어 태블릿: 사용자 문서를 찾을 수 없음:', currentCustomer.email);
-                    document.getElementById('customer-points').textContent = (currentCustomer.points || 0).toLocaleString();
                 }
+                
+                // UI 업데이트
+                document.getElementById('customer-points').textContent = latestPoints.toLocaleString();
+                document.getElementById('customer-name').textContent = currentCustomer.name || 'お客様';
+                document.getElementById('customer-phone').textContent = currentCustomer.phone || '';
                 
             } catch (error) {
                 console.error('스토어 태블릿: 최신 포인트 정보 조회 실패:', error);
