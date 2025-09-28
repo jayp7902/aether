@@ -427,6 +427,30 @@
             color: #adb5bd;
         }
 
+        /* CSV 다운로드 버튼 스타일 */
+        .btn-csv-download {
+            transition: all 0.2s ease;
+            border-color: #6c757d;
+            color: #6c757d;
+        }
+        .btn-csv-download:hover {
+            background-color: #6c757d;
+            border-color: #6c757d;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .btn-csv-download:active {
+            transform: translateY(0);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .btn-csv-download i {
+            transition: transform 0.2s ease;
+        }
+        .btn-csv-download:hover i {
+            transform: translateY(-1px);
+        }
+
         .point-history-item:hover {
             background-color: #f8f9fa;
         }
@@ -812,7 +836,12 @@
             <div class="history-list-container">
                 <div class="d-flex justify-content-between align-items-center mb-3">
                     <h5 class="japanese-heading mb-0">取引履歴</h5>
-                    <small class="text-muted japanese-text">最新10件を表示</small>
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="btn btn-outline-secondary btn-sm btn-csv-download" onclick="downloadPointHistoryCSV()" title="CSVダウンロード">
+                            <i class="fas fa-download me-1"></i>CSV
+                        </button>
+                        <small class="text-muted japanese-text">最新10件を表示</small>
+                    </div>
                 </div>
                 <div class="history-list" id="point-history-list">
                     <div class="text-center py-4">
@@ -2538,6 +2567,218 @@
             } else {
                 showStoreAlert('顧客情報がありません', 'warning');
             }
+        }
+
+        // CSV 다운로드 함수
+        function downloadPointHistoryCSV() {
+            console.log('=== CSV 다운로드 시작 ===');
+            
+            // 현재 표시된 포인트 이력 데이터 가져오기
+            const pointHistoryData = getCurrentDisplayedPointHistory();
+            
+            if (!pointHistoryData || pointHistoryData.length === 0) {
+                showStoreAlert('ダウンロードできるデータがありません', 'warning');
+                return;
+            }
+            
+            // CSV 데이터 생성
+            const csvContent = generateCSVContent(pointHistoryData);
+            
+            // 파일 다운로드
+            downloadCSVFile(csvContent, '取引履歴.csv');
+            
+            console.log('=== CSV 다운로드 완료 ===');
+        }
+
+        // 현재 표시된 포인트 이력 데이터 가져오기
+        function getCurrentDisplayedPointHistory() {
+            console.log('현재 표시된 포인트 이력 데이터 수집 중...');
+            
+            // 전체 포인트 이력에서 현재 필터링된 데이터 가져오기
+            if (allPointHistory && allPointHistory.length > 0) {
+                // 현재 필터 설정에 따라 데이터 필터링
+                const filteredData = filterPointHistoryForCSV();
+                console.log('필터링된 데이터:', filteredData.length, '건');
+                return filteredData;
+            }
+            
+            console.log('표시할 데이터가 없습니다');
+            return [];
+        }
+
+        // CSV용 포인트 이력 필터링
+        function filterPointHistoryForCSV() {
+            if (!allPointHistory || allPointHistory.length === 0) {
+                return [];
+            }
+
+            // 현재 필터 설정 가져오기
+            const currentPeriodType = document.querySelector('input[name="period"]:checked')?.value || 'day';
+            const currentViewDate = new Date();
+            
+            // 날짜 범위 계산
+            let start, end;
+            switch (currentPeriodType) {
+                case 'day':
+                    start = new Date(currentViewDate);
+                    start.setHours(0, 0, 0, 0);
+                    end = new Date(currentViewDate);
+                    end.setHours(23, 59, 59, 999);
+                    break;
+                case 'week':
+                    start = new Date(currentViewDate);
+                    start.setDate(currentViewDate.getDate() - currentViewDate.getDay());
+                    start.setHours(0, 0, 0, 0);
+                    end = new Date(start);
+                    end.setDate(start.getDate() + 6);
+                    end.setHours(23, 59, 59, 999);
+                    break;
+                case 'month':
+                    start = new Date(currentViewDate.getFullYear(), currentViewDate.getMonth(), 1);
+                    end = new Date(currentViewDate.getFullYear(), currentViewDate.getMonth() + 1, 0);
+                    end.setHours(23, 59, 59, 999);
+                    break;
+                default:
+                    start = new Date(0);
+                    end = new Date();
+            }
+
+            // 데이터 필터링
+            return allPointHistory.filter(item => {
+                try {
+                    let itemDate;
+                    if (item.createdAt && item.createdAt.toDate) {
+                        itemDate = item.createdAt.toDate();
+                    } else if (item.createdAt && item.createdAt.seconds) {
+                        itemDate = new Date(item.createdAt.seconds * 1000);
+                    } else if (item.timestamp && item.timestamp.toDate) {
+                        itemDate = item.timestamp.toDate();
+                    } else if (item.timestamp && item.timestamp.seconds) {
+                        itemDate = new Date(item.timestamp.seconds * 1000);
+                    } else {
+                        itemDate = new Date(item.createdAt || item.timestamp);
+                    }
+                    
+                    if (isNaN(itemDate.getTime())) {
+                        return false;
+                    }
+                    
+                    return itemDate >= start && itemDate <= end;
+                } catch (error) {
+                    console.error('날짜 변환 오류:', error, item);
+                    return false;
+                }
+            }).sort((a, b) => {
+                // 최신순 정렬
+                const dateA = a.createdAt?.toDate?.() || new Date(a.createdAt?.seconds * 1000) || new Date(a.createdAt);
+                const dateB = b.createdAt?.toDate?.() || new Date(b.createdAt?.seconds * 1000) || new Date(b.createdAt);
+                return dateB - dateA;
+            });
+        }
+
+        // CSV 내용 생성
+        function generateCSVContent(data) {
+            console.log('CSV 내용 생성 중...');
+            
+            // CSV 헤더
+            const headers = [
+                '日付',
+                '時間', 
+                '顧客メール',
+                '取引タイプ',
+                '説明',
+                'ポイント数',
+                '残高'
+            ];
+            
+            // CSV 데이터 행 생성
+            const rows = data.map(item => {
+                const isEarn = item.type === 'earn' || item.type === 'admin_add' || item.type === 'welcome_bonus' || item.type === 'purchase_points';
+                const isUse = item.type === 'use' || item.type === 'admin_subtract';
+                
+                // 날짜/시간 처리
+                let itemDate, dateStr, timeStr;
+                try {
+                    if (item.createdAt && item.createdAt.toDate) {
+                        itemDate = item.createdAt.toDate();
+                    } else if (item.createdAt && item.createdAt.seconds) {
+                        itemDate = new Date(item.createdAt.seconds * 1000);
+                    } else if (item.timestamp && item.timestamp.toDate) {
+                        itemDate = item.timestamp.toDate();
+                    } else if (item.timestamp && item.timestamp.seconds) {
+                        itemDate = new Date(item.timestamp.seconds * 1000);
+                    } else {
+                        itemDate = new Date(item.createdAt || item.timestamp);
+                    }
+                    
+                    dateStr = itemDate.toLocaleDateString('ja-JP');
+                    timeStr = itemDate.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' });
+                } catch (error) {
+                    console.error('날짜 처리 오류:', error);
+                    dateStr = '不明';
+                    timeStr = '不明';
+                }
+                
+                // 고객 이메일
+                const customerEmail = item.userEmail || item.customerEmail || item.userId || '不明';
+                
+                // 거래 타입
+                const transactionType = isEarn ? 'ポイント付与' : isUse ? 'ポイント使用' : 'その他';
+                
+                // 설명
+                let description = getPointDescription(item);
+                
+                // 포인트 수 (부호 포함)
+                const points = item.points || 0;
+                const pointsStr = isEarn ? `+${points}` : `-${Math.abs(points)}`;
+                
+                // 잔액
+                const balance = item.balanceAfter || item.balance || '不明';
+                
+                return [
+                    dateStr,
+                    timeStr,
+                    customerEmail,
+                    transactionType,
+                    description,
+                    pointsStr,
+                    balance
+                ];
+            });
+            
+            // CSV 문자열 생성
+            const csvRows = [headers, ...rows];
+            const csvContent = csvRows.map(row => 
+                row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(',')
+            ).join('\n');
+            
+            console.log('CSV 내용 생성 완료:', csvRows.length, '행');
+            return csvContent;
+        }
+
+        // CSV 파일 다운로드
+        function downloadCSVFile(content, filename) {
+            console.log('CSV 파일 다운로드 시작:', filename);
+            
+            // BOM 추가 (Excel에서 한글 깨짐 방지)
+            const BOM = '\uFEFF';
+            const blob = new Blob([BOM + content], { type: 'text/csv;charset=utf-8;' });
+            
+            // 다운로드 링크 생성
+            const link = document.createElement('a');
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            }
+            
+            console.log('CSV 파일 다운로드 완료');
+            showStoreAlert(`${filename}をダウンロードしました`, 'success');
         }
 
         // 로딩 표시
