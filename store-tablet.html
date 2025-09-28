@@ -76,6 +76,14 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             display: none;
         }
+
+        .point-history-overview-main {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
         
         .point-management {
             background: white;
@@ -569,14 +577,105 @@
             </div>
         </div>
 
-        <!-- Point Actions -->
-        <div class="point-actions" id="point-actions">
+        <!-- 포인트 이용현황 섹션 (항상 표시) -->
+        <div class="point-history-overview-main" id="point-history-overview-main">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="japanese-heading mb-0">
+                    <i class="fas fa-chart-line me-2"></i>ポイント利用状況
+                </h3>
+                <button class="btn btn-outline-secondary btn-sm" onclick="refreshPointHistory()">
+                    <i class="fas fa-sync-alt me-1"></i>更新
+                </button>
+            </div>
+
+            <!-- 필터 섹션 -->
+            <div class="filter-section mb-4">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label class="form-label japanese-text">期間選択</label>
+                        <select class="form-select" id="period-filter" onchange="filterPointHistory()">
+                            <option value="today">今日</option>
+                            <option value="week">今週</option>
+                            <option value="month">今月</option>
+                            <option value="year">今年</option>
+                            <option value="all">全て</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label japanese-text">タイプ</label>
+                        <select class="form-select" id="type-filter" onchange="filterPointHistory()">
+                            <option value="all">全て</option>
+                            <option value="earn">付与</option>
+                            <option value="use">使用</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label japanese-text">検索</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="search-customer" placeholder="顧客メールアドレスで検索">
+                            <button class="btn btn-outline-secondary" onclick="searchCustomerHistory()">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 통계 요약 -->
+            <div class="stats-summary mb-4">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-number" id="total-transactions">0</div>
+                            <div class="stat-label japanese-text">総取引数</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-number positive" id="total-earned">0</div>
+                            <div class="stat-label japanese-text">総付与ポイント</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-number negative" id="total-used">0</div>
+                            <div class="stat-label japanese-text">総使用ポイント</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stat-card">
+                            <div class="stat-number" id="total-customers">0</div>
+                            <div class="stat-label japanese-text">顧客数</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 포인트 이력 리스트 -->
+            <div class="history-list-container">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="japanese-heading mb-0">取引履歴</h5>
+                    <small class="text-muted japanese-text">最新10件を表示</small>
+                </div>
+                <div class="history-list" id="point-history-list">
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-secondary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="japanese-text mt-2">履歴を読み込み中...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Point Actions (QR 스캔 후에만 표시) -->
+        <div class="point-actions" id="point-actions" style="display: none;">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <h3 class="japanese-heading mb-0">
                     <i class="fas fa-coins me-2"></i>ポイント管理
                 </h3>
-                <button class="btn btn-outline-secondary btn-sm" onclick="showPointHistory()">
-                    <i class="fas fa-chart-line me-1"></i>利用状況
+                <button class="btn btn-outline-secondary btn-sm" onclick="resetScanner()">
+                    <i class="fas fa-arrow-left me-1"></i>戻る
                 </button>
             </div>
             
@@ -694,100 +793,6 @@
     <!-- QR Code Scanner Library -->
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 
-    <!-- 포인트 이용현황 섹션 -->
-    <div class="point-history-overview" id="point-history-overview" style="display: none;">
-        <div class="container">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h3 class="japanese-heading mb-0">
-                    <i class="fas fa-chart-line me-2"></i>ポイント利用状況
-                </h3>
-                <button class="btn btn-outline-secondary btn-sm" onclick="hidePointHistory()">
-                    <i class="fas fa-arrow-left me-1"></i>戻る
-                </button>
-            </div>
-
-            <!-- 필터 섹션 -->
-            <div class="filter-section mb-4">
-                <div class="row">
-                    <div class="col-md-3">
-                        <label class="form-label japanese-text">期間選択</label>
-                        <select class="form-select" id="period-filter" onchange="filterPointHistory()">
-                            <option value="today">今日</option>
-                            <option value="week">今週</option>
-                            <option value="month">今月</option>
-                            <option value="year">今年</option>
-                            <option value="all">全て</option>
-                        </select>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label japanese-text">タイプ</label>
-                        <select class="form-select" id="type-filter" onchange="filterPointHistory()">
-                            <option value="all">全て</option>
-                            <option value="earn">付与</option>
-                            <option value="use">使用</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label japanese-text">検索</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="search-customer" placeholder="顧客メールアドレスで検索">
-                            <button class="btn btn-outline-secondary" onclick="searchCustomerHistory()">
-                                <i class="fas fa-search"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 통계 요약 -->
-            <div class="stats-summary mb-4">
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <div class="stat-number" id="total-transactions">0</div>
-                            <div class="stat-label japanese-text">総取引数</div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <div class="stat-number positive" id="total-earned">0</div>
-                            <div class="stat-label japanese-text">総付与ポイント</div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <div class="stat-number negative" id="total-used">0</div>
-                            <div class="stat-label japanese-text">総使用ポイント</div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="stat-card">
-                            <div class="stat-number" id="total-customers">0</div>
-                            <div class="stat-label japanese-text">顧客数</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 포인트 이력 리스트 -->
-            <div class="history-list-container">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h5 class="japanese-heading mb-0">取引履歴</h5>
-                    <button class="btn btn-outline-secondary btn-sm" onclick="refreshPointHistory()">
-                        <i class="fas fa-sync-alt me-1"></i>更新
-                    </button>
-                </div>
-                <div class="history-list" id="point-history-list">
-                    <div class="text-center py-4">
-                        <div class="spinner-border text-secondary" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <p class="japanese-text mt-2">履歴を読み込み中...</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <script>
         let scanner = null;
@@ -972,6 +977,9 @@
             
             // Firebase 초기화 대기 (더 안전한 방식)
             await waitForFirebaseInit();
+            
+            // 포인트 이용현황 초기화
+            initializePointHistory();
             
             // Firebase가 완전히 초기화된 후 통계 로드
             setTimeout(async () => {
@@ -1911,20 +1919,10 @@
         let filteredPointHistory = [];
         let historyListener = null;
 
-        // 포인트 이용현황 표시
-        function showPointHistory() {
-            console.log('포인트 이용현황 표시');
-            document.getElementById('point-actions').style.display = 'none';
-            document.getElementById('point-history-overview').style.display = 'block';
+        // 페이지 로드 시 포인트 이용현황 자동 로드
+        function initializePointHistory() {
+            console.log('포인트 이용현황 초기화');
             loadAllPointHistory();
-        }
-
-        // 포인트 이용현황 숨기기
-        function hidePointHistory() {
-            console.log('포인트 이용현황 숨기기');
-            document.getElementById('point-history-overview').style.display = 'none';
-            document.getElementById('point-actions').style.display = 'block';
-            stopHistoryListener();
         }
 
         // 전체 포인트 이력 로드
@@ -2171,8 +2169,6 @@
         }
 
         // 전역 함수 노출
-        window.showPointHistory = showPointHistory;
-        window.hidePointHistory = hidePointHistory;
         window.filterPointHistory = filterPointHistory;
         window.searchCustomerHistory = searchCustomerHistory;
         window.refreshPointHistory = refreshPointHistory;
