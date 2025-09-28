@@ -13639,19 +13639,51 @@
                     // 클라이언트에서 정렬 및 제한
                     pointHistory.sort((a, b) => {
                         const getTimestamp = (item) => {
-                            if (!item || !item.timestamp && !item.createdAt) return new Date(0);
+                            if (!item) return new Date(0);
+                            
+                            // createdAt이 Firestore Timestamp인 경우
+                            if (item.createdAt && item.createdAt.toDate && typeof item.createdAt.toDate === 'function') {
+                                return item.createdAt.toDate();
+                            }
+                            
+                            // timestamp가 Firestore Timestamp인 경우
                             if (item.timestamp && item.timestamp.toDate && typeof item.timestamp.toDate === 'function') {
                                 return item.timestamp.toDate();
                             }
+                            
+                            // createdAt이 일반 날짜 문자열이나 숫자인 경우
                             if (item.createdAt) {
-                                return new Date(item.createdAt);
+                                const date = new Date(item.createdAt);
+                                if (!isNaN(date.getTime())) {
+                                    return date;
+                                }
                             }
-                            return new Date(item.timestamp);
+                            
+                            // timestamp가 일반 날짜 문자열이나 숫자인 경우
+                            if (item.timestamp) {
+                                const date = new Date(item.timestamp);
+                                if (!isNaN(date.getTime())) {
+                                    return date;
+                                }
+                            }
+                            
+                            // 기본값으로 현재 시간 사용
+                            return new Date();
                         };
                         return getTimestamp(b) - getTimestamp(a);
                     }).slice(0, 10);
                     
                     console.log('Firebase에서 포인트 이력 로드 완료:', pointHistory.length, '건');
+                    
+                    // 정렬 결과 확인을 위한 로그
+                    if (pointHistory.length > 0) {
+                        console.log('포인트 이력 정렬 결과 (최신순):');
+                        pointHistory.forEach((item, index) => {
+                            const timestamp = item.createdAt || item.timestamp;
+                            console.log(`${index + 1}. ${item.reason || item.description} - ${timestamp}`);
+                        });
+                    }
+                    
                     displayCustomerPointHistory(pointHistory);
                 } else {
                     // Firebase에서 포인트 이력 로드
