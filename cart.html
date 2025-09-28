@@ -603,6 +603,13 @@
                 return;
             }
             
+            // 기존 리스너가 있으면 중단
+            if (window.cartRealtimeListener) {
+                console.log('🔄 기존 Firebase 리스너 중단');
+                window.cartRealtimeListener();
+                window.cartRealtimeListener = null;
+            }
+            
             console.log('🔄 Firebase 실시간 리스너 설정 시작:', currentUser.email);
             
             const db = firebase.firestore();
@@ -1084,11 +1091,14 @@
                     window.location.href = 'checkout.html';
                     console.log('✅ 체크아웃 페이지 이동 명령 완료');
                     
-                    // 페이지 이동 실패 시 대체 방법 (3초 후)
+                    // 페이지 이동 확인 (1초 후)
                     setTimeout(() => {
-                        console.log('⚠️ 3초 후에도 페이지 이동 안됨 - 대체 방법 시도');
-                        window.open('checkout.html', '_self');
-                    }, 3000);
+                        if (window.location.href.includes('cart.html')) {
+                            console.error('❌ 페이지 이동 실패 - 여전히 cart.html에 있음');
+                            console.log('🔧 강제 페이지 이동 시도');
+                            window.location.replace('checkout.html');
+                        }
+                    }, 1000);
                     
                     return;
                 } else {
@@ -1336,41 +1346,7 @@
                 // Firebase 전용 카트 초기화 (localStorage 사용 안함)
                 console.log('🔄 cart.html: Firebase 전용 카트 초기화 시작');
                 
-                // Firebase 전용 동기화 (localStorage 사용 안함)
-                setTimeout(async () => {
-                    console.log('🔄 cart.html: Firebase 전용 동기화 시도');
-                    try {
-                        if (currentUser && firebase?.firestore) {
-                            const db = firebase.firestore();
-                            const cartDoc = await db.collection('userCarts').doc(currentUser.email).get();
-                            
-                            if (cartDoc.exists) {
-                                const firebaseData = cartDoc.data();
-                                const firebaseCart = firebaseData.cart || [];
-                                
-                                console.log('📦 cart.html Firebase 전용 동기화:');
-                                console.log('- Firebase 카트:', firebaseCart.length, '개');
-                                console.log('- 현재 카트:', currentCart.length, '개');
-                                
-                                // 카트 업데이트 진행 중이면 동기화 건너뜀
-                                if (window.cartUpdateInProgress) {
-                                    console.log('🚫 cart.html: 카트 업데이트 진행 중 - 동기화 건너뜀');
-                                    return;
-                                }
-                                
-                                if (JSON.stringify(firebaseCart) !== JSON.stringify(currentCart)) {
-                                    console.log('🔄 cart.html: 카트 불일치 - Firebase 데이터로 업데이트');
-                                    currentCart = firebaseCart;
-                                    renderCart(); // 카트 다시 렌더링
-                                    updateCartCount();
-                                    console.log('✅ cart.html: Firebase 전용 동기화 완료');
-                                }
-                            }
-                        }
-                    } catch (error) {
-                        console.log('❌ cart.html Firebase 전용 동기화 실패:', error);
-                    }
-                }, 3000);
+                // Firebase 전용 동기화는 실시간 리스너에서 처리하므로 제거
 
                 // Firebase 사용자 정보 설정 및 카트 로드 (즉시 실행)
                 const initializeUserAndCart = async () => {
@@ -1427,33 +1403,41 @@
                     }
                 };
                 
-                // 즉시 실행
-                initializeUserAndCart();
+                // 초기화 상태 추적
+                let initializationAttempted = false;
                 
-                // Firebase 초기화 완료 이벤트 리스너 추가
-                window.addEventListener('firebaseInitialized', async () => {
-                    console.log('🔥 Firebase 초기화 완료 이벤트 수신 - 카트 재초기화');
+                const safeInitializeUserAndCart = async () => {
+                    if (initializationAttempted) {
+                        console.log('🚫 이미 초기화 시도됨 - 중복 실행 방지');
+                        return;
+                    }
+                    initializationAttempted = true;
+                    await initializeUserAndCart();
+                };
+                
+                // 즉시 실행
+                safeInitializeUserAndCart();
+                
+                // Firebase 초기화 완료 이벤트 리스너 추가 (한 번만)
+                const firebaseListener = async () => {
+                    console.log('🔥 Firebase 초기화 완료 이벤트 수신');
                     if (currentCart.length === 0 || !currentUser) {
                         console.log('🔄 Firebase 초기화 후 카트 재로드');
-                        await initializeUserAndCart();
+                        initializationAttempted = false; // 재초기화 허용
+                        await safeInitializeUserAndCart();
                     }
-                });
+                };
                 
-                // 백업으로 1초 후에도 실행 (안전장치)
+                window.addEventListener('firebaseInitialized', firebaseListener);
+                
+                // 백업으로 2초 후에도 실행 (안전장치)
                 setTimeout(async () => {
                     if (currentCart.length === 0 && !currentUser) {
-                        console.log('🔄 백업 초기화 실행');
-                        await initializeUserAndCart();
+                        console.log('🔄 2초 후 백업 초기화 실행');
+                        initializationAttempted = false;
+                        await safeInitializeUserAndCart();
                     }
-                }, 1000);
-                
-                // 추가 백업으로 3초 후에도 실행
-                setTimeout(async () => {
-                    if (currentCart.length === 0 && currentUser) {
-                        console.log('🔄 3초 후 카트 재로드 실행');
-                        await initializeUserAndCart();
-                    }
-                }, 3000);
+                }, 2000);
                 
                 // 사용자 메뉴 업데이트
                 if (typeof window.updateUserMenu === 'function') {
