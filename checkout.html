@@ -1797,7 +1797,7 @@
                 console.log('- addressData.address2:', addressData.address2);
                 
                 // 배송 정보 필드 자동 입력 (다양한 필드명 및 중첩 구조 지원)
-                    const fields = {
+                const fields = {
                     'shipping-name': userData.name || userData.displayName || userData.fullName || currentUser.email.split('@')[0],
                     'shipping-phone': addressData.phone || addressData.phoneNumber || userData.phone || userData.phoneNumber || '',
                     'shipping-postal': addressData.postal || addressData.postalCode || addressData.zip || addressData.zipCode || '',
@@ -1806,6 +1806,14 @@
                     'shipping-address1': addressData.address1 || addressData.address || addressData.street || addressData.streetAddress || '',
                     'shipping-address2': addressData.address2 || addressData.addressDetail || addressData.detail || addressData.extraAddress || ''
                 };
+                
+                console.log('🔍 배송 정보 필드 매핑 전 분석:');
+                console.log('- userData.name:', userData.name);
+                console.log('- userData.phone:', userData.phone);
+                console.log('- addressData.postal:', addressData.postal);
+                console.log('- addressData.prefecture:', addressData.prefecture);
+                console.log('- addressData.city:', addressData.city);
+                console.log('- addressData.address1:', addressData.address1);
                 
                 // 중첩된 address 객체가 있는 경우 추가로 확인
                 if (userData.address && typeof userData.address === 'object') {
@@ -1868,11 +1876,9 @@
                 }
                     
                 if (filledCount > 0) {
-                    showAlert('shipping-alert', `保存された配送情報を${filledCount}件自動入力しました。`, 'success');
                     console.log(`✅ ${filledCount}개 배송정보 필드 자동 입력/업데이트 완료`);
                 } else {
                     console.log('📝 저장된 배송정보가 없음 - 수동 입력 필요');
-                    showAlert('shipping-alert', '保存された配送情報がありません。手動で入力してください。', 'info');
                 }
                 
             } catch (error) {
