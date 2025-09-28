@@ -16,16 +16,35 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100;200;300;400;500;600;700;800;900&display=swap">
     <link rel="stylesheet" href="assets/css/fontawesome.min.css">
     
-    <!-- QR Code Generator -->
-    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     
     <style>
         body {
             font-family: "Montserrat", sans-serif;
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            background-color: #f8f9fa;
+        }
+        .login-container {
             min-height: 100vh;
-            padding: 0;
-            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .login-card {
+            max-width: 400px;
+            width: 100%;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: none;
+            border-radius: 10px;
+        }
+        .login-header {
+            background-color: #000000;
+            color: white;
+            border-radius: 10px 10px 0 0;
+            padding: 2rem;
+            text-align: center;
+        }
+        .login-body {
+            padding: 2rem;
         }
         
         .japanese-text {
@@ -40,37 +59,6 @@
             line-height: 1.4;
         }
         
-        .store-container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        
-        .store-header {
-            background: linear-gradient(135deg, #343a40 0%, #495057 100%);
-            color: white;
-            padding: 30px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            text-align: center;
-        }
-        
-        .register-section {
-            background: white;
-            border-radius: 15px;
-            padding: 40px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-        
-        .success-section {
-            background: white;
-            border-radius: 15px;
-            padding: 40px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            text-align: center;
-            display: none;
-        }
         
         .form-control {
             font-size: 1rem;
@@ -113,673 +101,549 @@
             border-color: #545b62;
         }
         
-        .btn-large {
-            padding: 15px 30px;
-            font-size: 1.3rem;
-            border-radius: 10px;
-            font-weight: bold;
-            min-width: 200px;
-        }
-        
-        .qr-display {
-            background: #f8f9fa;
-            border: 3px solid #343a40;
-            border-radius: 15px;
-            padding: 30px;
-            margin: 20px 0;
-        }
-        
-        .qr-code-container {
-            text-align: center;
-            margin: 20px auto;
-        }
-        
-        .qr-code-container canvas {
-            margin: 0 auto;
-            border: 2px solid #343a40;
-            border-radius: 8px;
-        }
-        
-        .customer-info-card {
-            background: linear-gradient(135deg, #343a40 0%, #6c757d 100%);
-            color: white;
-            border-radius: 15px;
-            padding: 25px;
-            margin: 20px 0;
-        }
-        
-        .mode-selector {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 30px;
-            text-align: center;
-        }
-        
-        .mode-btn {
-            padding: 15px 30px;
-            margin: 10px;
-            border: 3px solid #343a40;
-            background: white;
-            color: #343a40;
-            border-radius: 15px;
-            font-size: 1.2rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s;
-            min-width: 200px;
-        }
-        
-        .mode-btn:hover,
-        .mode-btn.active {
-            background: #343a40;
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-        
-        .tablet-optimized {
-            touch-action: manipulation;
-        }
-        
-        .loading-spinner {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
-        
-        .alert-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 1050;
-            min-width: 300px;
-        }
-        
-        .staff-helper {
-            background: #fff3cd;
-            border: 1px solid #ffeaa7;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-        
-        .customer-helper {
-            background: #d1ecf1;
-            border: 1px solid #bee5eb;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-        }
-        
-        @media (max-width: 768px) {
-            .store-container {
-                padding: 15px;
+        /* 모바일 최적화 */
+        @media (max-width: 767.98px) {
+            .login-container {
+                padding: 0.5rem;
+                align-items: center;
+                justify-content: center;
             }
             
-            .register-section {
-                padding: 25px;
+            .login-card {
+                max-width: 100%;
+                margin: 0 auto;
             }
             
-            .mode-btn {
-                display: block;
-                width: 100%;
-                margin: 10px 0;
+            .login-header {
+                padding: 1.5rem;
             }
+            
+            .login-body {
+                padding: 1.5rem;
+            }
+        }
+        
+        /* 링크 호버 효과 */
+        .login-body a,
+        .login-body a:link,
+        .login-body a:visited {
+            color: #343a40 !important;
+            text-decoration: none !important;
+        }
+        
+        .login-body a:hover,
+        .login-body a:active {
+            color: #6c757d !important;
+            text-decoration: none !important;
+            transition: color 0.3s ease;
+        }
+        
+        /* 체크박스 모노톤 스타일 */
+        .form-check-input {
+            background-color: #fff;
+            border-color: #6c757d;
+        }
+        
+        .form-check-input:checked {
+            background-color: #343a40 !important;
+            border-color: #343a40 !important;
+        }
+        
+        .form-check-input:focus {
+            border-color: #6c757d;
+            box-shadow: 0 0 0 0.25rem rgba(108, 117, 125, 0.25);
+        }
+        
+        .form-check-input:checked:focus {
+            border-color: #343a40;
+            box-shadow: 0 0 0 0.25rem rgba(52, 58, 64, 0.25);
         }
     </style>
 </head>
 
-<body class="tablet-optimized">
-    <!-- 알림 컨테이너 -->
-    <div id="alert-container" class="alert-container"></div>
-
-    <div class="store-container">
-        <!-- 매장 헤더 -->
-        <div class="store-header">
-            <div class="row align-items-center">
-                <div class="col-md-3">
-                    <img src="assets/img/logo.png" alt="Aether Logo" class="img-fluid" style="max-height: 60px;">
-                </div>
-                <div class="col-md-6">
-                    <h2 class="mb-0 japanese-heading">Aether ポイント管理システム</h2>
-                </div>
-                <div class="col-md-3 text-end">
-                    <div class="japanese-text">
-                        <div id="current-time" style="font-size: 1.2rem; font-weight: bold;"></div>
-                        <small>店舗専用</small>
-                    </div>
+<body>
+    <!-- Start Top Nav -->
+    <nav class="navbar navbar-expand-lg navbar-light" id="templatemo_nav_top" style="min-height: 20px; background-color: #000000 !important;">
+        <div class="container text-light">
+            <div class="w-100 d-flex justify-content-between">
+                <div>
+                    <!-- 빈 공간으로 블랙 바 유지 -->
                 </div>
             </div>
         </div>
+    </nav>
+    <!-- Close Top Nav -->
 
-        <!-- 모드 선택 -->
-        <div class="mode-selector" id="mode-selector">
-            <h3 class="japanese-heading mb-4">登録方法をお選びください</h3>
-            <div class="row">
-                <div class="col-md-6">
-                    <button class="mode-btn" onclick="selectMode('customer')">
-                        <i class="fas fa-mobile-alt me-2"></i>
-                        <div class="japanese-text">お客様自身で登録</div>
-                        <small class="d-block mt-1">お客様がご自身で入力</small>
-                    </button>
-                </div>
-                <div class="col-md-6">
-                    <button class="mode-btn" onclick="selectMode('staff')">
-                        <i class="fas fa-user-tie me-2"></i>
-                        <div class="japanese-text">スタッフが代行登録</div>
-                        <small class="d-block mt-1">スタッフが入力をサポート</small>
-                    </button>
-                </div>
-            </div>
-        </div>
+    <!-- Header -->
+    <nav class="navbar navbar-expand-lg navbar-light shadow">
+        <div class="container d-flex justify-content-between align-items-center">
 
-        <!-- 가입 섹션 -->
-        <div class="register-section" id="register-section" style="display: none;">
-            <!-- 모드별 안내 -->
-            <div class="staff-helper" id="staff-helper" style="display: none;">
-                <h5 class="japanese-heading">
-                    <i class="fas fa-info-circle me-2"></i>スタッフ向けガイド
-                </h5>
-                <ul class="japanese-text mb-0">
-                    <li>お客様のメールアドレスとパスワードを確認してください</li>
-                    <li>登録完了後、QRコードをお客様にお見せください</li>
-                    <li>お客様のスマートフォンでQRコードを保存いただけます</li>
-                </ul>
-            </div>
+            <a class="navbar-brand text-success logo align-self-center" href="index.html">
+                <img src="assets/img/logo.png" alt="Logo" class="img-fluid" style="max-height: 50px;">
+            </a>
 
-            <div class="customer-helper" id="customer-helper" style="display: none;">
-                <h5 class="japanese-heading">
-                    <i class="fas fa-info-circle me-2"></i>お客様へ
-                </h5>
-                <ul class="japanese-text mb-0">
-                    <li>メールアドレスとパスワードをご入力ください</li>
-                    <li>登録後、ポイント用QRコードが発行されます</li>
-                    <li>QRコードをスマートフォンで保存してください</li>
-                </ul>
-            </div>
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#templatemo_main_nav" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-            <form id="store-register-form">
-                <div class="mb-3">
-                    <label for="email" class="form-label japanese-text">メールアドレス</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="fas fa-envelope text-muted"></i></span>
-                        <input type="email" class="form-control" id="email" name="email" placeholder="example@email.com" required>
+            <div class="align-self-center collapse navbar-collapse flex-fill  d-lg-flex justify-content-lg-between" id="templatemo_main_nav">
+                <!-- 모바일 메뉴 레이아웃 -->
+                <div class="d-lg-none w-100">
+                    <!-- 영문 메뉴 - 가로 정렬 -->
+                    <div class="d-flex justify-content-center mb-4">
+                        <ul class="nav navbar-nav d-flex flex-row gap-4">
+                            <li class="nav-item">
+                                <a class="nav-link" href="index.html">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="shop.html">Brand</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="info.html">Info</a>
+                            </li>
+                        </ul>
                     </div>
-                </div>
-
-                <div class="mb-3">
-                    <label for="password" class="form-label japanese-text">パスワード</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="fas fa-lock text-muted"></i></span>
-                        <input type="password" class="form-control" id="password" name="password" placeholder="6文字以上" minlength="6" required>
-                        <button class="btn btn-outline-secondary" type="button" id="toggle-password">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <label for="name" class="form-label japanese-text">お名前</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="fas fa-user text-muted"></i></span>
-                        <input type="text" class="form-control" id="name" name="name" placeholder="任意入力">
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <label for="phone" class="form-label japanese-text">電話番号</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="fas fa-phone text-muted"></i></span>
-                        <input type="tel" class="form-control" id="phone" name="phone" placeholder="任意入力">
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-login btn-dark w-100 japanese-text">
-                    <i class="fas fa-user-plus me-2"></i>会員登録
-                </button>
-
-                <div class="text-center mt-3">
-                    <button type="button" class="btn btn-outline-secondary" onclick="backToModeSelector()">
-                        <i class="fas fa-arrow-left me-2"></i>戻る
-                    </button>
-                </div>
-            </form>
-
-            <!-- 로딩 -->
-            <div class="loading-spinner" id="loading-spinner">
-                <div class="spinner-border text-dark" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p class="mt-2 japanese-text">登録処理中...</p>
-            </div>
-        </div>
-
-        <!-- 성공 섹션 -->
-        <div class="success-section" id="success-section">
-            <h2 class="japanese-heading text-success mb-4">
-                <i class="fas fa-check-circle me-2"></i>登録完了
-            </h2>
-
-            <!-- 고객 정보 카드 -->
-            <div class="customer-info-card">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h4 class="mb-1" id="success-customer-name">お客様</h4>
-                        <p class="mb-0" id="success-customer-email">email@example.com</p>
-                        <small>初回ポイント: 0pt</small>
-                    </div>
-                    <div class="col-md-4 text-center">
-                        <div class="japanese-text">会員番号</div>
-                        <div style="font-size: 1.5rem; font-weight: bold;" id="success-member-id">-</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- QR코드 표시 -->
-            <div class="qr-display">
-                <h4 class="japanese-heading text-center mb-3">
-                    <i class="fas fa-qrcode me-2"></i>お客様専用QRコード
-                </h4>
-                <p class="japanese-text text-center text-muted mb-3">
-                    次回来店時にこのQRコードをご提示ください
-                </p>
-                
-                <div id="success-qr-code" class="qr-code-container"></div>
-                
-                <div class="mt-3 text-center">
-                    <small class="japanese-text text-muted">
-                        QRトークン: <code id="success-qr-token">-</code>
-                    </small>
-                </div>
-            </div>
-
-            <!-- 안내 메시지 -->
-            <div class="mt-4">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="japanese-text">
-                            <h5><i class="fas fa-mobile-alt me-2"></i>お客様へ</h5>
-                            <ul>
-                                <li>QRコードをスマートフォンで撮影保存してください</li>
-                                <li>オンラインでも同じアカウントでログイン可能です</li>
-                                <li>ポイントは購入金額の3%が付与されます</li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="japanese-text">
-                            <h5><i class="fas fa-store me-2"></i>スタッフ向け</h5>
-                            <ul>
-                                <li>お客様にQRコード保存をご案内ください</li>
-                                <li>次回来店時はQRコードでポイント付与可能です</li>
-                                <li>管理者ダッシュボードで管理できます</li>
+                    
+                    <!-- 아이콘들 - 가로 정렬, 좌우 여백 추가 -->
+                    <div class="d-flex justify-content-center align-items-center gap-4 px-4">
+                        <a href="cart.html" class="nav-link text-decoration-none">
+                            <i class="fas fa-shopping-cart text-dark" style="font-size: 1.5rem;"></i>
+                            <span class="badge bg-secondary ms-1" id="cart-count-mobile">0</span>
+                        </a>
+                        <div class="dropdown">
+                            <a href="#" class="nav-link dropdown-toggle text-decoration-none" id="userDropdownMobile" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user text-dark" style="font-size: 1.5rem;"></i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-center" aria-labelledby="userDropdownMobile">
+                                <li id="login-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="login.html">
+                                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                                    </a>
+                                </li>
+                                <li id="register-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="register.html">
+                                        <i class="fas fa-user-plus me-2"></i>Register
+                                    </a>
+                                </li>
+                                <li id="profile-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="profile.html">
+                                        <i class="fas fa-user-circle me-2"></i>Profile
+                                    </a>
+                                </li>
+                                <li id="points-menu-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="points.html">
+                                        <i class="fas fa-coins me-2"></i>Points
+                                    </a>
+                                </li>
+                                <li id="logout-menu-mobile" style="display: none;">
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li id="logout-menu-item-mobile" style="display: none;">
+                                    <a class="dropdown-item" href="#" onclick="logout()">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                    </a>
+                                </li>
                             </ul>
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div class="text-center mt-4">
-                <button class="btn btn-outline-secondary btn-large me-3" onclick="printQRCode()">
-                    <i class="fas fa-print me-2"></i>QRコード印刷
-                </button>
-                <button class="btn btn-dark btn-large" onclick="registerNewCustomer()">
-                    <i class="fas fa-plus me-2"></i>新規登録
-                </button>
+                
+                <!-- 데스크톱 메뉴 레이아웃 -->
+                <div class="flex-fill d-none d-lg-block">
+                    <ul class="nav navbar-nav d-flex justify-content-between mx-lg-auto" style="max-width: 400px; margin: 0 auto;">
+                        <li class="nav-item">
+                            <a class="nav-link" href="index.html">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="shop.html">Brand</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="info.html">Info</a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="navbar align-self-center d-flex d-none d-lg-flex">
+                    <a href="cart.html" class="nav-link text-decoration-none me-3">
+                        <i class="fas fa-shopping-cart text-dark"></i>
+                        <span class="badge bg-secondary" id="cart-count">0</span>
+                    </a>
+                    <div class="dropdown">
+                        <a href="#" class="nav-link dropdown-toggle text-decoration-none" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user text-dark"></i>
+                            <span id="user-name" class="d-none d-lg-inline ms-1"></span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li id="login-menu" style="display: none;">
+                                <a class="dropdown-item" href="login.html">
+                                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                                </a>
+                            </li>
+                            <li id="register-menu" style="display: none;">
+                                <a class="dropdown-item" href="register.html">
+                                    <i class="fas fa-user-plus me-2"></i>Register
+                                </a>
+                            </li>
+                            <li id="profile-menu" style="display: none;">
+                                <a class="dropdown-item" href="profile.html">
+                                    <i class="fas fa-user-circle me-2"></i>Profile
+                                </a>
+                            </li>
+                            <li id="points-menu" style="display: none;">
+                                <a class="dropdown-item" href="points.html">
+                                    <i class="fas fa-coins me-2"></i>Points
+                                </a>
+                            </li>
+                            <li id="logout-menu" style="display: none;">
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li id="logout-menu-item" style="display: none;">
+                                <a class="dropdown-item" href="#" onclick="logout()">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
+    </nav>
+
+        <!-- Login Container -->
+        <div class="login-container">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-md-6 col-lg-5">
+                        <div class="card login-card">
+                            <div class="login-header">
+                                <h2 class="japanese-heading mb-0">ログイン</h2>
+                                <p class="japanese-text mb-0 mt-2">アカウントにサインイン</p>
+                            </div>
+                            <div class="login-body">
+                                <div id="login-alert" class="alert" style="display: none;"></div>
+
+                                <form id="login-form">
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label japanese-text">メールアドレス</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-envelope text-muted"></i></span>
+                                            <input type="email" class="form-control" id="email" placeholder="example@email.com" required>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="password" class="form-label japanese-text">パスワード</label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"><i class="fas fa-lock text-muted"></i></span>
+                                            <input type="password" class="form-control" id="password" placeholder="パスワードを入力" required>
+                                            <button class="btn btn-outline-secondary" type="button" id="toggle-password">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3 form-check">
+                                        <input type="checkbox" class="form-check-input" id="remember-me">
+                                        <label class="form-check-label japanese-text" for="remember-me">ログイン状態を保持</label>
+                                    </div>
+
+                                    <button type="submit" class="btn btn-login btn-dark w-100 japanese-text">
+                                        <i class="fas fa-sign-in-alt me-2"></i>ログイン
+                                    </button>
+                                </form>
+
+                                <div class="text-center mt-3">
+                                    <a href="#" class="text-decoration-none text-dark japanese-text" id="forgot-password">パスワードをお忘れですか？</a>
+                                </div>
+
+                                <hr class="my-4">
+
+                                <div class="text-center">
+                                    <p class="japanese-text mb-0">アカウントをお持ちでない方は</p>
+                                    <a href="register.html" class="text-decoration-none text-dark japanese-text fw-bold">新規登録</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <!-- Scripts -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-    
+    <!-- Start Script -->
     <script src="assets/js/jquery-1.11.0.min.js"></script>
+    <script src="assets/js/jquery-migrate-1.2.1.min.js"></script>
     <script src="assets/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/js/firebase-config.js"></script>
+    <script src="assets/js/templatemo.js"></script>
+    
 
+    <!-- Firebase SDK (v8) -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+    
+    <!-- 애플리케이션 스크립트 -->
+    <script src="assets/js/firebase-config.js?v=2.8"></script>
+    <script src="assets/js/auth-utils.js?v=2.4"></script>
+    <script src="assets/js/custom.js"></script>
+    
+    
     <script>
-        let currentMode = null;
-        let registeredCustomer = null;
+        function showAlert(message, type = 'danger') {
+            const alertDiv = document.getElementById('login-alert');
+            alertDiv.className = 'alert alert-' + type;
+            alertDiv.innerHTML = '<div class="japanese-text">' + message + '</div>';
+            alertDiv.style.display = 'block';
+            setTimeout(() => alertDiv.style.display = 'none', 5000);
+        }
 
-        // 페이지 로드 시 초기화
-        document.addEventListener('DOMContentLoaded', function() {
-            updateDateTime();
-            setInterval(updateDateTime, 1000);
-            
-            // 폼 제출 이벤트
-            document.getElementById('store-register-form').addEventListener('submit', handleRegistration);
-            
-            // 비밀번호 토글 기능
-            document.getElementById('toggle-password').addEventListener('click', function() {
-                const passwordInput = document.getElementById('password');
-                const toggleIcon = this.querySelector('i');
-                
-                if (passwordInput.type === 'password') {
-                    passwordInput.type = 'text';
-                    toggleIcon.classList.remove('fa-eye');
-                    toggleIcon.classList.add('fa-eye-slash');
-                } else {
-                    passwordInput.type = 'password';
-                    toggleIcon.classList.remove('fa-eye-slash');
-                    toggleIcon.classList.add('fa-eye');
-                }
-            });
+        // 패스워드 토글
+        document.getElementById('toggle-password').addEventListener('click', function() {
+            const passwordInput = document.getElementById('password');
+            const icon = this.querySelector('i');
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                passwordInput.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
         });
 
-        // 시간 업데이트
-        function updateDateTime() {
-            const now = new Date();
-            const timeOptions = { 
-                hour: '2-digit', 
-                minute: '2-digit',
-                second: '2-digit',
-                hour12: false 
-            };
-            document.getElementById('current-time').textContent = now.toLocaleTimeString('ja-JP', timeOptions);
-        }
-
-        // 모드 선택
-        function selectMode(mode) {
-            currentMode = mode;
+        // 이전 페이지로 리다이렉트하는 함수
+        function redirectToPreviousPage() {
+            console.log('리다이렉트 함수 실행');
             
-            // 모드 버튼 활성화
-            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            // URL 파라미터에서 redirect 확인
+            const urlParams = new URLSearchParams(window.location.search);
+            const redirectUrl = urlParams.get('redirect');
             
-            // 섹션 표시
-            document.getElementById('mode-selector').style.display = 'none';
-            document.getElementById('register-section').style.display = 'block';
+            console.log('Redirect URL 파라미터:', redirectUrl);
+            console.log('Document referrer:', document.referrer);
             
-            // 모드별 도움말 표시
-            if (mode === 'staff') {
-                document.getElementById('staff-helper').style.display = 'block';
-                document.getElementById('customer-helper').style.display = 'none';
-            } else {
-                document.getElementById('staff-helper').style.display = 'none';
-                document.getElementById('customer-helper').style.display = 'block';
-            }
-            
-            showAlert(`${mode === 'staff' ? 'スタッフ代行' : 'お客様自身'}登録モードに設定しました`, 'info');
-        }
-
-        // 모드 선택으로 돌아가기
-        function backToModeSelector() {
-            document.getElementById('register-section').style.display = 'none';
-            document.getElementById('success-section').style.display = 'none';
-            document.getElementById('mode-selector').style.display = 'block';
-            
-            // 폼 초기화
-            document.getElementById('store-register-form').reset();
-            document.getElementById('loading-spinner').style.display = 'none';
-            
-            currentMode = null;
-        }
-
-        // 가입 처리
-        async function handleRegistration(event) {
-            event.preventDefault();
-            
-            const formData = new FormData(event.target);
-            const userData = {
-                email: formData.get('email').trim(),
-                password: formData.get('password'),
-                name: formData.get('name').trim(),
-                phone: formData.get('phone').trim()
-            };
-            
-            // 유효성 검사
-            if (!userData.email || !userData.password) {
-                showAlert('メールアドレスとパスワードは必須です', 'warning');
+            // redirect URL이 있고, register.html이 아닌 경우
+            if (redirectUrl && !redirectUrl.includes('register.html')) {
+                console.log('Redirect URL로 이동:', decodeURIComponent(redirectUrl));
+                window.location.replace(decodeURIComponent(redirectUrl));
                 return;
             }
             
-            if (userData.password.length < 6) {
-                showAlert('パスワードは6文字以上で入力してください', 'warning');
+            // referrer가 있고, login.html이나 register.html이 아닌 경우
+            if (document.referrer && 
+                document.referrer !== window.location.href && 
+                !document.referrer.includes('login.html') &&
+                !document.referrer.includes('register.html')) {
+                console.log('Referrer로 이동:', document.referrer);
+                window.location.replace(document.referrer);
                 return;
             }
             
+            // 기본값으로 홈페이지
+            console.log('기본값으로 index.html로 이동');
+            window.location.replace('index.html');
+        }
+
+
+
+        // Firebase 로그인 처리 (개선된 에러 처리)
+        async function handleLogin(email, password, remember) {
             try {
-                showLoading(true);
+                console.log('=== 로그인 시도 시작 ===');
+                console.log('이메일:', email);
                 
-                // 중복 이메일 확인
-                const existingUsers = JSON.parse(localStorage.getItem('aetherUsers') || '[]');
-                if (existingUsers.some(u => u.email.toLowerCase() === userData.email.toLowerCase())) {
-                    throw new Error('このメールアドレスは既に登録されています');
+                // 입력값 검증
+                if (!email || !password) {
+                    showAlert('メールアドレスとパスワードを入力してください。');
+                    return false;
                 }
                 
-                // 사용자 생성
-                const newUser = {
-                    uid: 'store_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
-                    email: userData.email,
-                    name: userData.name || userData.email.split('@')[0],
-                    phone: userData.phone,
-                    points: 0,
-                    createdAt: new Date().toISOString(),
-                    registrationMode: currentMode,
-                    createdInStore: true
-                };
+                // Firebase 초기화 대기
+                if (typeof window.FirebaseService === 'undefined') {
+                    console.log('FirebaseService 대기 중...');
+                    let attempts = 0;
+                    const maxAttempts = 50;
+                    
+                    while (typeof window.FirebaseService === 'undefined' && attempts < maxAttempts) {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        attempts++;
+                        if (attempts % 10 === 0) {
+                            console.log(`FirebaseService 로드 대기 중... (${attempts}/50)`);
+                        }
+                    }
+                    
+                    if (typeof window.FirebaseService === 'undefined') {
+                        throw new Error('FirebaseService를 찾을 수 없습니다. Firebase 초기화를 확인해주세요.');
+                    }
+                }
                 
-                // QR token generation
-                newUser.qrToken = `QR_${newUser.uid}_${Date.now()}`;
-                newUser.qrTokenCreatedAt = new Date().toISOString();
-                
-                // Firebase 시도
-                let firebaseSuccess = false;
-                if (window.firebase && firebase.auth) {
+                // Firebase Authentication 설정 (remember 기능)
+                if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth()) {
                     try {
-                        // Firebase 사용자 생성 시도
-                        const firebaseResult = await firebase.auth().createUserWithEmailAndPassword(userData.email, userData.password);
-                        if (firebaseResult.user) {
-                            newUser.uid = firebaseResult.user.uid;
-                            newUser.qrToken = `QR_${newUser.uid}_${Date.now()}`;
-                            
-                            // Firestore에 사용자 정보 저장
-                            await firebase.firestore().collection('users').doc(newUser.uid).set({
-                                email: newUser.email,
-                                name: newUser.name,
-                                phone: newUser.phone,
-                                points: newUser.points,
-                                qrToken: newUser.qrToken,
-                                qrTokenCreatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                                createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                                registrationMode: currentMode,
-                                createdInStore: true
-                            });
-                            
-                            firebaseSuccess = true;
-                            console.log('Firebase 가입 성공:', firebaseResult.user.uid);
+                        if (remember) {
+                            await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+                        } else {
+                            await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION);
                         }
-                    } catch (firebaseError) {
-                        console.warn('Firebase 가입 실패, localStorage로 폴백:', firebaseError.message);
+                    } catch (persistenceError) {
+                        console.warn('Firebase persistence 설정 실패:', persistenceError);
+                        // 계속 진행
                     }
                 }
                 
-                // localStorage에 저장 (Firebase 성공 여부와 관계없이)
-                existingUsers.push(newUser);
-                localStorage.setItem('aetherUsers', JSON.stringify(existingUsers));
+                const result = await window.FirebaseService.loginUser(email, password);
+                console.log('로그인 결과:', result);
                 
-                // 로그인 상태 저장
-                localStorage.setItem('aetherLoginStatus', 'true');
-                localStorage.setItem('aetherUser', JSON.stringify(newUser));
-                
-                registeredCustomer = newUser;
-                
-                showLoading(false);
-                showSuccessPage();
-                
-                showAlert(
-                    firebaseSuccess ? 
-                    'Firebase会員登録が完了しました' : 
-                    'ローカル会員登録が完了しました', 
-                    'success'
-                );
-                
-            } catch (error) {
-                showLoading(false);
-                console.error('가입 처리 실패:', error);
-                showAlert(`登録に失敗しました: ${error.message}`, 'danger');
-            }
-        }
-
-        // 성공 페이지 표시
-        function showSuccessPage() {
-            if (!registeredCustomer) return;
-            
-            document.getElementById('register-section').style.display = 'none';
-            document.getElementById('success-section').style.display = 'block';
-            
-            // 고객 정보 표시
-            document.getElementById('success-customer-name').textContent = registeredCustomer.name;
-            document.getElementById('success-customer-email').textContent = registeredCustomer.email;
-            document.getElementById('success-member-id').textContent = registeredCustomer.uid.substring(0, 8).toUpperCase();
-            document.getElementById('success-qr-token').textContent = registeredCustomer.qrToken;
-            
-            // QR코드 생성
-            generateQRCodeForCustomer(registeredCustomer.qrToken);
-        }
-
-        // QR코드 생성
-        function generateQRCodeForCustomer(qrToken) {
-            try {
-                const container = document.getElementById('success-qr-code');
-                container.innerHTML = '';
-                
-                // Canvas 요소 생성
-                const canvas = document.createElement('canvas');
-                canvas.width = 250;
-                canvas.height = 250;
-                canvas.style.border = '3px solid #343a40';
-                canvas.style.borderRadius = '8px';
-                container.appendChild(canvas);
-
-                // QR 코드 생성
-                if (typeof qrcode !== 'undefined') {
-                    const qr = qrcode(0, 'H');
-                    qr.addData(qrToken);
-                    qr.make();
-
-                    const ctx = canvas.getContext('2d');
-                    const cellSize = 250 / qr.getModuleCount();
+                if (result.success) {
+                    console.log('✅ 로그인 성공:', result.user.uid || result.user.email);
+                    console.log('🔍 로그인 결과 상세:', {
+                        success: result.success,
+                        uid: result.user.uid,
+                        email: result.user.email,
+                        name: result.user.displayName,
+                        isFirebase: result.user.isFirebase
+                    });
                     
-                    // 배경색 (흰색)
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(0, 0, 250, 250);
+                    // localStorage에 로그인 상태 저장 (중복 방지)
+                    const loginStatus = {
+                        uid: result.user.uid,
+                        email: email,
+                        name: result.user.displayName || email.split('@')[0],
+                        loginTime: new Date().toISOString(),
+                        remember: remember,
+                        isFirebase: !!result.user.uid && !result.user.uid.startsWith('offline_')
+                    };
                     
-                    // QR 코드 그리기 (검은색)
-                    ctx.fillStyle = '#343a40';
-                    for (let row = 0; row < qr.getModuleCount(); row++) {
-                        for (let col = 0; col < qr.getModuleCount(); col++) {
-                            if (qr.isDark(row, col)) {
-                                ctx.fillRect(col * cellSize, row * cellSize, cellSize, cellSize);
-                            }
-                        }
+                    try {
+                        localStorage.setItem('aetherLoginStatus', JSON.stringify(loginStatus));
+                        console.log('로그인 상태 localStorage에 저장:', loginStatus);
+                    } catch (storageError) {
+                        console.warn('로그인 상태 저장 실패:', storageError);
+                        // 로그인은 성공했으므로 계속 진행
                     }
+                    
+                    // 잠시 대기 후 리다이렉트 (Firebase Auth 상태 동기화 대기)
+                    setTimeout(() => {
+                        console.log('🚀 로그인 성공 후 리다이렉트 시작');
+                        redirectToPreviousPage();
+                    }, 1000);
+                    
+                    return true;
                 } else {
-                    throw new Error('QR 코드 라이브러리가 로드되지 않았습니다');
+                    console.log('로그인 실패:', result.error, result.message);
+                    
+                    // 에러 메시지 표시
+                    const userMessage = window.FirebaseService.getLocalizedErrorMessage(result.error);
+                    showAlert(userMessage);
+                    return false;
                 }
             } catch (error) {
-                console.error('QR 코드 생성 실패:', error);
-                const container = document.getElementById('success-qr-code');
-                container.innerHTML = `
-                    <div class="text-center p-4 border border-secondary" style="width: 250px; height: 250px; margin: 0 auto; display: flex; flex-direction: column; justify-content: center;">
-                        <i class="fas fa-qrcode fa-3x text-secondary mb-2"></i>
-                        <small class="japanese-text text-muted">QRコード<br>生成エラー</small>
-                    </div>
-                `;
+                console.error('로그인 중 예외 발생:', error);
+                const errorCode = error.code || 'auth/unknown-error';
+                const localizedMessage = window.FirebaseService.getLocalizedErrorMessage(errorCode);
+                showAlert(localizedMessage);
+                return false;
             }
         }
 
-        // QR코드 인쇄
-        function printQRCode() {
-            if (!registeredCustomer) return;
-            
-            const printWindow = window.open('', '_blank');
-            const qrCanvas = document.querySelector('#success-qr-code canvas');
-            const qrDataUrl = qrCanvas ? qrCanvas.toDataURL() : '';
-            
-            printWindow.document.write(`
-                <html>
-                <head>
-                    <title>Aether ポイントカード</title>
-                    <style>
-                        body { font-family: "Noto Sans JP", sans-serif; text-align: center; padding: 20px; }
-                        .card { border: 2px solid #343a40; border-radius: 10px; padding: 20px; margin: 20px auto; max-width: 300px; }
-                        .logo { font-size: 24px; font-weight: bold; color: #343a40; margin-bottom: 10px; }
-                        .qr-code { margin: 15px 0; }
-                        .customer-info { margin: 15px 0; }
-                        .instructions { font-size: 12px; color: #666; margin-top: 15px; }
-                    </style>
-                </head>
-                <body>
-                    <div class="card">
-                        <div class="logo">Aether</div>
-                        <div class="customer-info">
-                            <strong>${registeredCustomer.name}</strong><br>
-                            <small>${registeredCustomer.email}</small>
-                        </div>
-                        <div class="qr-code">
-                            <img src="${qrDataUrl}" style="width: 200px; height: 200px;">
-                        </div>
-                        <div class="instructions">
-                            店舗でこのQRコードをご提示ください<br>
-                            ポイント: 購入金額の3%付与
-                        </div>
-                    </div>
-                </body>
-                </html>
-            `);
-            
-            printWindow.document.close();
-            setTimeout(() => {
-                printWindow.print();
-                printWindow.close();
-            }, 500);
-        }
+        // 로그인 폼 처리
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const remember = document.getElementById('remember-me').checked;
 
-        // 새 고객 등록
-        function registerNewCustomer() {
-            registeredCustomer = null;
-            backToModeSelector();
-            showAlert('新しいお客様の登録を開始してください', 'info');
-        }
+            // 로그인 버튼 비활성화
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>ログイン中...';
 
-        // 로딩 상태 관리
-        function showLoading(show) {
-            document.getElementById('loading-spinner').style.display = show ? 'block' : 'none';
-            document.getElementById('store-register-form').style.display = show ? 'none' : 'block';
-        }
+            let loginSuccessful = false;
 
-        // 알림 표시
-        function showAlert(message, type = 'info') {
-            const container = document.getElementById('alert-container');
-            const alertId = 'alert-' + Date.now();
+            try {
+                loginSuccessful = await handleLogin(email, password, remember);
+            } catch (error) {
+                console.error('로그인 처리 중 오류:', error);
+                showAlert('ログイン中にエラーが発生しました。もう一度お試しください。');
+            }
+
+            // 로그인이 실패한 경우에만 버튼 복원
+            if (!loginSuccessful) {
+                setTimeout(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }, 1000);
+            }
+            // 성공한 경우 버튼은 복원하지 않음 (페이지 이동 예정)
+        });
+
+        // 패스워드 찾기
+        document.getElementById('forgot-password').addEventListener('click', async function(e) {
+            e.preventDefault();
+            const email = prompt('パスワードをリセットするメールアドレスを入力してください：');
             
-            let bgClass = 'alert-secondary';
-            if (type === 'success') bgClass = 'alert-success';
-            else if (type === 'warning') bgClass = 'alert-warning';
-            else if (type === 'danger') bgClass = 'alert-danger';
-            else if (type === 'info') bgClass = 'alert-info';
+            if (!email) return;
             
-            const alertHtml = `
-                <div class="alert ${bgClass} alert-dismissible fade show" id="${alertId}" role="alert">
-                    ${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            `;
-            
-            container.insertAdjacentHTML('beforeend', alertHtml);
-            
-            // 5초 후 자동 제거
-            setTimeout(() => {
-                const alert = document.getElementById(alertId);
-                if (alert) {
-                    alert.remove();
+            try {
+                await auth.sendPasswordResetEmail(email);
+                showAlert('パスワードリセットメールを送信しました。メールをご確認ください。', 'success');
+            } catch (error) {
+                console.error('패스워드 리셋 중 오류:', error);
+                if (error.code === 'auth/user-not-found') {
+                    showAlert('登録されていないメールアドレスです。');
+                } else {
+                    showAlert('パスワードリセット送信でエラーが発生しました。');
                 }
-            }, 5000);
-        }
+            }
+        });
+
+        // 페이지 로드 시 실행
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('=== login.html DOMContentLoaded 시작 ===');
+            
+            // Firebase 초기화 완료 대기
+            let firebaseReady = false;
+            let attempts = 0;
+            const maxAttempts = 50; // 5초 대기
+            
+            const checkFirebase = async () => {
+                while (!firebaseReady && attempts < maxAttempts) {
+                    if (typeof firebase !== 'undefined' && firebase.auth && firebase.firestore) {
+                        firebaseReady = true;
+                        console.log('Firebase 초기화 완료');
+                        break;
+                    } else {
+                        await new Promise(resolve => setTimeout(resolve, 100));
+                        attempts++;
+                    }
+                }
+                
+                if (!firebaseReady) {
+                    console.warn('Firebase 초기화 시간 초과, 기본 모드로 진행');
+                }
+                
+                // 사용자 메뉴 업데이트
+                if (typeof window.updateUserMenu === 'function') {
+                    console.log('auth-utils.js updateUserMenu 함수 호출');
+                    window.updateUserMenu();
+                } else {
+                    console.warn('auth-utils.js updateUserMenu 함수를 찾을 수 없습니다');
+                }
+                
+                // 모바일 QR코드 제어 초기화
+                if (typeof setupMobileQRCodeControl === 'function') {
+                    setupMobileQRCodeControl();
+                }
+                
+                // 장바구니 카운트 업데이트
+                if (typeof window.updateCartCount === 'function') {
+                    window.updateCartCount();
+                }
+            };
+            
+            checkFirebase();
+        });
+
     </script>
 </body>
 </html>
