@@ -222,6 +222,60 @@
             border-radius: 10px;
             background: #f8f9fa;
         }
+
+        /* 포인트 이력 스타일 */
+        .point-history-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .point-history-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            background: #f8f9fa;
+        }
+
+        .point-history-list {
+            padding: 0;
+        }
+
+        .point-history-item {
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            padding: 15px 20px;
+            transition: background-color 0.2s ease;
+        }
+
+        .point-history-item:last-child {
+            border-bottom: none;
+        }
+
+        .point-history-item:hover {
+            background-color: #f8f9fa;
+        }
+
+        .point-description {
+            font-weight: 500;
+            color: #343a40;
+            margin-bottom: 5px;
+        }
+
+        .point-amount {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .point-amount.positive {
+            color: #28a745 !important;
+        }
+
+        .point-amount.negative {
+            color: #dc3545 !important;
+        }
     </style>
 </head>
 
@@ -322,6 +376,27 @@
                         <div class="japanese-text">現在のポイント</div>
                         <div class="points-display" id="customer-points">0</div>
                         <div class="japanese-text">Point</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 포인트 이력 섹션 -->
+            <div class="point-history-section mt-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="japanese-heading mb-0">
+                        <i class="fas fa-history me-2"></i>ポイント履歴
+                    </h5>
+                    <button class="btn btn-outline-secondary btn-sm" onclick="refreshCustomerPointHistory()">
+                        <i class="fas fa-sync-alt me-1"></i>更新
+                    </button>
+                </div>
+                
+                <div class="point-history-container">
+                    <div id="customer-point-history" class="point-history-list">
+                        <div class="text-center text-muted py-4">
+                            <i class="fas fa-history fa-2x mb-2"></i>
+                            <p class="japanese-text">ポイント履歴がありません</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -677,6 +752,9 @@
             // 실시간 포인트 동기화 시작
             startRealTimePointSync();
             
+            // 포인트 이력 로드
+            loadCustomerPointHistory();
+            
             // 성공 애니메이션
             document.getElementById('customer-info').classList.add('success-animation');
             setTimeout(() => {
@@ -742,6 +820,9 @@
                     // 성공 메시지
                     alert(`${points}ポイントを付与しました！`);
                     
+                    // 포인트 이력 새로고침
+                    loadCustomerPointHistory();
+                    
                     // 폼 초기화
                     document.getElementById('purchase-amount').value = '';
                     document.getElementById('points-to-add').value = '';
@@ -789,6 +870,10 @@
                     
                     await updateTodayStats(points, reason, currentCustomer.email);
                     alert(`${points}ポイントを追加しました！`);
+                    
+                    // 포인트 이력 새로고침
+                    loadCustomerPointHistory();
+                    
                     document.getElementById('manual-points').value = '';
                 } else {
                     alert('ポイント追加に失敗しました。\n' + result.error);
@@ -837,6 +922,10 @@
                     
                     await updateTodayStats(-points, reason, currentCustomer.email);
                     alert(`${points}ポイントを差し引きました。`);
+                    
+                    // 포인트 이력 새로고침
+                    loadCustomerPointHistory();
+                    
                     document.getElementById('manual-points').value = '';
                 } else {
                     alert('ポイント差引に失敗しました。\n' + result.error);
@@ -1030,6 +1119,158 @@
             
             // 더 시각적인 알림이 필요하면 여기에 구현
             // 예: 토스트 메시지, 애니메이션 등
+        }
+
+        // 고객 포인트 이력 로드
+        async function loadCustomerPointHistory() {
+            if (!currentCustomer || !currentCustomer.uid) {
+                console.log('고객 정보가 없어서 포인트 이력을 로드할 수 없습니다.');
+                return;
+            }
+
+            try {
+                console.log('고객 포인트 이력 로드 시작:', currentCustomer.uid);
+                
+                // Firebase에서 포인트 이력 조회
+                const historySnapshot = await firebase.firestore().collection('pointHistory').get();
+                
+                const pointHistory = [];
+                historySnapshot.forEach(doc => {
+                    const data = doc.data();
+                    // userId 또는 userEmail로 매칭
+                    if (data.userId === currentCustomer.uid || 
+                        data.userEmail === currentCustomer.email ||
+                        data.userId === currentCustomer.email) {
+                        
+                        pointHistory.push({
+                            id: doc.id,
+                            ...data
+                        });
+                    }
+                });
+                
+                // 클라이언트에서 정렬 및 제한
+                pointHistory.sort((a, b) => {
+                    const getTimestamp = (item) => {
+                        if (!item || !item.timestamp && !item.createdAt) return new Date(0);
+                        if (item.timestamp && item.timestamp.toDate && typeof item.timestamp.toDate === 'function') {
+                            return item.timestamp.toDate();
+                        }
+                        if (item.createdAt) {
+                            return new Date(item.createdAt);
+                        }
+                        return new Date(item.timestamp);
+                    };
+                    return getTimestamp(b) - getTimestamp(a);
+                }).slice(0, 10);
+                
+                console.log('Firebase에서 포인트 이력 로드 완료:', pointHistory.length, '건');
+                displayCustomerPointHistory(pointHistory);
+                
+            } catch (error) {
+                console.error('포인트 이력 로드 실패:', error);
+                alert('ポイント履歴の読み込みに失敗しました');
+            }
+        }
+
+        // 고객 포인트 이력 표시
+        function displayCustomerPointHistory(history) {
+            const container = document.getElementById('customer-point-history');
+            
+            if (!container) {
+                console.error('포인트 이력 컨테이너를 찾을 수 없습니다');
+                return;
+            }
+            
+            if (!history || history.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-history fa-2x mb-2"></i>
+                        <p class="japanese-text">ポイント履歴がありません</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const historyHTML = history.map(item => {
+                const getTimestamp = (item) => {
+                    if (!item) return new Date(0);
+                    
+                    // createdAt이 Firestore Timestamp인 경우
+                    if (item.createdAt && item.createdAt.toDate && typeof item.createdAt.toDate === 'function') {
+                        return item.createdAt.toDate();
+                    }
+                    
+                    // timestamp가 Firestore Timestamp인 경우
+                    if (item.timestamp && item.timestamp.toDate && typeof item.timestamp.toDate === 'function') {
+                        return item.timestamp.toDate();
+                    }
+                    
+                    // createdAt이 일반 날짜 문자열이나 숫자인 경우
+                    if (item.createdAt) {
+                        const date = new Date(item.createdAt);
+                        if (!isNaN(date.getTime())) {
+                            return date;
+                        }
+                    }
+                    
+                    // timestamp가 일반 날짜 문자열이나 숫자인 경우
+                    if (item.timestamp) {
+                        const date = new Date(item.timestamp);
+                        if (!isNaN(date.getTime())) {
+                            return date;
+                        }
+                    }
+                    
+                    // 현재 시간을 기본값으로 사용
+                    return new Date();
+                };
+
+                const date = getTimestamp(item);
+                const dateStr = date.toLocaleDateString('ja-JP', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+
+                const points = item.points || 0;
+                const pointsStr = points > 0 ? `+${points}` : `${points}`;
+                const pointsClass = points > 0 ? 'positive' : 'negative';
+
+                let description = '';
+                if (item.reason) {
+                    description = item.reason;
+                } else if (item.description) {
+                    description = item.description;
+                }
+
+                return `
+                    <div class="point-history-item">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <div class="point-description japanese-text">${description}</div>
+                                <small class="text-muted japanese-text">${dateStr}</small>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <div class="point-amount ${pointsClass} japanese-text">${pointsStr} pt</div>
+                                ${item.balance ? `<small class="text-muted japanese-text">残高: ${item.balance} pt</small>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = historyHTML;
+        }
+
+        // 포인트 이력 새로고침
+        function refreshCustomerPointHistory() {
+            if (currentCustomer && currentCustomer.uid) {
+                loadCustomerPointHistory();
+                alert('ポイント履歴を更新しました');
+            }
         }
 
         // 로딩 표시
