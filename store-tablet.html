@@ -1303,45 +1303,58 @@
                 realTimeListener = null;
             }
             
-            // Firebase Firestore 실시간 리스너 설정
+            // 포인트 이력 실시간 리스너 설정 (관리자 대시보드와 동일한 방식)
             realTimeListener = firebase.firestore()
-                .collection('users')
-                .doc(currentCustomer.uid)
-                .onSnapshot((doc) => {
-                    if (doc.exists) {
-                        const userData = doc.data();
-                        const newPoints = userData.points || 0;
-                        
-                        // 포인트가 변경되었는지 확인
-                        if (currentCustomer.points !== newPoints) {
-                            console.log('실시간 포인트 업데이트 감지:', {
-                                이전: currentCustomer.points,
-                                현재: newPoints,
-                                변경량: newPoints - currentCustomer.points
-                            });
-                            
-                            // 현재 고객 정보 업데이트
-                            currentCustomer.points = newPoints;
-                            currentCustomer.name = userData.name || currentCustomer.name;
-                            currentCustomer.email = userData.email || currentCustomer.email;
-                            currentCustomer.phone = userData.phone || currentCustomer.phone;
-                            
-                            // UI 업데이트
-                            document.getElementById('customer-points').textContent = newPoints.toLocaleString();
-                            document.getElementById('customer-name').textContent = currentCustomer.name || 'お客様';
-                            document.getElementById('customer-email').textContent = currentCustomer.email || '';
-                            document.getElementById('customer-phone').textContent = currentCustomer.phone || '';
-                            
-                            // 포인트 변경 알림 (선택사항)
-                            if (newPoints > currentCustomer.points) {
-                                showPointChangeNotification(`+${newPoints - currentCustomer.points}ポイント`);
-                            }
+                .collection('pointHistory')
+                .where('userId', '==', currentCustomer.uid)
+                .or('userEmail', '==', currentCustomer.email)
+                .or('userId', '==', currentCustomer.email)
+                .onSnapshot(async (snapshot) => {
+                    console.log('실시간 포인트 이력 변경 감지');
+                    
+                    // 포인트 이력에서 실제 포인트 재계산
+                    let calculatedPoints = 0;
+                    let earnedPoints = 0;
+                    let usedPoints = 0;
+                    
+                    snapshot.forEach(doc => {
+                        const data = doc.data();
+                        if (data.type === 'earn' || data.type === 'admin_add' || data.type === 'welcome_bonus') {
+                            earnedPoints += data.points || 0;
+                        } else if (data.type === 'use' || data.type === 'admin_subtract') {
+                            usedPoints += data.points || 0;
                         }
-                    } else {
-                        console.warn('고객 문서가 존재하지 않습니다:', currentCustomer.uid);
+                    });
+                    
+                    calculatedPoints = earnedPoints - usedPoints;
+                    
+                    console.log('실시간 포인트 재계산:', {
+                        이전: currentCustomer.points,
+                        현재: calculatedPoints,
+                        적립: earnedPoints,
+                        사용: usedPoints,
+                        변경량: calculatedPoints - currentCustomer.points
+                    });
+                    
+                    // 포인트가 변경되었는지 확인
+                    if (currentCustomer.points !== calculatedPoints) {
+                        // 현재 고객 정보 업데이트
+                        currentCustomer.points = calculatedPoints;
+                        
+                        // UI 업데이트
+                        document.getElementById('customer-points').textContent = calculatedPoints.toLocaleString();
+                        
+                        // 포인트 이력도 새로고침
+                        loadCustomerPointHistory();
+                        
+                        // 포인트 변경 알림
+                        const changeAmount = calculatedPoints - (currentCustomer.points || 0);
+                        if (changeAmount > 0) {
+                            showPointChangeNotification(`+${changeAmount}ポイント`);
+                        }
                     }
                 }, (error) => {
-                    console.error('실시간 동기화 오류:', error);
+                    console.error('실시간 포인트 동기화 오류:', error);
                 });
         }
         
@@ -1385,10 +1398,12 @@
                     const pointHistory = [];
                     historySnapshot.forEach(doc => {
                         const data = doc.data();
-                        // userId 또는 userEmail로 매칭
+                        // userId 또는 userEmail로 매칭 (모든 가능한 식별자 확인)
                         if (data.userId === currentCustomer.uid || 
                             data.userEmail === currentCustomer.email ||
-                            data.userId === currentCustomer.email) {
+                            data.userId === currentCustomer.email ||
+                            data.userId === currentCustomer.documentId ||
+                            data.userEmail === currentCustomer.uid) {
                             
                         pointHistory.push({
                             id: doc.id,
