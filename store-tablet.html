@@ -1647,8 +1647,24 @@
 
         // 통계 표시 업데이트
         function updateStatsDisplay() {
-            document.getElementById('today-customers').textContent = todayStats.customers.toLocaleString();
-            document.getElementById('today-points').textContent = todayStats.points.toLocaleString();
+            try {
+                const customersEl = document.getElementById('today-customers');
+                const pointsEl = document.getElementById('today-points');
+                
+                if (customersEl) {
+                    customersEl.textContent = todayStats.customers.toLocaleString();
+                } else {
+                    console.warn('today-customers 요소를 찾을 수 없습니다');
+                }
+                
+                if (pointsEl) {
+                    pointsEl.textContent = todayStats.points.toLocaleString();
+                } else {
+                    console.warn('today-points 요소를 찾을 수 없습니다');
+                }
+            } catch (error) {
+                console.error('통계 표시 업데이트 오류:', error);
+            }
         }
 
         // 실시간 포인트 동기화 시작
@@ -2373,25 +2389,36 @@
             filtered = filtered.filter(item => {
                 // Firestore Timestamp를 Date로 변환
                 let itemDate;
-                if (item.createdAt && item.createdAt.toDate) {
-                    itemDate = item.createdAt.toDate();
-                } else if (item.createdAt && item.createdAt.seconds) {
-                    itemDate = new Date(item.createdAt.seconds * 1000);
-                } else if (item.createdAt instanceof Date) {
-                    itemDate = item.createdAt;
-                } else {
-                    console.log('날짜 변환 실패:', item.createdAt);
+                try {
+                    if (item.createdAt && item.createdAt.toDate) {
+                        itemDate = item.createdAt.toDate();
+                    } else if (item.createdAt && item.createdAt.seconds) {
+                        itemDate = new Date(item.createdAt.seconds * 1000);
+                    } else if (item.createdAt instanceof Date) {
+                        itemDate = item.createdAt;
+                    } else {
+                        console.log('날짜 변환 실패:', item.createdAt);
+                        return false;
+                    }
+                    
+                    // 유효한 날짜인지 확인
+                    if (isNaN(itemDate.getTime())) {
+                        console.warn('유효하지 않은 날짜:', itemDate, item);
+                        return false;
+                    }
+                    
+                    const isInRange = itemDate >= start && itemDate <= end;
+                    console.log('날짜 비교:', {
+                        itemDate: itemDate.toISOString(),
+                        isInRange,
+                        userId: item.userId || item.userEmail
+                    });
+                    
+                    return isInRange;
+                } catch (error) {
+                    console.error('날짜 필터링 오류:', error, item);
                     return false;
                 }
-                
-                const isInRange = itemDate >= start && itemDate <= end;
-                console.log('날짜 비교:', {
-                    itemDate: itemDate.toISOString(),
-                    isInRange,
-                    userId: item.userId || item.userEmail
-                });
-                
-                return isInRange;
             });
 
             // 타입 필터
