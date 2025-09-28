@@ -527,6 +527,10 @@
                             <button onclick="proceedToCheckout()" class="btn btn-secondary btn-lg japanese-text" id="checkout-btn" style="display: none;">
                                 <i class="fas fa-credit-card me-2"></i>ご注文手続きへ
                             </button>
+                            <!-- 테스트 버튼 추가 -->
+                            <button onclick="testCheckoutNavigation()" class="btn btn-outline-secondary btn-sm japanese-text" id="test-checkout-btn" style="display: none; margin-top: 10px;">
+                                <i class="fas fa-bug me-2"></i>테스트: 체크아웃 이동
+                            </button>
                             <a href="shop.html" class="btn btn-outline-secondary japanese-text">お買い物を続ける</a>
                         </div>
                     </div>
@@ -975,12 +979,16 @@
             document.getElementById('total').textContent = '¥' + subtotal.toLocaleString();
             
             const checkoutBtn = document.getElementById('checkout-btn');
+            const testCheckoutBtn = document.getElementById('test-checkout-btn');
+            
             if (checkoutBtn) {
                 if (cart.length === 0) {
                     checkoutBtn.style.display = 'none';
+                    if (testCheckoutBtn) testCheckoutBtn.style.display = 'none';
                     console.log('⚠️ 주문 수속 버튼 숨김 (카트 비어있음)');
                 } else {
                     checkoutBtn.style.display = 'block';
+                    if (testCheckoutBtn) testCheckoutBtn.style.display = 'block';
                     console.log('✅ 주문 수속 버튼 표시 (카트에 상품 있음)');
                 }
             } else {
@@ -990,12 +998,14 @@
             console.log('카트 총액 업데이트:', subtotal, '원, 상품 수:', cart.length);
         }
 
-        async function proceedToCheckout() {
+        // 전역에서 접근 가능하도록 함수 등록
+        window.proceedToCheckout = async function() {
             console.log('🚀🚀🚀 proceedToCheckout 함수 시작 🚀🚀🚀');
             console.log('🔍 현재 상태 확인:');
             console.log('- currentCart 길이:', currentCart.length);
             console.log('- currentUser:', currentUser ? currentUser.email : '없음');
             console.log('- Firebase 상태:', firebase?.apps?.length > 0 ? '초기화됨' : '초기화 안됨');
+            console.log('- 함수 호출 스택:', new Error().stack);
             
             // 버튼 로딩 상태로 변경
             const checkoutBtn = document.getElementById('checkout-btn');
@@ -1122,6 +1132,48 @@
                 console.log('🔄 오류 발생 - 체크아웃으로 이동 시도');
                 window.location.href = 'checkout.html';
             }
+        }
+        
+        // 테스트: 체크아웃 페이지 이동 함수 (전역 등록)
+        window.testCheckoutNavigation = function() {
+            console.log('🧪🧪🧪 테스트 체크아웃 이동 시작 🧪🧪🧪');
+            console.log('🔍 테스트 상태:');
+            console.log('- 현재 URL:', window.location.href);
+            console.log('- currentCart:', currentCart);
+            console.log('- currentUser:', currentUser);
+            
+            // 여러 방법으로 페이지 이동 시도
+            console.log('🚀 방법 1: window.location.href 시도');
+            try {
+                window.location.href = 'checkout.html';
+                console.log('✅ window.location.href 실행 완료');
+            } catch (error) {
+                console.error('❌ window.location.href 실패:', error);
+            }
+            
+            setTimeout(() => {
+                if (window.location.href.includes('cart.html')) {
+                    console.log('🚀 방법 2: window.location.replace 시도');
+                    try {
+                        window.location.replace('checkout.html');
+                        console.log('✅ window.location.replace 실행 완료');
+                    } catch (error) {
+                        console.error('❌ window.location.replace 실패:', error);
+                    }
+                }
+            }, 1000);
+            
+            setTimeout(() => {
+                if (window.location.href.includes('cart.html')) {
+                    console.log('🚀 방법 3: window.open 시도');
+                    try {
+                        window.open('checkout.html', '_self');
+                        console.log('✅ window.open 실행 완료');
+                    } catch (error) {
+                        console.error('❌ window.open 실패:', error);
+                    }
+                }
+            }, 2000);
         }
         
         // 간단한 Firebase 로그인 상태 확인 함수
@@ -1383,16 +1435,34 @@
                         renderCart();
                         updateCartCount();
                         
-                        // 주문 수속 버튼 상태 확인
+                        // 주문 수속 버튼 상태 확인 및 이벤트 리스너 등록
                         const checkoutBtn = document.getElementById('checkout-btn');
+                        const testCheckoutBtn = document.getElementById('test-checkout-btn');
+                        
                         if (checkoutBtn) {
+                            // 기존 이벤트 리스너 제거
+                            checkoutBtn.removeEventListener('click', window.proceedToCheckout);
+                            // 새 이벤트 리스너 추가
+                            checkoutBtn.addEventListener('click', window.proceedToCheckout);
+                            console.log('🔧 checkout-btn 이벤트 리스너 등록 완료');
+                            
                             if (currentCart.length > 0) {
                                 checkoutBtn.style.display = 'block';
+                                if (testCheckoutBtn) testCheckoutBtn.style.display = 'block';
                                 console.log('✅ 주문 수속 버튼 활성화');
                             } else {
                                 checkoutBtn.style.display = 'none';
+                                if (testCheckoutBtn) testCheckoutBtn.style.display = 'none';
                                 console.log('⚠️ 주문 수속 버튼 비활성화 (카트 비어있음)');
                             }
+                        }
+                        
+                        if (testCheckoutBtn) {
+                            // 기존 이벤트 리스너 제거
+                            testCheckoutBtn.removeEventListener('click', window.testCheckoutNavigation);
+                            // 새 이벤트 리스너 추가
+                            testCheckoutBtn.addEventListener('click', window.testCheckoutNavigation);
+                            console.log('🔧 test-checkout-btn 이벤트 리스너 등록 완료');
                         }
                         
                     } catch (error) {
