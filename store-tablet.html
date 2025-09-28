@@ -747,7 +747,7 @@
                             
                             <div class="mb-3">
                                 <label class="form-label japanese-text">理由</label>
-                                <select class="form-control" id="point-reason">
+                                <select class="form-control" id="point-reason" onchange="toggleProductInfoField()">
                                     <option value="店舗購入">店舗購入</option>
                                     <option value="特別付与">特別付与</option>
                                     <option value="イベント特典">イベント特典</option>
@@ -757,6 +757,18 @@
                                     <option value="修正">修正</option>
                                     <option value="その他">その他</option>
                                 </select>
+                            </div>
+                            
+                            <!-- 상품 정보 입력 필드 (포인트 사용 시에만 표시) -->
+                            <div class="mb-3" id="product-info-field" style="display: none;">
+                                <label for="product-barcode" class="form-label japanese-text">商品情報</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="product-barcode" placeholder="バーコードまたは商品名を入力">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="scanProductBarcode()">
+                                        <i class="fas fa-barcode"></i>
+                                    </button>
+                                </div>
+                                <small class="form-text text-muted japanese-text">バーコードをスキャンするか、商品名を直接入力してください</small>
                             </div>
                             
                             <div class="row">
@@ -1431,6 +1443,31 @@
             }
         }
 
+        // 상품 정보 필드 토글
+        function toggleProductInfoField() {
+            const reason = document.getElementById('point-reason').value;
+            const productField = document.getElementById('product-info-field');
+            
+            if (reason === 'ポイント使用') {
+                productField.style.display = 'block';
+                document.getElementById('product-barcode').required = true;
+            } else {
+                productField.style.display = 'none';
+                document.getElementById('product-barcode').required = false;
+                document.getElementById('product-barcode').value = '';
+            }
+        }
+
+        // 상품 바코드 스캔 (실제 구현은 카메라 API 사용)
+        function scanProductBarcode() {
+            // 실제 구현에서는 카메라를 통한 바코드 스캔 기능을 추가할 수 있습니다
+            const barcodeInput = document.getElementById('product-barcode');
+            const scannedBarcode = prompt('バーコードをスキャンまたは手動入力してください:');
+            if (scannedBarcode) {
+                barcodeInput.value = scannedBarcode;
+            }
+        }
+
         // 수동 포인트 추가
         async function addManualPoints() {
             const points = parseInt(document.getElementById('manual-points').value);
@@ -1497,9 +1534,24 @@
                 return;
             }
             
+            // 포인트 사용 시 상품 정보 필수 입력
+            if (reason === 'ポイント使用') {
+                const productInfo = document.getElementById('product-barcode').value;
+                if (!productInfo || productInfo.trim() === '') {
+                    showStoreAlert('商品情報を入力してください', 'warning');
+                    return;
+                }
+            }
+            
+            let confirmMessage = `${points}ポイントを差し引きますか？<br><small class="text-muted">理由: ${reason}</small>`;
+            if (reason === 'ポイント使用') {
+                const productInfo = document.getElementById('product-barcode').value;
+                confirmMessage += `<br><small class="text-muted">商品: ${productInfo}</small>`;
+            }
+            
             createCustomConfirmModal(
                 'ポイント差引確認',
-                `${points}ポイントを差し引きますか？<br><small class="text-muted">理由: ${reason}</small>`,
+                confirmMessage,
                 'ポイント差引',
                 'キャンセル',
                 () => executeSubtractManualPoints(points, reason),
@@ -1513,10 +1565,17 @@
             try {
                 showStoreAlert('ポイントを差し引き中...', 'info');
                 
+                // 포인트 사용 시 상품 정보 포함
+                let finalReason = reason;
+                if (reason === 'ポイント使用') {
+                    const productInfo = document.getElementById('product-barcode').value;
+                    finalReason = `${reason} - ${productInfo}`;
+                }
+                
                 const result = await FirebaseService.usePoints(
                     currentCustomer.uid,
                     points,
-                    reason
+                    finalReason
                 );
                 
                 if (result.success) {
@@ -1526,7 +1585,12 @@
                     
                     await updateTodayStats(-points, reason, currentCustomer.email);
                     showStoreAlert(`${points}ポイントを差し引きました。`, 'success');
+                    
+                    // 필드 초기화
                     document.getElementById('manual-points').value = '';
+                    document.getElementById('point-reason').value = '店舗購入';
+                    document.getElementById('product-barcode').value = '';
+                    document.getElementById('product-info-field').style.display = 'none';
                     
                     // 포인트 이력 새로고침
                     // loadCustomerPointHistory(); // 제거됨 - 전체 포인트 이용현황에서 확인 가능
@@ -2515,6 +2579,11 @@
                 case 'earn':
                     return reason || 'ポイント付与';
                 case 'use':
+                    // 포인트 사용 시 상품 정보가 포함된 경우 파싱
+                    if (reason && reason.includes('ポイント使用 - ')) {
+                        const productInfo = reason.replace('ポイント使用 - ', '');
+                        return `ポイント使用 - ${productInfo}`;
+                    }
                     return reason || 'ポイント使用';
                 case 'admin_add':
                     return reason || '管理者によるポイント付与';
