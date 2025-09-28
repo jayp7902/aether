@@ -984,10 +984,19 @@
         }
 
         async function proceedToCheckout() {
-            console.log('🚀 주문수속 시작');
+            console.log('🚀🚀🚀 proceedToCheckout 함수 시작 🚀🚀🚀');
+            console.log('🔍 현재 상태 확인:');
+            console.log('- currentCart 길이:', currentCart.length);
+            console.log('- currentUser:', currentUser ? currentUser.email : '없음');
+            console.log('- Firebase 상태:', firebase?.apps?.length > 0 ? '초기화됨' : '초기화 안됨');
             
             // 버튼 로딩 상태로 변경
             const checkoutBtn = document.getElementById('checkout-btn');
+            if (!checkoutBtn) {
+                console.error('❌ checkout-btn 요소를 찾을 수 없음');
+                return;
+            }
+            
             const originalText = checkoutBtn.innerHTML;
             checkoutBtn.disabled = true;
             checkoutBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>처리중...';
@@ -1061,20 +1070,35 @@
                 }
                 
                 if (isLoggedIn) {
-                    console.log('✅ 로그인 확인됨 - 체크아웃으로 이동:', userEmail);
+                    console.log('✅✅✅ 로그인 확인됨 - 체크아웃으로 이동 시작 ✅✅✅');
+                    console.log('👤 사용자:', userEmail);
+                    console.log('🛒 카트 상품 수:', cartData.length);
+                    console.log('🌐 현재 URL:', window.location.href);
+                    console.log('🎯 이동할 URL: checkout.html');
+                    
                     checkoutBtn.disabled = false;
                     checkoutBtn.innerHTML = originalText;
                     
                     // 체크아웃 페이지로 이동
+                    console.log('🚀 window.location.href = "checkout.html" 실행');
                     window.location.href = 'checkout.html';
+                    console.log('✅ 체크아웃 페이지 이동 명령 완료');
+                    
+                    // 페이지 이동 실패 시 대체 방법 (3초 후)
+                    setTimeout(() => {
+                        console.log('⚠️ 3초 후에도 페이지 이동 안됨 - 대체 방법 시도');
+                        window.open('checkout.html', '_self');
+                    }, 3000);
+                    
                     return;
                 } else {
-                    console.log('❌ 로그인되지 않음 - 로그인 페이지로 이동');
+                    console.log('❌❌❌ 로그인되지 않음 - 로그인 페이지로 이동 ❌❌❌');
                     checkoutBtn.disabled = false;
                     checkoutBtn.innerHTML = originalText;
                     
                     // 로그인 페이지로 이동 (체크아웃으로 리다이렉트)
                     const checkoutUrl = encodeURIComponent(window.location.origin + '/checkout.html');
+                    console.log('🚀 로그인 페이지로 이동:', `login.html?redirect=${checkoutUrl}`);
                     window.location.href = `login.html?redirect=${checkoutUrl}`;
                     return;
                 }
