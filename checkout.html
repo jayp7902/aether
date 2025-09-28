@@ -1014,15 +1014,7 @@
     <script src="assets/js/custom.js"></script>
     
     <!-- Firebase SDK -->
-    <!-- Firebase SDK - 중복 로드 방지 -->
-    <script>
-        if (typeof firebase === 'undefined') {
-            // Firebase가 로드되지 않은 경우에만 로드
-            document.write('<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"><\/script>');
-            document.write('<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"><\/script>');
-            document.write('<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"><\/script>');
-        }
-    </script>
+    <!-- Firebase SDK는 이미 위에서 로드됨 (중복 제거) -->
     <script src="assets/js/firebase-config.js"></script>
     <script src="assets/js/auth-utils.js"></script>
 
@@ -3179,17 +3171,6 @@
             
             // 중복된 Firebase 로드 코드 제거 (위에서 이미 처리됨)
             console.log('✅ Firebase 카트 로드는 이미 완료됨 - 중복 처리 생략');
-                    
-                    // UI 업데이트
-                    updateCartCount();
-                    renderOrderItems();
-                    updateTotals();
-                    
-                } catch (error) {
-                    console.error('❌ Firebase 카트 초기화 실패:', error);
-                    window.location.href = 'cart.html';
-                }
-            }, 2000);
             
             // auth-utils.js의 updateUserMenu 함수 호출
             if (typeof window.updateUserMenu === 'function') {
