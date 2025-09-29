@@ -499,89 +499,82 @@
             window.location.replace('index.html');
         }
 
-
-
-        // Firebase 로그인 처리 (개선된 에러 처리)
+        // Firebase 로그인 처리
         async function handleLogin(email, password, remember) {
-            try {
-                console.log('=== 로그인 시도 시작 ===');
-                console.log('이메일:', email);
+            console.log('=== 로그인 시도 시작 ===');
+            console.log('이메일:', email);
+            
+            // 입력값 검증
+            if (!email || !password) {
+                showAlert('メールアドレスとパスワードを入力してください。');
+                return false;
+            }
+            
+            // Firebase 초기화 대기
+            if (typeof window.FirebaseService === 'undefined') {
+                console.log('FirebaseService 대기 중...');
+                let attempts = 0;
+                const maxAttempts = 50;
                 
-                // 입력값 검증
-                if (!email || !password) {
-                    showAlert('メールアドレスとパスワードを入力してください。');
-                    return false;
+                while (typeof window.FirebaseService === 'undefined' && attempts < maxAttempts) {
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                    if (attempts % 10 === 0) {
+                        console.log(`FirebaseService 로드 대기 중... (${attempts}/50)`);
+                    }
                 }
                 
-                // Firebase 초기화 대기
                 if (typeof window.FirebaseService === 'undefined') {
-                    console.log('FirebaseService 대기 중...');
-                    let attempts = 0;
-                    const maxAttempts = 50;
-                    
-                    while (typeof window.FirebaseService === 'undefined' && attempts < maxAttempts) {
-                        await new Promise(resolve => setTimeout(resolve, 100));
-                        attempts++;
-                        if (attempts % 10 === 0) {
-                            console.log(`FirebaseService 로드 대기 중... (${attempts}/50)`);
-                        }
-                    }
-                    
-                    if (typeof window.FirebaseService === 'undefined') {
-                        throw new Error('FirebaseService를 찾을 수 없습니다. Firebase 초기화를 확인해주세요.');
-                    }
-                }
-                
-                // Firebase Authentication 설정 (remember 기능)
-                if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth()) {
-                    try {
-                        if (remember) {
-                            await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
-                        } else {
-                            await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION);
-                        }
-                    } catch (persistenceError) {
-                        console.warn('Firebase persistence 설정 실패:', persistenceError);
-                        // 계속 진행
-                    }
-                }
-                
-                const result = await window.FirebaseService.loginUser(email, password);
-                console.log('로그인 결과:', result);
-                
-                if (result.success) {
-                    console.log('✅ 로그인 성공:', result.user.uid || result.user.email);
-                    console.log('🔍 로그인 결과 상세:', {
-                        success: result.success,
-                        uid: result.user.uid,
-                        email: result.user.email,
-                        name: result.user.displayName,
-                        isFirebase: result.user.isFirebase
-                    });
-                    
-                    // Firebase Auth 상태는 자동으로 관리되므로 별도 저장 불필요
-                    console.log('✅ Firebase Auth 로그인 상태 자동 관리됨');
-                    
-                    // 잠시 대기 후 리다이렉트 (Firebase Auth 상태 동기화 대기)
-                    setTimeout(() => {
-                        console.log('🚀 로그인 성공 후 리다이렉트 시작');
-                        redirectToPreviousPage();
-                    }, 1000);
-                    
-                    return true;
-                } else {
-                    console.log('로그인 실패:', result.error, result.message);
-                    
-                    // 에러 메시지 표시
-                    const userMessage = window.FirebaseService.getLocalizedErrorMessage(result.error);
-                    showAlert(userMessage);
+                    showAlert('FirebaseService를 찾을 수 없습니다. 페이지를 새로고침해주세요.');
                     return false;
                 }
-            } catch (error) {
-                console.error('로그인 중 예외 발생:', error);
-                const errorCode = error.code || 'auth/unknown-error';
-                const localizedMessage = window.FirebaseService.getLocalizedErrorMessage(errorCode);
-                showAlert(localizedMessage);
+            }
+            
+            // Firebase Authentication 설정 (remember 기능)
+            if (typeof firebase !== 'undefined' && firebase.auth) {
+                try {
+                    if (remember) {
+                        await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+                        console.log('Firebase persistence: LOCAL (로그인 상태 유지)');
+                    } else {
+                        await firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION);
+                        console.log('Firebase persistence: SESSION (세션만 유지)');
+                    }
+                } catch (persistenceError) {
+                    console.warn('Firebase persistence 설정 실패:', persistenceError);
+                    // 계속 진행
+                }
+            }
+            
+            const result = await window.FirebaseService.loginUser(email, password);
+            console.log('로그인 결과:', result);
+            
+            if (result.success) {
+                console.log('✅ 로그인 성공:', result.user.uid || result.user.email);
+                console.log('🔍 로그인 결과 상세:', {
+                    success: result.success,
+                    uid: result.user.uid,
+                    email: result.user.email,
+                    name: result.user.displayName,
+                    isFirebase: result.user.isFirebase
+                });
+                
+                // Firebase Auth 상태는 자동으로 관리되므로 별도 저장 불필요
+                console.log('✅ Firebase Auth 로그인 상태 자동 관리됨');
+                
+                // 잠시 대기 후 리다이렉트 (Firebase Auth 상태 동기화 대기)
+                setTimeout(() => {
+                    console.log('🚀 로그인 성공 후 리다이렉트 시작');
+                    redirectToPreviousPage();
+                }, 1000);
+                
+                return true;
+            } else {
+                console.log('로그인 실패:', result.error, result.message);
+                
+                // 에러 메시지 표시
+                const userMessage = window.FirebaseService.getLocalizedErrorMessage(result.error);
+                showAlert(userMessage);
                 return false;
             }
         }
@@ -599,14 +592,7 @@
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>ログイン中...';
 
-            let loginSuccessful = false;
-
-            try {
-                loginSuccessful = await handleLogin(email, password, remember);
-            } catch (error) {
-                console.error('로그인 처리 중 오류:', error);
-                showAlert('ログイン中にエラーが発生しました。もう一度お試しください。');
-            }
+            const loginSuccessful = await handleLogin(email, password, remember);
 
             // 로그인이 실패한 경우에만 버튼 복원
             if (!loginSuccessful) {
@@ -626,8 +612,12 @@
             if (!email) return;
             
             try {
-                await auth.sendPasswordResetEmail(email);
-                showAlert('パスワードリセットメールを送信しました。メールをご確認ください。', 'success');
+                if (typeof firebase !== 'undefined' && firebase.auth) {
+                    await firebase.auth().sendPasswordResetEmail(email);
+                    showAlert('パスワードリセットメールを送信しました。メールをご確認ください。', 'success');
+                } else {
+                    showAlert('Firebase가 초기화되지 않았습니다. 페이지를 새로고침해주세요.');
+                }
             } catch (error) {
                 console.error('패스워드 리셋 중 오류:', error);
                 if (error.code === 'auth/user-not-found') {
@@ -663,18 +653,8 @@
                     console.warn('Firebase 초기화 시간 초과, 기본 모드로 진행');
                 }
                 
-                // login.html에서는 사용자 메뉴 업데이트 불필요 (로그인 페이지이므로)
-                console.log('login.html - 사용자 메뉴 업데이트 건너뛰기');
-                
-                // 모바일 QR코드 제어 초기화
-                if (typeof setupMobileQRCodeControl === 'function') {
-                    setupMobileQRCodeControl();
-                }
-                
-                // 장바구니 카운트 업데이트
-                if (typeof window.updateCartCount === 'function') {
-                    window.updateCartCount();
-                }
+                // login.html에서는 불필요한 기능들 건너뛰기
+                console.log('login.html - 사용자 메뉴, QR코드 제어, 장바구니 카운트 업데이트 건너뛰기');
             };
             
             checkFirebase();
