@@ -290,13 +290,14 @@
             color: #6c757d;
         }
 
-        /* 바코드 스캐너 스타일 */
+        /* 바코드 스캐너 스타일 (ZXing 개선) */
         .barcode-scanner-container {
             position: relative;
             background: #000;
             border-radius: 12px;
             overflow: hidden;
             min-height: 400px;
+            border: 2px solid #343a40;
         }
 
         .scanner-viewport {
@@ -304,6 +305,16 @@
             width: 100%;
             height: 400px;
             background: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #barcode-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 10px;
         }
 
         .scanner-overlay {
@@ -992,6 +1003,8 @@
     
     <!-- QR Code Scanner Library -->
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+    <!-- ZXing Barcode Scanner Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@zxing/library@latest/umd/index.min.js"></script>
 
 
     <script>
@@ -2016,93 +2029,164 @@
             startBarcodeScanner();
         }
 
-        // 바코드 스캐너 변수들
+        // 바코드 스캐너 변수들 (ZXing 사용)
         let barcodeStream = null;
         let barcodeScanning = false;
         let barcodeScanInterval = null;
+        let zxingReader = null;
+        let barcodeVideo = null;
+        let barcodeCanvas = null;
+        let barcodeContext = null;
 
-        // 바코드 스캐너 시작
+        // 바코드 스캐너 시작 (ZXing 사용)
         async function startBarcodeScanner() {
             try {
+                console.log('=== ZXing 바코드 스캐너 시작 ===');
                 updateScannerStatus('カメラを起動中...', true);
                 
-                // 카메라 접근 권한 요청
-                barcodeStream = await navigator.mediaDevices.getUserMedia({
-                    video: {
-                        facingMode: 'environment', // 후면 카메라 우선
-                        width: { ideal: 1280 },
-                        height: { ideal: 720 }
+                // ZXing 리더 초기화
+                if (!zxingReader) {
+                    zxingReader = new ZXing.BrowserMultiFormatReader();
+                    console.log('✅ ZXing 리더 초기화 완료');
+                }
+                
+                // 사용 가능한 카메라 디바이스 확인
+                const videoInputDevices = await zxingReader.listVideoInputDevices();
+                console.log('사용 가능한 카메라:', videoInputDevices);
+                
+                if (videoInputDevices.length === 0) {
+                    throw new Error('사용 가능한 카메라가 없습니다');
+                }
+                
+                // 후면 카메라 우선 선택
+                let selectedDeviceId = null;
+                const backCamera = videoInputDevices.find(device => 
+                    device.label.toLowerCase().includes('back') || 
+                    device.label.toLowerCase().includes('rear') ||
+                    device.label.toLowerCase().includes('environment')
+                );
+                
+                if (backCamera) {
+                    selectedDeviceId = backCamera.deviceId;
+                    console.log('✅ 후면 카메라 선택:', backCamera.label);
+                } else {
+                    selectedDeviceId = videoInputDevices[0].deviceId;
+                    console.log('✅ 기본 카메라 선택:', videoInputDevices[0].label);
+                }
+                
+                // 비디오 요소 참조
+                barcodeVideo = document.getElementById('barcode-video');
+                barcodeCanvas = document.getElementById('barcode-canvas');
+                
+                if (!barcodeVideo) {
+                    throw new Error('비디오 요소를 찾을 수 없습니다');
+                }
+                
+                // ZXing으로 스캔 시작
+                console.log('ZXing 스캔 시작...');
+                await zxingReader.decodeFromVideoDevice(selectedDeviceId, barcodeVideo, (result, err) => {
+                    if (result) {
+                        console.log('🎯 바코드 스캔 성공:', result.getText());
+                        handleBarcodeDetected(result.getText());
+                    }
+                    if (err && !(err instanceof ZXing.NotFoundException)) {
+                        console.warn('바코드 스캔 경고:', err);
                     }
                 });
                 
-                const video = document.getElementById('barcode-video');
-                video.srcObject = barcodeStream;
-                video.style.display = 'block';
-                
-                video.onloadedmetadata = () => {
-                    video.play();
-                    updateScannerStatus('バーコードをスキャン中...', false);
-                    startBarcodeDetection();
-                };
+                barcodeVideo.style.display = 'block';
+                barcodeScanning = true;
+                updateScannerStatus('バーコードをスキャン中...', false);
                 
                 // 카메라 전환 버튼 표시
                 document.getElementById('switch-camera-btn').style.display = 'inline-block';
                 
+                console.log('✅ ZXing 바코드 스캐너 시작 완료');
+                
             } catch (error) {
-                console.error('카메라 접근 오류:', error);
+                console.error('❌ ZXing 바코드 스캐너 시작 오류:', error);
                 updateScannerStatus('カメラアクセスが拒否されました', false);
                 showCameraPermissionMessage();
             }
         }
 
-        // 바코드 감지 시작
-        function startBarcodeDetection() {
-            if (barcodeScanning) return;
-            
-            barcodeScanning = true;
-            const video = document.getElementById('barcode-video');
-            const canvas = document.getElementById('barcode-canvas');
-            const context = canvas.getContext('2d');
-            
-            // 캔버스 최적화 설정
-            canvas.width = 640;  // 고정 크기로 성능 향상
-            canvas.height = 480;
-            
-            barcodeScanInterval = setInterval(() => {
-                if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                    // 비디오 크기에 맞춰 캔버스 크기 조정
-                    const videoWidth = video.videoWidth;
-                    const videoHeight = video.videoHeight;
-                    
-                    if (videoWidth && videoHeight) {
-                        canvas.width = Math.min(videoWidth, 640);  // 최대 640px로 제한
-                        canvas.height = Math.min(videoHeight, 480); // 최대 480px로 제한
-                        
-                        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-                        
-                        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-                        
-                        try {
-                            // jsQR 라이브러리를 사용한 바코드 감지
-                            const code = jsQR(imageData.data, imageData.width, imageData.height, {
-                                inversionAttempts: "dontInvert",
-                            });
-                            
-                            if (code && code.data && code.data.trim() !== '') {
-                                console.log('바코드 감지됨:', code.data);
-                                handleBarcodeDetected(code.data);
-                            }
-                        } catch (error) {
-                            console.error('바코드 감지 오류:', error);
-                        }
-                    }
+        // 카메라 전환 (ZXing 사용)
+        async function switchCamera() {
+            try {
+                console.log('=== 카메라 전환 시작 ===');
+                
+                // 현재 스캔 중지
+                if (zxingReader && barcodeScanning) {
+                    await zxingReader.reset();
+                    barcodeScanning = false;
                 }
-            }, 500); // 500ms마다 스캔 (더 안정적인 성능)
+                
+                updateScannerStatus('カメラを切替中...', true);
+                
+                // 사용 가능한 카메라 목록 다시 가져오기
+                const videoInputDevices = await zxingReader.listVideoInputDevices();
+                console.log('사용 가능한 카메라:', videoInputDevices);
+                
+                if (videoInputDevices.length < 2) {
+                    updateScannerStatus('切替可能なカメラがありません', false);
+                    return;
+                }
+                
+                // 현재 사용 중인 카메라 찾기
+                const currentDevice = videoInputDevices.find(device => 
+                    device.label.toLowerCase().includes('back') || 
+                    device.label.toLowerCase().includes('rear') ||
+                    device.label.toLowerCase().includes('environment')
+                );
+                
+                // 다른 카메라 선택 (전면/후면 전환)
+                let selectedDeviceId;
+                if (currentDevice) {
+                    // 현재 후면 카메라면 전면 카메라 선택
+                    const frontCamera = videoInputDevices.find(device => 
+                        device.deviceId !== currentDevice.deviceId &&
+                        (device.label.toLowerCase().includes('front') || 
+                         device.label.toLowerCase().includes('user') ||
+                         device.label.toLowerCase().includes('facing'))
+                    );
+                    selectedDeviceId = frontCamera ? frontCamera.deviceId : videoInputDevices[0].deviceId;
+                } else {
+                    // 현재 전면 카메라면 후면 카메라 선택
+                    const backCamera = videoInputDevices.find(device => 
+                        device.label.toLowerCase().includes('back') || 
+                        device.label.toLowerCase().includes('rear') ||
+                        device.label.toLowerCase().includes('environment')
+                    );
+                    selectedDeviceId = backCamera ? backCamera.deviceId : videoInputDevices[0].deviceId;
+                }
+                
+                console.log('새 카메라 선택:', selectedDeviceId);
+                
+                // 새 카메라로 스캔 시작
+                await zxingReader.decodeFromVideoDevice(selectedDeviceId, barcodeVideo, (result, err) => {
+                    if (result) {
+                        console.log('🎯 바코드 스캔 성공:', result.getText());
+                        handleBarcodeDetected(result.getText());
+                    }
+                    if (err && !(err instanceof ZXing.NotFoundException)) {
+                        console.warn('바코드 스캔 경고:', err);
+                    }
+                });
+                
+                barcodeScanning = true;
+                updateScannerStatus('バーコードをスキャン中...', false);
+                
+                console.log('✅ 카메라 전환 완료');
+                
+            } catch (error) {
+                console.error('❌ 카메라 전환 오류:', error);
+                updateScannerStatus('カメラ切替に失敗しました', false);
+            }
         }
 
-        // 바코드 감지 시 처리
+        // 바코드 감지 시 처리 (ZXing 사용)
         function handleBarcodeDetected(barcodeData) {
-            console.log('=== 바코드 감지 성공 ===');
+            console.log('=== ZXing 바코드 감지 성공 ===');
             console.log('감지된 바코드:', barcodeData);
             console.log('바코드 길이:', barcodeData ? barcodeData.length : 0);
             console.log('바코드 타입:', typeof barcodeData);
@@ -2113,7 +2197,7 @@
                 return;
             }
             
-            // 최소 길이 검사 (일반적으로 바코드는 8자리 이상)
+            // 최소 길이 검사 (일반적으로 바코드는 3자리 이상)
             if (barcodeData.length < 3) {
                 console.warn('바코드가 너무 짧습니다:', barcodeData);
                 return;
@@ -2121,9 +2205,11 @@
             
             // 스캔 중지 (중복 감지 방지)
             barcodeScanning = false;
-            if (barcodeScanInterval) {
-                clearInterval(barcodeScanInterval);
-                barcodeScanInterval = null;
+            
+            // ZXing 리더 정지
+            if (zxingReader) {
+                zxingReader.reset();
+                console.log('ZXing 리더 정지');
             }
             
             // 스캔 성공 애니메이션
@@ -2283,53 +2369,64 @@
             `;
         }
 
-        // 바코드 스캐너 종료
-        function closeBarcodeScanner() {
-            // 스캔 중지
-            barcodeScanning = false;
-            if (barcodeScanInterval) {
-                clearInterval(barcodeScanInterval);
-                barcodeScanInterval = null;
-            }
+        // 바코드 스캐너 종료 (ZXing 사용)
+        async function closeBarcodeScanner() {
+            console.log('=== ZXing 바코드 스캐너 종료 ===');
             
-            // 카메라 스트림 정지
-            if (barcodeStream) {
-                barcodeStream.getTracks().forEach(track => track.stop());
-                barcodeStream = null;
-            }
-            
-            // 비디오 요소 초기화
-            const video = document.getElementById('barcode-video');
-            video.style.display = 'none';
-            video.srcObject = null;
-            
-            // 모달 닫기
-            const modal = bootstrap.Modal.getInstance(document.getElementById('barcodeScannerModal'));
-            if (modal) {
-                modal.hide();
-            }
-            
-            // 상태 초기화
-            updateScannerStatus('カメラを起動中...', true);
-            document.getElementById('manual-barcode-input').value = '';
-            document.getElementById('switch-camera-btn').style.display = 'none';
-            
-            // 스캐너 뷰포트 초기화
-            const viewport = document.getElementById('barcode-scanner-viewport');
-            viewport.innerHTML = `
-                <div class="scanner-overlay">
-                    <div class="scanner-frame">
-                        <div class="scanner-corners">
-                            <div class="corner top-left"></div>
-                            <div class="corner top-right"></div>
-                            <div class="corner bottom-left"></div>
-                            <div class="corner bottom-right"></div>
+            try {
+                // 스캔 중지
+                barcodeScanning = false;
+                
+                // ZXing 리더 정지
+                if (zxingReader) {
+                    await zxingReader.reset();
+                    console.log('✅ ZXing 리더 정지 완료');
+                }
+                
+                // 비디오 요소 초기화
+                if (barcodeVideo) {
+                    barcodeVideo.style.display = 'none';
+                    barcodeVideo.srcObject = null;
+                }
+                
+                // 모달 닫기
+                const modal = bootstrap.Modal.getInstance(document.getElementById('barcodeScannerModal'));
+                if (modal) {
+                    modal.hide();
+                }
+                
+                // 상태 초기화
+                updateScannerStatus('カメラを起動中...', true);
+                document.getElementById('manual-barcode-input').value = '';
+                document.getElementById('switch-camera-btn').style.display = 'none';
+                
+                // 스캐너 뷰포트 초기화
+                const viewport = document.getElementById('barcode-scanner-viewport');
+                viewport.innerHTML = `
+                    <div class="scanner-overlay">
+                        <div class="scanner-frame">
+                            <div class="scanner-corners">
+                                <div class="corner top-left"></div>
+                                <div class="corner top-right"></div>
+                                <div class="corner bottom-left"></div>
+                                <div class="corner bottom-right"></div>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <video id="barcode-video" autoplay playsinline style="display: none;"></video>
-                <canvas id="barcode-canvas" style="display: none;"></canvas>
-            `;
+                    <video id="barcode-video" autoplay playsinline style="display: none;"></video>
+                    <canvas id="barcode-canvas" style="display: none;"></canvas>
+                `;
+                
+                // 변수 초기화
+                barcodeVideo = null;
+                barcodeCanvas = null;
+                barcodeContext = null;
+                
+                console.log('✅ ZXing 바코드 스캐너 종료 완료');
+                
+            } catch (error) {
+                console.error('❌ ZXing 바코드 스캐너 종료 오류:', error);
+            }
         }
 
         // 수동 포인트 추가
@@ -3753,11 +3850,11 @@
         window.confirmManualBarcode = confirmManualBarcode;
 
         // 페이지 언로드 시 카메라 및 실시간 동기화 정리
-        window.addEventListener('beforeunload', function() {
+        window.addEventListener('beforeunload', async function() {
             stopScanner();
             stopRealTimePointSync();
             stopHistoryListener();
-            closeBarcodeScanner();
+            await closeBarcodeScanner();
         });
     </script>
 
@@ -3767,7 +3864,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title japanese-heading">
-                        <i class="fas fa-barcode me-2"></i>バーコードスキャナー
+                        <i class="fas fa-barcode me-2"></i>バーコードスキャナー (ZXing)
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="closeBarcodeScanner()"></button>
                 </div>
