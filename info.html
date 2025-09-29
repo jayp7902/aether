@@ -909,6 +909,14 @@
                                 points: 0
                             };
                             console.log('✅ info.html - pointsPageUser 설정 완료:', pointsPageUser);
+                            
+                            // 로그인 시 사용자별 카트 로드
+                            if (typeof window.loadUserSpecificCart === 'function') {
+                                console.log('info.html - loadUserSpecificCart 함수 호출');
+                                window.loadUserSpecificCart(user.email);
+                            } else {
+                                console.warn('info.html - loadUserSpecificCart 함수를 찾을 수 없습니다');
+                            }
                         } else {
                             pointsPageUser = null;
                             console.log('✅ info.html - pointsPageUser 초기화 (로그아웃)');
@@ -1007,16 +1015,8 @@
                     console.log('✅ Firebase 로그아웃 완료');
                 }
                 
-                // Firebase 카트 초기화 (사용자별 카트 삭제)
-                if (typeof firebase !== 'undefined' && firebase.firestore && currentUser.email) {
-                    try {
-                        const db = firebase.firestore();
-                        await db.collection('userCarts').doc(currentUser.email).delete();
-                        console.log('✅ Firebase 카트 삭제 완료');
-                    } catch (cartError) {
-                        console.warn('⚠️ Firebase 카트 삭제 실패:', cartError);
-                    }
-                }
+                // Firebase 카트는 삭제하지 않음 - 사용자별로 유지
+                console.log('ℹ️ Firebase 카트는 사용자별로 유지됨 (삭제하지 않음)');
                 
                 // 실시간 리스너 중단
                 if (window.cartRealtimeListener) {
