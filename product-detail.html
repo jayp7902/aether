@@ -914,6 +914,159 @@
         let currentUser = null;
         let productInfo = null;
 
+        // 푸터 관련 함수들 (다른 함수들보다 먼저 정의)
+        // 푸터 회사 정보 업데이트
+        function updateFooterCompanyInfo(footerData) {
+            const companyInfoContainer = document.getElementById('footer-company-info');
+            if (!companyInfoContainer) {
+                console.warn('⚠️ 회사 정보 컨테이너를 찾을 수 없습니다');
+                return;
+            }
+            
+            console.log('🏢 회사 정보 업데이트 시작:', footerData.companyInfo);
+            
+            // companyInfo 배열이 있는 경우
+            if (footerData.companyInfo && Array.isArray(footerData.companyInfo)) {
+                if (footerData.companyInfo.length === 0) {
+                    companyInfoContainer.innerHTML = '<li><span class="text-muted">会社情報が登録されていません。</span></li>';
+                    console.log('📝 회사 정보가 없습니다');
+                    return;
+                }
+                
+                // 순서대로 정렬
+                const sortedInfo = [...footerData.companyInfo].sort((a, b) => a.order - b.order);
+                console.log('📊 정렬된 회사 정보:', sortedInfo);
+                
+                let html = '';
+                sortedInfo.forEach(info => {
+                    html += `
+                        <li>
+                            <span class="text-white">${info.name}</span>
+                        </li>
+                    `;
+                });
+                
+                companyInfoContainer.innerHTML = html;
+                console.log('✅ 회사 정보 업데이트 완료');
+            } else {
+                // companyInfo가 없는 경우 기본 메시지
+                companyInfoContainer.innerHTML = '<li><span class="text-muted">会社情報が登録されていません。</span></li>';
+                console.log('📝 회사 정보 데이터가 없습니다');
+            }
+        }
+        
+        // 푸터 브랜드명 업데이트
+        function updateFooterBrands(brandNames) {
+            const brandsListContainer = document.getElementById('footer-brands-list');
+            if (!brandsListContainer) return;
+            
+            if (brandNames.length === 0) {
+                brandsListContainer.innerHTML = '<li><span class="text-muted">ブランドが登録されていません。</span></li>';
+                return;
+            }
+            
+            // 순서대로 정렬 (order 속성이 있는 경우)
+            const sortedBrands = [...brandNames].sort((a, b) => {
+                const orderA = typeof a === 'object' && a.order ? a.order : 999;
+                const orderB = typeof b === 'object' && b.order ? b.order : 999;
+                return orderA - orderB;
+            });
+            
+            let html = '';
+            sortedBrands.forEach(brand => {
+                // 기존 문자열 형태와 새로운 객체 형태 모두 지원
+                const brandName = typeof brand === 'string' ? brand : brand.name;
+                const brandLink = typeof brand === 'string' ? '#' : (brand.link || '#');
+                
+                html += `
+                    <li>
+                        <a class="text-decoration-none text-white" href="${brandLink}">
+                            ${brandName}
+                        </a>
+                    </li>
+                `;
+            });
+            
+            brandsListContainer.innerHTML = html;
+        }
+        
+        // 푸터 Further Info 링크 업데이트
+        function updateFooterFurtherInfoLinks(furtherInfoLinks) {
+            const furtherInfoContainer = document.getElementById('footer-further-info');
+            if (!furtherInfoContainer) return;
+            
+            if (furtherInfoLinks.length === 0) {
+                furtherInfoContainer.innerHTML = '<li><span class="text-muted">リンクが登録されていません。</span></li>';
+                return;
+            }
+            
+            // 순서대로 정렬
+            const sortedLinks = [...furtherInfoLinks].sort((a, b) => a.order - b.order);
+            
+            let html = '';
+            sortedLinks.forEach(link => {
+                html += `
+                    <li>
+                        <a class="text-decoration-none text-white" href="${link.link}">
+                            ${link.name}
+                        </a>
+                    </li>
+                `;
+            });
+            
+            furtherInfoContainer.innerHTML = html;
+        }
+        
+        // 푸터 HTML 업데이트
+        function updateFooterHTML(footerData) {
+            console.log('🦶 푸터 데이터 업데이트 시작:', footerData);
+            
+            // 회사 정보 동적 로드
+            updateFooterCompanyInfo(footerData);
+            
+            // 브랜드명 동적 로드
+            updateFooterBrands(footerData.brandNames || []);
+            
+            // Further Info 링크 동적 로드
+            updateFooterFurtherInfoLinks(footerData.furtherInfoLinks || []);
+            
+            console.log('✅ 푸터 데이터 업데이트 완료');
+        }
+        
+        // Firebase에서 푸터 데이터 로드
+        async function loadFooterContent() {
+            try {
+                console.log('🦶 Firebase에서 푸터 데이터 로드 시작');
+                
+                let footerData = {};
+                
+                // Firebase에서 데이터 로드 시도
+                if (window.firebase && window.firebase.firestore) {
+                    const snapshot = await window.firebase.firestore().collection('footer_content').limit(1).get();
+                    if (!snapshot.empty) {
+                        footerData = snapshot.docs[0].data();
+                        console.log('📊 Firebase에서 푸터 데이터 로드 완료');
+                    }
+                }
+                
+                // 데이터가 없으면 빈 객체로 설정 (Firebase 전용)
+                if (Object.keys(footerData).length === 0) {
+                    footerData = { companyInfo: [], furtherInfoLinks: [], brandNames: [] };
+                    console.log('📝 Firebase에 푸터 데이터 없음');
+                }
+                
+                // 푸터 HTML 업데이트
+                updateFooterHTML(footerData);
+                
+                console.log('✅ 푸터 콘텐츠 로딩 완료');
+                
+            } catch (error) {
+                console.error('❌ 푸터 콘텐츠 로딩 오류:', error);
+                const emptyFooterData = { companyInfo: [], furtherInfoLinks: [], brandNames: [] };
+                updateFooterHTML(emptyFooterData);
+            }
+        }
+
         // URL에서 상품 ID 가져오기
         function getProductIdFromUrl() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -980,6 +1133,12 @@
                 setTimeout(() => {
                     updateCartCount();
                 }, 1000);
+                
+                // Firebase 초기화 완료 후 푸터 로드
+                setTimeout(() => {
+                    console.log('✅ Firebase 초기화 완료 후 푸터 로드 시작');
+                    loadFooterContent();
+                }, 1500);
             }, 500);
         });
         
@@ -994,6 +1153,13 @@
                 // Firebase 사용 불가능한 경우 즉시 기본 데이터 로드
                 console.log('Firebase 사용 불가능, 기본 데이터 로드');
                 loadProductInfo();
+                
+                // Firebase 사용 불가능한 경우 기본 푸터 데이터 로드
+                setTimeout(() => {
+                    console.log('Firebase 사용 불가능, 기본 푸터 데이터 로드');
+                    const emptyFooterData = { companyInfo: [], furtherInfoLinks: [], brandNames: [] };
+                    updateFooterHTML(emptyFooterData);
+                }, 1000);
             }
             
             // 사용자 메뉴 초기화 (auth-utils.js 로드 대기)
@@ -2048,6 +2214,7 @@
             
             console.log('✅ product-detail.html 카트 수량 표시 업데이트:', count, '개');
         }
+
 
         // 페이지 초기화
         document.addEventListener('DOMContentLoaded', function() {
