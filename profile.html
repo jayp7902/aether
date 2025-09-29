@@ -3026,101 +3026,23 @@
                     return new bootstrap.Dropdown(dropdownToggleEl);
                 });
                 
-                // Firebase 초기화 대기 (더 안전한 방식)
-                let firebaseReady = false;
-                if (typeof window.waitForFirebaseComplete === 'function') {
-                    try {
-                        console.log('Firebase 초기화 대기 중...');
-                        await window.waitForFirebaseComplete();
-                        firebaseReady = true;
-                        console.log('Firebase 초기화 완료');
-                    } catch (firebaseError) {
-                        console.warn('Firebase 초기화 실패:', firebaseError);
-                    }
-                } else {
-                    // Firebase 초기화 함수가 없는 경우 3초 대기
-                    console.log('Firebase 초기화 함수 없음, 3초 대기...');
-                    await new Promise(resolve => setTimeout(resolve, 3000));
-                    firebaseReady = typeof firebase !== 'undefined';
-                }
-                
-                // Firebase 초기화 완료 후 사용자 정보 로드
-                loadUserInfo();
-                
-                // 인증 상태 확인 및 사용자 메뉴 업데이트
-                updateCartCount();
-                
-                // 추가 카트 수량 업데이트 (지연)
-                setTimeout(() => {
-                    updateCartCount();
-                }, 2000);
-                
-                // 프로필 헤더 업데이트 (지연)
-                setTimeout(() => {
-                    if (pointsPageUser && pointsPageUser.name && pointsPageUser.email) {
-                        updateProfileHeader(pointsPageUser);
-                    } else {
-                        console.log('사용자 데이터 없음 - updateProfileHeader에서 Firebase Auth 확인');
-                        updateProfileHeader(null);
-                    }
-                }, 3000);
+                // Firebase 초기화 대기 (단순한 방식)
+                console.log('Firebase 초기화 대기 중...');
+                await new Promise(resolve => setTimeout(resolve, 2000));
                 
                 // Firebase 초기화 완료 후 인증 상태 확인
-                if (firebaseReady) {
-                    console.log('Firebase 준비됨, 인증 상태 확인');
-                    checkAuthState();
-                    
-                    // Firebase 초기화 완료 후 카트 수량 업데이트
-                    setTimeout(() => {
-                        updateCartCount();
-                    }, 1000);
-                    
-                    // Firebase 초기화 완료 후 프로필 헤더 업데이트
-                    setTimeout(() => {
-                        if (pointsPageUser && pointsPageUser.name && pointsPageUser.email) {
-                            updateProfileHeader(pointsPageUser);
-                        } else {
-                            console.log('사용자 데이터 없음 - updateProfileHeader에서 Firebase Auth 확인');
-                            updateProfileHeader(null);
-                        }
-                    }, 1500);
-                } else {
-                    console.log('⚠️ Firebase 준비 안됨 - Firebase 초기화 대기 중...');
-                    // Firebase가 준비되지 않은 경우 잠시 대기 후 재시도
-                    setTimeout(() => {
-                        console.log('Firebase 초기화 재시도...');
-                        if (typeof firebase !== 'undefined' && firebase.auth) {
-                            console.log('Firebase 초기화 완료, 프로필 페이지 계속 진행');
-                        } else {
-                            console.log('Firebase 초기화 실패 - 로그인 페이지로 리다이렉트');
-                            window.location.href = 'login.html';
-                        }
-                    }, 2000);
-                }
+                console.log('Firebase 초기화 완료, 인증 상태 확인 시작');
+                checkAuthState();
                 
-                // Firebase 초기화 완료 후 프로필 전체 초기화
-                if (firebaseReady) {
-                    console.log('Firebase 준비됨, 프로필 초기화 시작');
-                    await initializeProfile();
-                } else {
-                    console.log('Firebase 준비 안됨, 프로필 초기화 건너뛰기');
-                    // Firebase가 준비되지 않은 경우 초기화 건너뛰기
-                }
-                
-                // 3초 후 강제 로그인 상태 확인 (백업)
-                setTimeout(() => {
-                    console.log('3초 후 강제 로그인 상태 확인');
-                    forceCheckLoginStatus();
-                }, 3000);
+                // 카트 수량 업데이트
+                updateCartCount();
                 
             } catch (error) {
                 console.error('프로필 페이지 초기화 중 오류:', error);
-                // 에러가 발생해도 기본 기능은 동작하도록
-                try {
-                    await initializeProfile();
-                } catch (innerError) {
-                    console.error('프로필 초기화 재시도 실패:', innerError);
-                }
+                // 에러가 발생해도 인증 상태 확인은 시도
+                setTimeout(() => {
+                    checkAuthState();
+                }, 1000);
             }
         });
         
@@ -3326,77 +3248,7 @@
 
                 // 사용자 정보 관리 (포인트 페이지와 동일)
 
-        // 사용자 정보 로드 (포인트 페이지와 동일)
-        const loadUserInfo = async function() {
-            try {
-                console.log('사용자 정보 로드 시작');
-                
-                // 1. Firebase에서 로드 시도 (더 안전한 확인)
-                let userData = null;
-                
-                try {
-                    if (typeof firebase !== 'undefined' && 
-                        firebase.auth && 
-                        firebase.auth().currentUser && 
-                        firebase.firestore &&
-                        firebase.app) {
-                        
-                        const user = firebase.auth().currentUser;
-                        if (user && user.email) {
-                            userData = {
-                                name: user.displayName || user.email.split('@')[0],
-                                email: user.email,
-                                uid: user.uid,
-                                points: 0
-                            };
-                            console.log('Firebase에서 사용자 정보 로드 성공:', userData);
-                        }
-                    }
-                } catch (firebaseError) {
-                    console.warn('Firebase 사용자 정보 로드 실패:', firebaseError);
-                }
-                
-                // Firebase 전용됨
-                if (!userData) {
-                    console.log('⚠️ Firebase에서 사용자 정보를 찾을 수 없음');
-                }
-                
-                // 3. 사용자 정보 설정 및 Firebase 동기화
-                if (userData) {
-                    pointsPageUser = userData;
-                    console.log('최종 사용자 정보 설정:', pointsPageUser);
-                    
-                    // 프로필 헤더 업데이트
-                    updateProfileHeader(userData);
-                    
-                    // Firebase에 사용자 정보가 없으면 생성/업데이트
-                    if (typeof window.FirebaseService !== 'undefined' && 
-                        window.FirebaseService.isFirebaseAvailable() && 
-                        userData.uid && 
-                        userData.uid !== userData.email) {
-                        
-                        try {
-                            await firebase.firestore().collection('users').doc(userData.uid).set({
-                                name: userData.name,
-                                email: userData.email,
-                                points: userData.points,
-                                lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
-                            }, { merge: true });
-                            console.log('Firebase 사용자 정보 동기화 완료');
-                        } catch (syncError) {
-                            console.warn('Firebase 사용자 정보 동기화 실패:', syncError);
-                        }
-                    }
-                } else {
-                    console.log('사용자 데이터를 찾을 수 없음 - 로그인 페이지로 리다이렉트');
-                    // 로그인되지 않은 사용자는 로그인 페이지로 리다이렉트
-                    window.location.href = 'login.html';
-                }
-                
-            } catch (error) {
-                console.error('사용자 정보 로드 실패:', error);
-            }
-        }
+        // 사용자 정보 로드 함수 제거됨 - checkAuthState에서 처리
 
         // QR 코드 생성 함수들 - 포인트 페이지와 동일한 방식 사용
 
@@ -3405,7 +3257,7 @@
             try {
                 console.log('=== 인증 상태 확인 시작 ===');
                 
-                // 1. Firebase 인증 상태 확인 (우선)
+                // Firebase 인증 상태 확인
                 if (typeof firebase !== 'undefined' && firebase.auth) {
                     console.log('Firebase 인증 상태 확인 중...');
                     
@@ -3423,12 +3275,27 @@
                             email: currentUser.email
                         };
                         updateProfileHeader(userData);
+                        
+                        // 프로필 페이지 초기화
+                        initializeProfile();
                     } else {
-                        console.log('❌ Firebase 사용자 로그아웃 상태');
-                        // 로그아웃 상태일 때 로그인 페이지로 리다이렉트
+                        console.log('❌ Firebase 사용자 로그아웃 상태 - 잠시 대기 후 재확인');
+                        // 로그아웃 상태일 때 잠시 대기 후 재확인 (Firebase 초기화 지연 때문일 수 있음)
                         setTimeout(() => {
-                            window.location.href = 'login.html';
-                        }, 1000);
+                            const retryUser = firebase.auth().currentUser;
+                            if (retryUser) {
+                                console.log('✅ 재확인 후 Firebase 사용자 발견:', retryUser.email);
+                                const userData = {
+                                    name: retryUser.displayName || retryUser.email.split('@')[0],
+                                    email: retryUser.email
+                                };
+                                updateProfileHeader(userData);
+                                initializeProfile();
+                            } else {
+                                console.log('❌ 재확인 후에도 Firebase 사용자 없음 - 로그인 페이지로 리다이렉트');
+                                window.location.href = 'login.html';
+                            }
+                        }, 2000);
                     }
                     
                     // 인증 상태 변경 리스너 설정
@@ -3453,18 +3320,25 @@
                         }
                     });
                 } else {
-                    console.log('Firebase 없음, 로그인 페이지로 리다이렉트');
-                    // Firebase가 없는 경우 로그인 페이지로 리다이렉트
+                    console.log('Firebase 없음 - 잠시 대기 후 재시도');
+                    // Firebase가 없는 경우 잠시 대기 후 재시도
                     setTimeout(() => {
-                        window.location.href = 'login.html';
-                    }, 1000);
+                        if (typeof firebase !== 'undefined' && firebase.auth) {
+                            console.log('Firebase 초기화 완료, 인증 상태 재확인');
+                            checkAuthState();
+                        } else {
+                            console.log('Firebase 초기화 실패 - 로그인 페이지로 리다이렉트');
+                            window.location.href = 'login.html';
+                        }
+                    }, 3000);
                 }
             } catch (error) {
                 console.warn('인증 상태 확인 실패:', error);
-                // 에러 발생 시 로그인 페이지로 리다이렉트
+                // 에러 발생 시 잠시 대기 후 재시도
                 setTimeout(() => {
-                    window.location.href = 'login.html';
-                }, 1000);
+                    console.log('에러 후 재시도...');
+                    checkAuthState();
+                }, 2000);
             }
         }
 
@@ -3522,57 +3396,7 @@
 
         // 프로필 사진 업로드 함수들 - Firebase 전용
 
-        // 강제 로그인 상태 확인 (디버깅용)
-        function forceCheckLoginStatus() {
-            console.log('=== 강제 로그인 상태 확인 ===');
-            
-            // Firebase 로그인 상태 확인
-            const loginStatus = getLoginStatus();
-            console.log('Firebase 로그인 상태:', loginStatus);
-            
-            // Firebase 확인 (초기화 상태 확인 후)
-            if (typeof window.FirebaseService !== 'undefined' && 
-                window.FirebaseService.isFirebaseAvailable() && 
-                typeof firebase !== 'undefined' && 
-                firebase.app && 
-                firebase.auth) {
-                const currentUser = firebase.auth().currentUser;
-                console.log('Firebase 현재 사용자:', currentUser);
-            } else {
-                console.log('Firebase가 초기화되지 않았거나 사용할 수 없음');
-            }
-            
-            // 관리자 메뉴 수동 표시 (우선순위 높음)
-            updateAdminMenuVisibility().then(() => {
-                console.log('강제 로그인 상태 확인 - 관리자 메뉴 업데이트 완료');
-            });
-            
-            // Firebase 사용자 정보로 메뉴 업데이트
-            if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
-                const firebaseUser = firebase.auth().currentUser;
-                updateUserMenuFromProfile({ 
-                    email: firebaseUser.email, 
-                    displayName: firebaseUser.displayName || firebaseUser.email.split('@')[0] 
-                });
-            } else {
-                // Firebase 사용자가 없을 때 메뉴 업데이트 건너뛰기
-                updateUserMenuFromProfile(loginStatus ? { email: loginStatus.email, displayName: loginStatus.name } : null);
-            }
-        }
-        
-        // 관리자 메뉴 표시 여부 업데이트 (간단한 방식)
-        async function updateAdminMenuVisibility() {
-            // auth-utils.js의 updateUserMenu 함수가 모든 메뉴를 관리하므로
-            // 여기서는 단순히 해당 함수를 호출만 함
-            if (typeof updateUserMenu === 'function') {
-                try {
-                    await updateUserMenu();
-                    console.log('관리자 메뉴 업데이트 완료');
-                } catch (error) {
-                    console.error('관리자 메뉴 업데이트 실패:', error);
-                }
-            }
-        }
+        // 불필요한 함수들 제거됨 - checkAuthState에서 모든 인증 상태 관리
 
         // DOMContentLoaded 이벤트 리스너
 
