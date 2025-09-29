@@ -1610,12 +1610,12 @@
             }
         }
 
-        // 사용자 데이터 관리 함수 제거됨 - Firebase 전용 시스템
+        // 사용자 데이터 관리 함수 - Firebase 전용 시스템
 
         function getCurrentUser() {
             console.log('🔍 profile.html getCurrentUser 호출');
             
-            // Firebase 사용자만 확인 (localStorage 사용 안함)
+            // Firebase 사용자만 확인
             try {
                 if (typeof firebase !== 'undefined' && firebase.auth && firebase.apps && firebase.apps.length > 0) {
                     const firebaseUser = firebase.auth().currentUser;
@@ -1920,7 +1920,7 @@
             }
         }
 
-        // 오프라인 계정 삭제 함수 제거됨 - Firebase 전용 시스템
+        // 계정 삭제 함수 - Firebase 전용 시스템
 
         // 삭제 알림 표시
         function showDeleteAlert(message, type = 'danger') {
@@ -2055,8 +2055,8 @@
                 console.log('- Firestore 연결:', isConnected ? 'OK' : 'FAILED');
                 
                 if (!isConnected) {
-                    console.log('⚠️  Firestore 연결 실패 - localStorage 모드로 동작합니다');
-                    // 오프라인 모드 메시지 비활성화 (localStorage 사용자에게 불필요)
+                    console.log('⚠️  Firestore 연결 실패');
+                    // 오프라인 모드 메시지 비활성화
                     // showAlert('info-alert', 'オフラインモードで動作しています。一部機能が制限される場合があります。', 'warning');
                 }
             }
@@ -2172,7 +2172,7 @@
                     console.log('Firebase가 초기화되지 않았거나 사용할 수 없음');
                 }
                 
-                // 2. Firebase 전용 - localStorage 폴백 제거됨
+                // 2. Firebase 전용
                 if (!profileData) {
                     console.log('⚠️ Firebase에서 프로필 데이터를 찾을 수 없음');
                 }
@@ -2335,7 +2335,7 @@
                         
                         let user = firebase.auth().currentUser;
                         
-                        // Firebase Auth만 사용 (localStorage 사용 안함)
+                        // Firebase Auth만 사용
                         if (!user) {
                             console.log('Firebase Auth currentUser가 null - 로그인 필요');
                         }
@@ -2370,7 +2370,7 @@
                     console.warn('Firebase 사용자 정보 로드 실패:', firebaseError);
                 }
                 
-                // 2. Firebase 전용 - localStorage 폴백 제거됨
+                // 2. Firebase 전용
                 if (!userData) {
                     console.log('⚠️ Firebase에서 사용자 정보를 찾을 수 없음');
                 }
@@ -3004,58 +3004,16 @@
             }
         });
         
-        // 테스트 주문 데이터 생성 함수 제거됨 - Firebase 전용 시스템
+        // 주문 데이터 관리 - Firebase 전용 시스템
         
         // 저장된 주문 데이터 분석 함수
         function analyzeStoredOrders() {
-            console.log('Firebase 전용 시스템 - localStorage 주문 분석 제거됨');
+            console.log('Firebase 전용 시스템 - 주문 분석');
             console.log('주문 데이터는 Firebase에서 확인하세요');
             return [];
         }
         
-        // 주문 데이터 수정 함수 (이메일 매칭을 위해)
-        function fixOrderData() {
-            try {
-                // Firebase 전용 - localStorage 사용 제거
-                const currentUser = firebase.auth().currentUser;
-                
-                if (!currentUser) {
-                    console.log('로그인 상태가 없어 수정할 수 없음');
-                    return false;
-                }
-                
-                console.log('주문 데이터 수정 시작...');
-                
-                let modified = false;
-                orders.forEach(order => {
-                    // userEmail이 비어있고 shipping.email이 있는 경우
-                    if (!order.userEmail && order.shipping && order.shipping.email) {
-                        order.userEmail = order.shipping.email;
-                        modified = true;
-                        console.log('주문 userEmail 수정:', order.id || order.orderId, '->', order.userEmail);
-                    }
-                    
-                    // userId가 로그인 사용자와 다르지만 이메일이 매칭되는 경우
-                    if (order.shipping && order.shipping.email === loginStatus.email && order.userId !== loginStatus.email) {
-                        console.log('주문 userId 수정 후보:', order.id || order.orderId, order.userId, '->', loginStatus.email);
-                        // 예비 학인: userId를 이메일로 업데이트하지 않고 로그만 출력
-                    }
-                });
-                
-                if (modified) {
-                    localStorage.setItem('aetherOrders', JSON.stringify(orders));
-                    console.log('주문 데이터 수정 완료');
-                    return true;
-                } else {
-                    console.log('수정할 데이터가 없음');
-                    return false;
-                }
-                
-            } catch (error) {
-                console.error('주문 데이터 수정 오류:', error);
-                return false;
-            }
-        }
+        // 주문 데이터 수정 함수 - Firebase 전용 시스템
         
         // 강제 주문 표시 함수 (디버깅용)
         function showAllOrders() {
@@ -3101,40 +3059,7 @@
                     }
                 }
                 
-                // localStorage에 저장
-                const loginStatus = JSON.parse(localStorage.getItem('aetherLoginStatus') || '{}');
-                if (loginStatus.email) {
-                    const users = JSON.parse(localStorage.getItem('aetherUsers') || '[]');
-                    let userIndex = users.findIndex(u => u.email === loginStatus.email);
-                    
-                    if (userIndex === -1) {
-                        // 새 사용자 생성
-                        users.push({
-                            uid: loginStatus.uid || 'local_' + Date.now(),
-                            email: profileData.email,
-                            name: profileData.name,
-                            phone: profileData.phone,
-                            profile: profileData.profile,
-                            createdAt: new Date().toISOString(),
-                            updatedAt: new Date().toISOString()
-                        });
-                    } else {
-                        // 기존 사용자 업데이트
-                        users[userIndex].name = profileData.name;
-                        users[userIndex].phone = profileData.phone;
-                        users[userIndex].profile = profileData.profile;
-                        users[userIndex].updatedAt = new Date().toISOString();
-                    }
-                    
-                    localStorage.setItem('aetherUsers', JSON.stringify(users));
-                    
-                    // 로그인 상태도 업데이트
-                    loginStatus.name = profileData.name;
-                    localStorage.setItem('aetherLoginStatus', JSON.stringify(loginStatus));
-                    
-                    console.log('localStorage 프로필 저장 성공');
-                    saveSuccess = true;
-                }
+                // Firebase 전용 - localStorage 사용 안함
                 
                 // 결과 처리
                 if (saveSuccess) {
@@ -3232,27 +3157,7 @@
                     }
                 }
                 
-                // localStorage 패스워드 변경
-                const loginStatus = JSON.parse(localStorage.getItem('aetherLoginStatus') || '{}');
-                if (loginStatus.email) {
-                    const users = JSON.parse(localStorage.getItem('aetherUsers') || '[]');
-                    const userIndex = users.findIndex(u => u.email === loginStatus.email);
-                    
-                    if (userIndex !== -1) {
-                        // 현재 패스워드 확인
-                        if (users[userIndex].password && users[userIndex].password !== currentPassword) {
-                            showPasswordAlert('現在のパスワードが正しくありません。', 'danger');
-                            return;
-                        }
-                        
-                        // 새 패스워드 저장
-                        users[userIndex].password = newPassword;
-                        users[userIndex].updatedAt = new Date().toISOString();
-                        localStorage.setItem('aetherUsers', JSON.stringify(users));
-                        console.log('localStorage 패스워드 변경 성공');
-                        changeSuccess = true;
-                    }
-                }
+                // Firebase 전용 - localStorage 사용 안함
                 
                 // 결과 처리
                 if (changeSuccess) {
@@ -3286,20 +3191,18 @@
             }, 3000);
         }
         
-        // 전역 함수 노출 (테스트 함수 제거됨)
+        // 전역 함수 노출
         window.loadOrderHistory = loadOrderHistory;
         window.getOrderHistoryDirectly = getOrderHistoryDirectly;
         window.initializeProfile = initializeProfile;
         window.analyzeStoredOrders = analyzeStoredOrders;
-        window.fixOrderData = fixOrderData;
+        // window.fixOrderData = fixOrderData; // 제거됨 - Firebase 전용
         window.showAllOrders = showAllOrders;
         window.saveProfileEdit = saveProfileEdit;
         window.showChangePassword = showChangePassword;
         window.changePassword = changePassword;
 
-        // 이전 showQRCode 함수는 제거됨 - 포인트 페이지와 동일한 방식만 사용
-
-        // 이전 헬퍼 함수들은 제거됨 - 포인트 페이지와 동일한 방식만 사용
+        // QR 코드 관련 함수들 - 포인트 페이지와 동일한 방식 사용
 
                 // 사용자 정보 관리 (포인트 페이지와 동일)
 
@@ -3375,7 +3278,7 @@
             }
         }
 
-        // 이전 QR 코드 생성 함수들은 제거됨 - 포인트 페이지와 동일한 방식만 사용
+        // QR 코드 생성 함수들 - 포인트 페이지와 동일한 방식 사용
 
         // 인증 상태 확인
         const checkAuthState = function() {
@@ -3401,19 +3304,15 @@
                         }
                     });
                 } else {
-                    console.log('Firebase 없음, localStorage 기반으로 확인');
-                    // Firebase가 없는 경우 localStorage 기반으로 메뉴 업데이트
-                    const loginStatus = getLoginStatus();
-                    console.log('localStorage 로그인 상태:', loginStatus);
+                    console.log('Firebase 없음, 메뉴 업데이트 건너뛰기');
+                    // Firebase가 없는 경우 메뉴 업데이트 건너뛰기
                     if (typeof window.updateUserMenu === 'function') {
                         window.updateUserMenu();
                     }
                 }
             } catch (error) {
                 console.warn('인증 상태 확인 실패:', error);
-                // localStorage 기반으로 메뉴 업데이트
-                const loginStatus = getLoginStatus();
-                console.log('에러 후 localStorage 로그인 상태:', loginStatus);
+                // 에러 후 메뉴 업데이트 건너뛰기
                 if (typeof window.updateUserMenu === 'function') {
                     window.updateUserMenu();
                 }
@@ -3460,8 +3359,7 @@
                     });
                 }
                 
-                // localStorage 정리
-                // Firebase 전용 - localStorage 사용 제거
+                // Firebase 전용
                 
                 console.log('로그아웃 완료');
                 window.location.href = 'index.html';
@@ -3469,26 +3367,19 @@
             } catch (error) {
                 console.error('로그아웃 중 오류:', error);
                 // 오류가 발생해도 강제로 로그인 상태 제거
-                // Firebase 전용 - localStorage 사용 제거
                 window.location.href = 'index.html';
             }
         }
 
-        // 중복된 updateCartCount 함수 제거됨 - 위의 함수 사용
-
-        // 기존 중복된 프로필 사진 업로드 함수 제거됨 - 위의 새로운 함수 사용
-        
-        // 중복된 Firebase 업로드 함수 제거됨 - 위의 새로운 함수 사용
-        
-        // 기존 localStorage 기반 프로필 사진 함수 제거됨 - Firebase 전용으로 변경
+        // 프로필 사진 업로드 함수들 - Firebase 전용
 
         // 강제 로그인 상태 확인 (디버깅용)
         function forceCheckLoginStatus() {
             console.log('=== 강제 로그인 상태 확인 ===');
             
-            // localStorage 확인
+            // Firebase 로그인 상태 확인
             const loginStatus = getLoginStatus();
-            console.log('localStorage 로그인 상태:', loginStatus);
+            console.log('Firebase 로그인 상태:', loginStatus);
             
             // Firebase 확인 (초기화 상태 확인 후)
             if (typeof window.FirebaseService !== 'undefined' && 
@@ -3507,7 +3398,7 @@
                 console.log('강제 로그인 상태 확인 - 관리자 메뉴 업데이트 완료');
             });
             
-            // Firebase 사용자 정보로 메뉴 업데이트 (localStorage 대신)
+            // Firebase 사용자 정보로 메뉴 업데이트
             if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
                 const firebaseUser = firebase.auth().currentUser;
                 updateUserMenuFromProfile({ 
@@ -3515,7 +3406,7 @@
                     displayName: firebaseUser.displayName || firebaseUser.email.split('@')[0] 
                 });
             } else {
-                // Firebase 사용자가 없을 때만 localStorage 사용
+                // Firebase 사용자가 없을 때 메뉴 업데이트 건너뛰기
                 updateUserMenuFromProfile(loginStatus ? { email: loginStatus.email, displayName: loginStatus.name } : null);
             }
         }
@@ -3534,7 +3425,7 @@
             }
         }
 
-        // 중복된 DOMContentLoaded 이벤트 리스너 제거됨 - 위의 이벤트 리스너 사용
+        // DOMContentLoaded 이벤트 리스너
 
     </script>
     
