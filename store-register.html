@@ -444,30 +444,32 @@
                 
                 console.log('Firebase 로그인 성공, 스토어 권한 확인 중...');
                 
-                // 스토어 사용자 컬렉션에서 권한 확인
-                console.log('🔍 storeUsers 컬렉션에서 문서 조회:', email);
+                // storeUser 컬렉션에서 권한 확인
+                console.log('🔍 storeUser 컬렉션에서 문서 조회:', email);
                 const storeUserDoc = await firebase.firestore()
-                    .collection('storeUsers')
+                    .collection('storeUser')
                     .doc(email)
                     .get();
                 
-                console.log('🔍 storeUsers 문서 존재 여부:', storeUserDoc.exists);
-                console.log('🔍 storeUsers 문서 ID:', storeUserDoc.id);
+                console.log('🔍 storeUser 문서 존재 여부:', storeUserDoc.exists);
+                console.log('🔍 storeUser 문서 ID:', storeUserDoc.id);
                 
                 if (storeUserDoc.exists) {
                     const storeUserData = storeUserDoc.data();
                     console.log('✅ 스토어 사용자 데이터:', storeUserData);
                     console.log('🔍 isActive:', storeUserData.isActive);
+                    console.log('🔍 isStoreActive:', storeUserData.isStoreActive);
                     console.log('🔍 role:', storeUserData.role);
+                    console.log('🔍 storeRole:', storeUserData.storeRole);
                     
-                    // 스토어 권한이 있는지 확인
-                    if (storeUserData.isActive && storeUserData.role) {
+                    // 스토어 권한이 있는지 확인 (isActive 또는 isStoreActive가 true이고 role 또는 storeRole이 있는 경우)
+                    if ((storeUserData.isActive || storeUserData.isStoreActive) && (storeUserData.role || storeUserData.storeRole)) {
                         return {
                             success: true,
                             user: {
                                 email: email,
                                 name: storeUserData.name || email.split('@')[0],
-                                role: storeUserData.role,
+                                role: storeUserData.storeRole || storeUserData.role,
                                 storeId: storeUserData.storeId || 'main_store',
                                 permissions: storeUserData.permissions || []
                             }
@@ -475,50 +477,10 @@
                     } else {
                         return {
                             success: false,
-                            error: '店舗アクセス権限がありません。管理者にお問い合わせください。'
+                            error: '店舗システムアクセス権限がありません。管理者にお問い合わせください。'
                         };
                     }
                 } else {
-                    console.log('❌ storeUsers 컬렉션에서 문서를 찾을 수 없음');
-                    // 스토어 사용자가 아닌 경우, 일반 사용자에서 스토어 권한 확인
-                    console.log('🔍 users 컬렉션에서 문서 조회:', email);
-                    const userDoc = await firebase.firestore()
-                        .collection('users')
-                        .doc(email)
-                        .get();
-                    
-                    console.log('🔍 users 문서 존재 여부:', userDoc.exists);
-                    console.log('🔍 users 문서 ID:', userDoc.id);
-                    
-                    if (userDoc.exists) {
-                        const userData = userDoc.data();
-                        console.log('✅ 일반 사용자 데이터:', userData);
-                        console.log('🔍 storeRole:', userData.storeRole);
-                        console.log('🔍 isStoreActive:', userData.isStoreActive);
-                        
-                        // 스토어 권한이 없으면 접근 거부
-                        if (!userData.storeRole || !userData.isStoreActive) {
-                            console.log('❌ 스토어 권한 없음 - 접근 거부');
-                            return { 
-                                success: false, 
-                                error: '店舗システムアクセス権限がありません。管理者にお問い合わせください。' 
-                            };
-                        }
-                        
-                        if (userData.storeRole && userData.isStoreActive) {
-                            return {
-                                success: true,
-                                user: {
-                                    email: email,
-                                    name: userData.name || email.split('@')[0],
-                                    role: userData.storeRole,
-                                    storeId: userData.storeId || 'main_store',
-                                    permissions: userData.storePermissions || []
-                                }
-                            };
-                        }
-                    }
-                    
                     return {
                         success: false,
                         error: '店舗システムアクセス権限がありません。'
