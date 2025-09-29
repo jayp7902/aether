@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>스토어 권한 테스트</title>
+    <link rel="stylesheet" href="assets/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: "Montserrat", sans-serif;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .test-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .result {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-success { background-color: #28a745; color: white; }
+        .btn-warning { background-color: #ffc107; color: black; }
+        .btn-danger { background-color: #dc3545; color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mb-4">🔧 스토어 권한 테스트 페이지</h1>
+        
+        <!-- 로그인 -->
+        <div class="test-section">
+            <h3>0. 로그인 (필수)</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <input type="email" id="login-email" class="form-control mb-2" placeholder="이메일" value="storeadmin@aether.com">
+                    <input type="password" id="login-password" class="form-control mb-2" placeholder="비밀번호">
+                    <button class="btn-success" onclick="loginUser()">로그인</button>
+                    <button class="btn-warning" onclick="logoutUser()">로그아웃</button>
+                </div>
+            </div>
+            <div id="login-result"></div>
+        </div>
+
+        <!-- 현재 사용자 정보 -->
+        <div class="test-section">
+            <h3>1. 현재 사용자 정보</h3>
+            <button class="btn-primary" onclick="checkCurrentUser()">현재 사용자 확인</button>
+            <div id="current-user-result"></div>
+        </div>
+
+        <!-- Firebase Auth 상태 -->
+        <div class="test-section">
+            <h3>2. Firebase Auth 상태</h3>
+            <button class="btn-primary" onclick="checkFirebaseAuth()">Firebase Auth 확인</button>
+            <div id="firebase-auth-result"></div>
+        </div>
+
+        <!-- Firestore 사용자 데이터 -->
+        <div class="test-section">
+            <h3>3. Firestore 사용자 데이터</h3>
+            <button class="btn-primary" onclick="checkFirestoreUser()">Firestore 사용자 데이터 확인</button>
+            <div id="firestore-user-result"></div>
+        </div>
+
+        <!-- 스토어 권한 확인 -->
+        <div class="test-section">
+            <h3>4. 스토어 권한 확인</h3>
+            <button class="btn-success" onclick="checkStorePermission()">스토어 권한 확인</button>
+            <div id="store-permission-result"></div>
+        </div>
+
+        <!-- 스토어 권한 추가 -->
+        <div class="test-section">
+            <h3>5. 스토어 권한 추가 (테스트용)</h3>
+            <button class="btn-warning" onclick="addStorePermission()">현재 사용자에게 스토어 권한 추가</button>
+            <div id="add-permission-result"></div>
+        </div>
+
+        <!-- 전체 테스트 -->
+        <div class="test-section">
+            <h3>6. 전체 테스트</h3>
+            <button class="btn-danger" onclick="runFullTest()">전체 테스트 실행</button>
+            <div id="full-test-result"></div>
+        </div>
+
+        <!-- 로그 -->
+        <div class="test-section">
+            <h3>7. 상세 로그</h3>
+            <button class="btn-primary" onclick="clearLog()">로그 지우기</button>
+            <div id="log-container" style="background: #f8f9fa; padding: 15px; border-radius: 5px; max-height: 400px; overflow-y: auto; font-family: monospace; font-size: 12px;"></div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    
+    <!-- Firebase Configuration -->
+    <script src="assets/js/firebase-config.js"></script>
+
+    <script>
+        function log(message, type = 'info') {
+            const logContainer = document.getElementById('log-container');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.innerHTML = `<span style="color: #666;">[${timestamp}]</span> ${message}`;
+            if (type === 'error') logEntry.style.color = '#dc3545';
+            if (type === 'success') logEntry.style.color = '#28a745';
+            if (type === 'warning') logEntry.style.color = '#ffc107';
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+
+        function showResult(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.innerHTML = `<div class="result ${type}">${message}</div>`;
+        }
+
+        function clearLog() {
+            document.getElementById('log-container').innerHTML = '';
+        }
+
+        // 로그인 함수
+        async function loginUser() {
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            if (!email || !password) {
+                showResult('login-result', '❌ 이메일과 비밀번호를 입력해주세요.', 'error');
+                return;
+            }
+            
+            log(`로그인 시도: ${email}`);
+            
+            try {
+                const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                
+                showResult('login-result', `
+                    ✅ 로그인 성공!<br>
+                    <strong>이메일:</strong> ${user.email}<br>
+                    <strong>UID:</strong> ${user.uid}
+                `, 'success');
+                
+                log(`로그인 성공: ${user.email} (${user.uid})`, 'success');
+                
+                // 로그인 성공 후 자동으로 현재 사용자 확인
+                setTimeout(() => {
+                    checkCurrentUser();
+                }, 1000);
+                
+            } catch (error) {
+                showResult('login-result', `❌ 로그인 실패: ${error.message}`, 'error');
+                log(`로그인 실패: ${error.message}`, 'error');
+            }
+        }
+
+        // 로그아웃 함수
+        async function logoutUser() {
+            try {
+                await firebase.auth().signOut();
+                showResult('login-result', '✅ 로그아웃 완료', 'success');
+                log('로그아웃 완료', 'success');
+                
+                // 로그아웃 후 결과 초기화
+                document.getElementById('current-user-result').innerHTML = '';
+                document.getElementById('firebase-auth-result').innerHTML = '';
+                document.getElementById('firestore-user-result').innerHTML = '';
+                document.getElementById('store-permission-result').innerHTML = '';
+                
+            } catch (error) {
+                showResult('login-result', `❌ 로그아웃 실패: ${error.message}`, 'error');
+                log(`로그아웃 실패: ${error.message}`, 'error');
+            }
+        }
+
+        // 1. 현재 사용자 정보 확인
+        async function checkCurrentUser() {
+            log('=== 현재 사용자 정보 확인 시작 ===');
+            
+            try {
+                if (!firebase || !firebase.auth) {
+                    showResult('current-user-result', '❌ Firebase Auth가 초기화되지 않았습니다.', 'error');
+                    log('Firebase Auth가 초기화되지 않았습니다.', 'error');
+                    return;
+                }
+
+                const currentUser = firebase.auth().currentUser;
+                
+                if (!currentUser) {
+                    showResult('current-user-result', '❌ 로그인된 사용자가 없습니다.', 'warning');
+                    log('로그인된 사용자가 없습니다.', 'warning');
+                    return;
+                }
+
+                const userInfo = {
+                    email: currentUser.email,
+                    uid: currentUser.uid,
+                    displayName: currentUser.displayName,
+                    emailVerified: currentUser.emailVerified,
+                    creationTime: currentUser.metadata.creationTime,
+                    lastSignInTime: currentUser.metadata.lastSignInTime
+                };
+
+                showResult('current-user-result', `
+                    ✅ 로그인된 사용자 정보:<br>
+                    <strong>이메일:</strong> ${userInfo.email}<br>
+                    <strong>UID:</strong> ${userInfo.uid}<br>
+                    <strong>표시명:</strong> ${userInfo.displayName || '없음'}<br>
+                    <strong>이메일 인증:</strong> ${userInfo.emailVerified ? '완료' : '미완료'}<br>
+                    <strong>계정 생성:</strong> ${userInfo.creationTime}<br>
+                    <strong>마지막 로그인:</strong> ${userInfo.lastSignInTime}
+                `, 'success');
+                
+                log(`로그인된 사용자: ${userInfo.email} (${userInfo.uid})`, 'success');
+                
+            } catch (error) {
+                showResult('current-user-result', `❌ 오류: ${error.message}`, 'error');
+                log(`현재 사용자 확인 오류: ${error.message}`, 'error');
+            }
+        }
+
+        // 2. Firebase Auth 상태 확인
+        async function checkFirebaseAuth() {
+            log('=== Firebase Auth 상태 확인 시작 ===');
+            
+            try {
+                const authStatus = {
+                    firebase: typeof firebase !== 'undefined',
+                    auth: typeof firebase !== 'undefined' && !!firebase.auth,
+                    currentUser: firebase?.auth?.currentUser ? firebase.auth().currentUser.email : null,
+                    authState: '확인 중...'
+                };
+
+                log(`Firebase 객체: ${authStatus.firebase ? '존재' : '없음'}`, authStatus.firebase ? 'success' : 'error');
+                log(`Firebase Auth: ${authStatus.auth ? '존재' : '없음'}`, authStatus.auth ? 'success' : 'error');
+                log(`현재 사용자: ${authStatus.currentUser || '없음'}`, authStatus.currentUser ? 'success' : 'warning');
+
+                showResult('firebase-auth-result', `
+                    Firebase 객체: ${authStatus.firebase ? '✅ 존재' : '❌ 없음'}<br>
+                    Firebase Auth: ${authStatus.auth ? '✅ 존재' : '❌ 없음'}<br>
+                    현재 사용자: ${authStatus.currentUser ? `✅ ${authStatus.currentUser}` : '❌ 없음'}
+                `, authStatus.firebase && authStatus.auth ? 'success' : 'error');
+                
+            } catch (error) {
+                showResult('firebase-auth-result', `❌ 오류: ${error.message}`, 'error');
+                log(`Firebase Auth 상태 확인 오류: ${error.message}`, 'error');
+            }
+        }
+
+        // 3. Firestore 사용자 데이터 확인
+        async function checkFirestoreUser() {
+            log('=== Firestore 사용자 데이터 확인 시작 ===');
+            
+            try {
+                if (!firebase || !firebase.firestore) {
+                    showResult('firestore-user-result', '❌ Firebase Firestore가 초기화되지 않았습니다.', 'error');
+                    log('Firebase Firestore가 초기화되지 않았습니다.', 'error');
+                    return;
+                }
+
+                const currentUser = firebase.auth().currentUser;
+                if (!currentUser) {
+                    showResult('firestore-user-result', '❌ 로그인된 사용자가 없습니다.', 'warning');
+                    log('로그인된 사용자가 없습니다.', 'warning');
+                    return;
+                }
+
+                const db = firebase.firestore();
+                log(`Firestore에서 사용자 문서 조회: ${currentUser.email}`);
+                
+                const userDoc = await db.collection('users').doc(currentUser.email).get();
+                
+                if (!userDoc.exists) {
+                    showResult('firestore-user-result', '❌ Firestore에 사용자 문서가 존재하지 않습니다.', 'error');
+                    log(`사용자 문서가 존재하지 않음: ${currentUser.email}`, 'error');
+                    return;
+                }
+
+                const userData = userDoc.data();
+                log(`사용자 데이터 로드 성공: ${JSON.stringify(userData, null, 2)}`, 'success');
+
+                showResult('firestore-user-result', `
+                    ✅ Firestore 사용자 데이터:<br>
+                    <strong>이메일:</strong> ${userData.email || '없음'}<br>
+                    <strong>이름:</strong> ${userData.name || '없음'}<br>
+                    <strong>스토어 역할:</strong> ${userData.storeRole || '없음'}<br>
+                    <strong>스토어 활성:</strong> ${userData.isStoreActive !== undefined ? (userData.isStoreActive ? '활성' : '비활성') : '없음'}<br>
+                    <strong>스토어 ID:</strong> ${userData.storeId || '없음'}<br>
+                    <strong>스토어 권한:</strong> ${userData.storePermissions ? JSON.stringify(userData.storePermissions) : '없음'}<br>
+                    <strong>생성일:</strong> ${userData.createdAt ? userData.createdAt.toDate().toLocaleString() : '없음'}<br>
+                    <strong>수정일:</strong> ${userData.updatedAt ? userData.updatedAt.toDate().toLocaleString() : '없음'}
+                `, 'success');
+                
+            } catch (error) {
+                showResult('firestore-user-result', `❌ 오류: ${error.message}`, 'error');
+                log(`Firestore 사용자 데이터 확인 오류: ${error.message}`, 'error');
+            }
+        }
+
+        // 4. 스토어 권한 확인
+        async function checkStorePermission() {
+            log('=== 스토어 권한 확인 시작 ===');
+            
+            try {
+                const currentUser = firebase.auth().currentUser;
+                if (!currentUser) {
+                    showResult('store-permission-result', '❌ 로그인된 사용자가 없습니다.', 'warning');
+                    log('로그인된 사용자가 없습니다.', 'warning');
+                    return;
+                }
+
+                const db = firebase.firestore();
+                const userDoc = await db.collection('users').doc(currentUser.email).get();
+                
+                if (!userDoc.exists) {
+                    showResult('store-permission-result', '❌ Firestore에 사용자 문서가 존재하지 않습니다.', 'error');
+                    log(`사용자 문서가 존재하지 않음: ${currentUser.email}`, 'error');
+                    return;
+                }
+
+                const userData = userDoc.data();
+                const hasStoreRole = !!userData.storeRole;
+                const isStoreActive = !!userData.isStoreActive;
+                const hasStorePermissions = !!userData.storePermissions;
+
+                log(`스토어 역할: ${userData.storeRole || '없음'}`, hasStoreRole ? 'success' : 'error');
+                log(`스토어 활성: ${userData.isStoreActive}`, isStoreActive ? 'success' : 'error');
+                log(`스토어 권한: ${userData.storePermissions ? JSON.stringify(userData.storePermissions) : '없음'}`, hasStorePermissions ? 'success' : 'error');
+
+                const hasAccess = hasStoreRole && isStoreActive;
+                
+                showResult('store-permission-result', `
+                    ${hasAccess ? '✅' : '❌'} 스토어 접근 권한: ${hasAccess ? '있음' : '없음'}<br>
+                    <strong>스토어 역할:</strong> ${userData.storeRole || '없음'} ${hasStoreRole ? '✅' : '❌'}<br>
+                    <strong>스토어 활성:</strong> ${userData.isStoreActive} ${isStoreActive ? '✅' : '❌'}<br>
+                    <strong>스토어 권한:</strong> ${hasStorePermissions ? '있음' : '없음'} ${hasStorePermissions ? '✅' : '❌'}
+                `, hasAccess ? 'success' : 'error');
+                
+                log(`스토어 접근 권한 결과: ${hasAccess ? '허용' : '거부'}`, hasAccess ? 'success' : 'error');
+                
+            } catch (error) {
+                showResult('store-permission-result', `❌ 오류: ${error.message}`, 'error');
+                log(`스토어 권한 확인 오류: ${error.message}`, 'error');
+            }
+        }
+
+        // 5. 스토어 권한 추가 (테스트용)
+        async function addStorePermission() {
+            log('=== 스토어 권한 추가 시작 ===');
+            
+            try {
+                const currentUser = firebase.auth().currentUser;
+                if (!currentUser) {
+                    showResult('add-permission-result', '❌ 로그인된 사용자가 없습니다.', 'warning');
+                    log('로그인된 사용자가 없습니다.', 'warning');
+                    return;
+                }
+
+                const db = firebase.firestore();
+                
+                const permissionData = {
+                    storeRole: 'store_admin',
+                    isStoreActive: true,
+                    storeId: 'main_store',
+                    storePermissions: ['point_management', 'customer_management', 'transaction_history', 'user_management', 'store_settings'],
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+
+                log(`스토어 권한 추가 중: ${currentUser.email}`);
+                log(`권한 데이터: ${JSON.stringify(permissionData, null, 2)}`);
+
+                await db.collection('users').doc(currentUser.email).set(permissionData, { merge: true });
+                
+                showResult('add-permission-result', `
+                    ✅ 스토어 권한이 추가되었습니다!<br>
+                    <strong>대상:</strong> ${currentUser.email}<br>
+                    <strong>역할:</strong> ${permissionData.storeRole}<br>
+                    <strong>활성:</strong> ${permissionData.isStoreActive}<br>
+                    <strong>권한:</strong> ${permissionData.storePermissions.join(', ')}
+                `, 'success');
+                
+                log(`스토어 권한 추가 완료: ${currentUser.email}`, 'success');
+                
+            } catch (error) {
+                showResult('add-permission-result', `❌ 오류: ${error.message}`, 'error');
+                log(`스토어 권한 추가 오류: ${error.message}`, 'error');
+            }
+        }
+
+        // 6. 전체 테스트 실행
+        async function runFullTest() {
+            log('=== 전체 테스트 시작 ===');
+            
+            // 각 테스트를 순차적으로 실행
+            await checkCurrentUser();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await checkFirebaseAuth();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await checkFirestoreUser();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await checkStorePermission();
+            
+            log('=== 전체 테스트 완료 ===');
+            showResult('full-test-result', '✅ 전체 테스트가 완료되었습니다. 위의 결과를 확인해주세요.', 'success');
+        }
+
+        // 페이지 로드 시 자동 실행
+        document.addEventListener('DOMContentLoaded', function() {
+            log('스토어 권한 테스트 페이지 로드됨');
+            
+            // Firebase 초기화 대기
+            let attempts = 0;
+            const maxAttempts = 50;
+            
+            const waitForFirebase = setInterval(() => {
+                attempts++;
+                
+                if (typeof firebase !== 'undefined' && firebase.auth && firebase.firestore) {
+                    clearInterval(waitForFirebase);
+                    log('Firebase 초기화 완료', 'success');
+                    
+                    // Firebase Auth 상태 변경 리스너 설정
+                    firebase.auth().onAuthStateChanged((user) => {
+                        if (user) {
+                            log(`Firebase Auth 상태 변경: 로그인됨 (${user.email})`, 'success');
+                            // 자동으로 현재 사용자 확인
+                            setTimeout(() => {
+                                checkCurrentUser();
+                            }, 500);
+                        } else {
+                            log('Firebase Auth 상태 변경: 로그아웃됨', 'warning');
+                        }
+                    });
+                    
+                    // 초기 사용자 상태 확인
+                    setTimeout(() => {
+                        checkCurrentUser();
+                    }, 1000);
+                    
+                } else if (attempts >= maxAttempts) {
+                    clearInterval(waitForFirebase);
+                    log('Firebase 초기화 시간 초과', 'error');
+                } else {
+                    log(`Firebase 초기화 대기 중... (${attempts}/${maxAttempts})`);
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>
