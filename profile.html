@@ -1702,9 +1702,7 @@
                 console.log('profile.html 로그아웃 성공');
                 
                 // 사용자 메뉴 업데이트
-                if (typeof window.updateUserMenu === 'function') {
-                    await window.updateUserMenu();
-                }
+                updateUserMenuFromProfile();
                 
                 // 카트 개수 업데이트 (0으로 표시)
                 if (typeof updateCartCount === 'function') {
@@ -1937,11 +1935,104 @@
         function updateUserMenuFromProfile() {
             console.log('프로필 페이지에서 사용자 메뉴 업데이트 시도');
             
-            // auth-utils.js의 updateUserMenu 함수 호출
-            if (typeof window.updateUserMenu === 'function') {
-                window.updateUserMenu();
-            } else {
-                console.warn('auth-utils.js의 updateUserMenu 함수를 찾을 수 없습니다');
+            // profile.html 전용 메뉴 업데이트 로직
+            try {
+                // 현재 사용자 확인
+                const currentUser = getCurrentUser();
+                if (currentUser) {
+                    console.log('✅ profile.html 사용자 확인됨:', currentUser.email);
+                    
+                    // 관리자 권한 확인
+                    const isAdmin = currentUser.email === 'admin7@gmail.com';
+                    console.log('관리자 권한:', isAdmin);
+                    
+                    // 관리자 메뉴 표시/숨김
+                    const adminMenu = document.getElementById('admin-menu');
+                    const adminMenuMobile = document.getElementById('admin-menu-mobile');
+                    
+                    if (adminMenu) {
+                        adminMenu.style.display = isAdmin ? 'block' : 'none';
+                        console.log('데스크톱 관리자 메뉴:', isAdmin ? '표시' : '숨김');
+                    } else {
+                        console.warn('admin-menu 요소를 찾을 수 없습니다');
+                    }
+                    
+                    if (adminMenuMobile) {
+                        adminMenuMobile.style.display = isAdmin ? 'block' : 'none';
+                        console.log('모바일 관리자 메뉴:', isAdmin ? '표시' : '숨김');
+                    } else {
+                        console.warn('admin-menu-mobile 요소를 찾을 수 없습니다');
+                    }
+                    
+                    // 사용자 메뉴 표시
+                    const loginMenu = document.getElementById('login-menu');
+                    const registerMenu = document.getElementById('register-menu');
+                    const profileMenu = document.getElementById('profile-menu');
+                    const pointsMenu = document.getElementById('points-menu');
+                    const logoutMenu = document.getElementById('logout-menu');
+                    const logoutMenuItem = document.getElementById('logout-menu-item');
+                    
+                    // 로그인/회원가입 메뉴 숨김
+                    if (loginMenu) loginMenu.style.display = 'none';
+                    if (registerMenu) registerMenu.style.display = 'none';
+                    
+                    // 프로필/포인트/로그아웃 메뉴 표시
+                    if (profileMenu) profileMenu.style.display = 'block';
+                    if (pointsMenu) pointsMenu.style.display = 'block';
+                    if (logoutMenu) logoutMenu.style.display = 'block';
+                    if (logoutMenuItem) logoutMenuItem.style.display = 'block';
+                    
+                    // 모바일 메뉴도 동일하게 처리
+                    const loginMenuMobile = document.getElementById('login-menu-mobile');
+                    const registerMenuMobile = document.getElementById('register-menu-mobile');
+                    const profileMenuMobile = document.getElementById('profile-menu-mobile');
+                    const pointsMenuMobile = document.getElementById('points-menu-mobile');
+                    const logoutMenuMobile = document.getElementById('logout-menu-mobile');
+                    const logoutMenuItemMobile = document.getElementById('logout-menu-item-mobile');
+                    
+                    if (loginMenuMobile) loginMenuMobile.style.display = 'none';
+                    if (registerMenuMobile) registerMenuMobile.style.display = 'none';
+                    if (profileMenuMobile) profileMenuMobile.style.display = 'block';
+                    if (pointsMenuMobile) pointsMenuMobile.style.display = 'block';
+                    if (logoutMenuMobile) logoutMenuMobile.style.display = 'block';
+                    if (logoutMenuItemMobile) logoutMenuItemMobile.style.display = 'block';
+                    
+                    console.log('✅ profile.html 메뉴 업데이트 완료');
+                } else {
+                    console.log('❌ profile.html 로그인된 사용자 없음');
+                    
+                    // 로그인/회원가입 메뉴 표시
+                    const loginMenu = document.getElementById('login-menu');
+                    const registerMenu = document.getElementById('register-menu');
+                    const profileMenu = document.getElementById('profile-menu');
+                    const pointsMenu = document.getElementById('points-menu');
+                    const logoutMenu = document.getElementById('logout-menu');
+                    const logoutMenuItem = document.getElementById('logout-menu-item');
+                    
+                    if (loginMenu) loginMenu.style.display = 'block';
+                    if (registerMenu) registerMenu.style.display = 'block';
+                    if (profileMenu) profileMenu.style.display = 'none';
+                    if (pointsMenu) pointsMenu.style.display = 'none';
+                    if (logoutMenu) logoutMenu.style.display = 'none';
+                    if (logoutMenuItem) logoutMenuItem.style.display = 'none';
+                    
+                    // 모바일 메뉴도 동일하게 처리
+                    const loginMenuMobile = document.getElementById('login-menu-mobile');
+                    const registerMenuMobile = document.getElementById('register-menu-mobile');
+                    const profileMenuMobile = document.getElementById('profile-menu-mobile');
+                    const pointsMenuMobile = document.getElementById('points-menu-mobile');
+                    const logoutMenuMobile = document.getElementById('logout-menu-mobile');
+                    const logoutMenuItemMobile = document.getElementById('logout-menu-item-mobile');
+                    
+                    if (loginMenuMobile) loginMenuMobile.style.display = 'block';
+                    if (registerMenuMobile) registerMenuMobile.style.display = 'block';
+                    if (profileMenuMobile) profileMenuMobile.style.display = 'none';
+                    if (pointsMenuMobile) pointsMenuMobile.style.display = 'none';
+                    if (logoutMenuMobile) logoutMenuMobile.style.display = 'none';
+                    if (logoutMenuItemMobile) logoutMenuItemMobile.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('profile.html 메뉴 업데이트 오류:', error);
             }
         }
 
@@ -3291,31 +3382,23 @@
                     firebase.auth().onAuthStateChanged(function(user) {
                         console.log('Firebase 인증 상태 변경:', user ? '로그인됨' : '로그아웃됨');
                         if (user) {
-                            if (typeof window.updateUserMenu === 'function') {
-                                window.updateUserMenu();
-                            }
+                            updateUserMenuFromProfile();
                         } else {
                             // Firebase에서 로그아웃된 경우
                             const loginStatus = getLoginStatus();
                             console.log('Firebase 로그인 상태:', loginStatus);
-                            if (typeof window.updateUserMenu === 'function') {
-                                window.updateUserMenu();
-                            }
+                            updateUserMenuFromProfile();
                         }
                     });
                 } else {
                     console.log('Firebase 없음, 메뉴 업데이트 건너뛰기');
                     // Firebase가 없는 경우 메뉴 업데이트 건너뛰기
-                    if (typeof window.updateUserMenu === 'function') {
-                        window.updateUserMenu();
-                    }
+                    updateUserMenuFromProfile();
                 }
             } catch (error) {
                 console.warn('인증 상태 확인 실패:', error);
                 // 에러 후 메뉴 업데이트 건너뛰기
-                if (typeof window.updateUserMenu === 'function') {
-                    window.updateUserMenu();
-                }
+                updateUserMenuFromProfile();
             }
         }
 
