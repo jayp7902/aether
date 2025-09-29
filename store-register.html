@@ -369,23 +369,8 @@
                         isFirebase: result.user.isFirebase
                     });
                     
-                    // localStorage에 로그인 상태 저장 (중복 방지)
-                    const loginStatus = {
-                        uid: result.user.uid,
-                        email: email,
-                        name: result.user.displayName || email.split('@')[0],
-                        loginTime: new Date().toISOString(),
-                        remember: remember,
-                        isFirebase: !!result.user.uid && !result.user.uid.startsWith('offline_')
-                    };
-                    
-                    try {
-                        localStorage.setItem('aetherLoginStatus', JSON.stringify(loginStatus));
-                        console.log('로그인 상태 localStorage에 저장:', loginStatus);
-                    } catch (storageError) {
-                        console.warn('로그인 상태 저장 실패:', storageError);
-                        // 로그인은 성공했으므로 계속 진행
-                    }
+                    // Firebase Auth 상태는 자동으로 관리됨
+                    console.log('Firebase Auth 로그인 상태 자동 관리됨');
                     
                     // 잠시 대기 후 리다이렉트 (Firebase Auth 상태 동기화 대기)
                     setTimeout(() => {
