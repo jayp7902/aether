@@ -783,25 +783,44 @@
         }
         */
 
-        // 현재 사용자 정보 가져오기 함수
+        // 현재 사용자 정보 가져오기 함수 (auth-utils.js와 동일한 로직)
         function getCurrentUser() {
+            // Firebase 사용자 확인 (안전한 방식)
             try {
-                // Firebase가 완전히 초기화되었는지 확인
-                if (typeof firebase !== 'undefined' && 
-                    firebase.apps && 
-                    firebase.apps.length > 0 && 
-                    firebase.auth && 
-                    firebase.auth().currentUser) {
-                    return firebase.auth().currentUser;
+                if (typeof firebase !== 'undefined' && firebase.auth && firebase.apps && firebase.apps.length > 0) {
+                    const firebaseUser = firebase.auth().currentUser;
+                    if (firebaseUser) {
+                        console.log('✅ brand-template.html Firebase 사용자 확인됨:', firebaseUser.email);
+                        return firebaseUser;
+                    }
+                }
+            } catch (error) {
+                console.warn('brand-template.html Firebase 사용자 확인 중 오류:', error);
+            }
+            
+            // localStorage에서 로그인 상태 확인 (여러 형식 지원)
+            try {
+                // 최신 방식 (aetherLoginStatus)
+                const loginStatus = localStorage.getItem('aetherLoginStatus');
+                if (loginStatus) {
+                    const parsed = JSON.parse(loginStatus);
+                    console.log('✅ brand-template.html localStorage 로그인 상태 발견:', parsed.email);
+                    return parsed;
                 }
                 
-                // Firebase가 아직 초기화되지 않은 경우 null 반환
-                console.log('Firebase가 아직 초기화되지 않음, 사용자 정보 가져오기 건너뛰기');
-                return null;
-            } catch (error) {
-                console.error('사용자 정보 가져오기 실패:', error);
-                return null;
+                // 구 방식 호환성 (aetherLogin)
+                const oldLoginStatus = localStorage.getItem('aetherLogin') || sessionStorage.getItem('aetherLogin');
+                if (oldLoginStatus) {
+                    const parsed = JSON.parse(oldLoginStatus);
+                    console.log('✅ brand-template.html 구 방식 로그인 상태 발견:', parsed.email);
+                    return parsed;
+                }
+            } catch (e) {
+                console.error('brand-template.html 로그인 상태 파싱 오류:', e);
             }
+            
+            console.log('❌ brand-template.html 로그인된 사용자 없음');
+            return null;
         }
 
         // ブランドページ初期化
@@ -1586,8 +1605,11 @@
                     return;
                 }
                 
+                console.log('✅ brand-template.html 로그인된 사용자 확인됨:', currentUser.email);
+                
                 // Firebase에서 카트 수량 가져오기
                 if (typeof firebase !== 'undefined' && firebase.firestore && firebase.apps && firebase.apps.length > 0) {
+                    console.log('✅ brand-template.html Firebase 사용 가능, 카트 데이터 조회 시작');
                     const db = firebase.firestore();
                     const cartDoc = await db.collection('userCarts').doc(currentUser.email).get();
                     
@@ -1660,6 +1682,11 @@
                         if (typeof window.updateUserMenu === 'function') {
                             window.updateUserMenu();
                         }
+                        
+                        // 카트 수량 업데이트
+                        setTimeout(() => {
+                            updateCartCount();
+                        }, 500);
                     });
                     
                     // 현재 사용자 상태 즉시 확인
@@ -1671,6 +1698,11 @@
                         if (typeof window.updateUserMenu === 'function') {
                             window.updateUserMenu();
                         }
+                        
+                        // 카트 수량 업데이트
+                        setTimeout(() => {
+                            updateCartCount();
+                        }, 500);
                     }
             } else {
                     console.log('Firebase Auth 사용 불가능, localStorage 확인');
