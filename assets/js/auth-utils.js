@@ -44,11 +44,16 @@ function getCurrentUser() {
         if (typeof firebase !== 'undefined' && firebase.auth && firebase.apps && firebase.apps.length > 0) {
             const firebaseUser = firebase.auth().currentUser;
             if (firebaseUser) {
+                console.log('✅ auth-utils.js Firebase 사용자 확인됨:', firebaseUser.email);
                 return firebaseUser;
+            } else {
+                console.log('❌ auth-utils.js Firebase 사용자 없음 (로그아웃 상태)');
             }
+        } else {
+            console.log('❌ auth-utils.js Firebase 초기화되지 않음');
         }
     } catch (error) {
-        console.warn('Firebase 사용자 확인 중 오류:', error);
+        console.warn('auth-utils.js Firebase 사용자 확인 중 오류:', error);
     }
     
     // localStorage에서 로그인 상태 확인 (여러 형식 지원)
@@ -688,6 +693,8 @@ window.updateCartCount = async function() {
             updateCartCountDisplay(0);
             return;
         }
+        
+        console.log('✅ auth-utils.js 로그인된 사용자 확인됨:', currentUser.email);
         
         // Firebase에서 카트 수량 가져오기
         if (typeof firebase !== 'undefined' && firebase.firestore && firebase.apps && firebase.apps.length > 0) {
