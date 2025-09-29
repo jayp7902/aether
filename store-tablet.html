@@ -1173,8 +1173,8 @@
             // Firebase 초기화 대기 (더 안전한 방식)
             await waitForFirebaseInit();
             
-            // 스토어 전용 인증 확인
-            await checkStoreAuthentication();
+            // 스토어 전용 인증 확인 (간단한 버전)
+            await checkSimpleStoreAuth();
             
             // Firebase 완전 초기화 후 포인트 이용현황 초기화
             const initPointHistory = (retryCount = 0) => {
@@ -1267,7 +1267,54 @@
             });
         }
 
-        // 스토어 전용 인증 확인
+        // 간단한 스토어 인증 확인 (권한 재확인 없음)
+        async function checkSimpleStoreAuth() {
+            try {
+                console.log('=== 간단한 스토어 인증 확인 시작 ===');
+                
+                const currentUser = firebase.auth().currentUser;
+                
+                if (!currentUser) {
+                    console.log('로그인되지 않은 사용자, 스토어 로그인 페이지로 리다이렉트');
+                    showStoreAlert('店舗システムにアクセスするにはログインが必要です。', 'warning');
+                    setTimeout(() => {
+                        window.location.href = 'store-register.html';
+                    }, 2000);
+                    return false;
+                }
+                
+                console.log('✅ 로그인된 사용자 확인됨:', currentUser.email);
+                
+                // 간단한 사용자 정보 설정 (권한 재확인 없음)
+                const storeUserInfo = {
+                    email: currentUser.email,
+                    name: currentUser.displayName || currentUser.email.split('@')[0],
+                    role: 'store_admin', // 기본값으로 설정
+                    storeId: 'main_store',
+                    permissions: ['point_management', 'customer_management', 'transaction_history', 'user_management', 'store_settings']
+                };
+                
+                console.log('✅ 스토어 사용자 정보 설정 완료:', storeUserInfo);
+                
+                // 스토어 사용자 정보를 전역 변수에 저장
+                window.currentStoreUser = storeUserInfo;
+                
+                // 헤더에 스토어 사용자 정보 표시
+                updateStoreUserDisplay(storeUserInfo);
+                
+                return true;
+                
+            } catch (error) {
+                console.error('간단한 스토어 인증 확인 오류:', error);
+                showStoreAlert(`店舗認証確認中にエラーが発生しました: ${error.message}`, 'danger');
+                setTimeout(() => {
+                    window.location.href = 'store-register.html';
+                }, 3000);
+                return false;
+            }
+        }
+
+        // 기존 복잡한 스토어 전용 인증 확인 (사용하지 않음)
         async function checkStoreAuthentication() {
             try {
                 console.log('=== 스토어 인증 확인 시작 ===');
