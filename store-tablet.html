@@ -1270,7 +1270,7 @@
                 console.log('✅ Firebase Auth 상태 확인 완료 - 로그인됨:', user.email);
                 
                 // 스토어 사용자 정보 설정
-                setupStoreUser();
+                await setupStoreUser();
                 
                 // 성공 시에도 리스너 해제
                 unsubscribe();
@@ -1386,14 +1386,14 @@
             });
         }
 
-        // 스토어 사용자 정보 설정 (로그인 확인 포함)
-        function setupStoreUser() {
+        // 스토어 사용자 정보 설정 (실제 스토어 권한 확인 포함)
+        async function setupStoreUser() {
             try {
                 console.log('=== 스토어 사용자 정보 설정 시작 ===');
                 
                 // Firebase Auth가 완전히 초기화되었는지 확인
-                if (!firebase || !firebase.auth) {
-                    console.log('❌ Firebase Auth가 아직 초기화되지 않음');
+                if (!firebase || !firebase.auth || !firebase.firestore) {
+                    console.log('❌ Firebase가 아직 초기화되지 않음');
                     showStoreAlert('Firebase 초기화 중입니다. 잠시 후 다시 시도해주세요。', 'warning');
                     setTimeout(() => {
                         window.location.href = 'store-register.html';
@@ -1415,13 +1415,56 @@
                 
                 console.log('✅ 로그인된 사용자 확인됨:', currentUser.email);
                 
-                // 간단한 사용자 정보 설정
+                // Firestore에서 실제 스토어 권한 확인
+                console.log('🔍 Firestore에서 스토어 권한 확인 중...');
+                const db = firebase.firestore();
+                const userDoc = await db.collection('users').doc(currentUser.email).get();
+                
+                if (!userDoc.exists) {
+                    console.log('❌ 사용자 문서가 존재하지 않음');
+                    showStoreAlert('店舗システムアクセス権限がありません。', 'warning');
+                    setTimeout(() => {
+                        window.location.href = 'store-register.html';
+                    }, 2000);
+                    return;
+                }
+                
+                const userData = userDoc.data();
+                console.log('📋 사용자 데이터:', userData);
+                
+                // 스토어 권한 확인
+                const storeRole = userData.storeRole;
+                const isStoreActive = userData.isStoreActive;
+                const storeId = userData.storeId;
+                const storePermissions = userData.storePermissions || [];
+                
+                console.log('🔍 스토어 권한 정보:', {
+                    storeRole,
+                    isStoreActive,
+                    storeId,
+                    storePermissions
+                });
+                
+                // 스토어 권한이 없거나 비활성화된 경우
+                if (!storeRole || !isStoreActive) {
+                    console.log('❌ 스토어 권한 없음 또는 비활성화됨');
+                    showStoreAlert('店舗システムアクセス権限がありません。', 'warning');
+                    setTimeout(() => {
+                        window.location.href = 'store-register.html';
+                    }, 2000);
+                    return;
+                }
+                
+                console.log('✅ 스토어 권한 확인 완료:', storeRole);
+                
+                // 스토어 사용자 정보 설정
                 const storeUserInfo = {
                     email: currentUser.email,
-                    name: currentUser.displayName || currentUser.email.split('@')[0],
-                    role: 'store_admin',
-                    storeId: 'main_store',
-                    permissions: ['point_management', 'customer_management', 'transaction_history', 'user_management', 'store_settings']
+                    name: userData.name || currentUser.displayName || currentUser.email.split('@')[0],
+                    role: storeRole,
+                    storeId: storeId || 'main_store',
+                    permissions: storePermissions.length > 0 ? storePermissions : ['point_management'],
+                    isStoreActive: isStoreActive
                 };
                 
                 console.log('✅ 스토어 사용자 정보 설정 완료:', storeUserInfo);
@@ -1433,18 +1476,11 @@
                 updateStoreUserDisplay(storeUserInfo);
                 
             } catch (error) {
-                console.error('스토어 사용자 정보 설정 오류:', error);
-                // 에러가 발생해도 기본 사용자 정보로 설정
-                const fallbackUserInfo = {
-                    email: 'fallback@store.com',
-                    name: 'フォールバックユーザー',
-                    role: 'store_staff',
-                    storeId: 'main_store',
-                    permissions: ['point_management']
-                };
-                
-                window.currentStoreUser = fallbackUserInfo;
-                updateStoreUserDisplay(fallbackUserInfo);
+                console.error('❌ 스토어 사용자 정보 설정 오류:', error);
+                showStoreAlert('店舗システムアクセス権限確認中にエラーが発生しました。', 'warning');
+                setTimeout(() => {
+                    window.location.href = 'store-register.html';
+                }, 2000);
             }
         }
 
