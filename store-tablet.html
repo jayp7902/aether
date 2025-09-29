@@ -1234,22 +1234,25 @@
             // Firebase 초기화 대기 (더 안전한 방식)
             await waitForFirebaseInit();
             
-            // Firebase 초기화 후 로그인 상태 재확인
-            const currentUser = firebase.auth().currentUser;
-            if (!currentUser) {
-                console.log('❌ Firebase 초기화 후 로그인 상태 확인 - 미로그인');
-                showStoreAlert('店舗システムにアクセスするにはログインが必要です。', 'warning');
-                setTimeout(() => {
-                    console.log('🚀 미로그인 직접 접속 차단 - 스토어 로그인 페이지로 리다이렉트');
-                    window.location.href = 'store-register.html';
-                }, 2000);
-                return;
-            }
-            
-            console.log('✅ Firebase 초기화 후 로그인 상태 확인 완료:', currentUser.email);
-            
-            // 스토어 사용자 정보 설정
-            setupStoreUser();
+            // Firebase Auth 상태 변경 리스너로 로그인 상태 확인
+            firebase.auth().onAuthStateChanged((user) => {
+                console.log('🔍 Firebase Auth 상태 변경 감지:', user ? user.email : 'null');
+                
+                if (!user) {
+                    console.log('❌ Firebase Auth 상태 확인 - 미로그인');
+                    showStoreAlert('店舗システムにアクセスするにはログインが必要です。', 'warning');
+                    setTimeout(() => {
+                        console.log('🚀 미로그인 직접 접속 차단 - 스토어 로그인 페이지로 리다이렉트');
+                        window.location.href = 'store-register.html';
+                    }, 2000);
+                    return;
+                }
+                
+                console.log('✅ Firebase Auth 상태 확인 완료 - 로그인됨:', user.email);
+                
+                // 스토어 사용자 정보 설정
+                setupStoreUser();
+            });
             
             // Firebase 완전 초기화 후 포인트 이용현황 초기화
             const initPointHistory = (retryCount = 0) => {
@@ -1346,6 +1349,16 @@
         function setupStoreUser() {
             try {
                 console.log('=== 스토어 사용자 정보 설정 시작 ===');
+                
+                // Firebase Auth가 완전히 초기화되었는지 확인
+                if (!firebase || !firebase.auth) {
+                    console.log('❌ Firebase Auth가 아직 초기화되지 않음');
+                    showStoreAlert('Firebase 초기화 중입니다. 잠시 후 다시 시도해주세요。', 'warning');
+                    setTimeout(() => {
+                        window.location.href = 'store-register.html';
+                    }, 2000);
+                    return;
+                }
                 
                 const currentUser = firebase.auth().currentUser;
                 
