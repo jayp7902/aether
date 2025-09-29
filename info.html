@@ -1034,11 +1034,9 @@
                 sessionStorage.removeItem('aetherLoginStatus');
                 console.log('✅ 로그인 관련 localStorage 정리 완료');
                 
-                // 사용자 메뉴 업데이트
-                if (typeof window.updateUserMenu === 'function') {
-                    await window.updateUserMenu();
-                    console.log('✅ 사용자 메뉴 업데이트 완료');
-                }
+                // 사용자 메뉴 직접 업데이트 (auth-utils.js의 updateUserMenu 호출 방지)
+                updateUserMenuDirectly();
+                console.log('✅ 사용자 메뉴 직접 업데이트 완료');
                 
                 // 카트 개수 업데이트 (로그아웃 상태이므로 0으로 표시)
                 updateCartCount();
@@ -1070,10 +1068,8 @@
                 sessionStorage.removeItem('aetherLogin');
                 sessionStorage.removeItem('aetherLoginStatus');
                 
-                // 사용자 메뉴 업데이트
-                if (typeof window.updateUserMenu === 'function') {
-                    await window.updateUserMenu();
-                }
+                // 사용자 메뉴 직접 업데이트
+                updateUserMenuDirectly();
                 
                 updateCartCount();
                 
@@ -1086,6 +1082,58 @@
                 setTimeout(() => {
                     window.location.href = 'index.html';
                 }, 1000);
+            }
+        }
+        
+        // 사용자 메뉴 직접 업데이트 함수 (auth-utils.js 호출 방지)
+        function updateUserMenuDirectly() {
+            try {
+                console.log('🔧 info.html 사용자 메뉴 직접 업데이트 시작');
+                
+                // 로그아웃 상태로 메뉴 업데이트
+                const logoutMenus = ['logout-menu', 'logout-menu-item', 'logout-menu-mobile', 'logout-menu-item-mobile'];
+                const profileMenus = ['profile-menu', 'profile-menu-mobile', 'points-menu', 'points-menu-mobile'];
+                const loginMenus = ['login-menu', 'login-menu-mobile', 'register-menu', 'register-menu-mobile'];
+                
+                // 로그아웃 메뉴 숨기기
+                logoutMenus.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.style.display = 'none';
+                        console.log(`✅ ${id} 숨기기 완료`);
+                    }
+                });
+                
+                // 프로필 메뉴 숨기기
+                profileMenus.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.style.display = 'none';
+                        console.log(`✅ ${id} 숨기기 완료`);
+                    }
+                });
+                
+                // 로그인 메뉴 표시
+                loginMenus.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.style.display = 'block';
+                        console.log(`✅ ${id} 표시 완료`);
+                    }
+                });
+                
+                // 사용자 이름 요소 초기화
+                const userNameElement = document.getElementById('user-name');
+                if (userNameElement) {
+                    userNameElement.textContent = '';
+                    userNameElement.classList.add('d-none');
+                    console.log('✅ 사용자 이름 요소 초기화 완료');
+                }
+                
+                console.log('✅ info.html 사용자 메뉴 직접 업데이트 완료');
+                
+            } catch (error) {
+                console.error('❌ info.html 사용자 메뉴 직접 업데이트 실패:', error);
             }
         }
         
