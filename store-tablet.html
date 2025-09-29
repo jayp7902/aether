@@ -1486,11 +1486,11 @@
                 console.log('🔍 Firestore DB 객체:', typeof db);
                 console.log('🔍 사용자 이메일:', currentUser.email);
                 
-                const userDoc = await db.collection('users').doc(currentUser.email).get();
-                console.log('🔍 Firestore 문서 조회 완료:', userDoc.exists);
+                const storeUserDoc = await db.collection('storeUser').doc(currentUser.email).get();
+                console.log('🔍 Firestore 문서 조회 완료:', storeUserDoc.exists);
                 
-                if (!userDoc.exists) {
-                    console.log('❌ 사용자 문서가 존재하지 않음');
+                if (!storeUserDoc.exists) {
+                    console.log('❌ 스토어 사용자 문서가 존재하지 않음');
                     showStoreAlert('店舗システムアクセス権限がありません。', 'warning');
                     setTimeout(() => {
                         window.location.href = 'store-register.html';
@@ -1498,14 +1498,14 @@
                     return;
                 }
                 
-                const userData = userDoc.data();
-                console.log('📋 사용자 데이터:', userData);
+                const storeUserData = storeUserDoc.data();
+                console.log('📋 스토어 사용자 데이터:', storeUserData);
                 
                 // 스토어 권한 확인
-                const storeRole = userData.storeRole;
-                const isStoreActive = userData.isStoreActive;
-                const storeId = userData.storeId;
-                const storePermissions = userData.storePermissions || [];
+                const storeRole = storeUserData.storeRole || storeUserData.role;
+                const isStoreActive = storeUserData.isStoreActive || storeUserData.isActive;
+                const storeId = storeUserData.storeId;
+                const storePermissions = storeUserData.permissions || [];
                 
                 console.log('🔍 스토어 권한 정보:', {
                     storeRole,
@@ -1536,7 +1536,7 @@
                 // 스토어 사용자 정보 설정
                 const storeUserInfo = {
                     email: currentUser.email,
-                    name: userData.name || currentUser.displayName || currentUser.email.split('@')[0],
+                    name: storeUserData.name || currentUser.displayName || currentUser.email.split('@')[0],
                     role: storeRole,
                     storeId: storeId || 'main_store',
                     permissions: storePermissions.length > 0 ? storePermissions : ['point_management'],
