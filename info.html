@@ -763,6 +763,31 @@
         
         // 이전 showQRCode 함수는 제거됨 - 포인트 페이지와 동일한 방식만 사용
 
+        // 헬퍼 함수들 (index.html과 동일한 로직)
+        function getCurrentUser() {
+            // Firebase에서 현재 로그인된 사용자 확인
+            if (typeof firebase !== 'undefined' && 
+                firebase.auth && 
+                firebase.apps && 
+                firebase.apps.length > 0 &&
+                firebase.apps[0].name === '[DEFAULT]') {
+                
+                const user = firebase.auth().currentUser;
+                if (user && user.email) {
+                    return {
+                        email: user.email,
+                        uid: user.uid
+                    };
+                }
+            }
+            return null;
+        }
+
+                // 이전 QR 코드 생성 함수들은 제거됨 - 포인트 페이지와 동일한 방식만 사용
+
+        // info.html에서는 auth-utils.js의 updateCartCount 함수를 사용
+        // 중복된 함수 제거로 충돌 방지
+        
         // 현재 사용자 정보 가져오기 (Firebase + localStorage 지원)
         function getCurrentUser() {
             console.log('🔍 info.html getCurrentUser 호출');
@@ -909,14 +934,6 @@
                                 points: 0
                             };
                             console.log('✅ info.html - pointsPageUser 설정 완료:', pointsPageUser);
-                            
-                            // 로그인 시 사용자별 카트 로드
-                            if (typeof window.loadUserSpecificCart === 'function') {
-                                console.log('info.html - loadUserSpecificCart 함수 호출');
-                                window.loadUserSpecificCart(user.email);
-                            } else {
-                                console.warn('info.html - loadUserSpecificCart 함수를 찾을 수 없습니다');
-                            }
                         } else {
                             pointsPageUser = null;
                             console.log('✅ info.html - pointsPageUser 초기화 (로그아웃)');
@@ -995,19 +1012,10 @@
             }, 500); // 0.5초로 단축
         });
 
-        // 로그아웃 함수
+        // 로그아웃 함수 (카트 정보 유지)
         async function logout() {
             try {
-                console.log('=== info.html 로그아웃 시작 ===');
-                
-                // 현재 사용자 확인
-                const currentUser = getCurrentUser();
-                if (!currentUser) {
-                    console.log('로그인된 사용자가 없습니다');
-                    return;
-                }
-                
-                console.log('로그아웃할 사용자:', currentUser.email);
+                console.log('=== info.html 로그아웃 시작 (카트 정보 유지) ===');
                 
                 // Firebase 로그아웃
                 if (typeof firebase !== 'undefined' && firebase.auth) {
@@ -1015,44 +1023,24 @@
                     console.log('✅ Firebase 로그아웃 완료');
                 }
                 
-                // Firebase 카트는 삭제하지 않음 - 사용자별로 유지
-                console.log('ℹ️ Firebase 카트는 사용자별로 유지됨 (삭제하지 않음)');
-                
-                // 실시간 리스너 중단
-                if (window.cartRealtimeListener) {
-                    window.cartRealtimeListener();
-                    window.cartRealtimeListener = null;
-                    console.log('✅ 카트 실시간 리스너 중단 완료');
-                }
-                
-                // 카트 업데이트 진행 중 플래그 초기화
-                window.cartUpdateInProgress = false;
-                
                 // pointsPageUser 초기화
                 pointsPageUser = null;
+                console.log('✅ pointsPageUser 초기화 완료');
                 
-                // localStorage 완전 정리
+                // 로그인 관련 localStorage만 정리 (카트 정보는 유지)
                 localStorage.removeItem('aetherLoginStatus');
                 localStorage.removeItem('aetherLogin');
-                localStorage.removeItem('aetherCart');
                 sessionStorage.removeItem('aetherLogin');
                 sessionStorage.removeItem('aetherLoginStatus');
-                
-                // aether 관련 모든 키 제거
-                Object.keys(localStorage).forEach(key => {
-                    if (key.startsWith('aether')) {
-                        localStorage.removeItem(key);
-                    }
-                });
-                console.log('✅ localStorage 완전 정리 완료');
+                console.log('✅ 로그인 관련 localStorage 정리 완료');
                 
                 // 사용자 메뉴 업데이트
                 if (typeof window.updateUserMenu === 'function') {
-                    window.updateUserMenu();
+                    await window.updateUserMenu();
                     console.log('✅ 사용자 메뉴 업데이트 완료');
                 }
                 
-                // 카트 개수 업데이트 (0으로 표시)
+                // 카트 개수 업데이트 (로그아웃 상태이므로 0으로 표시)
                 updateCartCount();
                 console.log('✅ 카트 개수 업데이트 완료');
                 
@@ -1063,7 +1051,7 @@
                     alert('ログアウトしました。');
                 }
                 
-                console.log('✅ info.html 로그아웃 성공');
+                console.log('✅ info.html 로그아웃 성공 (카트 정보 유지)');
                 
                 // 홈페이지로 리다이렉트
                 setTimeout(() => {
@@ -1073,44 +1061,21 @@
             } catch (error) {
                 console.error('❌ info.html 로그아웃 중 오류:', error);
                 
-                // 오류가 발생해도 강제로 정리
-                try {
-                    if (typeof firebase !== 'undefined' && firebase.auth) {
-                        await firebase.auth().signOut();
-                    }
-                    
-                    if (window.cartRealtimeListener) {
-                        window.cartRealtimeListener();
-                        window.cartRealtimeListener = null;
-                    }
-                    
-                    window.cartUpdateInProgress = false;
-                    pointsPageUser = null;
-                    
-                    // localStorage 강제 정리
-                    localStorage.removeItem('aetherLoginStatus');
-                    localStorage.removeItem('aetherLogin');
-                    localStorage.removeItem('aetherCart');
-                    sessionStorage.removeItem('aetherLogin');
-                    sessionStorage.removeItem('aetherLoginStatus');
-                    
-                    Object.keys(localStorage).forEach(key => {
-                        if (key.startsWith('aether')) {
-                            localStorage.removeItem(key);
-                        }
-                    });
-                    
-                    updateCartCount();
-                    
-                    if (typeof window.updateUserMenu === 'function') {
-                        window.updateUserMenu();
-                    }
-                    
-                    console.log('✅ 오류 발생 시 강제 정리 완료');
-                    
-                } catch (cleanupError) {
-                    console.error('❌ 강제 정리 중 오류:', cleanupError);
+                // 오류가 발생해도 기본 정리 작업 수행
+                pointsPageUser = null;
+                
+                // 로그인 관련 localStorage 정리
+                localStorage.removeItem('aetherLoginStatus');
+                localStorage.removeItem('aetherLogin');
+                sessionStorage.removeItem('aetherLogin');
+                sessionStorage.removeItem('aetherLoginStatus');
+                
+                // 사용자 메뉴 업데이트
+                if (typeof window.updateUserMenu === 'function') {
+                    await window.updateUserMenu();
                 }
+                
+                updateCartCount();
                 
                 if (typeof window.showToast === 'function') {
                     window.showToast('ログアウトしました。', 'success', 2000);
