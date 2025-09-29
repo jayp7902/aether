@@ -406,7 +406,6 @@
     <!-- Header -->
     <nav class="navbar navbar-expand-lg navbar-light shadow">
         <div class="container d-flex justify-content-between align-items-center">
-            <!-- QR 코드 버튼 제거됨 -->
 
             <a class="navbar-brand text-success logo align-self-center" href="index.html">
                 <img src="assets/img/logo.png" alt="Logo" class="img-fluid" style="max-height: 50px;">
@@ -417,9 +416,7 @@
             </button>
 
             <div class="align-self-center collapse navbar-collapse flex-fill  d-lg-flex justify-content-lg-between" id="templatemo_main_nav">
-                <!-- 모바일 메뉴 레이아웃 -->
                 <div class="d-lg-none w-100">
-                    <!-- 영문 메뉴 - 가로 정렬 -->
                     <div class="d-flex justify-content-center mb-4">
                         <ul class="nav navbar-nav d-flex flex-row gap-4">
                             <li class="nav-item">
@@ -434,7 +431,6 @@
                         </ul>
                     </div>
                     
-                    <!-- 아이콘들 - 가로 정렬, 좌우 여백 추가 -->
                     <div class="d-flex justify-content-center align-items-center gap-4 px-4">
                         <a href="cart.html" class="nav-link text-decoration-none">
                             <i class="fas fa-shopping-cart text-dark" style="font-size: 1.5rem;"></i>
@@ -483,7 +479,6 @@
                     </div>
                 </div>
                 
-                <!-- 데스크톱 메뉴 레이아웃 -->
                 <div class="flex-fill d-none d-lg-block">
                     <ul class="nav navbar-nav d-flex justify-content-between mx-lg-auto" style="max-width: 400px; margin: 0 auto;">
                         <li class="nav-item">
@@ -558,7 +553,6 @@
         <i class="fas fa-chevron-up"></i>
     </button>
 
-    <!-- QR Code Modal 제거됨 -->
 
     <!-- Loading State -->
     <div id="loading-state" class="loading-container">
@@ -591,12 +585,10 @@
                             <img class="card-img img-fluid" src="" alt="Product Image" id="product-detail">
                         </div>
                         <div class="row" id="product-thumbnails">
-                            <!-- Thumbnails will be loaded dynamically -->
                         </div>
                         
 
                     </div>
-                    <!-- col end -->
                     <div class="col-lg-7 mt-5">
                         <div class="card">
                             <div class="card-body">
@@ -613,7 +605,6 @@
                                     </li>
                                 </ul>
                                 
-                                <!-- 용량 정보 표시 영역 -->
                                 <ul class="list-inline">
                                     <li class="list-inline-item">
                                         <h6>容量:</h6>
@@ -624,11 +615,9 @@
                                 </ul>
 
                                 
-                                <!-- オプション表示エリア -->
                                 <div id="color-options-section" style="display: none;">
                                     <h6 class="japanese-text">オプション:</h6>
                                     
-                                    <!-- オプション選択ドロップダウン -->
                                     <div class="card border-0 bg-light mb-3">
                                         <div class="card-body p-3">
                                             <div class="row align-items-end">
@@ -651,12 +640,9 @@
                                         </div>
                                     </div>
                                     
-                                    <!-- 選択されたオプション一覧 -->
                                     <div id="selected-colors-list" class="mb-3">
-                                        <!-- 選択されたオプションがここに表示されます -->
                                     </div>
                                     
-                                    <!-- オプション未選択時の案内 -->
                                     <div id="no-options-message" class="text-center text-muted py-4" style="display: none;">
                                         <i class="fas fa-info-circle fa-2x mb-2"></i>
                                         <p class="mb-0">オプションを選択して「オプション追加」ボタンを押してください</p>
@@ -664,7 +650,6 @@
                                 </div>
                                 
 
-                                <!-- Purchase Section -->
                                 <form id="purchaseForm">
                                     <input type="hidden" name="product-name" id="form-product-name">
                                     <input type="hidden" name="product-price" id="form-product-price">
@@ -741,21 +726,18 @@
                 <div class="col-md-4 pt-5">
                     <h2 class="h2 text-white border-bottom pb-3 border-light logo">Aether</h2>
                     <ul class="list-unstyled text-white footer-link-list" id="footer-company-info">
-                        <!-- 회사 정보가 여기에 동적으로 로드됩니다 -->
                     </ul>
                 </div>
 
                 <div class="col-md-4 pt-5">
                     <h2 class="h2 text-white border-bottom pb-3 border-light">Brand</h2>
                     <ul class="list-unstyled text-white footer-link-list" id="footer-brands-list">
-                        <!-- 브랜드명이 여기에 동적으로 로드됩니다 -->
                     </ul>
                 </div>
 
                 <div class="col-md-4 pt-5">
                     <h2 class="h2 text-white border-bottom pb-3 border-light">Further Info</h2>
                     <ul class="list-unstyled text-white footer-link-list" id="footer-further-info">
-                        <!-- Further Info 링크가 여기에 동적으로 로드됩니다 -->
                     </ul>
                 </div>
             </div>
@@ -803,108 +785,6 @@
     <script src="assets/js/templatemo.js"></script>
     <script src="assets/js/custom.js"></script>
     
-    <!-- 포인트 페이지와 동일한 QR 코드 생성 코드 -->
-    <script>
-        // 포인트 페이지와 동일한 QR 코드 생성 함수
-        /*
-        function generateQRCode(data, containerId) {
-            try {
-                console.log('QR코드 생성 시작, 데이터:', data, '타입:', typeof data);
-                
-                if (!data) {
-                    console.error('QR코드 데이터가 없습니다');
-                    return;
-                }
-
-                const container = document.getElementById(containerId);
-                if (!container) {
-                    console.error('컨테이너를 찾을 수 없습니다:', containerId);
-                    return;
-                }
-
-                // 기존 내용 제거
-                container.innerHTML = '';
-
-                // QR 코드 생성 (포인트 페이지와 동일한 설정)
-                const qr = qrcode(0, 'M'); // 오류정정 레벨 M으로 통일
-                qr.addData(data);
-                qr.make();
-
-                // QR 코드 이미지 생성 (포인트 페이지와 동일한 방식)
-                const qrImage = qr.createImgTag(5, 10);
-                container.innerHTML = qrImage;
-
-                console.log('QR코드 생성 성공');
-            } catch (error) {
-                console.error('QR코드 생성 오류:', error);
-                const container = document.getElementById(containerId);
-                if (container) {
-                    container.innerHTML = '<div class="text-danger">QR코드 생성 실패</div>';
-                }
-            }
-        }
-        */
-
-        // QR 코드 관련 함수들 제거됨
-        /*
-        async function showQRCode() {
-            console.log('=== QR코드 표시 함수 시작 ===');
-            
-            // getCurrentUser 함수를 사용하여 로그인 상태 확인
-            const user = getCurrentUser();
-            console.log('getCurrentUser 결과:', user);
-            
-            if (!user) {
-                console.log('로그인 상태를 찾을 수 없음');
-                alert('QRコードを表示するにはログインが必要です。');
-                window.location.href = 'login.html';
-                return;
-            }
-            
-            console.log(`✅ 로그인 확인됨 (${user.method}):`, user.email);
-
-            try {
-                // FirebaseService가 로드될 때까지 대기
-                let attempts = 0;
-                const maxAttempts = 100; // 10초 대기
-                
-                while (typeof window.FirebaseService === 'undefined' && attempts < maxAttempts) {
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                    attempts++;
-                    if (attempts % 10 === 0) {
-                        console.log(`FirebaseService 로드 대기 중... (${attempts}/100)`);
-                    }
-                }
-                
-                // Firebase 전용 QR 코드 시스템 사용 (points.html과 동일)
-                if (typeof window.FirebaseService === 'function') {
-                    console.log('✅ FirebaseService 발견, Firebase 전용 QR 토큰 사용');
-                    
-                    try {
-                        // FirebaseService 클래스의 static 메서드 직접 호출 (points.html과 동일)
-                        const qrToken = await window.FirebaseService.getOrCreateQRToken(user.uid);
-                        console.log('✅ Firebase 전용 QR 토큰 사용:', qrToken);
-                        
-                        // 모달에 QR코드 생성 (points.html과 동일한 방식)
-                        generateQRCode(qrToken, 'qr-code-modal-container');
-                        
-                        // 모달 표시
-                        const modal = new bootstrap.Modal(document.getElementById('qr-code-modal'));
-                        modal.show();
-                    } catch (methodError) {
-                        console.error('FirebaseService.getOrCreateQRToken 호출 실패:', methodError);
-                        throw new Error('FirebaseService 메서드 호출에 실패했습니다. Firebase 연결을 확인해주세요.');
-                    }
-                } else {
-                    throw new Error('FirebaseService를 찾을 수 없습니다. Firebase 연결을 확인해주세요.');
-                }
-            } catch (error) {
-                console.error('QR 코드 표시 실패:', error);
-                alert('QRコードの表示中にエラーが発生しました');
-            }
-        }
-        */
-    </script>
     
     <!-- Authentication Utilities (firebase-config.js 로드 후) -->
     <script src="assets/js/auth-utils.js"></script>
@@ -914,8 +794,7 @@
         let currentUser = null;
         let productInfo = null;
 
-        // 푸터 관련 함수들 (다른 함수들보다 먼저 정의)
-        // 푸터 회사 정보 업데이트
+        // 푸터 관련 함수들
         function updateFooterCompanyInfo(footerData) {
             const companyInfoContainer = document.getElementById('footer-company-info');
             if (!companyInfoContainer) {
@@ -925,7 +804,6 @@
             
             console.log('🏢 회사 정보 업데이트 시작:', footerData.companyInfo);
             
-            // companyInfo 배열이 있는 경우
             if (footerData.companyInfo && Array.isArray(footerData.companyInfo)) {
                 if (footerData.companyInfo.length === 0) {
                     companyInfoContainer.innerHTML = '<li><span class="text-muted">会社情報が登録されていません。</span></li>';
@@ -933,7 +811,6 @@
                     return;
                 }
                 
-                // 순서대로 정렬
                 const sortedInfo = [...footerData.companyInfo].sort((a, b) => a.order - b.order);
                 console.log('📊 정렬된 회사 정보:', sortedInfo);
                 
@@ -949,13 +826,11 @@
                 companyInfoContainer.innerHTML = html;
                 console.log('✅ 회사 정보 업데이트 완료');
             } else {
-                // companyInfo가 없는 경우 기본 메시지
                 companyInfoContainer.innerHTML = '<li><span class="text-muted">会社情報が登録されていません。</span></li>';
                 console.log('📝 회사 정보 데이터가 없습니다');
             }
         }
         
-        // 푸터 브랜드명 업데이트
         function updateFooterBrands(brandNames) {
             const brandsListContainer = document.getElementById('footer-brands-list');
             if (!brandsListContainer) return;
@@ -965,7 +840,6 @@
                 return;
             }
             
-            // 순서대로 정렬 (order 속성이 있는 경우)
             const sortedBrands = [...brandNames].sort((a, b) => {
                 const orderA = typeof a === 'object' && a.order ? a.order : 999;
                 const orderB = typeof b === 'object' && b.order ? b.order : 999;
@@ -974,7 +848,6 @@
             
             let html = '';
             sortedBrands.forEach(brand => {
-                // 기존 문자열 형태와 새로운 객체 형태 모두 지원
                 const brandName = typeof brand === 'string' ? brand : brand.name;
                 const brandLink = typeof brand === 'string' ? '#' : (brand.link || '#');
                 
@@ -990,7 +863,6 @@
             brandsListContainer.innerHTML = html;
         }
         
-        // 푸터 Further Info 링크 업데이트
         function updateFooterFurtherInfoLinks(furtherInfoLinks) {
             const furtherInfoContainer = document.getElementById('footer-further-info');
             if (!furtherInfoContainer) return;
@@ -1000,7 +872,6 @@
                 return;
             }
             
-            // 순서대로 정렬
             const sortedLinks = [...furtherInfoLinks].sort((a, b) => a.order - b.order);
             
             let html = '';
@@ -1017,30 +888,22 @@
             furtherInfoContainer.innerHTML = html;
         }
         
-        // 푸터 HTML 업데이트
         function updateFooterHTML(footerData) {
             console.log('🦶 푸터 데이터 업데이트 시작:', footerData);
             
-            // 회사 정보 동적 로드
             updateFooterCompanyInfo(footerData);
-            
-            // 브랜드명 동적 로드
             updateFooterBrands(footerData.brandNames || []);
-            
-            // Further Info 링크 동적 로드
             updateFooterFurtherInfoLinks(footerData.furtherInfoLinks || []);
             
             console.log('✅ 푸터 데이터 업데이트 완료');
         }
         
-        // Firebase에서 푸터 데이터 로드
         async function loadFooterContent() {
             try {
                 console.log('🦶 Firebase에서 푸터 데이터 로드 시작');
                 
                 let footerData = {};
                 
-                // Firebase에서 데이터 로드 시도
                 if (window.firebase && window.firebase.firestore) {
                     const snapshot = await window.firebase.firestore().collection('footer_content').limit(1).get();
                     if (!snapshot.empty) {
@@ -1049,13 +912,11 @@
                     }
                 }
                 
-                // 데이터가 없으면 빈 객체로 설정 (Firebase 전용)
                 if (Object.keys(footerData).length === 0) {
                     footerData = { companyInfo: [], furtherInfoLinks: [], brandNames: [] };
                     console.log('📝 Firebase에 푸터 데이터 없음');
                 }
                 
-                // 푸터 HTML 업데이트
                 updateFooterHTML(footerData);
                 
                 console.log('✅ 푸터 콘텐츠 로딩 완료');
@@ -1067,13 +928,11 @@
             }
         }
 
-        // URL에서 상품 ID 가져오기
         function getProductIdFromUrl() {
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get('id');
         }
 
-        // Firebase 초기화 완료 대기 함수 (간단한 버전)
         if (typeof window.waitForFirebaseComplete === 'undefined') {
             window.waitForFirebaseComplete = async function() {
                 return new Promise((resolve) => {
@@ -1103,38 +962,31 @@
             };
         }
 
-        // Firebase 초기화 완료 후 페이지 로직 실행
         document.addEventListener('DOMContentLoaded', function() {
             console.log('DOM 로드 완료, Firebase 초기화 대기');
             
-            // Firebase 완전 초기화 대기
             window.waitForFirebaseComplete().then((firebaseAvailable) => {
                 console.log('Firebase 사용 가능:', firebaseAvailable);
                 initializePageLogic(firebaseAvailable);
             });
         });
 
-        // Firebase 초기화 완료 이벤트 리스너 추가
         window.addEventListener('firebaseInitialized', function() {
             console.log('Firebase 초기화 완료 이벤트 수신');
             setTimeout(() => {
                 console.log('Firebase 초기화 완료 후 상품 정보 로드 시작');
-                // Firebase 초기화 완료 후 인증 상태 확인
                 checkAuthState();
                 loadProductInfo();
                 
-                // Firebase 초기화 완료 후 사용자 메뉴도 업데이트
                 if (typeof window.updateUserMenu === 'function') {
                     console.log('✅ Firebase 초기화 완료 후 사용자 메뉴 업데이트');
                     window.updateUserMenu();
                 }
                 
-                // Firebase 초기화 완료 후 카트 수량도 업데이트
                 setTimeout(() => {
                     updateCartCount();
                 }, 1000);
                 
-                // Firebase 초기화 완료 후 푸터 로드
                 setTimeout(() => {
                     console.log('✅ Firebase 초기화 완료 후 푸터 로드 시작');
                     loadFooterContent();
@@ -1145,16 +997,12 @@
         function initializePageLogic(firebaseAvailable) {
             console.log('페이지 로직 초기화 시작');
             
-            // Firebase 초기화 완료 후 상품 정보 로드
             if (firebaseAvailable) {
-                // Firebase 초기화 완료 이벤트를 기다림 (firebaseInitialized 이벤트 리스너에서 처리)
                 console.log('Firebase 사용 가능, 초기화 완료 이벤트 대기 중');
             } else {
-                // Firebase 사용 불가능한 경우 즉시 기본 데이터 로드
                 console.log('Firebase 사용 불가능, 기본 데이터 로드');
                 loadProductInfo();
                 
-                // Firebase 사용 불가능한 경우 기본 푸터 데이터 로드
                 setTimeout(() => {
                     console.log('Firebase 사용 불가능, 기본 푸터 데이터 로드');
                     const emptyFooterData = { companyInfo: [], furtherInfoLinks: [], brandNames: [] };
@@ -1162,18 +1010,16 @@
                 }, 1000);
             }
             
-            // 사용자 메뉴 초기화 (auth-utils.js 로드 대기)
             waitForAuthUtilsAndUpdateMenu();
             
             console.log('페이지 로직 초기화 완료');
         }
 
-        // auth-utils.js 로드 대기 및 사용자 메뉴 업데이트
         function waitForAuthUtilsAndUpdateMenu() {
             console.log('🔄 auth-utils.js 로드 대기 시작');
             
             let attempts = 0;
-            const maxAttempts = 50; // 5초 대기
+            const maxAttempts = 50;
             
             const checkAuthUtils = () => {
                 attempts++;
@@ -1191,12 +1037,10 @@
             checkAuthUtils();
         }
 
-        // 인증 상태 확인
         function checkAuthState() {
             console.log('🔐 인증 상태 확인 시작');
             
             try {
-                // Firebase Auth에서 현재 사용자 확인
                 if (firebase && firebase.auth && firebase.auth().currentUser) {
                     const user = firebase.auth().currentUser;
                     console.log('✅ 로그인된 사용자:', user.email);
@@ -1211,7 +1055,6 @@
             }
         }
 
-        // 상품 정보 로드
         async function loadProductInfo() {
             const productId = getProductIdFromUrl();
             console.log('상품 ID:', productId);
@@ -1229,7 +1072,6 @@
                     try {
                         const db = firebase.firestore();
                         
-                        // 상품 ID로 직접 검색
                         const productDoc = await db.collection('products').doc(productId).get();
                         
                         if (productDoc.exists) {
@@ -1262,26 +1104,21 @@
             }
         }
 
-        // 전역 변수: 선택된 색상 옵션들
         let selectedColors = [];
         let originalPrice = 0;
 
-        // 새로운 옵션 시스템 표시
         function displayProductOptions() {
-            const optionsSection = document.getElementById('color-options-section'); // 기존 섹션 재사용
+            const optionsSection = document.getElementById('color-options-section');
             const optionDropdown = document.getElementById('color-dropdown');
             
-            // 상품 타입 확인
             const isOptionProduct = productInfo && productInfo.productType === 'option';
             const hasProductOptions = productInfo && productInfo.productOptions && productInfo.productOptions.length > 0;
             const hasColorOptions = productInfo && productInfo.colorOptions && productInfo.colorOptions.length > 0;
             
             if (isOptionProduct && hasProductOptions) {
-                // 새로운 옵션 시스템 사용
                 console.log('새로운 옵션 시스템 표시:', productInfo.productOptions);
                 optionsSection.style.display = 'block';
                 
-                // 드롭다운 옵션 생성
                 optionDropdown.innerHTML = '<option value="">オプションを選択してください</option>';
                 productInfo.productOptions.forEach(option => {
                     const optionElement = document.createElement('option');
