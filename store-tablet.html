@@ -1239,18 +1239,83 @@
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('=== 스토어 태블릿 페이지 초기화 시작 ===');
             
+            // 즉시 인증 확인 (URL 직접 접속 차단)
+            console.log('🔒 즉시 인증 확인 시작...');
+            
+            // Firebase 초기화 대기 (더 안전한 방식)
+            await waitForFirebaseInit();
+            
+            // Firebase Auth 즉시 확인
+            if (!firebase || !firebase.auth) {
+                console.log('❌ Firebase Auth 사용 불가 - 즉시 리다이렉트');
+                showStoreAlert('Firebase 초기화 중입니다. 잠시 후 다시 시도해주세요。', 'warning');
+                setTimeout(() => {
+                    window.location.href = 'store-register.html';
+                }, 2000);
+                return;
+            }
+            
+            const currentUser = firebase.auth().currentUser;
+            if (!currentUser) {
+                console.log('❌ 즉시 인증 확인 - 미로그인 상태');
+                showStoreAlert('店舗システムにアクセスするにはログインが必要です。', 'warning');
+                setTimeout(() => {
+                    console.log('🚀 즉시 리다이렉트 - 스토어 로그인 페이지로');
+                    window.location.href = 'store-register.html';
+                }, 2000);
+                return;
+            }
+            
+            console.log('✅ 즉시 인증 확인 완료:', currentUser.email);
+            
+            // 즉시 스토어 권한 확인
+            console.log('🔍 즉시 스토어 권한 확인 시작...');
+            try {
+                const db = firebase.firestore();
+                const userDoc = await db.collection('users').doc(currentUser.email).get();
+                
+                if (!userDoc.exists) {
+                    console.log('❌ 사용자 문서가 존재하지 않음 - 즉시 리다이렉트');
+                    showStoreAlert('店舗システムアクセス権限がありません。', 'warning');
+                    setTimeout(() => {
+                        window.location.href = 'store-register.html';
+                    }, 2000);
+                    return;
+                }
+                
+                const userData = userDoc.data();
+                const storeRole = userData.storeRole;
+                const isStoreActive = userData.isStoreActive;
+                
+                if (!storeRole || !isStoreActive) {
+                    console.log('❌ 스토어 권한 없음 또는 비활성화됨 - 즉시 리다이렉트');
+                    showStoreAlert('店舗システムアクセス権限がありません。', 'warning');
+                    setTimeout(() => {
+                        window.location.href = 'store-register.html';
+                    }, 2000);
+                    return;
+                }
+                
+                console.log('✅ 즉시 스토어 권한 확인 완료:', storeRole);
+                
+            } catch (error) {
+                console.error('❌ 즉시 스토어 권한 확인 오류:', error);
+                showStoreAlert('店舗システムアクセス権限確認中にエラーが発生しました。', 'warning');
+                setTimeout(() => {
+                    window.location.href = 'store-register.html';
+                }, 2000);
+                return;
+            }
+            
             updateDateTime();
             setInterval(updateDateTime, 1000);
             
             setupPurchaseAmountListener();
             
-            // Firebase 초기화 대기 (더 안전한 방식)
-            await waitForFirebaseInit();
-            
             // Firebase Auth 상태 변경 리스너로 로그인 상태 확인
             let authStateChecked = false;
             
-            const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
+            const unsubscribe = firebase.auth().onAuthStateChanged(async (user) => {
                 if (authStateChecked) return; // 중복 실행 방지
                 authStateChecked = true;
                 
