@@ -194,51 +194,6 @@
             }
         }
         
-        .stats-section {
-            background: white;
-            border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            margin-bottom: 30px;
-        }
-
-        /* 모바일 반응형 통계 섹션 */
-        @media (max-width: 767.98px) {
-            .stats-section {
-                padding: 15px 10px;
-                text-align: center;
-            }
-            
-            .stats-section .row {
-                justify-content: center;
-                margin: 0 -2px;
-            }
-            
-            .stats-section .col-3 {
-                padding: 0 2px;
-                margin-bottom: 10px;
-            }
-            
-            .stat-card {
-                text-align: center;
-                padding: 8px 2px;
-                border-radius: 6px;
-                background: #f8f9fa;
-                border: 1px solid #e9ecef;
-            }
-            
-            .stat-number {
-                font-size: 1rem;
-                font-weight: bold;
-                margin-bottom: 3px;
-            }
-            
-            .stat-card .japanese-text {
-                font-size: 0.65rem;
-                margin: 0;
-                line-height: 1.2;
-            }
-        }
         
         .scanner-section {
             background: white;
@@ -1361,38 +1316,6 @@
             </div>
         </div>
 
-        <!-- 일일 통계 섹션 -->
-        <div class="stats-section">
-            <h3 class="japanese-heading mb-4">
-                <i class="fas fa-chart-bar me-2"></i>本日の実績
-            </h3>
-            <div class="row">
-                <div class="col-3 col-md-3">
-                    <div class="stat-card">
-                        <div class="stat-number" id="today-earned">0</div>
-                        <div class="japanese-text">獲得ポイント</div>
-                    </div>
-                </div>
-                <div class="col-3 col-md-3">
-                    <div class="stat-card">
-                        <div class="stat-number" id="today-used">0</div>
-                        <div class="japanese-text">使用ポイント</div>
-                    </div>
-                </div>
-                <div class="col-3 col-md-3">
-                    <div class="stat-card">
-                        <div class="stat-number" id="today-transactions">0</div>
-                        <div class="japanese-text">取引回数</div>
-                    </div>
-                </div>
-                <div class="col-3 col-md-3">
-                    <div class="stat-card">
-                        <div class="stat-number" id="today-customers">0</div>
-                        <div class="japanese-text">お客様数</div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- 관리자 네비게이션 탭 -->
         <div class="admin-nav-tabs">
@@ -4274,12 +4197,6 @@
                 updateDateTime();
                 setInterval(updateDateTime, 1000);
                 
-                // 일일 통계 로드 (선택적)
-                try {
-                    await loadTodayStats();
-                } catch (statsError) {
-                    console.warn('일일 통계 로드 실패 (무시됨):', statsError);
-                }
                 
                 // 구매 금액 계산 리스너 설정 (선택적)
                 try {
@@ -4317,52 +4234,6 @@
             }
         }
 
-        // 일일 통계 로드
-        async function loadTodayStats() {
-            try {
-                // FirebaseService가 로드되지 않은 경우 기본값 설정
-                if (!window.FirebaseService || typeof FirebaseService.getAdminDailyStats !== 'function') {
-                    console.warn('FirebaseService가 로드되지 않았습니다. 기본 통계값을 설정합니다.');
-                    document.getElementById('today-earned').textContent = '0';
-                    document.getElementById('today-used').textContent = '0';
-                    document.getElementById('today-transactions').textContent = '0';
-                    document.getElementById('today-customers').textContent = '0';
-                    return;
-                }
-                
-                const result = await FirebaseService.getAdminDailyStats();
-                
-                if (result.success) {
-                    const stats = result.stats;
-                    document.getElementById('today-earned').textContent = stats.earnedPoints.toLocaleString();
-                    document.getElementById('today-used').textContent = stats.usedPoints.toLocaleString();
-                    document.getElementById('today-transactions').textContent = stats.totalTransactions.toLocaleString();
-                    
-                    // 고유 고객 수 계산
-                    const uniqueCustomers = new Set();
-                    stats.transactions.forEach(t => {
-                        if (t.userId) uniqueCustomers.add(t.userId);
-                    });
-                    document.getElementById('today-customers').textContent = uniqueCustomers.size.toLocaleString();
-                    
-                    console.log('일일 통계 로드 완료:', stats);
-                } else {
-                    console.error('일일 통계 로드 실패:', result.error);
-                    // 기본값 설정
-                    document.getElementById('today-earned').textContent = '0';
-                    document.getElementById('today-used').textContent = '0';
-                    document.getElementById('today-transactions').textContent = '0';
-                    document.getElementById('today-customers').textContent = '0';
-                }
-            } catch (error) {
-                console.error('일일 통계 로드 중 오류:', error);
-                // 기본값 설정
-                document.getElementById('today-earned').textContent = '0';
-                document.getElementById('today-used').textContent = '0';
-                document.getElementById('today-transactions').textContent = '0';
-                document.getElementById('today-customers').textContent = '0';
-            }
-        }
 
         // QR 스캐너 시작
         async function startScanner() {
@@ -4650,8 +4521,6 @@
                     currentCustomer.points += points;
                     document.getElementById('customer-points').textContent = currentCustomer.points.toLocaleString();
                     
-                    // 통계 업데이트
-                    await loadTodayStats();
                     
                     // 성공 메시지
                     showAdminAlert(`${points}ポイントを付与しました！`, 'success');
@@ -4705,7 +4574,6 @@
                 if (result.success) {
                     currentCustomer.points += points;
                     document.getElementById('customer-points').textContent = currentCustomer.points.toLocaleString();
-                    await loadTodayStats();
                     showAdminAlert(`${points}ポイントを追加しました！`, 'success');
                     document.getElementById('manual-points').value = '';
                     
@@ -4763,7 +4631,6 @@
                     // 서버에서 반환된 정확한 포인트 값 사용
                     currentCustomer.points = result.points;
                     document.getElementById('customer-points').textContent = currentCustomer.points.toLocaleString();
-                    await loadTodayStats();
                     showAdminAlert(`${points}ポイントを差し引きました。`, 'success');
                     document.getElementById('manual-points').value = '';
                     
