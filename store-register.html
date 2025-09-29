@@ -440,14 +440,20 @@
                 console.log('Firebase 로그인 성공, 스토어 권한 확인 중...');
                 
                 // 스토어 사용자 컬렉션에서 권한 확인
+                console.log('🔍 storeUsers 컬렉션에서 문서 조회:', email);
                 const storeUserDoc = await firebase.firestore()
                     .collection('storeUsers')
                     .doc(email)
                     .get();
                 
+                console.log('🔍 storeUsers 문서 존재 여부:', storeUserDoc.exists);
+                console.log('🔍 storeUsers 문서 ID:', storeUserDoc.id);
+                
                 if (storeUserDoc.exists) {
                     const storeUserData = storeUserDoc.data();
-                    console.log('스토어 사용자 데이터:', storeUserData);
+                    console.log('✅ 스토어 사용자 데이터:', storeUserData);
+                    console.log('🔍 isActive:', storeUserData.isActive);
+                    console.log('🔍 role:', storeUserData.role);
                     
                     // 스토어 권한이 있는지 확인
                     if (storeUserData.isActive && storeUserData.role) {
@@ -468,14 +474,23 @@
                         };
                     }
                 } else {
+                    console.log('❌ storeUsers 컬렉션에서 문서를 찾을 수 없음');
                     // 스토어 사용자가 아닌 경우, 일반 사용자에서 스토어 권한 확인
+                    console.log('🔍 users 컬렉션에서 문서 조회:', email);
                     const userDoc = await firebase.firestore()
                         .collection('users')
                         .doc(email)
                         .get();
                     
+                    console.log('🔍 users 문서 존재 여부:', userDoc.exists);
+                    console.log('🔍 users 문서 ID:', userDoc.id);
+                    
                     if (userDoc.exists) {
                         const userData = userDoc.data();
+                        console.log('✅ 일반 사용자 데이터:', userData);
+                        console.log('🔍 storeRole:', userData.storeRole);
+                        console.log('🔍 isStoreActive:', userData.isStoreActive);
+                        
                         if (userData.storeRole && userData.isStoreActive) {
                             return {
                                 success: true,
