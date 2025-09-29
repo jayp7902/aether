@@ -654,6 +654,11 @@
                     <div class="japanese-text">
                         <div id="current-date"></div>
                         <div id="current-time" style="font-size: 1.2rem; font-weight: bold;"></div>
+                        <div class="mt-2">
+                            <button class="btn btn-outline-light btn-sm" onclick="logoutStore()">
+                                <i class="fas fa-sign-out-alt me-1"></i>ログアウト
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -998,6 +1003,62 @@
             transactions: []
         };
         let realTimeListener = null; // 실시간 동기화 리스너
+
+        // 스토어 로그아웃 함수
+        async function logoutStore() {
+            try {
+                console.log('=== 스토어 로그아웃 시작 ===');
+                
+                // 확인 모달 표시
+                createCustomConfirmModal(
+                    'ログアウト確認',
+                    '店舗システムからログアウトしますか？',
+                    'ログアウト',
+                    'キャンセル',
+                    async () => {
+                        console.log('로그아웃 확인됨');
+                        
+                        // Firebase Auth 로그아웃
+                        if (firebase && firebase.auth) {
+                            await firebase.auth().signOut();
+                            console.log('Firebase Auth 로그아웃 완료');
+                        }
+                        
+                        // 전역 변수 초기화
+                        window.currentStoreUser = null;
+                        currentCustomer = null;
+                        
+                        // 리스너 정리
+                        if (realTimeListener) {
+                            realTimeListener();
+                            realTimeListener = null;
+                        }
+                        
+                        // 스캐너 정리
+                        if (scanner) {
+                            scanner.stop();
+                            scanner = null;
+                        }
+                        
+                        showStoreAlert('ログアウトしました。', 'success');
+                        
+                        // 스토어 로그인 페이지로 리다이렉트
+                        setTimeout(() => {
+                            console.log('🚀 스토어 로그인 페이지로 리다이렉트');
+                            window.location.href = 'store-register.html';
+                        }, 1500);
+                        
+                    },
+                    () => {
+                        console.log('로그아웃 취소됨');
+                    }
+                );
+                
+            } catch (error) {
+                console.error('스토어 로그아웃 오류:', error);
+                showStoreAlert('ログアウト中にエラーが発生しました。', 'danger');
+            }
+        }
         
         // 커스텀 확인 모달 생성 (관리자 대시보드와 동일)
         function createCustomConfirmModal(title, message, confirmText, cancelText, onConfirm, onCancel) {
