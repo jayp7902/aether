@@ -1239,41 +1239,22 @@
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('=== 스토어 태블릿 페이지 초기화 시작 ===');
             
-            // 즉시 인증 확인 (URL 직접 접속 차단)
-            console.log('🔒 즉시 인증 확인 시작...');
-            
-            // Firebase 초기화 대기 (더 안전한 방식)
+            // Firebase 초기화 대기
             await waitForFirebaseInit();
-            
-            // Firebase Auth 즉시 확인
-            if (!firebase || !firebase.auth) {
-                console.log('❌ Firebase Auth 사용 불가 - 즉시 리다이렉트');
-                showStoreAlert('Firebase 초기화 중입니다. 잠시 후 다시 시도해주세요。', 'warning');
-                setTimeout(() => {
-                    window.location.href = 'store-register.html';
-                }, 2000);
-                return;
-            }
-            
-            const currentUser = firebase.auth().currentUser;
-            if (!currentUser) {
-                console.log('❌ 즉시 인증 확인 - 미로그인 상태');
-                showStoreAlert('店舗システムにアクセスするにはログインが必要です。', 'warning');
-                setTimeout(() => {
-                    console.log('🚀 즉시 리다이렉트 - 스토어 로그인 페이지로');
-                    window.location.href = 'store-register.html';
-                }, 2000);
-                return;
-            }
-            
-            console.log('✅ 즉시 인증 확인 완료:', currentUser.email);
-            
-            // 즉시 스토어 권한 확인
-            console.log('🔍 즉시 스토어 권한 확인 시작...');
-            try {
-                const db = firebase.firestore();
-                const userDoc = await db.collection('users').doc(currentUser.email).get();
+            console.log('✅ Firebase 초기화 완료');
                 
+            // 즉시 확인 로직 제거됨 - onAuthStateChanged에서 처리
+            
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            
+            setupPurchaseAmountListener();
+            
+            // 중복된 리스너 제거됨
+            
+            // 기존 코드 제거
+            // 기존 코드 제거됨
+            /*
                 if (!userDoc.exists) {
                     console.log('❌ 사용자 문서가 존재하지 않음 - 즉시 리다이렉트');
                     showStoreAlert('店舗システムアクセス権限がありません。', 'warning');
@@ -1306,6 +1287,7 @@
                 }, 2000);
                 return;
             }
+            */
             
             updateDateTime();
             setInterval(updateDateTime, 1000);
