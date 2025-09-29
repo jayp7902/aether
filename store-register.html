@@ -324,22 +324,26 @@
                 }
                 
                 // Firebase 초기화 대기
-                if (typeof window.FirebaseService === 'undefined') {
-                    console.log('FirebaseService 대기 중...');
-                    let attempts = 0;
-                    const maxAttempts = 50;
-                    
-                    while (typeof window.FirebaseService === 'undefined' && attempts < maxAttempts) {
+                let firebaseReady = false;
+                let attempts = 0;
+                const maxAttempts = 50;
+                
+                while (!firebaseReady && attempts < maxAttempts) {
+                    if (typeof firebase !== 'undefined' && firebase.auth && firebase.firestore) {
+                        firebaseReady = true;
+                        console.log('Firebase 초기화 완료');
+                        break;
+                    } else {
                         await new Promise(resolve => setTimeout(resolve, 100));
                         attempts++;
                         if (attempts % 10 === 0) {
-                            console.log(`FirebaseService 로드 대기 중... (${attempts}/50)`);
+                            console.log(`Firebase 초기화 대기 중... (${attempts}/50)`);
                         }
                     }
-                    
-                    if (typeof window.FirebaseService === 'undefined') {
-                        throw new Error('FirebaseService를 찾을 수 없습니다. Firebase 초기화를 확인해주세요.');
-                    }
+                }
+                
+                if (!firebaseReady) {
+                    throw new Error('Firebase 초기화를 확인해주세요.');
                 }
                 
                 // Firebase Authentication 설정 (remember 기능)
@@ -385,19 +389,52 @@
             }
         }
 
+        // 스토어 전용 Firebase 로그인 함수
+        async function storeLoginWithFirebase(email, password) {
+            try {
+                console.log('스토어 전용 Firebase 로그인 시도:', email);
+                
+                // Firebase Auth로 직접 로그인 시도
+                const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+                console.log('Firebase Auth 로그인 성공:', userCredential.user.uid);
+                
+                return {
+                    success: true,
+                    user: userCredential.user
+                };
+                
+            } catch (error) {
+                console.error('Firebase Auth 로그인 실패:', error);
+                
+                let errorMessage = 'メールアドレスまたはパスワードが正しくありません。';
+                
+                if (error.code === 'auth/user-not-found') {
+                    errorMessage = '登録されていないメールアドレスです。';
+                } else if (error.code === 'auth/wrong-password') {
+                    errorMessage = 'パスワードが正しくありません。';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = '無効なメールアドレスです。';
+                } else if (error.code === 'auth/user-disabled') {
+                    errorMessage = 'このアカウントは無効化されています。';
+                }
+                
+                return {
+                    success: false,
+                    error: errorMessage
+                };
+            }
+        }
+
         // 스토어 사용자 확인 함수
         async function checkStoreUser(email, password) {
             try {
                 console.log('스토어 사용자 확인 시작:', email);
                 
-                // 먼저 일반 Firebase 로그인 시도
-                const loginResult = await window.FirebaseService.loginUser(email, password);
+                // 스토어 전용 Firebase 로그인 시도
+                const loginResult = await storeLoginWithFirebase(email, password);
                 
                 if (!loginResult.success) {
-                    return {
-                        success: false,
-                        error: 'メールアドレスまたはパスワードが正しくありません。'
-                    };
+                    return loginResult; // 로그인 실패 시 에러 메시지 그대로 반환
                 }
                 
                 console.log('Firebase 로그인 성공, 스토어 권한 확인 중...');
