@@ -1173,6 +1173,9 @@
             // Firebase 초기화 대기 (더 안전한 방식)
             await waitForFirebaseInit();
             
+            // 스토어 전용 인증 확인
+            await checkStoreAuthentication();
+            
             // Firebase 완전 초기화 후 포인트 이용현황 초기화
             const initPointHistory = (retryCount = 0) => {
                 try {
@@ -1262,6 +1265,132 @@
                     }, 100);
                 }
             });
+        }
+
+        // 스토어 전용 인증 확인
+        async function checkStoreAuthentication() {
+            try {
+                console.log('=== 스토어 인증 확인 시작 ===');
+                
+                const currentUser = firebase.auth().currentUser;
+                
+                if (!currentUser) {
+                    console.log('로그인되지 않은 사용자, 스토어 로그인 페이지로 리다이렉트');
+                    showStoreAlert('店舗システムにアクセスするにはログインが必要です。', 'warning');
+                    setTimeout(() => {
+                        window.location.href = 'store-register.html';
+                    }, 2000);
+                    return false;
+                }
+                
+                console.log('현재 로그인된 사용자:', currentUser.email);
+                
+                // 스토어 사용자 권한 확인
+                const storeUserDoc = await firebase.firestore()
+                    .collection('storeUsers')
+                    .doc(currentUser.email)
+                    .get();
+                
+                let hasStoreAccess = false;
+                let storeUserInfo = null;
+                
+                if (storeUserDoc.exists) {
+                    const storeUserData = storeUserDoc.data();
+                    console.log('스토어 사용자 데이터:', storeUserData);
+                    
+                    if (storeUserData.isActive && storeUserData.role) {
+                        hasStoreAccess = true;
+                        storeUserInfo = {
+                            email: currentUser.email,
+                            name: storeUserData.name || currentUser.email.split('@')[0],
+                            role: storeUserData.role,
+                            storeId: storeUserData.storeId || 'main_store',
+                            permissions: storeUserData.permissions || []
+                        };
+                    }
+                } else {
+                    // 일반 사용자에서 스토어 권한 확인
+                    const userDoc = await firebase.firestore()
+                        .collection('users')
+                        .doc(currentUser.email)
+                        .get();
+                    
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        if (userData.storeRole && userData.isStoreActive) {
+                            hasStoreAccess = true;
+                            storeUserInfo = {
+                                email: currentUser.email,
+                                name: userData.name || currentUser.email.split('@')[0],
+                                role: userData.storeRole,
+                                storeId: userData.storeId || 'main_store',
+                                permissions: userData.storePermissions || []
+                            };
+                        }
+                    }
+                }
+                
+                if (!hasStoreAccess) {
+                    console.log('스토어 접근 권한 없음');
+                    showStoreAlert('店舗システムアクセス権限がありません。管理者にお問い合わせください。', 'danger');
+                    setTimeout(() => {
+                        window.location.href = 'store-register.html';
+                    }, 3000);
+                    return false;
+                }
+                
+                console.log('✅ 스토어 인증 성공:', storeUserInfo);
+                
+                // 스토어 사용자 정보를 전역 변수에 저장
+                window.currentStoreUser = storeUserInfo;
+                
+                // 헤더에 스토어 사용자 정보 표시
+                updateStoreUserDisplay(storeUserInfo);
+                
+                return true;
+                
+            } catch (error) {
+                console.error('스토어 인증 확인 오류:', error);
+                showStoreAlert('店舗認証確認中にエラーが発生しました。', 'danger');
+                setTimeout(() => {
+                    window.location.href = 'store-register.html';
+                }, 3000);
+                return false;
+            }
+        }
+
+        // 스토어 사용자 정보 표시 업데이트
+        function updateStoreUserDisplay(storeUserInfo) {
+            try {
+                // 헤더에 사용자 정보 추가
+                const storeHeader = document.querySelector('.store-header .col-md-3.text-end');
+                if (storeHeader) {
+                    const userInfoDiv = document.createElement('div');
+                    userInfoDiv.className = 'store-user-info mt-2';
+                    userInfoDiv.innerHTML = `
+                        <div class="japanese-text">
+                            <small>ログイン中: ${storeUserInfo.name}</small><br>
+                            <small>役割: ${getRoleDisplayName(storeUserInfo.role)}</small>
+                        </div>
+                    `;
+                    storeHeader.appendChild(userInfoDiv);
+                }
+                
+                console.log('스토어 사용자 정보 표시 업데이트 완료');
+                
+            } catch (error) {
+                console.error('스토어 사용자 정보 표시 업데이트 오류:', error);
+            }
+        }
+
+        // 역할 표시 이름 변환
+        function getRoleDisplayName(role) {
+            const roleNames = {
+                'store_admin': '店舗管理者',
+                'store_manager': '店舗マネージャー',
+                'store_staff': '店舗スタッフ'
+            };
+            return roleNames[role] || role;
         }
 
         // URL에서 QR코드 확인
