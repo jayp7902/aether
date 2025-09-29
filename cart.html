@@ -1085,111 +1085,35 @@
             }
         }
 
-        // 로그아웃 함수
+        // 로그아웃 함수 (카트 정보 유지)
         async function logout() {
             try {
-                console.log('=== cart.html 로그아웃 시작 ===');
-                
-                // auth-utils.js의 로그아웃 함수 사용 (우선)
-                if (typeof window.logout === 'function' && window.logout.toString().includes('=== 로그아웃 시작 ===')) {
-                    console.log('auth-utils.js logout 함수 사용');
-                    await window.logout();
-                    return;
-                }
-                
-                // 직접 로그아웃 처리 (폴백)
-                console.log('cart.html 직접 로그아웃 처리 시작');
+                console.log('=== cart.html 로그아웃 시작 (카트 정보 유지) ===');
                 
                 // Firebase 로그아웃
                 if (typeof firebase !== 'undefined' && firebase.auth) {
                     await firebase.auth().signOut();
-                    console.log('Firebase 로그아웃 완료');
+                    console.log('✅ Firebase 로그아웃 완료');
                 }
                 
-                // Firebase 카트 완전 초기화
-                currentCart = [];
+                // 사용자 정보 초기화 (카트 정보는 유지)
                 currentUser = null;
-                console.log('Firebase 카트 초기화 완료');
+                console.log('✅ 사용자 정보 초기화 완료');
                 
-                // 실시간 리스너도 중단
-                if (window.cartRealtimeListener) {
-                    window.cartRealtimeListener();
-                    window.cartRealtimeListener = null;
-                    console.log('카트 실시간 리스너 중단 완료');
-                }
-                
-                // CartSyncService 리스너도 중단
-                if (window.CartSyncService && window.CartSyncService.stopCartListener) {
-                    window.CartSyncService.stopCartListener();
-                    console.log('CartSyncService 리스너 중단 완료');
-                }
-                
-                // 카트 업데이트 진행 중 플래그도 초기화
-                window.cartUpdateInProgress = false;
-                
-                // FirebaseService 로그아웃 호출 (있는 경우)
-                if (typeof FirebaseService !== 'undefined') {
-                    await FirebaseService.logoutUser();
-                    console.log('FirebaseService 로그아웃 완료');
-                }
-                
-                console.log('cart.html 로그아웃 성공');
-                
-                // localStorage 완전 정리
+                // 로그인 관련 localStorage만 정리 (카트 정보는 유지)
                 localStorage.removeItem('aetherLoginStatus');
                 localStorage.removeItem('aetherLogin');
                 sessionStorage.removeItem('aetherLogin');
                 sessionStorage.removeItem('aetherLoginStatus');
-                Object.keys(localStorage).forEach(key => {
-                    if (key.startsWith('aether')) {
-                        localStorage.removeItem(key);
-                    }
-                });
-                console.log('cart.html localStorage 완전 정리 완료');
+                console.log('✅ 로그인 관련 localStorage 정리 완료');
                 
-                // 사용자 메뉴 업데이트
-                if (typeof window.updateUserMenu === 'function') {
-                    await window.updateUserMenu();
-                    console.log('cart.html 사용자 메뉴 업데이트 완료');
-                }
+                // 사용자 메뉴 직접 업데이트 (auth-utils.js 호출 방지)
+                updateUserMenuDirectly();
+                console.log('✅ 사용자 메뉴 직접 업데이트 완료');
                 
-                // 카트 개수 업데이트 (0으로 표시)
-                if (typeof updateCartCount === 'function') {
-                    updateCartCount();
-                    console.log('카트 개수 업데이트 완료');
-                }
-                
-                // DOM 직접 조작으로 확실히 메뉴 상태 변경
-                const logoutMenus = ['logout-menu', 'logout-menu-item', 'logout-menu-mobile', 'logout-menu-item-mobile'];
-                const profileMenus = ['profile-menu', 'profile-menu-mobile', 'points-menu', 'points-menu-mobile'];
-                const loginMenus = ['login-menu', 'login-menu-mobile', 'register-menu', 'register-menu-mobile'];
-                
-                logoutMenus.forEach(id => {
-                    const element = document.getElementById(id);
-                    if (element) {
-                        element.style.display = 'none';
-                        console.log(`cart.html ${id} 숨기기 완료`);
-                    }
-                });
-                
-                profileMenus.forEach(id => {
-                    const element = document.getElementById(id);
-                    if (element) {
-                        element.style.display = 'none';
-                        console.log(`cart.html ${id} 숨기기 완료`);
-                    }
-                });
-                
-                loginMenus.forEach(id => {
-                    const element = document.getElementById(id);
-                    if (element) {
-                        element.style.display = 'block';
-                        console.log(`cart.html ${id} 표시 완료`);
-                    }
-                });
-                
-                // 빈 카트로 렌더링
-                renderCart();
+                // 카트 개수 업데이트 (로그아웃 상태이므로 0으로 표시)
+                updateCartCount();
+                console.log('✅ 카트 개수 업데이트 완료');
                 
                 // 토스트 메시지 표시
                 if (typeof window.showToast === 'function') {
@@ -1198,30 +1122,29 @@
                     alert('ログアウトしました。');
                 }
                 
+                console.log('✅ cart.html 로그아웃 성공 (카트 정보 유지)');
+                
                 // 홈페이지로 리다이렉트
                 setTimeout(() => {
                     window.location.href = 'index.html';
                 }, 1000);
                 
             } catch (error) {
-                console.error('cart.html 로그아웃 중 오류:', error);
+                console.error('❌ cart.html 로그아웃 중 오류:', error);
                 
-                // 오류가 발생해도 강제로 Firebase 카트 초기화
-                currentCart = [];
+                // 오류가 발생해도 기본 정리 작업 수행
                 currentUser = null;
-                if (window.cartRealtimeListener) {
-                    window.cartRealtimeListener();
-                    window.cartRealtimeListener = null;
-                }
-                if (window.CartSyncService && window.CartSyncService.stopCartListener) {
-                    window.CartSyncService.stopCartListener();
-                }
-                window.cartUpdateInProgress = false;
                 
-                if (typeof updateCartCount === 'function') {
-                    updateCartCount();
-                }
-                renderCart();
+                // 로그인 관련 localStorage 정리
+                localStorage.removeItem('aetherLoginStatus');
+                localStorage.removeItem('aetherLogin');
+                sessionStorage.removeItem('aetherLogin');
+                sessionStorage.removeItem('aetherLoginStatus');
+                
+                // 사용자 메뉴 직접 업데이트
+                updateUserMenuDirectly();
+                
+                updateCartCount();
                 
                 if (typeof window.showToast === 'function') {
                     window.showToast('ログアウトしました。', 'success', 2000);
@@ -1232,6 +1155,58 @@
                 setTimeout(() => {
                     window.location.href = 'index.html';
                 }, 1000);
+            }
+        }
+        
+        // 사용자 메뉴 직접 업데이트 함수 (auth-utils.js 호출 방지)
+        function updateUserMenuDirectly() {
+            try {
+                console.log('🔧 cart.html 사용자 메뉴 직접 업데이트 시작');
+                
+                // 로그아웃 상태로 메뉴 업데이트
+                const logoutMenus = ['logout-menu', 'logout-menu-item', 'logout-menu-mobile', 'logout-menu-item-mobile'];
+                const profileMenus = ['profile-menu', 'profile-menu-mobile', 'points-menu', 'points-menu-mobile'];
+                const loginMenus = ['login-menu', 'login-menu-mobile', 'register-menu', 'register-menu-mobile'];
+                
+                // 로그아웃 메뉴 숨기기
+                logoutMenus.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.style.display = 'none';
+                        console.log(`✅ ${id} 숨기기 완료`);
+                    }
+                });
+                
+                // 프로필 메뉴 숨기기
+                profileMenus.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.style.display = 'none';
+                        console.log(`✅ ${id} 숨기기 완료`);
+                    }
+                });
+                
+                // 로그인 메뉴 표시
+                loginMenus.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.style.display = 'block';
+                        console.log(`✅ ${id} 표시 완료`);
+                    }
+                });
+                
+                // 사용자 이름 요소 초기화
+                const userNameElement = document.getElementById('user-name');
+                if (userNameElement) {
+                    userNameElement.textContent = '';
+                    userNameElement.classList.add('d-none');
+                    console.log('✅ 사용자 이름 요소 초기화 완료');
+                }
+                
+                console.log('✅ cart.html 사용자 메뉴 직접 업데이트 완료');
+                
+            } catch (error) {
+                console.error('❌ cart.html 사용자 메뉴 직접 업데이트 실패:', error);
             }
         }
 
