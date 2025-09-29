@@ -1362,6 +1362,17 @@
             }
         }
 
+        // Firebase 초기화 완료 이벤트 리스너 추가
+        window.addEventListener('firebaseInitialized', function() {
+            console.log('Firebase 초기화 완료 이벤트 수신 (info.html)');
+            
+            // Firebase 초기화 완료 후 카트 수량 업데이트
+            setTimeout(() => {
+                console.log('🛒 info.html Firebase 초기화 완료 후 카트 수량 업데이트');
+                window.updateCartCount();
+            }, 1000);
+        });
+
         // 페이지 로드 시 초기화
         document.addEventListener('DOMContentLoaded', function() {
             console.log('ℹ️ Info 페이지 초기화 시작');
@@ -1383,6 +1394,7 @@
                     
                     // 사용자 메뉴 업데이트 후 카트 수량도 업데이트
                     setTimeout(() => {
+                        console.log('🛒 info.html Firebase 초기화 완료 후 카트 수량 업데이트');
                         window.updateCartCount();
                     }, 500);
                 }
