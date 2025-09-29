@@ -1483,7 +1483,11 @@
                 // Firestore에서 실제 스토어 권한 확인
                 console.log('🔍 Firestore에서 스토어 권한 확인 중...');
                 const db = firebase.firestore();
+                console.log('🔍 Firestore DB 객체:', typeof db);
+                console.log('🔍 사용자 이메일:', currentUser.email);
+                
                 const userDoc = await db.collection('users').doc(currentUser.email).get();
+                console.log('🔍 Firestore 문서 조회 완료:', userDoc.exists);
                 
                 if (!userDoc.exists) {
                     console.log('❌ 사용자 문서가 존재하지 않음');
@@ -1513,12 +1517,19 @@
                 // 스토어 권한이 없거나 비활성화된 경우
                 if (!storeRole || !isStoreActive) {
                     console.log('❌ 스토어 권한 없음 또는 비활성화됨');
+                    console.log('🔍 권한 확인 결과:');
+                    console.log('  - storeRole:', storeRole, '(타입:', typeof storeRole, ')');
+                    console.log('  - isStoreActive:', isStoreActive, '(타입:', typeof isStoreActive, ')');
+                    console.log('  - 조건: !storeRole =', !storeRole, ', !isStoreActive =', !isStoreActive);
+                    
                     showStoreAlert('店舗システムアクセス権限がありません。', 'warning');
                     setTimeout(() => {
                         window.location.href = 'store-register.html';
                     }, 2000);
                     return;
                 }
+                
+                console.log('✅ 스토어 권한 확인 완료 - 접근 허용');
                 
                 console.log('✅ 스토어 권한 확인 완료:', storeRole);
                 
