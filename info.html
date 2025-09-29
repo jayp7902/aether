@@ -920,9 +920,9 @@
                     console.warn('Firebase 초기화 시간 초과, 기본 모드로 진행');
                 }
                 
-                // Firebase Auth 상태 변경 리스너 설정
+                // Firebase Auth 상태 변경 리스너 설정 (모바일/웹 호환)
                 if (typeof firebase !== 'undefined' && firebase.auth) {
-                    firebase.auth().onAuthStateChanged(function(user) {
+                    window.infoAuthStateUnsubscribe = firebase.auth().onAuthStateChanged(function(user) {
                         console.log('info.html - 인증 상태 변경:', user ? user.email : '로그아웃');
                         
                         // pointsPageUser 설정
@@ -939,18 +939,14 @@
                             console.log('✅ info.html - pointsPageUser 초기화 (로그아웃)');
                         }
                         
-                        // 사용자 메뉴 업데이트
-                        if (typeof window.updateUserMenu === 'function') {
-                            console.log('info.html - updateUserMenu 함수 호출');
-                            window.updateUserMenu();
-                            
-                            // 사용자 메뉴 업데이트 후 카트 수량도 업데이트
-                            setTimeout(() => {
-                                updateCartCount();
-                            }, 500);
-                        } else {
-                            console.warn('info.html - updateUserMenu 함수를 찾을 수 없습니다');
-                        }
+                        // 사용자 메뉴 직접 업데이트 (auth-utils.js 호출 방지)
+                        updateUserMenuDirectly();
+                        console.log('✅ info.html - 사용자 메뉴 직접 업데이트 완료');
+                        
+                        // 카트 수량 업데이트
+                        setTimeout(() => {
+                            updateCartCount();
+                        }, 500);
                     });
                 }
                 
@@ -958,21 +954,17 @@
                 window.addEventListener('firebaseInitialized', function(event) {
                     console.log('info.html - Firebase 초기화 완료 이벤트 수신');
                     setTimeout(() => {
-                        if (typeof window.updateUserMenu === 'function') {
-                            console.log('info.html - Firebase 초기화 완료 후 updateUserMenu 함수 호출');
-                            window.updateUserMenu();
-                        }
+                        // 사용자 메뉴 직접 업데이트 (auth-utils.js 호출 방지)
+                        updateUserMenuDirectly();
+                        console.log('info.html - Firebase 초기화 완료 후 사용자 메뉴 직접 업데이트 완료');
                     }, 200);
                 });
                 
                 // 초기 사용자 메뉴 업데이트 (Firebase 초기화 완료 후)
                 setTimeout(() => {
-                    if (typeof window.updateUserMenu === 'function') {
-                        console.log('info.html - Firebase 초기화 완료 후 updateUserMenu 함수 호출');
-                        window.updateUserMenu();
-                    } else {
-                        console.warn('info.html - updateUserMenu 함수를 찾을 수 없습니다');
-                    }
+                    // 사용자 메뉴 직접 업데이트 (auth-utils.js 호출 방지)
+                    updateUserMenuDirectly();
+                    console.log('info.html - 초기 사용자 메뉴 직접 업데이트 완료');
                 }, 500);
                 
                 // 사용자 정보 로드 (Firebase 초기화 완료 후)
@@ -1012,10 +1004,17 @@
             }, 500); // 0.5초로 단축
         });
 
-        // 로그아웃 함수 (카트 정보 유지)
+        // 로그아웃 함수 (카트 정보 유지) - 모바일/웹 호환
         async function logout() {
             try {
-                console.log('=== info.html 로그아웃 시작 (카트 정보 유지) ===');
+                console.log('=== info.html 로그아웃 시작 (카트 정보 유지) - 모바일/웹 호환 ===');
+                
+                // Firebase Auth 상태 변경 리스너 일시 중단 (모바일에서 중요)
+                if (window.infoAuthStateUnsubscribe) {
+                    window.infoAuthStateUnsubscribe();
+                    window.infoAuthStateUnsubscribe = null;
+                    console.log('✅ Firebase Auth 상태 변경 리스너 중단');
+                }
                 
                 // Firebase 로그아웃
                 if (typeof firebase !== 'undefined' && firebase.auth) {
@@ -1027,12 +1026,48 @@
                 pointsPageUser = null;
                 console.log('✅ pointsPageUser 초기화 완료');
                 
-                // 로그인 관련 localStorage만 정리 (카트 정보는 유지)
-                localStorage.removeItem('aetherLoginStatus');
-                localStorage.removeItem('aetherLogin');
-                sessionStorage.removeItem('aetherLogin');
-                sessionStorage.removeItem('aetherLoginStatus');
-                console.log('✅ 로그인 관련 localStorage 정리 완료');
+                // 로그인 관련 localStorage 완전 정리 (모바일 호환)
+                const loginKeys = [
+                    'aetherLoginStatus', 'aetherLogin', 'aetherUser', 'aetherUserInfo',
+                    'aetherAuthToken', 'aetherSession', 'aetherRemember'
+                ];
+                
+                loginKeys.forEach(key => {
+                    localStorage.removeItem(key);
+                    sessionStorage.removeItem(key);
+                });
+                
+                // 모든 aether 관련 키 중 로그인 관련만 제거 (카트는 유지)
+                Object.keys(localStorage).forEach(key => {
+                    if (key.startsWith('aether') && 
+                        (key.includes('Login') || key.includes('Auth') || key.includes('User') || key.includes('Session'))) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                
+                Object.keys(sessionStorage).forEach(key => {
+                    if (key.startsWith('aether') && 
+                        (key.includes('Login') || key.includes('Auth') || key.includes('User') || key.includes('Session'))) {
+                        sessionStorage.removeItem(key);
+                    }
+                });
+                
+                console.log('✅ 로그인 관련 localStorage/sessionStorage 완전 정리 완료');
+                
+                // 모바일 브라우저 캐시 정리 (가능한 경우)
+                if ('caches' in window) {
+                    try {
+                        const cacheNames = await caches.keys();
+                        for (const cacheName of cacheNames) {
+                            if (cacheName.includes('aether') || cacheName.includes('auth')) {
+                                await caches.delete(cacheName);
+                                console.log(`✅ 캐시 삭제: ${cacheName}`);
+                            }
+                        }
+                    } catch (cacheError) {
+                        console.log('⚠️ 캐시 정리 중 오류 (무시 가능):', cacheError);
+                    }
+                }
                 
                 // 사용자 메뉴 직접 업데이트 (auth-utils.js의 updateUserMenu 호출 방지)
                 updateUserMenuDirectly();
@@ -1049,11 +1084,12 @@
                     alert('ログアウトしました。');
                 }
                 
-                console.log('✅ info.html 로그아웃 성공 (카트 정보 유지)');
+                console.log('✅ info.html 로그아웃 성공 (카트 정보 유지) - 모바일/웹 호환');
                 
-                // 홈페이지로 리다이렉트
+                // 강제 페이지 새로고침과 함께 홈페이지로 리다이렉트 (모바일에서 확실한 로그아웃)
                 setTimeout(() => {
-                    window.location.href = 'index.html';
+                    // 모바일에서 확실한 로그아웃을 위해 강제 새로고침
+                    window.location.replace('index.html');
                 }, 1000);
                 
             } catch (error) {
@@ -1062,11 +1098,22 @@
                 // 오류가 발생해도 기본 정리 작업 수행
                 pointsPageUser = null;
                 
+                // Firebase Auth 상태 변경 리스너 중단
+                if (window.infoAuthStateUnsubscribe) {
+                    window.infoAuthStateUnsubscribe();
+                    window.infoAuthStateUnsubscribe = null;
+                }
+                
                 // 로그인 관련 localStorage 정리
-                localStorage.removeItem('aetherLoginStatus');
-                localStorage.removeItem('aetherLogin');
-                sessionStorage.removeItem('aetherLogin');
-                sessionStorage.removeItem('aetherLoginStatus');
+                const loginKeys = [
+                    'aetherLoginStatus', 'aetherLogin', 'aetherUser', 'aetherUserInfo',
+                    'aetherAuthToken', 'aetherSession', 'aetherRemember'
+                ];
+                
+                loginKeys.forEach(key => {
+                    localStorage.removeItem(key);
+                    sessionStorage.removeItem(key);
+                });
                 
                 // 사용자 메뉴 직접 업데이트
                 updateUserMenuDirectly();
@@ -1079,58 +1126,109 @@
                     alert('ログアウトしました。');
                 }
                 
+                // 강제 페이지 새로고침과 함께 홈페이지로 리다이렉트
                 setTimeout(() => {
-                    window.location.href = 'index.html';
+                    window.location.replace('index.html');
                 }, 1000);
             }
         }
         
-        // 사용자 메뉴 직접 업데이트 함수 (auth-utils.js 호출 방지)
+        // 사용자 메뉴 직접 업데이트 함수 (auth-utils.js 호출 방지) - 모바일/웹 호환
         function updateUserMenuDirectly() {
             try {
-                console.log('🔧 info.html 사용자 메뉴 직접 업데이트 시작');
+                console.log('🔧 info.html 사용자 메뉴 직접 업데이트 시작 - 모바일/웹 호환');
                 
-                // 로그아웃 상태로 메뉴 업데이트
+                // 현재 로그인 상태 확인
+                const currentUser = getCurrentUser();
+                const isLoggedIn = currentUser !== null;
+                
+                console.log('🔍 현재 로그인 상태:', isLoggedIn ? '로그인됨' : '로그아웃됨');
+                
+                // 메뉴 요소들 정의
                 const logoutMenus = ['logout-menu', 'logout-menu-item', 'logout-menu-mobile', 'logout-menu-item-mobile'];
                 const profileMenus = ['profile-menu', 'profile-menu-mobile', 'points-menu', 'points-menu-mobile'];
                 const loginMenus = ['login-menu', 'login-menu-mobile', 'register-menu', 'register-menu-mobile'];
                 
-                // 로그아웃 메뉴 숨기기
-                logoutMenus.forEach(id => {
-                    const element = document.getElementById(id);
-                    if (element) {
-                        element.style.display = 'none';
-                        console.log(`✅ ${id} 숨기기 완료`);
+                if (isLoggedIn) {
+                    // 로그인 상태: 로그인 메뉴 숨기기, 로그아웃/프로필 메뉴 표시
+                    console.log('🔧 로그인 상태 - 메뉴 업데이트');
+                    
+                    // 로그인 메뉴 숨기기
+                    loginMenus.forEach(id => {
+                        const element = document.getElementById(id);
+                        if (element) {
+                            element.style.display = 'none';
+                            console.log(`✅ ${id} 숨기기 완료`);
+                        }
+                    });
+                    
+                    // 로그아웃 메뉴 표시
+                    logoutMenus.forEach(id => {
+                        const element = document.getElementById(id);
+                        if (element) {
+                            element.style.display = 'block';
+                            console.log(`✅ ${id} 표시 완료`);
+                        }
+                    });
+                    
+                    // 프로필 메뉴 표시
+                    profileMenus.forEach(id => {
+                        const element = document.getElementById(id);
+                        if (element) {
+                            element.style.display = 'block';
+                            console.log(`✅ ${id} 표시 완료`);
+                        }
+                    });
+                    
+                    // 사용자 이름 표시
+                    const userNameElement = document.getElementById('user-name');
+                    if (userNameElement && currentUser.email) {
+                        userNameElement.textContent = currentUser.displayName || currentUser.email.split('@')[0];
+                        userNameElement.classList.remove('d-none');
+                        console.log('✅ 사용자 이름 표시 완료:', userNameElement.textContent);
                     }
-                });
-                
-                // 프로필 메뉴 숨기기
-                profileMenus.forEach(id => {
-                    const element = document.getElementById(id);
-                    if (element) {
-                        element.style.display = 'none';
-                        console.log(`✅ ${id} 숨기기 완료`);
+                    
+                } else {
+                    // 로그아웃 상태: 로그아웃/프로필 메뉴 숨기기, 로그인 메뉴 표시
+                    console.log('🔧 로그아웃 상태 - 메뉴 업데이트');
+                    
+                    // 로그아웃 메뉴 숨기기
+                    logoutMenus.forEach(id => {
+                        const element = document.getElementById(id);
+                        if (element) {
+                            element.style.display = 'none';
+                            console.log(`✅ ${id} 숨기기 완료`);
+                        }
+                    });
+                    
+                    // 프로필 메뉴 숨기기
+                    profileMenus.forEach(id => {
+                        const element = document.getElementById(id);
+                        if (element) {
+                            element.style.display = 'none';
+                            console.log(`✅ ${id} 숨기기 완료`);
+                        }
+                    });
+                    
+                    // 로그인 메뉴 표시
+                    loginMenus.forEach(id => {
+                        const element = document.getElementById(id);
+                        if (element) {
+                            element.style.display = 'block';
+                            console.log(`✅ ${id} 표시 완료`);
+                        }
+                    });
+                    
+                    // 사용자 이름 요소 초기화
+                    const userNameElement = document.getElementById('user-name');
+                    if (userNameElement) {
+                        userNameElement.textContent = '';
+                        userNameElement.classList.add('d-none');
+                        console.log('✅ 사용자 이름 요소 초기화 완료');
                     }
-                });
-                
-                // 로그인 메뉴 표시
-                loginMenus.forEach(id => {
-                    const element = document.getElementById(id);
-                    if (element) {
-                        element.style.display = 'block';
-                        console.log(`✅ ${id} 표시 완료`);
-                    }
-                });
-                
-                // 사용자 이름 요소 초기화
-                const userNameElement = document.getElementById('user-name');
-                if (userNameElement) {
-                    userNameElement.textContent = '';
-                    userNameElement.classList.add('d-none');
-                    console.log('✅ 사용자 이름 요소 초기화 완료');
                 }
                 
-                console.log('✅ info.html 사용자 메뉴 직접 업데이트 완료');
+                console.log('✅ info.html 사용자 메뉴 직접 업데이트 완료 - 모바일/웹 호환');
                 
             } catch (error) {
                 console.error('❌ info.html 사용자 메뉴 직접 업데이트 실패:', error);
