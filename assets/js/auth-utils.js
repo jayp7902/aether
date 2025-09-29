@@ -1076,9 +1076,6 @@ document.addEventListener('DOMContentLoaded', function() {
 // updateUserMenu 함수를 window 객체에 등록
 window.updateUserMenu = updateUserMenu;
 
-// loadUserSpecificCart 함수를 window 객체에 등록
-window.loadUserSpecificCart = loadUserSpecificCart;
-
 // 페이지 전환 시 메뉴 업데이트 (popstate 이벤트)
 window.addEventListener('popstate', function() {
     setTimeout(async () => {
