@@ -1173,8 +1173,8 @@
             // Firebase 초기화 대기 (더 안전한 방식)
             await waitForFirebaseInit();
             
-            // 스토어 전용 인증 확인 (간단한 버전)
-            await checkSimpleStoreAuth();
+            // 스토어 사용자 정보 설정 (인증 확인 없음)
+            setupStoreUser();
             
             // Firebase 완전 초기화 후 포인트 이용현황 초기화
             const initPointHistory = (retryCount = 0) => {
@@ -1267,7 +1267,65 @@
             });
         }
 
-        // 간단한 스토어 인증 확인 (권한 재확인 없음)
+        // 스토어 사용자 정보 설정 (인증 확인 없음)
+        function setupStoreUser() {
+            try {
+                console.log('=== 스토어 사용자 정보 설정 시작 ===');
+                
+                const currentUser = firebase.auth().currentUser;
+                
+                if (!currentUser) {
+                    console.log('⚠️ 로그인되지 않은 사용자 - 기본 사용자 정보로 설정');
+                    // 로그인되지 않은 경우에도 기본 정보로 설정
+                    const defaultUserInfo = {
+                        email: 'guest@store.com',
+                        name: 'ゲストユーザー',
+                        role: 'store_staff',
+                        storeId: 'main_store',
+                        permissions: ['point_management', 'customer_management']
+                    };
+                    
+                    window.currentStoreUser = defaultUserInfo;
+                    updateStoreUserDisplay(defaultUserInfo);
+                    return;
+                }
+                
+                console.log('✅ 로그인된 사용자 확인됨:', currentUser.email);
+                
+                // 간단한 사용자 정보 설정
+                const storeUserInfo = {
+                    email: currentUser.email,
+                    name: currentUser.displayName || currentUser.email.split('@')[0],
+                    role: 'store_admin',
+                    storeId: 'main_store',
+                    permissions: ['point_management', 'customer_management', 'transaction_history', 'user_management', 'store_settings']
+                };
+                
+                console.log('✅ 스토어 사용자 정보 설정 완료:', storeUserInfo);
+                
+                // 스토어 사용자 정보를 전역 변수에 저장
+                window.currentStoreUser = storeUserInfo;
+                
+                // 헤더에 스토어 사용자 정보 표시
+                updateStoreUserDisplay(storeUserInfo);
+                
+            } catch (error) {
+                console.error('스토어 사용자 정보 설정 오류:', error);
+                // 에러가 발생해도 기본 사용자 정보로 설정
+                const fallbackUserInfo = {
+                    email: 'fallback@store.com',
+                    name: 'フォールバックユーザー',
+                    role: 'store_staff',
+                    storeId: 'main_store',
+                    permissions: ['point_management']
+                };
+                
+                window.currentStoreUser = fallbackUserInfo;
+                updateStoreUserDisplay(fallbackUserInfo);
+            }
+        }
+
+        // 기존 간단한 스토어 인증 확인 (사용하지 않음)
         async function checkSimpleStoreAuth() {
             try {
                 console.log('=== 간단한 스토어 인증 확인 시작 ===');
