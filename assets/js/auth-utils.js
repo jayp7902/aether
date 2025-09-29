@@ -39,10 +39,20 @@ function waitForFirebase() {
 
 // 현재 사용자 정보 가져오기 (Firebase + localStorage 지원, 호환성 개선)
 function getCurrentUser() {
-    // Firebase 사용자 확인 (안전한 방식)
+    console.log('🔍 auth-utils.js getCurrentUser 호출');
+    
+    // Firebase 사용자 확인 (더 강력한 방식)
     try {
+        console.log('🔍 Firebase 상태 확인:', {
+            firebase: typeof firebase !== 'undefined',
+            auth: typeof firebase !== 'undefined' && typeof firebase.auth !== 'undefined',
+            apps: typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0
+        });
+        
         if (typeof firebase !== 'undefined' && firebase.auth && firebase.apps && firebase.apps.length > 0) {
             const firebaseUser = firebase.auth().currentUser;
+            console.log('🔍 Firebase currentUser:', firebaseUser ? firebaseUser.email : 'null');
+            
             if (firebaseUser) {
                 console.log('✅ auth-utils.js Firebase 사용자 확인됨:', firebaseUser.email);
                 return firebaseUser;
@@ -276,6 +286,12 @@ async function updateUserMenu() {
     }
     
     console.log('✅ updateUserMenu 함수 실행 완료');
+    
+    // 카트 수량 업데이트
+    setTimeout(() => {
+        window.updateCartCount();
+    }, 100);
+    
     return Promise.resolve();
 }
 
@@ -788,6 +804,11 @@ async function initializePage() {
                 currentAuthUser = user;
                 await updateUserMenu();
                 console.log('인증 상태 변경:', user ? user.email : '로그아웃');
+                
+                // 카트 수량 업데이트
+                setTimeout(() => {
+                    window.updateCartCount();
+                }, 500);
                 
                 // 로그인 시 방문 기록 저장 및 계정별 카트 로드
                 if (user && user.email) {
