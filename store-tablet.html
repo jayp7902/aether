@@ -1234,7 +1234,21 @@
             // Firebase 초기화 대기 (더 안전한 방식)
             await waitForFirebaseInit();
             
-            // 스토어 사용자 정보 설정 (인증 확인 없음)
+            // Firebase 초기화 후 로그인 상태 재확인
+            const currentUser = firebase.auth().currentUser;
+            if (!currentUser) {
+                console.log('❌ Firebase 초기화 후 로그인 상태 확인 - 미로그인');
+                showStoreAlert('店舗システムにアクセスするにはログインが必要です。', 'warning');
+                setTimeout(() => {
+                    console.log('🚀 미로그인 직접 접속 차단 - 스토어 로그인 페이지로 리다이렉트');
+                    window.location.href = 'store-register.html';
+                }, 2000);
+                return;
+            }
+            
+            console.log('✅ Firebase 초기화 후 로그인 상태 확인 완료:', currentUser.email);
+            
+            // 스토어 사용자 정보 설정
             setupStoreUser();
             
             // Firebase 완전 초기화 후 포인트 이용현황 초기화
@@ -1328,7 +1342,7 @@
             });
         }
 
-        // 스토어 사용자 정보 설정 (인증 확인 없음)
+        // 스토어 사용자 정보 설정 (로그인 확인 포함)
         function setupStoreUser() {
             try {
                 console.log('=== 스토어 사용자 정보 설정 시작 ===');
@@ -1336,18 +1350,12 @@
                 const currentUser = firebase.auth().currentUser;
                 
                 if (!currentUser) {
-                    console.log('⚠️ 로그인되지 않은 사용자 - 기본 사용자 정보로 설정');
-                    // 로그인되지 않은 경우에도 기본 정보로 설정
-                    const defaultUserInfo = {
-                        email: 'guest@store.com',
-                        name: 'ゲストユーザー',
-                        role: 'store_staff',
-                        storeId: 'main_store',
-                        permissions: ['point_management', 'customer_management']
-                    };
-                    
-                    window.currentStoreUser = defaultUserInfo;
-                    updateStoreUserDisplay(defaultUserInfo);
+                    console.log('❌ 로그인되지 않은 사용자 - 스토어 로그인 페이지로 리다이렉트');
+                    showStoreAlert('店舗システムにアクセスするにはログインが必要です。', 'warning');
+                    setTimeout(() => {
+                        console.log('🚀 직접 접속 차단 - 스토어 로그인 페이지로 리다이렉트');
+                        window.location.href = 'store-register.html';
+                    }, 2000);
                     return;
                 }
                 
