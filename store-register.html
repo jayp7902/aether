@@ -444,15 +444,15 @@
                 
                 console.log('Firebase 로그인 성공, 스토어 권한 확인 중...');
                 
-                // storeUser 컬렉션에서 권한 확인
-                console.log('🔍 storeUser 컬렉션에서 문서 조회:', email);
+                // storeuser 컬렉션에서 권한 확인
+                console.log('🔍 storeuser 컬렉션에서 문서 조회:', email);
                 const storeUserDoc = await firebase.firestore()
-                    .collection('storeUser')
+                    .collection('storeuser')
                     .doc(email)
                     .get();
                 
-                console.log('🔍 storeUser 문서 존재 여부:', storeUserDoc.exists);
-                console.log('🔍 storeUser 문서 ID:', storeUserDoc.id);
+                console.log('🔍 storeuser 문서 존재 여부:', storeUserDoc.exists);
+                console.log('🔍 storeuser 문서 ID:', storeUserDoc.id);
                 
                 if (storeUserDoc.exists) {
                     const storeUserData = storeUserDoc.data();
