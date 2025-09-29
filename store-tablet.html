@@ -1317,7 +1317,41 @@
                     
                     if (userDoc.exists) {
                         const userData = userDoc.data();
-                        if (userData.storeRole && userData.isStoreActive) {
+                        console.log('✅ users 컬렉션에서 사용자 데이터 확인:', userData);
+                        console.log('🔍 storeRole:', userData.storeRole);
+                        console.log('🔍 isStoreActive:', userData.isStoreActive);
+                        
+                        // 스토어 권한이 없으면 자동으로 추가
+                        if (!userData.storeRole || !userData.isStoreActive) {
+                            console.log('🔧 스토어 권한 필드 자동 추가 중...');
+                            const storeRole = 'store_admin';
+                            const isStoreActive = true;
+                            const storeId = 'main_store';
+                            const storePermissions = ['point_management', 'customer_management', 'transaction_history', 'user_management', 'store_settings'];
+                            
+                            try {
+                                await firebase.firestore().collection('users').doc(currentUser.email).update({
+                                    storeRole: storeRole,
+                                    isStoreActive: isStoreActive,
+                                    storeId: storeId,
+                                    storePermissions: storePermissions,
+                                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                                });
+                                console.log('✅ 스토어 권한 필드 추가 완료');
+                                
+                                // 업데이트된 데이터로 설정
+                                hasStoreAccess = true;
+                                storeUserInfo = {
+                                    email: currentUser.email,
+                                    name: userData.name || currentUser.email.split('@')[0],
+                                    role: storeRole,
+                                    storeId: storeId,
+                                    permissions: storePermissions
+                                };
+                            } catch (updateError) {
+                                console.error('스토어 권한 필드 추가 실패:', updateError);
+                            }
+                        } else if (userData.storeRole && userData.isStoreActive) {
                             hasStoreAccess = true;
                             storeUserInfo = {
                                 email: currentUser.email,
