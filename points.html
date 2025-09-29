@@ -153,7 +153,7 @@
     <!-- Header -->
     <nav class="navbar navbar-expand-lg navbar-light shadow">
         <div class="container d-flex justify-content-between align-items-center">
-            <!-- QR 코드 아이콘 제거됨 - 중간 섹션에서만 사용 -->
+            <!-- QR 코드 아이콘 - 중간 섹션에서만 사용 -->
 
             <a class="navbar-brand text-success logo align-self-center" href="index.html">
                 <img src="assets/img/logo.png" alt="Logo" class="img-fluid" style="max-height: 50px;">
@@ -245,7 +245,7 @@
                     </ul>
                 </div>
                 <div class="navbar align-self-center d-flex d-none d-lg-flex">
-                    <!-- QR 코드 아이콘 제거됨 - 중간 섹션에서만 사용 -->
+                    <!-- QR 코드 아이콘 - 중간 섹션에서만 사용 -->
                     <a href="cart.html" class="nav-link text-decoration-none me-3">
                         <i class="fas fa-shopping-cart text-dark"></i>
                         <span class="badge bg-secondary" id="cart-count">0</span>
@@ -378,7 +378,7 @@
     </div>
     <!-- End Points Section -->
 
-    <!-- QR Code Modal 제거됨 - 페이지에 직접 표시 -->
+    <!-- QR Code Modal - 페이지에 직접 표시 -->
 
     <!-- 포인트 이력 테이블 스타일 -->
     <style>
@@ -463,7 +463,7 @@
     
     <!-- 애플리케이션 스크립트 -->
     <script src="assets/js/firebase-config.js"></script>
-    <script src="assets/js/auth-utils.js"></script>
+    <!-- auth-utils.js 제거됨 - points.html에서는 사용하지 않음 -->
     <script src="assets/js/common-qr-code.js?v=2.1"></script>
     <script src="assets/js/custom.js"></script>
     
@@ -471,12 +471,12 @@
     <script>
         // 포인트 페이지 전용 변수들
         let pointsPageUser = null;
-        let currentPoints = null; // 하드코딩 제거, Firebase에서 로드
+        let currentPoints = null; // Firebase에서 로드
         let pointHistory = [];
         let qrToken = null;
         let qrCodeGenerated = false;
         
-        // Firebase 전용 QR 토큰 관리 - localStorage 사용 안함
+        // Firebase 전용 QR 토큰 관리
 
         // QR 코드 관련 함수들은 모두 common-qr-code.js에서 처리
 
@@ -1063,6 +1063,33 @@
             });
         }
 
+        // 현재 사용자 정보 가져오기 (Firebase Auth 전용)
+        function getCurrentUser() {
+            console.log('🔍 points.html getCurrentUser 호출');
+            
+            // Firebase 사용자만 확인
+            try {
+                if (typeof firebase !== 'undefined' && firebase.auth && firebase.apps && firebase.apps.length > 0) {
+                    const firebaseUser = firebase.auth().currentUser;
+                    console.log('🔍 points.html Firebase currentUser:', firebaseUser ? firebaseUser.email : 'null');
+                    
+                    if (firebaseUser) {
+                        console.log('✅ points.html Firebase 사용자 확인됨:', firebaseUser.email);
+                        return firebaseUser;
+                    } else {
+                        console.log('❌ points.html Firebase 사용자 없음 (로그아웃 상태)');
+                    }
+                } else {
+                    console.log('❌ points.html Firebase 초기화되지 않음');
+                }
+            } catch (error) {
+                console.warn('points.html Firebase 사용자 확인 중 오류:', error);
+            }
+            
+            console.log('❌ points.html 로그인된 사용자 없음');
+            return null;
+        }
+
         // 로그인 상태 확인 함수 (프로필 페이지와 동일)
         function getLoginStatus() {
             try {
@@ -1380,7 +1407,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('=== points.html DOMContentLoaded 시작 ===');
             
-            // Firebase 전용 초기화 - localStorage 정리 제거됨
+            // Firebase 전용 초기화
             console.log('🔄 Firebase 전용 포인트 페이지 초기화 시작');
             
             // 간단하고 직접적인 초기화 방식
@@ -1398,7 +1425,7 @@
                     historyContainer.innerHTML = '<p class="text-muted japanese-text">ポイント履歴を読み込み中...</p>';
                 }
                 
-                // QR 코드 컨테이너는 스피너만 표시 (문구 제거됨)
+                // QR 코드 컨테이너는 스피너만 표시
                 
                 // 2. Firebase 초기화 대기
                 let attempts = 0;
@@ -1477,7 +1504,7 @@
                         console.log('포인트 페이지 초기화 완료');
                     } else {
                         console.log('❌ 로그인된 사용자가 없음');
-                        // Firebase 전용 - localStorage 폴백 제거됨
+                        // Firebase 전용
                     }
                 } catch (error) {
                     console.error('포인트 페이지 초기화 오류:', error);
@@ -1494,7 +1521,7 @@
 
         // QR 코드 관련 함수들은 common-qr-code.js에서 처리
         
-        // 테스트 함수들 제거됨 - common-qr-code.js에서 자동 처리
+        // 테스트 함수들 - common-qr-code.js에서 자동 처리
         
         // 전역 함수는 common-qr-code.js에서 처리
     </script>
