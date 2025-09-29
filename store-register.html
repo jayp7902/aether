@@ -610,8 +610,19 @@
                     window.updateCartCount();
                 }
                 
-                // 이미 로그인된 사용자 자동 확인 및 리다이렉트
+                // storeadmin@aether.com 사용자에게 자동으로 스토어 권한 부여 (일회성)
                 const currentUser = firebase.auth().currentUser;
+                if (currentUser && currentUser.email === 'storeadmin@aether.com') {
+                    console.log('🔧 storeadmin@aether.com 사용자 감지 - 스토어 권한 자동 부여');
+                    try {
+                        await addStorePermissionToExistingUser('storeadmin@aether.com', 'store_admin');
+                        console.log('✅ storeadmin@aether.com 스토어 권한 부여 완료');
+                    } catch (error) {
+                        console.error('스토어 권한 부여 실패:', error);
+                    }
+                }
+                
+                // 이미 로그인된 사용자 자동 확인 및 리다이렉트
                 if (currentUser) {
                     console.log('이미 로그인된 사용자:', currentUser.email);
                     console.log('스토어 권한 자동 확인 시작...');
@@ -647,6 +658,34 @@
             
             checkFirebase();
         });
+
+        // 기존 사용자에게 스토어 권한 추가 함수 (관리자용)
+        async function addStorePermissionToExistingUser(email, role = 'store_admin') {
+            try {
+                console.log('기존 사용자에게 스토어 권한 추가:', email);
+                
+                if (!email) {
+                    showAlert('メールアドレスを入力してください。');
+                    return;
+                }
+                
+                // 일반 사용자 컬렉션에 스토어 권한 추가
+                await firebase.firestore().collection('users').doc(email).set({
+                    storeRole: role,
+                    isStoreActive: true,
+                    storeId: 'main_store',
+                    storePermissions: getDefaultPermissions(role),
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                
+                console.log('✅ 스토어 권한 추가 완료:', email);
+                showAlert(`${email}에 스토어 권한이 추가되었습니다！`, 'success');
+                
+            } catch (error) {
+                console.error('스토어 권한 추가 실패:', error);
+                showAlert('ス토어権限追加中にエラーが発生しました。', 'error');
+            }
+        }
 
         // 스토어 사용자 생성 함수
         async function createStoreUser() {
