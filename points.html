@@ -1148,54 +1148,70 @@
                         userPoints = userData.points;
                         console.log('Firebase에서 사용자 정보 로드 성공:', userData);
                             } else {
-                                console.log('사용자 문서가 존재하지 않음, 새로 생성');
-                                // 사용자 문서가 없으면 새로 생성
-                                await firebase.firestore().collection('users').doc(user.uid).set({
-                                    name: user.displayName || user.email.split('@')[0],
-                                    email: user.email,
-                                    points: 0,
-                                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                                });
-                                
-                            userData = {
+                                console.log('사용자 문서가 존재하지 않음, 기본 사용자 데이터 생성');
+                                // 사용자 문서가 없으면 기본 사용자 데이터 생성
+                                userData = {
                                     name: user.displayName || user.email.split('@')[0],
                                     email: user.email,
                                     uid: user.uid,
-                                points: 0
-                            };
+                                    points: 0
+                                };
                                 userPoints = 0;
+                                console.log('기본 사용자 데이터 생성됨:', userData);
+                                
+                                // Firestore에 사용자 문서 생성 (선택사항)
+                                try {
+                                    await firebase.firestore().collection('users').doc(user.uid).set({
+                                        name: user.displayName || user.email.split('@')[0],
+                                        email: user.email,
+                                        points: 0,
+                                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                                    });
+                                    console.log('Firestore에 사용자 문서 생성 완료');
+                                } catch (docError) {
+                                    console.warn('Firestore 사용자 문서 생성 실패:', docError);
+                                }
                             }
                         } else {
-                            console.log('Firestore가 사용 불가능');
+                            console.log('Firestore가 사용 불가능, 기본 사용자 데이터 생성');
+                            // Firestore가 사용 불가능해도 Firebase Auth 사용자 정보로 기본 데이터 생성
+                            userData = {
+                                name: user.displayName || user.email.split('@')[0],
+                                email: user.email,
+                                uid: user.uid,
+                                points: 0
+                            };
+                            userPoints = 0;
+                            console.log('Firestore 불가능 시 기본 사용자 데이터 생성됨:', userData);
                         }
                     } else {
                         console.log('Firebase Auth에서 사용자를 찾을 수 없음');
+                        // Firebase Auth 사용자가 없으면 userData를 null로 설정하여 로그인 페이지로 리다이렉트
+                        userData = null;
                     }
                 } else {
                     console.log('Firebase 또는 Auth가 사용 불가능');
+                    // Firebase가 사용 불가능하면 userData를 null로 설정하여 로그인 페이지로 리다이렉트
+                    userData = null;
                 }
             } catch (firebaseError) {
                 console.warn('Firebase 사용자 정보 로드 실패:', firebaseError);
+                // 오류 발생 시 userData를 null로 설정하여 로그인 페이지로 리다이렉트
+                userData = null;
             }
             
-            // Firebase 사용자 정보가 없으면 로그인 페이지로 리다이렉트
+            // Firebase Auth 사용자가 없으면 로그인 페이지로 리다이렉트
             if (!userData) {
-                console.log('Firebase에서 사용자 데이터를 찾을 수 없음, 로그인 페이지로 이동');
+                console.log('Firebase Auth 사용자가 없음, 로그인 페이지로 이동');
                 window.location.href = 'login.html?redirect=points.html';
                 return;
             }
             
             // 3. 사용자 정보 설정
-            if (userData) {
-                pointsPageUser = userData;
-                currentPoints = userPoints;
-                console.log('최종 사용자 정보 설정:', pointsPageUser);
-                console.log('현재 포인트:', currentPoints);
-            } else {
-                console.log('사용자 데이터를 찾을 수 없음');
-                window.location.href = 'login.html?redirect=points.html';
-                    return;
-                }
+            pointsPageUser = userData;
+            currentPoints = userPoints;
+            console.log('최종 사용자 정보 설정:', pointsPageUser);
+            console.log('현재 포인트:', currentPoints);
                 
             // 포인트 정보 및 이력 로드
             await loadPointInfo();
