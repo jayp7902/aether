@@ -491,6 +491,41 @@
                         console.log('🔍 storeRole:', userData.storeRole);
                         console.log('🔍 isStoreActive:', userData.isStoreActive);
                         
+                        // 스토어 권한이 없으면 자동으로 추가
+                        if (!userData.storeRole || !userData.isStoreActive) {
+                            console.log('🔧 스토어 권한 필드 자동 추가 중...');
+                            const storeRole = 'store_admin';
+                            const isStoreActive = true;
+                            const storeId = 'main_store';
+                            const storePermissions = ['point_management', 'customer_management', 'transaction_history', 'user_management', 'store_settings'];
+                            
+                            try {
+                                await firebase.firestore().collection('users').doc(email).update({
+                                    storeRole: storeRole,
+                                    isStoreActive: isStoreActive,
+                                    storeId: storeId,
+                                    storePermissions: storePermissions,
+                                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                                });
+                                console.log('✅ 스토어 권한 필드 추가 완료');
+                                
+                                // 업데이트된 데이터로 다시 시도
+                                return {
+                                    success: true,
+                                    user: {
+                                        email: email,
+                                        name: userData.name || email.split('@')[0],
+                                        role: storeRole,
+                                        storeId: storeId,
+                                        permissions: storePermissions
+                                    }
+                                };
+                            } catch (updateError) {
+                                console.error('스토어 권한 필드 추가 실패:', updateError);
+                                return { success: false, error: '店舗権限設定中にエラーが発生しました。' };
+                            }
+                        }
+                        
                         if (userData.storeRole && userData.isStoreActive) {
                             return {
                                 success: true,
