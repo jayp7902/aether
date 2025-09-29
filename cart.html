@@ -1261,96 +1261,83 @@
                     console.warn('Firebase 초기화 시간 초과, 기본 모드로 진행');
                 }
                 
-                // Firebase 초기화 완료 후 사용자 정보 로드 및 카트 동기화
-                // Firebase 전용 카트 초기화 (localStorage 사용 안함)
-                console.log('🔄 cart.html: Firebase 전용 카트 초기화 시작');
-                
-                // Firebase 전용 동기화 (localStorage 사용 안함)
-                setTimeout(async () => {
-                    console.log('🔄 cart.html: Firebase 전용 동기화 시도');
-                    try {
-                        if (currentUser && firebase?.firestore) {
-                            const db = firebase.firestore();
-                            const cartDoc = await db.collection('userCarts').doc(currentUser.email).get();
-                            
-                            if (cartDoc.exists) {
-                                const firebaseData = cartDoc.data();
-                                const firebaseCart = firebaseData.cart || [];
-                                
-                                console.log('📦 cart.html Firebase 전용 동기화:');
-                                console.log('- Firebase 카트:', firebaseCart.length, '개');
-                                console.log('- 현재 카트:', currentCart.length, '개');
-                                
-                                // 카트 업데이트 진행 중이면 동기화 건너뜀
-                                if (window.cartUpdateInProgress) {
-                                    console.log('🚫 cart.html: 카트 업데이트 진행 중 - 동기화 건너뜀');
-                                    return;
-                                }
-                                
-                                if (JSON.stringify(firebaseCart) !== JSON.stringify(currentCart)) {
-                                    console.log('🔄 cart.html: 카트 불일치 - Firebase 데이터로 업데이트');
-                                    currentCart = firebaseCart;
-                                    renderCart(); // 카트 다시 렌더링
-                                    updateCartCount();
-                                    console.log('✅ cart.html: Firebase 전용 동기화 완료');
-                                }
-                            }
-                        }
-                    } catch (error) {
-                        console.log('❌ cart.html Firebase 전용 동기화 실패:', error);
-                    }
-                }, 3000);
-
-                // Firebase 사용자 정보 설정 및 카트 로드
-                setTimeout(async () => {
-                    try {
-                        // Firebase 사용자 확인
-                        if (firebase?.auth?.currentUser) {
+                // Firebase Auth 상태 변경 리스너 설정
+                if (typeof firebase !== 'undefined' && firebase.auth) {
+                    firebase.auth().onAuthStateChanged(function(user) {
+                        console.log('cart.html - 인증 상태 변경:', user ? user.email : '로그아웃');
+                        
+                        if (user) {
+                            // 로그인된 사용자
                             currentUser = {
-                                email: firebase.auth().currentUser.email,
-                                uid: firebase.auth().currentUser.uid
+                                email: user.email,
+                                uid: user.uid
                             };
-                            console.log('✅ Firebase 사용자 설정:', currentUser.email);
-                        } else if (typeof getCurrentUser === 'function') {
-                            const authUser = getCurrentUser();
-                            if (authUser) {
-                                currentUser = authUser;
-                                console.log('✅ auth-utils 사용자 설정:', currentUser.email);
-                            }
-                        }
-                        
-                        if (currentUser) {
-                            // Firebase에서 카트 로드
-                            const firebaseCart = await loadCartFromFirebase();
-                            currentCart = firebaseCart;
-                            console.log('✅ Firebase 카트 로드 완료:', currentCart.length, '개 상품');
+                            console.log('✅ cart.html - 사용자 설정 완료:', currentUser.email);
                             
-                            // Firebase 실시간 리스너 설정
-                            setupFirebaseCartListener();
+                            // 사용자 메뉴 업데이트
+                            if (typeof window.updateUserMenu === 'function') {
+                                console.log('cart.html - updateUserMenu 함수 호출');
+                                window.updateUserMenu();
+                            }
+                            
+                            // Firebase에서 카트 로드
+                            loadCartFromFirebase().then(firebaseCart => {
+                                currentCart = firebaseCart;
+                                console.log('✅ cart.html - Firebase 카트 로드 완료:', currentCart.length, '개 상품');
+                                
+                                // Firebase 실시간 리스너 설정
+                                setupFirebaseCartListener();
+                                
+                                // 카트 렌더링
+                                renderCart();
+                                updateCartCount();
+                            }).catch(error => {
+                                console.error('❌ cart.html - Firebase 카트 로드 실패:', error);
+                                currentCart = [];
+                                renderCart();
+                                updateCartCount();
+                            });
                         } else {
-                            console.log('⚠️ 로그인된 사용자 없음 - 빈 카트로 시작');
+                            // 로그아웃된 사용자
+                            currentUser = null;
                             currentCart = [];
+                            console.log('✅ cart.html - 사용자 로그아웃 상태');
+                            
+                            // 사용자 메뉴 업데이트
+                            if (typeof window.updateUserMenu === 'function') {
+                                console.log('cart.html - 로그아웃 상태에서 updateUserMenu 함수 호출');
+                                window.updateUserMenu();
+                            }
+                            
+                            // 빈 카트로 렌더링
+                            renderCart();
+                            updateCartCount();
                         }
-                        
-                        // 카트 렌더링
-                        renderCart();
-                        updateCartCount();
-                        
-                    } catch (error) {
-                        console.error('❌ Firebase 카트 초기화 실패:', error);
-                        currentCart = [];
-                        renderCart();
-                        updateCartCount();
-                    }
-                }, 2000);
-                
-                // 사용자 메뉴 업데이트
-                if (typeof window.updateUserMenu === 'function') {
-                    console.log('auth-utils.js updateUserMenu 함수 호출');
-                    window.updateUserMenu();
-                } else {
-                    console.warn('auth-utils.js updateUserMenu 함수를 찾을 수 없습니다');
+                    });
                 }
+                
+                // Firebase 초기화 완료 이벤트 리스너 추가
+                window.addEventListener('firebaseInitialized', function() {
+                    console.log('cart.html - Firebase 초기화 완료 이벤트 수신');
+                    
+                    // Firebase 초기화 완료 후 사용자 메뉴 업데이트
+                    setTimeout(() => {
+                        if (typeof window.updateUserMenu === 'function') {
+                            console.log('cart.html - Firebase 초기화 완료 후 updateUserMenu 함수 호출');
+                            window.updateUserMenu();
+                        }
+                    }, 500);
+                });
+                
+                // 초기 사용자 메뉴 업데이트 (Firebase 초기화 완료 후)
+                setTimeout(() => {
+                    if (typeof window.updateUserMenu === 'function') {
+                        console.log('cart.html - 초기 updateUserMenu 함수 호출');
+                        window.updateUserMenu();
+                    } else {
+                        console.warn('cart.html - updateUserMenu 함수를 찾을 수 없습니다');
+                    }
+                }, 1000);
                 
                 // 장바구니 카운트 업데이트
                 if (typeof window.updateCartCount === 'function') {
