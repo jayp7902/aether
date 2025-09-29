@@ -222,34 +222,33 @@
             }
             
             .product-filters {
-                text-align: right !important;
+                text-align: left !important;
                 display: flex;
-                justify-content: flex-end;
+                justify-content: flex-start;
                 align-items: center;
-                margin-left: auto;
+                margin-left: 0;
             }
             
             .brand-logo-section .row {
-                align-items: center;
-                gap: 20px; /* 브랜드 로고와 검색창 사이 간격 추가 */
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 15px; /* 브랜드 로고와 검색창 사이 수직 간격 */
             }
             
             .brand-logo-section .col-md-4,
             .brand-logo-section .col-md-8 {
                 flex: 0 0 auto;
-                width: auto;
+                width: 100%;
+                max-width: none;
             }
             
             .brand-logo-section .col-md-4 {
-                margin-right: 15px; /* 브랜드 로고 오른쪽 마진 추가 */
+                margin-right: 0;
+                margin-bottom: 0;
             }
             
             .brand-logo-section .col-md-8 {
-                margin-left: 15px; /* 검색창 왼쪽 마진 추가 */
-            }
-            
-            .brand-logo-section .row {
-                justify-content: space-between;
+                margin-left: 0;
             }
             
             #searchInput {
