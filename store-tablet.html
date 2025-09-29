@@ -1486,7 +1486,7 @@
                 console.log('🔍 Firestore DB 객체:', typeof db);
                 console.log('🔍 사용자 이메일:', currentUser.email);
                 
-                const storeUserDoc = await db.collection('storeUser').doc(currentUser.email).get();
+                const storeUserDoc = await db.collection('storeuser').doc(currentUser.email).get();
                 console.log('🔍 Firestore 문서 조회 완료:', storeUserDoc.exists);
                 
                 if (!storeUserDoc.exists) {
