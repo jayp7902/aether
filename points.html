@@ -1261,6 +1261,14 @@
                     if (profileMenu) profileMenu.style.display = 'block';
                     if (pointsMenu) pointsMenu.style.display = 'block';
                     
+                    // 관리자 메뉴 표시 (관리자인 경우)
+                    const adminMenu = document.getElementById('admin-menu');
+                    const isAdmin = user.email === 'admin7@gmail.com';
+                    if (adminMenu) {
+                        adminMenu.style.display = isAdmin ? 'block' : 'none';
+                        console.log('데스크톱 관리자 메뉴:', isAdmin ? '표시' : '숨김');
+                    }
+                    
                     // 로그아웃 메뉴 표시
                     const logoutMenu = document.getElementById('logout-menu');
                     const logoutMenuItem = document.getElementById('logout-menu-item');
@@ -1282,6 +1290,14 @@
                     const pointsMenuMobile = document.getElementById('points-menu-mobile');
                     if (profileMenuMobile) profileMenuMobile.style.display = 'block';
                     if (pointsMenuMobile) pointsMenuMobile.style.display = 'block';
+                    
+                    // 관리자 메뉴 표시 (관리자인 경우)
+                    const adminMenuMobile = document.getElementById('admin-menu-mobile');
+                    const isAdmin = user.email === 'admin7@gmail.com';
+                    if (adminMenuMobile) {
+                        adminMenuMobile.style.display = isAdmin ? 'block' : 'none';
+                        console.log('모바일 관리자 메뉴:', isAdmin ? '표시' : '숨김');
+                    }
                     
                     // 로그아웃 메뉴 표시
                     const logoutMenuMobile = document.getElementById('logout-menu-mobile');
