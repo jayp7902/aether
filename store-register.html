@@ -192,8 +192,8 @@
                     <div class="col-md-6 col-lg-5">
                         <div class="card login-card">
                             <div class="login-header">
-                                <h2 class="japanese-heading mb-0">ログイン</h2>
-                                <p class="japanese-text mb-0 mt-2">アカウントにサインイン</p>
+                                <h2 class="japanese-heading mb-0">店舗ログイン</h2>
+                                <p class="japanese-text mb-0 mt-2">店舗システムにサインイン</p>
                             </div>
                             <div class="login-body">
                                 <div id="login-alert" class="alert" style="display: none;"></div>
@@ -311,11 +311,11 @@
 
 
 
-        // Firebase 로그인 처리 (개선된 에러 처리)
-        async function handleLogin(email, password, remember) {
+        // 스토어 전용 로그인 처리
+        async function handleStoreLogin(email, password, remember) {
             try {
-                console.log('=== 로그인 시도 시작 ===');
-                console.log('이메일:', email);
+                console.log('=== 스토어 로그인 시도 시작 ===');
+                console.log('스토어 이메일:', email);
                 
                 // 입력값 검증
                 if (!email || !password) {
@@ -356,47 +356,119 @@
                     }
                 }
                 
-                const result = await window.FirebaseService.loginUser(email, password);
-                console.log('로그인 결과:', result);
+                // 스토어 사용자 확인
+                const storeUserResult = await checkStoreUser(email, password);
                 
-                if (result.success) {
-                    console.log('✅ 로그인 성공:', result.user.uid || result.user.email);
-                    console.log('🔍 로그인 결과 상세:', {
-                        success: result.success,
-                        uid: result.user.uid,
-                        email: result.user.email,
-                        name: result.user.displayName,
-                        isFirebase: result.user.isFirebase
-                    });
+                if (storeUserResult.success) {
+                    console.log('✅ 스토어 로그인 성공:', storeUserResult.user);
                     
                     // Firebase Auth 상태는 자동으로 관리됨
-                    console.log('Firebase Auth 로그인 상태 자동 관리됨');
+                    console.log('스토어 Firebase Auth 로그인 상태 자동 관리됨');
                     
-                    // 잠시 대기 후 리다이렉트 (Firebase Auth 상태 동기화 대기)
+                    // 스토어 테블릿 페이지로 리다이렉트
                     setTimeout(() => {
-                        console.log('🚀 로그인 성공 후 리다이렉트 시작');
-                        redirectToPreviousPage();
+                        console.log('🚀 스토어 로그인 성공 후 테블릿 페이지로 리다이렉트');
+                        window.location.href = 'store-tablet.html';
                     }, 1000);
                     
                     return true;
                 } else {
-                    console.log('로그인 실패:', result.error, result.message);
-                    
-                    // 에러 메시지 표시
-                    const userMessage = window.FirebaseService.getLocalizedErrorMessage(result.error);
-                    showAlert(userMessage);
+                    console.log('스토어 로그인 실패:', storeUserResult.error);
+                    showAlert(storeUserResult.error);
                     return false;
                 }
+                
             } catch (error) {
-                console.error('로그인 중 예외 발생:', error);
-                const errorCode = error.code || 'auth/unknown-error';
-                const localizedMessage = window.FirebaseService.getLocalizedErrorMessage(errorCode);
-                showAlert(localizedMessage);
+                console.error('스토어 로그인 중 예외 발생:', error);
+                showAlert('店舗ログイン中にエラーが発生しました。もう一度お試しください。');
                 return false;
             }
         }
 
-        // 로그인 폼 처리
+        // 스토어 사용자 확인 함수
+        async function checkStoreUser(email, password) {
+            try {
+                console.log('스토어 사용자 확인 시작:', email);
+                
+                // 먼저 일반 Firebase 로그인 시도
+                const loginResult = await window.FirebaseService.loginUser(email, password);
+                
+                if (!loginResult.success) {
+                    return {
+                        success: false,
+                        error: 'メールアドレスまたはパスワードが正しくありません。'
+                    };
+                }
+                
+                console.log('Firebase 로그인 성공, 스토어 권한 확인 중...');
+                
+                // 스토어 사용자 컬렉션에서 권한 확인
+                const storeUserDoc = await firebase.firestore()
+                    .collection('storeUsers')
+                    .doc(email)
+                    .get();
+                
+                if (storeUserDoc.exists) {
+                    const storeUserData = storeUserDoc.data();
+                    console.log('스토어 사용자 데이터:', storeUserData);
+                    
+                    // 스토어 권한이 있는지 확인
+                    if (storeUserData.isActive && storeUserData.role) {
+                        return {
+                            success: true,
+                            user: {
+                                email: email,
+                                name: storeUserData.name || email.split('@')[0],
+                                role: storeUserData.role,
+                                storeId: storeUserData.storeId || 'main_store',
+                                permissions: storeUserData.permissions || []
+                            }
+                        };
+                    } else {
+                        return {
+                            success: false,
+                            error: '店舗アクセス権限がありません。管理者にお問い合わせください。'
+                        };
+                    }
+                } else {
+                    // 스토어 사용자가 아닌 경우, 일반 사용자에서 스토어 권한 확인
+                    const userDoc = await firebase.firestore()
+                        .collection('users')
+                        .doc(email)
+                        .get();
+                    
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        if (userData.storeRole && userData.isStoreActive) {
+                            return {
+                                success: true,
+                                user: {
+                                    email: email,
+                                    name: userData.name || email.split('@')[0],
+                                    role: userData.storeRole,
+                                    storeId: userData.storeId || 'main_store',
+                                    permissions: userData.storePermissions || []
+                                }
+                            };
+                        }
+                    }
+                    
+                    return {
+                        success: false,
+                        error: '店舗システムアクセス権限がありません。'
+                    };
+                }
+                
+            } catch (error) {
+                console.error('스토어 사용자 확인 오류:', error);
+                return {
+                    success: false,
+                    error: '店舗ユーザー確認中にエラーが発生しました。'
+                };
+            }
+        }
+
+        // 스토어 로그인 폼 처리
         document.getElementById('login-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const email = document.getElementById('email').value;
@@ -407,15 +479,15 @@
             const submitBtn = this.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
             submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>ログイン中...';
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>店舗ログイン中...';
 
             let loginSuccessful = false;
 
             try {
-                loginSuccessful = await handleLogin(email, password, remember);
+                loginSuccessful = await handleStoreLogin(email, password, remember);
             } catch (error) {
-                console.error('로그인 처리 중 오류:', error);
-                showAlert('ログイン中にエラーが発生しました。もう一度お試しください。');
+                console.error('스토어 로그인 처리 중 오류:', error);
+                showAlert('店舗ログイン中にエラーが発生しました。もう一度お試しください。');
             }
 
             // 로그인이 실패한 경우에만 버튼 복원
@@ -475,6 +547,118 @@
             
             checkFirebase();
         });
+
+        // 스토어 사용자 생성 함수
+        async function createStoreUser() {
+            try {
+                const email = document.getElementById('new-user-email').value;
+                const password = document.getElementById('new-user-password').value;
+                const name = document.getElementById('new-user-name').value;
+                const role = document.getElementById('new-user-role').value;
+                
+                if (!email || !password || !name) {
+                    showAlert('すべてのフィールドを入力してください。');
+                    return;
+                }
+                
+                // 이메일 형식 검증
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(email)) {
+                    showAlert('有効なメールアドレスを入力してください。');
+                    return;
+                }
+                
+                // 비밀번호 길이 검증
+                if (password.length < 6) {
+                    showAlert('パスワードは6文字以上で入力してください。');
+                    return;
+                }
+                
+                console.log('스토어 사용자 생성 시작:', { email, name, role });
+                
+                // Firebase Auth 사용자 생성
+                const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+                console.log('Firebase Auth 사용자 생성 성공:', userCredential.user.uid);
+                
+                // Firestore에 스토어 사용자 정보 저장
+                await firebase.firestore().collection('storeUsers').doc(email).set({
+                    email: email,
+                    name: name,
+                    role: role,
+                    isActive: true,
+                    storeId: 'main_store',
+                    permissions: getDefaultPermissions(role),
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    createdBy: firebase.auth().currentUser?.email || 'system'
+                });
+                
+                console.log('스토어 사용자 정보 저장 완료');
+                
+                // 일반 사용자 컬렉션에도 정보 저장 (호환성)
+                await firebase.firestore().collection('users').doc(email).set({
+                    email: email,
+                    name: name,
+                    storeRole: role,
+                    isStoreActive: true,
+                    storeId: 'main_store',
+                    storePermissions: getDefaultPermissions(role),
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                }, { merge: true });
+                
+                showAlert('店舗ユーザーが正常に作成されました！', 'success');
+                
+                // 폼 초기화
+                document.getElementById('new-user-email').value = '';
+                document.getElementById('new-user-password').value = '';
+                document.getElementById('new-user-name').value = '';
+                document.getElementById('new-user-role').value = 'store_staff';
+                
+                // 생성된 사용자로 자동 로그아웃 (보안상)
+                await firebase.auth().signOut();
+                
+            } catch (error) {
+                console.error('스토어 사용자 생성 오류:', error);
+                
+                let errorMessage = '店舗ユーザー作成中にエラーが発生しました。';
+                
+                if (error.code === 'auth/email-already-in-use') {
+                    errorMessage = 'このメールアドレスは既に使用されています。';
+                } else if (error.code === 'auth/weak-password') {
+                    errorMessage = 'パスワードが弱すぎます。より強いパスワードを入力してください。';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMessage = '無効なメールアドレスです。';
+                }
+                
+                showAlert(errorMessage);
+            }
+        }
+
+        // 역할별 기본 권한 설정
+        function getDefaultPermissions(role) {
+            const permissions = {
+                'store_admin': [
+                    'point_management',
+                    'customer_management', 
+                    'transaction_history',
+                    'user_management',
+                    'store_settings'
+                ],
+                'store_manager': [
+                    'point_management',
+                    'customer_management',
+                    'transaction_history'
+                ],
+                'store_staff': [
+                    'point_management',
+                    'customer_management'
+                ]
+            };
+            
+            return permissions[role] || permissions['store_staff'];
+        }
+
+        // 전역 함수 노출
+        window.createStoreUser = createStoreUser;
 
     </script>
 </body>
