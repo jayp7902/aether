@@ -1240,25 +1240,52 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('=== cart.html DOMContentLoaded 시작 ===');
             
+            // Firebase 초기화 완료 이벤트 리스너 추가 (우선 설정)
+            window.addEventListener('firebaseInitialized', function() {
+                console.log('cart.html - Firebase 초기화 완료 이벤트 수신');
+                
+                // Firebase 초기화 완료 후 사용자 메뉴 업데이트
+                setTimeout(() => {
+                    if (typeof window.updateUserMenu === 'function') {
+                        console.log('cart.html - Firebase 초기화 완료 후 updateUserMenu 함수 호출');
+                        window.updateUserMenu();
+                    }
+                }, 500);
+            });
+            
             // Firebase 초기화 완료 대기
             let firebaseReady = false;
             let attempts = 0;
-            const maxAttempts = 50; // 5초 대기
+            const maxAttempts = 100; // 10초 대기 (더 길게 설정)
             
             const checkFirebase = async () => {
                 while (!firebaseReady && attempts < maxAttempts) {
-                    if (typeof firebase !== 'undefined' && firebase.auth && firebase.firestore) {
+                    // Firebase가 완전히 초기화되었는지 확인
+                    if (typeof firebase !== 'undefined' && 
+                        firebase.auth && 
+                        firebase.firestore && 
+                        firebase.apps && 
+                        firebase.apps.length > 0 &&
+                        firebase.apps[0].name === '[DEFAULT]') {
                         firebaseReady = true;
-                        console.log('Firebase 초기화 완료');
+                        console.log('✅ cart.html - Firebase 완전 초기화 완료');
                         break;
                     } else {
                         await new Promise(resolve => setTimeout(resolve, 100));
                         attempts++;
+                        if (attempts % 10 === 0) {
+                            console.log(`⏳ cart.html - Firebase 대기 중... (${attempts}/${maxAttempts})`);
+                        }
                     }
                 }
                 
                 if (!firebaseReady) {
-                    console.warn('Firebase 초기화 시간 초과, 기본 모드로 진행');
+                    console.warn('❌ cart.html - Firebase 초기화 시간 초과, 기본 모드로 진행');
+                    // Firebase 초기화 실패 시 빈 카트로 시작
+                    currentCart = [];
+                    renderCart();
+                    updateCartCount();
+                    return;
                 }
                 
                 // Firebase Auth 상태 변경 리스너 설정
@@ -1315,19 +1342,6 @@
                         }
                     });
                 }
-                
-                // Firebase 초기화 완료 이벤트 리스너 추가
-                window.addEventListener('firebaseInitialized', function() {
-                    console.log('cart.html - Firebase 초기화 완료 이벤트 수신');
-                    
-                    // Firebase 초기화 완료 후 사용자 메뉴 업데이트
-                    setTimeout(() => {
-                        if (typeof window.updateUserMenu === 'function') {
-                            console.log('cart.html - Firebase 초기화 완료 후 updateUserMenu 함수 호출');
-                            window.updateUserMenu();
-                        }
-                    }, 500);
-                });
                 
                 // 초기 사용자 메뉴 업데이트 (Firebase 초기화 완료 후)
                 setTimeout(() => {
