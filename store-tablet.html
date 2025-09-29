@@ -1235,7 +1235,12 @@
             await waitForFirebaseInit();
             
             // Firebase Auth 상태 변경 리스너로 로그인 상태 확인
-            firebase.auth().onAuthStateChanged((user) => {
+            let authStateChecked = false;
+            
+            const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
+                if (authStateChecked) return; // 중복 실행 방지
+                authStateChecked = true;
+                
                 console.log('🔍 Firebase Auth 상태 변경 감지:', user ? user.email : 'null');
                 
                 if (!user) {
@@ -1245,6 +1250,7 @@
                         console.log('🚀 미로그인 직접 접속 차단 - 스토어 로그인 페이지로 리다이렉트');
                         window.location.href = 'store-register.html';
                     }, 2000);
+                    unsubscribe(); // 리스너 해제
                     return;
                 }
                 
@@ -1252,7 +1258,22 @@
                 
                 // 스토어 사용자 정보 설정
                 setupStoreUser();
+                
+                // 성공 시에도 리스너 해제
+                unsubscribe();
             });
+            
+            // 5초 후에도 Auth 상태가 확인되지 않으면 리다이렉트
+            setTimeout(() => {
+                if (!authStateChecked) {
+                    console.log('❌ Firebase Auth 상태 확인 타임아웃');
+                    showStoreAlert('認証状態の確認に時間がかかりすぎています。ログインページに移動します。', 'warning');
+                    unsubscribe();
+                    setTimeout(() => {
+                        window.location.href = 'store-register.html';
+                    }, 2000);
+                }
+            }, 5000);
             
             // Firebase 완전 초기화 후 포인트 이용현황 초기화
             const initPointHistory = (retryCount = 0) => {
@@ -1317,31 +1338,38 @@
             console.log('=== 스토어 태블릿 페이지 초기화 완료 ===');
         });
 
-        // Firebase 초기화 대기 함수
+        // Firebase 초기화 대기 함수 (더 안전한 버전)
         async function waitForFirebaseInit() {
             return new Promise((resolve) => {
-                if (window.firebase && firebase.auth && firebase.firestore) {
-                    console.log('Firebase 이미 초기화됨');
-                    resolve();
-                } else {
-                    console.log('Firebase 초기화 대기 중...');
-                    let attempts = 0;
-                    const maxAttempts = 50; // 5초 대기
+                console.log('Firebase 초기화 대기 시작...');
+                let attempts = 0;
+                const maxAttempts = 100; // 10초 대기
+                
+                const checkFirebase = setInterval(() => {
+                    attempts++;
                     
-                    const checkFirebase = setInterval(() => {
-                        attempts++;
+                    // Firebase가 완전히 초기화되었는지 확인
+                    if (window.firebase && 
+                        firebase.auth && 
+                        firebase.firestore && 
+                        typeof firebase.auth().currentUser !== 'undefined') {
                         
-                        if (window.firebase && firebase.auth && firebase.firestore) {
-                            clearInterval(checkFirebase);
-                            console.log('Firebase 초기화 완료');
-                            resolve();
-                        } else if (attempts >= maxAttempts) {
-                            clearInterval(checkFirebase);
-                            console.error('Firebase 초기화 타임아웃');
-                            resolve(); // 타임아웃이어도 계속 진행
-                        }
-                    }, 100);
-                }
+                        clearInterval(checkFirebase);
+                        console.log('✅ Firebase 완전 초기화 완료');
+                        resolve();
+                    } else if (attempts >= maxAttempts) {
+                        clearInterval(checkFirebase);
+                        console.error('❌ Firebase 초기화 타임아웃');
+                        // 타임아웃 시에도 리다이렉트
+                        showStoreAlert('Firebase 초기화에 실패했습니다。ログインページに移動します。', 'danger');
+                        setTimeout(() => {
+                            window.location.href = 'store-register.html';
+                        }, 2000);
+                        resolve();
+                    } else if (attempts % 10 === 0) {
+                        console.log(`Firebase 초기화 대기 중... (${attempts}/100)`);
+                    }
+                }, 100);
             });
         }
 
