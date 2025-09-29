@@ -1384,8 +1384,18 @@
                 return true;
                 
             } catch (error) {
-                console.error('스토어 인증 확인 오류:', error);
-                showStoreAlert('店舗認証確認中にエラーが発生しました。', 'danger');
+                console.error('=== 스토어 인증 확인 중 에러 발생 ===');
+                console.error('에러 객체:', error);
+                console.error('에러 메시지:', error.message);
+                console.error('에러 스택:', error.stack);
+                console.error('현재 사용자:', firebase.auth().currentUser);
+                console.error('Firebase 상태:', {
+                    firebase: typeof firebase,
+                    auth: typeof firebase?.auth,
+                    firestore: typeof firebase?.firestore
+                });
+                
+                showStoreAlert(`店舗認証確認中にエラーが発生しました: ${error.message}`, 'danger');
                 setTimeout(() => {
                     window.location.href = 'store-register.html';
                 }, 3000);
