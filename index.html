@@ -1468,7 +1468,7 @@ https://templatemo.com/tm-559-aether
             if (!furtherInfoContainer) return;
             
             if (furtherInfoLinks.length === 0) {
-                furtherInfoContainer.innerHTML = '<li><span class="text-muted japanese-text">リンクが登録されていません。</span></li>';
+                furtherInfoContainer.innerHTML = '<li><span class="text-muted">リンクが登録されていません。</span></li>';
                 return;
             }
             
@@ -1480,7 +1480,7 @@ https://templatemo.com/tm-559-aether
                 html += `
                     <li>
                         <a class="text-decoration-none text-white" href="${link.link}">
-                            <span class="japanese-text">${link.name}</span>
+                            ${link.name}
                         </a>
                     </li>
                 `;
