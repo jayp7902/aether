@@ -20,6 +20,9 @@
     
     <!-- QR Code Generator -->
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    
+    <!-- Stripe.js -->
+    <script src="https://js.stripe.com/v3/"></script>
     <style>
         body {
             font-family: "Montserrat", sans-serif;
@@ -721,29 +724,15 @@
                             <!-- Credit Card Form -->
                             <div id="credit-card-form">
                                 <form id="payment-form">
+                                    <!-- Stripe Card Element -->
                                     <div class="mb-3">
-                                        <label for="card-number" class="form-label japanese-text">カード番号 <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="card-number" maxlength="19" required>
-                                        <div class="form-text japanese-text">16桁のカード番号を入力してください</div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-6 mb-3">
-                                            <label for="card-expiry" class="form-label japanese-text">有効期限 <span class="text-danger">*</span></label>
-                                            <input type="text" class="form-control" id="card-expiry" placeholder="MM/YY" maxlength="5" required>
-                                            <div class="form-text japanese-text">例：12/25</div>
+                                        <label class="form-label japanese-text">カード情報 <span class="text-danger">*</span></label>
+                                        <div id="card-element" class="form-control" style="height: auto; padding: 12px;">
+                                            <!-- Stripe Element が挿入されます -->
                                         </div>
-                                        <div class="col-md-6 mb-3">
-                                            <label for="card-cvv" class="form-label japanese-text">
-                                                セキュリティコード <span class="text-danger">*</span>
-                                                <i class="fas fa-question-circle text-muted ms-1" 
-                                                   data-bs-toggle="tooltip" 
-                                                   data-bs-placement="top" 
-                                                   data-bs-trigger="hover focus"
-                                                   title="カード裏面の署名欄にある3桁の数字です。American Expressの場合は表面の4桁の数字です。"
-                                                   style="cursor: help;"></i>
-                                            </label>
-                                            <input type="text" class="form-control" id="card-cvv" maxlength="4" placeholder="例：123" required>
-                                            <div class="form-text japanese-text">カード裏面の3桁または4桁の番号</div>
+                                        <div id="card-errors" class="text-danger small mt-2" role="alert"></div>
+                                        <div class="form-text japanese-text mt-2">
+                                            <i class="fas fa-lock me-1"></i>安全な決済処理 (Stripe)
                                         </div>
                                     </div>
                                     <div class="mb-3">
@@ -1066,12 +1055,22 @@
         }
         
         // 페이지 로드 시 초기화
+        // Stripe 초기화
+        let stripe = null;
+        let cardElement = null;
+        
+        // Stripe 공개 키 (여기에 실제 키를 입력하세요)
+        const STRIPE_PUBLISHABLE_KEY = 'YOUR_STRIPE_PUBLISHABLE_KEY_HERE';
+        
         document.addEventListener('DOMContentLoaded', async function() {
             // 모바일 감지
             const isMobile = window.innerWidth <= 768;
             console.log('🚀 체크아웃 페이지 초기화 시작');
             console.log('📱 모바일 여부:', isMobile);
             console.log('📱 화면 크기:', window.innerWidth + 'x' + window.innerHeight);
+            
+            // Stripe 초기화
+            initializeStripe();
             
             // Firebase 전용 초기화
             console.log('🔄 Firebase 전용 체크아웃 초기화 시작');
@@ -3381,6 +3380,120 @@
         // 중복된 updateCartCount 함수 제거됨 - Firebase 전용 버전 사용
 
         // 중복된 DOMContentLoaded 리스너 제거됨 - 첫 번째 리스너에서 모든 초기화 처리
+
+        // ========== Stripe 결제 연동 ==========
+        
+        // Stripe 초기화 함수
+        function initializeStripe() {
+            console.log('💳 Stripe 초기화 시작');
+            
+            // Stripe 공개 키 확인
+            if (STRIPE_PUBLISHABLE_KEY === 'YOUR_STRIPE_PUBLISHABLE_KEY_HERE') {
+                console.warn('⚠️ Stripe 공개 키가 설정되지 않았습니다');
+                return;
+            }
+            
+            try {
+                // Stripe 인스턴스 생성
+                stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+                
+                // Stripe Elements 생성
+                const elements = stripe.elements({
+                    locale: 'ja' // 일본어 UI
+                });
+                
+                // Card Element 생성
+                cardElement = elements.create('card', {
+                    style: {
+                        base: {
+                            fontSize: '16px',
+                            color: '#495057',
+                            fontFamily: '"Noto Sans JP", "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif',
+                            '::placeholder': {
+                                color: '#6c757d'
+                            }
+                        },
+                        invalid: {
+                            color: '#dc3545',
+                            iconColor: '#dc3545'
+                        }
+                    },
+                    hidePostalCode: true // 우편번호 숨김 (배송지에서 입력)
+                });
+                
+                // Card Element를 DOM에 마운트
+                cardElement.mount('#card-element');
+                
+                // 실시간 에러 표시
+                cardElement.on('change', function(event) {
+                    const displayError = document.getElementById('card-errors');
+                    if (event.error) {
+                        displayError.textContent = event.error.message;
+                    } else {
+                        displayError.textContent = '';
+                    }
+                });
+                
+                console.log('✅ Stripe 초기화 완료');
+                
+            } catch (error) {
+                console.error('❌ Stripe 초기화 실패:', error);
+            }
+        }
+        
+        // Stripe 결제 처리 함수
+        async function processStripePayment(amount, orderData) {
+            console.log('💳 Stripe 결제 처리 시작');
+            console.log('💰 결제 금액:', amount, '円');
+            
+            if (!stripe || !cardElement) {
+                throw new Error('Stripeが初期化されていません');
+            }
+            
+            try {
+                // 1. Firebase Functions를 통해 PaymentIntent 생성
+                // (백엔드 API 필요 - 나중에 구현)
+                
+                // 임시: 테스트 모드에서는 토큰만 생성
+                const {token, error} = await stripe.createToken(cardElement);
+                
+                if (error) {
+                    throw new Error(error.message);
+                }
+                
+                console.log('✅ Stripe 토큰 생성 완료:', token.id);
+                
+                // 2. 토큰을 Firebase에 저장하여 백엔드에서 처리
+                await saveStripeTokenToFirebase(token.id, amount, orderData);
+                
+                return {
+                    success: true,
+                    tokenId: token.id
+                };
+                
+            } catch (error) {
+                console.error('❌ Stripe 결제 처리 실패:', error);
+                throw error;
+            }
+        }
+        
+        // Stripe 토큰을 Firebase에 저장
+        async function saveStripeTokenToFirebase(tokenId, amount, orderData) {
+            const db = firebase.firestore();
+            
+            const paymentData = {
+                tokenId: tokenId,
+                amount: amount,
+                currency: 'jpy',
+                orderData: orderData,
+                status: 'pending',
+                createdAt: new Date(),
+                userEmail: currentUser.email
+            };
+            
+            await db.collection('stripe_payments').add(paymentData);
+            console.log('✅ Stripe 토큰 Firebase 저장 완료');
+        }
 
     </script>
     
