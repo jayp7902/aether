@@ -12954,32 +12954,34 @@
                                         
                                         <div class="col-md-4">
                                             <div class="mb-3">
-                                                <label for="edit-featured-product-image" class="form-label">画像 URL <span class="text-danger">*</span></label>
-                                                <input type="text" class="form-control" id="edit-featured-product-image" value="${product.image}" required>
-                                                <div class="form-text">商品画像URLを入力してください</div>
-                                            </div>
-                                            
-                                            <div class="card">
-                                                <div class="card-header">
-                                                    <h6 class="japanese-heading mb-0">プレビュー</h6>
-                                                </div>
-                                                <div class="card-body">
-                                                    <div id="featured-product-edit-preview">
-                                                        <img id="preview-featured-product-image" src="${product.image}" alt="商品画像" class="img-fluid rounded mb-2" onerror="this.style.display='none'">
-                                                        <div class="mb-2">
-                                                            <strong>ブランド:</strong> <span id="preview-featured-product-brand">${product.brandName}</span>
+                                                <label class="form-label">商品画像 <span class="text-danger">*</span></label>
+                                                <input type="hidden" id="edit-featured-product-image" value="${product.image}" required>
+                                                
+                                                <!-- 드래그 앤 드롭 영역 -->
+                                                <div id="edit-featured-dropzone" class="border border-2 border-dashed rounded p-4 text-center" style="cursor: pointer; background-color: #f8f9fa;">
+                                                    <div id="edit-featured-dropzone-content">
+                                                        <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                                        <p class="mb-2">画像をドラッグ＆ドロップ</p>
+                                                        <p class="text-muted small mb-2">または</p>
+                                                        <button type="button" class="btn btn-outline-secondary btn-sm">
+                                                            <i class="fas fa-folder-open me-2"></i>ファイルを選択
+                                                        </button>
+                                                        <p class="text-muted small mt-2 mb-0">JPG, PNG, GIF (最大 5MB)</p>
+                                                    </div>
+                                                    <div id="edit-featured-image-preview" style="display: none;">
+                                                        <img src="${product.image}" alt="アップロード画像" class="img-fluid rounded mb-2" style="max-height: 200px;">
+                                                        <button type="button" class="btn btn-danger btn-sm" onclick="removeEditFeaturedImage()">
+                                                            <i class="fas fa-trash me-2"></i>削除
+                                                        </button>
+                                                    </div>
+                                                    <div id="edit-featured-upload-progress" style="display: none;">
+                                                        <div class="progress">
+                                                            <div id="edit-featured-progress-bar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
                                                         </div>
-                                                        <div class="mb-2">
-                                                            <strong>商品名:</strong> <span id="preview-featured-product-name">${product.productName}</span>
-                                                        </div>
-                                                        <div class="mb-2">
-                                                            <strong>価格:</strong> <span id="preview-featured-product-price">¥${product.price.toLocaleString()}</span>
-                                                        </div>
-                                                        <div class="mb-2">
-                                                            <strong>順序:</strong> <span id="preview-featured-product-order">${product.order}</span>
-                                                        </div>
+                                                        <p class="text-muted small mt-2 mb-0">アップロード中...</p>
                                                     </div>
                                                 </div>
+                                                <input type="file" id="edit-featured-file-input" accept="image/*" style="display: none;">
                                             </div>
                                         </div>
                                     </div>
@@ -13011,8 +13013,8 @@
             const modal = new bootstrap.Modal(document.getElementById('featuredProductEditModal'));
             modal.show();
             
-            // 실시간 미리보기 업데이트
-            setupFeaturedProductEditPreview();
+            // 드래그 앤 드롭 초기화
+            initEditFeaturedImageUpload(product.image);
         }
         
         // Featured Product 편집 모달 닫기
@@ -13023,44 +13025,147 @@
             }
         }
         
-        // Featured Product 편집 미리보기 설정
-        window.setupFeaturedProductEditPreview = function() {
-            const inputs = ['edit-featured-product-brand', 'edit-featured-product-name', 'edit-featured-product-price', 'edit-featured-product-order', 'edit-featured-product-image'];
+        // Featured Product 이미지 업로드 초기화
+        window.initEditFeaturedImageUpload = function(currentImage) {
+            const dropzone = document.getElementById('edit-featured-dropzone');
+            const fileInput = document.getElementById('edit-featured-file-input');
+            const dropzoneContent = document.getElementById('edit-featured-dropzone-content');
+            const imagePreview = document.getElementById('edit-featured-image-preview');
+            const uploadProgress = document.getElementById('edit-featured-upload-progress');
+            const progressBar = document.getElementById('edit-featured-progress-bar');
+            const hiddenInput = document.getElementById('edit-featured-product-image');
             
-            inputs.forEach(inputId => {
-                const input = document.getElementById(inputId);
-                if (input) {
-                    input.addEventListener('input', updateFeaturedProductEditPreview);
+            // 기존 이미지가 있으면 프리뷰 표시
+            if (currentImage) {
+                imagePreview.querySelector('img').src = currentImage;
+                dropzoneContent.style.display = 'none';
+                imagePreview.style.display = 'block';
+            }
+            
+            // 드래그 오버 이벤트
+            dropzone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.style.backgroundColor = '#e9ecef';
+                dropzone.style.borderColor = '#6c757d';
+            });
+            
+            // 드래그 리브 이벤트
+            dropzone.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.style.backgroundColor = '#f8f9fa';
+                dropzone.style.borderColor = '#dee2e6';
+            });
+            
+            // 드롭 이벤트
+            dropzone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                dropzone.style.backgroundColor = '#f8f9fa';
+                dropzone.style.borderColor = '#dee2e6';
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleEditFeaturedImageUpload(files[0]);
+                }
+            });
+            
+            // 클릭 이벤트 (파일 선택)
+            dropzone.addEventListener('click', () => {
+                fileInput.click();
+            });
+            
+            // 파일 선택 이벤트
+            fileInput.addEventListener('change', (e) => {
+                const files = e.target.files;
+                if (files.length > 0) {
+                    handleEditFeaturedImageUpload(files[0]);
                 }
             });
         }
         
-        // Featured Product 편집 미리보기 업데이트
-        window.updateFeaturedProductEditPreview = function() {
-                    const editFeaturedProductBrandElement = document.getElementById('edit-featured-product-brand');
-        const editFeaturedProductNameElement = document.getElementById('edit-featured-product-name');
-        const editFeaturedProductPriceElement = document.getElementById('edit-featured-product-price');
-        const editFeaturedProductOrderElement = document.getElementById('edit-featured-product-order');
-        const editFeaturedProductImageElement = document.getElementById('edit-featured-product-image');
-        
-        const brand = editFeaturedProductBrandElement ? editFeaturedProductBrandElement.value : '';
-        const name = editFeaturedProductNameElement ? editFeaturedProductNameElement.value : '';
-        const price = editFeaturedProductPriceElement ? editFeaturedProductPriceElement.value : 0;
-        const order = editFeaturedProductOrderElement ? editFeaturedProductOrderElement.value : '';
-        const image = editFeaturedProductImageElement ? editFeaturedProductImageElement.value : '';
+        // Featured Product 이미지 업로드 처리
+        window.handleEditFeaturedImageUpload = async function(file) {
+            const dropzoneContent = document.getElementById('edit-featured-dropzone-content');
+            const imagePreview = document.getElementById('edit-featured-image-preview');
+            const uploadProgress = document.getElementById('edit-featured-upload-progress');
+            const progressBar = document.getElementById('edit-featured-progress-bar');
+            const hiddenInput = document.getElementById('edit-featured-product-image');
             
-            // 미리보기 업데이트
-            document.getElementById('preview-featured-product-brand').textContent = brand;
-            document.getElementById('preview-featured-product-name').textContent = name;
-            document.getElementById('preview-featured-product-price').textContent = `¥${parseInt(price).toLocaleString()}`;
-            document.getElementById('preview-featured-product-order').textContent = order;
-            
-            // 이미지 업데이트
-            const img = document.getElementById('preview-featured-product-image');
-            if (img) {
-                img.src = image;
-                img.style.display = image ? 'block' : 'none';
+            // 파일 유효성 검사
+            if (!file.type.startsWith('image/')) {
+                alert('画像ファイルを選択してください。');
+                return;
             }
+            
+            if (file.size > 5 * 1024 * 1024) {
+                alert('画像サイズは5MB以下にしてください。');
+                return;
+            }
+            
+            try {
+                // Firebase Storage 확인
+                if (!firebase.storage) {
+                    alert('Firebase Storageが利用できません。');
+                    return;
+                }
+                
+                // UI 업데이트: 업로드 중
+                dropzoneContent.style.display = 'none';
+                imagePreview.style.display = 'none';
+                uploadProgress.style.display = 'block';
+                
+                // Firebase Storage에 업로드
+                const storage = firebase.storage();
+                const storageRef = storage.ref();
+                const timestamp = Date.now();
+                const fileName = `featured-products/${timestamp}_${file.name}`;
+                const imageRef = storageRef.child(fileName);
+                
+                // 업로드 태스크
+                const uploadTask = imageRef.put(file);
+                
+                // 업로드 진행 상황 추적
+                uploadTask.on('state_changed',
+                    (snapshot) => {
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        progressBar.style.width = progress + '%';
+                    },
+                    (error) => {
+                        console.error('アップロードエラー:', error);
+                        alert('画像のアップロードに失敗しました。');
+                        uploadProgress.style.display = 'none';
+                        dropzoneContent.style.display = 'block';
+                    },
+                    async () => {
+                        // 업로드 완료
+                        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                        
+                        // UI 업데이트: 프리뷰 표시
+                        hiddenInput.value = downloadURL;
+                        imagePreview.querySelector('img').src = downloadURL;
+                        uploadProgress.style.display = 'none';
+                        imagePreview.style.display = 'block';
+                    }
+                );
+            } catch (error) {
+                console.error('アップロードエラー:', error);
+                alert('画像のアップロードに失敗しました。');
+                uploadProgress.style.display = 'none';
+                dropzoneContent.style.display = 'block';
+            }
+        }
+        
+        // Featured Product 이미지 삭제
+        window.removeEditFeaturedImage = function() {
+            const dropzoneContent = document.getElementById('edit-featured-dropzone-content');
+            const imagePreview = document.getElementById('edit-featured-image-preview');
+            const hiddenInput = document.getElementById('edit-featured-product-image');
+            
+            hiddenInput.value = '';
+            imagePreview.style.display = 'none';
+            dropzoneContent.style.display = 'block';
         }
         
         // Featured Product 편집 저장
