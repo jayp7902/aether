@@ -1923,6 +1923,18 @@
         // 원본 메인 이미지 URL 저장 변수
         let originalMainImageUrl = '';
 
+        // 메인 이미지 변경 함수
+        function changeMainImage(imageUrl) {
+            const mainImage = document.getElementById('product-detail');
+            if (mainImage && imageUrl) {
+                mainImage.src = imageUrl;
+                console.log('メイン画像変更:', imageUrl);
+            }
+        }
+
+        // 전역 함수로 등록
+        window.changeMainImage = changeMainImage;
+
         function initializeOtherFeatures() {
             console.log('🔧 기타 기능 초기화 시작');
             
