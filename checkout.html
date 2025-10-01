@@ -3447,6 +3447,21 @@
             try {
                 // 1. Netlify Function을 통해 PaymentIntent 생성
                 console.log('📡 Netlify Function 호출 시작');
+                
+                // Stripe metadata 제한(500자)을 위해 최소 정보만 전달
+                const minimalOrderData = {
+                    id: orderData.id,
+                    userEmail: orderData.userEmail || orderData.customerEmail,
+                    items: orderData.items ? orderData.items.map(item => ({
+                        id: item.id,
+                        name: item.name,
+                        quantity: item.quantity,
+                        price: item.price
+                    })) : [],
+                    subtotal: orderData.subtotal,
+                    totalAmount: orderData.totalAmount
+                };
+                
                 const response = await fetch('/.netlify/functions/create-payment-intent', {
                     method: 'POST',
                     headers: {
@@ -3455,7 +3470,7 @@
                     body: JSON.stringify({
                         amount: amount,
                         currency: 'jpy',
-                        orderData: orderData
+                        orderData: minimalOrderData
                     })
                 });
                 
