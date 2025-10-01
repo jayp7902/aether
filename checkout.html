@@ -715,9 +715,10 @@
                                         <div class="card-icon" style="background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAzMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMwIiBoZWlnaHQ9IjIwIiByeD0iNCIgZmlsbD0iIzAwNkZDRiIvPgo8dGV4dCB4PSI0IiB5PSIxNCIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjciIGZpbGw9IndoaXRlIj5BTUVYPC90ZXh0Pgo8L3N2Zz4K')"></div>
                                     </div>
                                 </div>
-                                <div class="payment-method" data-method="paypal">
-                                    <i class="fab fa-paypal fa-2x text-muted mb-2"></i>
-                                    <div class="japanese-text">PayPal</div>
+                                <div class="payment-method" data-method="bank-transfer">
+                                    <i class="fas fa-university fa-2x text-muted mb-2"></i>
+                                    <div class="japanese-text">銀行振込</div>
+                                    <div class="small text-muted mt-1">入金確認後に発送</div>
                                 </div>
                             </div>
 
@@ -743,12 +744,34 @@
                                 </form>
                             </div>
 
-                            <!-- PayPal Form (Hidden) -->
-                            <div id="paypal-form" style="display: none;">
-                                <div class="text-center py-4">
-                                    <i class="fab fa-paypal fa-3x text-dark mb-3"></i>
-                                    <p class="japanese-text">PayPalでのお支払いを選択されました。</p>
-                                    <p class="japanese-text text-muted">注文確定後、PayPalのサイトにリダイレクトされます。</p>
+                            <!-- Bank Transfer Info -->
+                            <div id="bank-transfer-info" style="display: none;">
+                                <div class="alert alert-warning japanese-text">
+                                    <h6 class="japanese-heading mb-3">
+                                        <i class="fas fa-info-circle me-2"></i>振込先情報
+                                    </h6>
+                                    <div class="bank-info-box p-3 bg-white rounded border">
+                                        <div class="mb-2">
+                                            <strong>銀行名：</strong><span id="bank-name-display">未設定</span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong>支店名：</strong><span id="bank-branch-display">未設定</span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong>口座種別：</strong><span id="bank-type-display">未設定</span>
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong>口座番号：</strong><span id="bank-account-display">未設定</span>
+                                        </div>
+                                        <div class="mb-0">
+                                            <strong>口座名義：</strong><span id="bank-holder-display">未設定</span>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 small">
+                                        <p class="mb-2"><i class="fas fa-exclamation-triangle me-2"></i>振込手数料はお客様負担となります。</p>
+                                        <p class="mb-2"><i class="fas fa-clock me-2"></i>入金確認後、商品を発送いたします。</p>
+                                        <p class="mb-0"><i class="fas fa-calendar-alt me-2"></i>ご注文から3日以内にお振込みください。</p>
+                                    </div>
                                 </div>
                             </div>
 
@@ -2113,10 +2136,39 @@
             
             if (method === 'credit') {
                 document.getElementById('credit-card-form').style.display = 'block';
-                document.getElementById('paypal-form').style.display = 'none';
-            } else {
+                document.getElementById('bank-transfer-info').style.display = 'none';
+            } else if (method === 'bank-transfer') {
                 document.getElementById('credit-card-form').style.display = 'none';
-                document.getElementById('paypal-form').style.display = 'block';
+                document.getElementById('bank-transfer-info').style.display = 'block';
+                // Firebase에서 계좌 정보 로드
+                loadBankAccountInfo();
+            }
+        }
+        
+        // 계좌 정보 로드 (Firebase에서)
+        async function loadBankAccountInfo() {
+            try {
+                if (!firebase.firestore) {
+                    console.error('Firestore를 사용할 수 없습니다');
+                    return;
+                }
+                
+                const db = firebase.firestore();
+                const doc = await db.collection('settings').doc('bankAccount').get();
+                
+                if (doc.exists) {
+                    const data = doc.data();
+                    document.getElementById('bank-name-display').textContent = data.bankName || '未設定';
+                    document.getElementById('bank-branch-display').textContent = data.branchName || '未設定';
+                    document.getElementById('bank-type-display').textContent = data.accountType || '未設定';
+                    document.getElementById('bank-account-display').textContent = data.accountNumber || '未設定';
+                    document.getElementById('bank-holder-display').textContent = data.accountHolder || '未設定';
+                    console.log('✅ 계좌 정보 로드 완료');
+                } else {
+                    console.warn('⚠️ 계좌 정보가 설정되지 않았습니다');
+                }
+            } catch (error) {
+                console.error('❌ 계좌 정보 로드 실패:', error);
             }
         }
 
@@ -2295,8 +2347,9 @@
                 console.log('포인트 사용:', usedPoints, '포인트 적립:', earnedPoints);
                 let orderId = null;
                 
-                // Stripe 결제 처리 (크레딧카드인 경우)
+                // 결제 방법별 처리
                 if (selectedMethod === 'credit') {
+                    // Stripe 결제 처리 (크레딧카드인 경우)
                     console.log('💳 Stripe 결제 시작');
                     try {
                         const paymentResult = await processStripePayment(finalTotal, orderData);
@@ -2308,11 +2361,19 @@
                         // 결제 성공한 PaymentIntent ID를 주문 데이터에 추가
                         orderData.paymentIntentId = paymentResult.paymentIntentId;
                         orderData.paymentStatus = 'paid';
+                        orderData.orderStatus = 'confirmed';
                     } catch (paymentError) {
                         console.error('❌ Stripe 결제 실패:', paymentError);
                         showAlert('payment-alert', paymentError.message || '決済処理に失敗しました。', 'danger');
                         throw paymentError;
                     }
+                } else if (selectedMethod === 'bank-transfer') {
+                    // 계좌이체인 경우
+                    console.log('🏦 계좌이체 주문 처리');
+                    orderData.paymentStatus = 'pending'; // 입금 대기
+                    orderData.orderStatus = 'pending_payment'; // 입금 확인 대기
+                    orderData.paymentMethod = 'bank-transfer';
+                    console.log('✅ 계좌이체 주문 생성 (입금 대기)');
                 }
                 
                 try {
@@ -2548,9 +2609,15 @@
                     console.warn('주문 완료 방문 기록 저장 실패:', error);
                 }
                 
-                // 포인트 페이지로 이동 (포인트 적립 안내와 함께)
+                // 결제 방법에 따라 다른 페이지로 이동
                 setTimeout(() => {
-                    window.location.href = `points.html?newOrder=${orderId}&earnedPoints=${earnedPoints}`;
+                    if (selectedMethod === 'bank-transfer') {
+                        // 계좌이체: 주문 완료 페이지로 이동 (입금 안내)
+                        window.location.href = `order-complete.html?orderId=${orderId}&method=bank-transfer`;
+                    } else {
+                        // 카드 결제: 포인트 페이지로 이동 (포인트 적립 안내)
+                        window.location.href = `points.html?newOrder=${orderId}&earnedPoints=${earnedPoints}`;
+                    }
                 }, 1000); // 1초 대기
                 
             } catch (error) {
