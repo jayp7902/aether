@@ -15037,7 +15037,15 @@
         
         // 계좌 정보 저장
         async function saveBankAccountSettings() {
+            const saveButton = document.querySelector('#bank-account-section button[type="submit"]');
+            
             try {
+                // 버튼 비활성화 및 로딩 표시
+                if (saveButton) {
+                    saveButton.disabled = true;
+                    saveButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>保存中...';
+                }
+                
                 const bankName = document.getElementById('bank-name').value.trim();
                 const branchName = document.getElementById('branch-name').value.trim();
                 const accountType = document.getElementById('account-type').value;
@@ -15046,13 +15054,13 @@
                 
                 // 필수 필드 검증
                 if (!bankName || !branchName || !accountNumber || !accountHolder) {
-                    showAlert('bank-account-alert', '全ての必須項目を入力してください。', 'danger');
+                    showBankAlert('全ての必須項目を入力してください。', 'warning');
                     return;
                 }
                 
                 // 계좌번호 숫자 검증
                 if (!/^\d+$/.test(accountNumber)) {
-                    showAlert('bank-account-alert', '口座番号は数字のみ入力してください。', 'danger');
+                    showBankAlert('口座番号は数字のみ入力してください。', 'warning');
                     return;
                 }
                 
@@ -15067,25 +15075,33 @@
                 });
                 
                 console.log('✅ 계좌 정보 저장 완료');
-                showAlert('bank-account-alert', '振込先口座情報を保存しました。', 'success');
+                showBankAlert('✅ 振込先口座情報を保存しました。', 'success');
+                
             } catch (error) {
                 console.error('❌ 계좌 정보 저장 실패:', error);
-                showAlert('bank-account-alert', '保存に失敗しました。', 'danger');
+                showBankAlert('❌ 保存に失敗しました：' + error.message, 'danger');
+            } finally {
+                // 버튼 복원
+                if (saveButton) {
+                    saveButton.disabled = false;
+                    saveButton.innerHTML = '<i class="fas fa-save me-2"></i>保存';
+                }
             }
         }
         
-        // Alert 표시 함수 (범용)
-        function showAlert(elementId, message, type) {
-            const alertElement = document.getElementById(elementId);
+        // 계좌 설정 전용 알림 함수
+        function showBankAlert(message, type) {
+            const alertElement = document.getElementById('bank-account-alert');
             if (alertElement) {
-                alertElement.className = `alert alert-${type} japanese-text`;
-                alertElement.textContent = message;
-                alertElement.classList.remove('d-none');
+                alertElement.className = `alert alert-${type} japanese-text mb-3`;
+                alertElement.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-circle' : 'info-circle'} me-2"></i>${message}`;
+                alertElement.style.display = 'block';
                 
-                // 3초 후 자동 숨김
+                // 성공 메시지는 5초 후, 에러는 10초 후 자동 숨김
+                const hideDelay = type === 'success' ? 5000 : 10000;
                 setTimeout(() => {
-                    alertElement.classList.add('d-none');
-                }, 3000);
+                    alertElement.style.display = 'none';
+                }, hideDelay);
             }
         }
         
@@ -15105,7 +15121,7 @@
                         この情報は銀行振込を選択されたお客様に表示されます。正確に入力してください。
                     </div>
                     
-                    <div id="bank-account-alert" class="alert d-none"></div>
+                    <div id="bank-account-alert" class="alert" style="display: none;"></div>
                     
                     <div class="card">
                         <div class="card-body">
@@ -15181,34 +15197,6 @@
                                     </div>
                                 </div>
                                 
-                                <div class="card bg-light mt-4 p-3">
-                                    <h6 class="japanese-heading mb-3">
-                                        <i class="fas fa-eye me-2"></i>プレビュー
-                                    </h6>
-                                    <div class="bank-info-preview">
-                                        <div class="row">
-                                            <div class="col-4 text-muted">銀行名：</div>
-                                            <div class="col-8" id="preview-bank-name">未設定</div>
-                                        </div>
-                                        <div class="row mt-2">
-                                            <div class="col-4 text-muted">支店名：</div>
-                                            <div class="col-8" id="preview-branch-name">未設定</div>
-                                        </div>
-                                        <div class="row mt-2">
-                                            <div class="col-4 text-muted">口座種別：</div>
-                                            <div class="col-8" id="preview-account-type">普通</div>
-                                        </div>
-                                        <div class="row mt-2">
-                                            <div class="col-4 text-muted">口座番号：</div>
-                                            <div class="col-8" id="preview-account-number">未設定</div>
-                                        </div>
-                                        <div class="row mt-2">
-                                            <div class="col-4 text-muted">口座名義：</div>
-                                            <div class="col-8" id="preview-account-holder">未設定</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
                                 <div class="text-center mt-4">
                                     <button type="submit" class="btn btn-dark btn-lg">
                                         <i class="fas fa-save me-2"></i>保存
@@ -15221,29 +15209,6 @@
             </div>
         </div>
     </div>
-    
-    <script>
-        // 입력 필드 실시간 프리뷰 업데이트
-        document.getElementById('bank-name').addEventListener('input', function() {
-            document.getElementById('preview-bank-name').textContent = this.value || '未設定';
-        });
-        
-        document.getElementById('branch-name').addEventListener('input', function() {
-            document.getElementById('preview-branch-name').textContent = this.value || '未設定';
-        });
-        
-        document.getElementById('account-type').addEventListener('change', function() {
-            document.getElementById('preview-account-type').textContent = this.options[this.selectedIndex].text;
-        });
-        
-        document.getElementById('account-number').addEventListener('input', function() {
-            document.getElementById('preview-account-number').textContent = this.value || '未設定';
-        });
-        
-        document.getElementById('account-holder').addEventListener('input', function() {
-            document.getElementById('preview-account-holder').textContent = this.value || '未設定';
-        });
-    </script>
     
 </body>
 </html>
