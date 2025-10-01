@@ -2585,11 +2585,8 @@
                     console.log('📝 카드 결제가 아니므로 카드 정보 저장 건너뜀');
                 }
                 
-                // 카트 비우기
-                clearCart();
-                
                 // 포인트 사용 이력 저장 완료 확인을 위한 대기
-                console.log('✅ 주문 처리 완료 - 포인트 페이지로 이동 준비');
+                console.log('✅ 주문 처리 완료');
                 console.log('📊 최종 포인트 상태:', {
                     orderId: orderId,
                     usedPoints: usedPoints,
@@ -2609,12 +2606,13 @@
                     console.warn('주문 완료 방문 기록 저장 실패:', error);
                 }
                 
-                // 결제 방법에 따라 다른 페이지로 이동
+                // 결제 방법에 따라 다른 처리
                 if (selectedMethod === 'bank-transfer') {
-                    // 계좌이체: 입금 안내 모달 표시
+                    // 계좌이체: 입금 안내 모달 표시 (카트는 모달에서 처리)
                     showBankTransferCompleteModal(orderId, finalTotal);
                 } else {
-                    // 카드 결제: 포인트 페이지로 이동 (포인트 적립 안내)
+                    // 카드 결제: 카트 비우고 포인트 페이지로 이동
+                    await clearCart();
                     setTimeout(() => {
                         window.location.href = `points.html?newOrder=${orderId}&earnedPoints=${earnedPoints}`;
                     }, 1000);
@@ -3619,7 +3617,18 @@
         }
         
         // 계좌이체 완료 모달 닫기 및 메인 페이지로 이동
-        function closeBankTransferModal() {
+        async function closeBankTransferModal() {
+            console.log('🗑️ 카트 비우기 및 메인 페이지로 이동');
+            
+            try {
+                // 카트 비우기
+                await clearCart();
+                console.log('✅ 카트 비우기 완료');
+            } catch (error) {
+                console.error('❌ 카트 비우기 실패:', error);
+            }
+            
+            // 메인 페이지로 이동
             console.log('🏠 메인 페이지로 이동');
             window.location.href = 'index.html';
         }
