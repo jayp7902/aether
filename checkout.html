@@ -3502,9 +3502,7 @@
                 if (paymentIntent.status === 'succeeded') {
                     console.log('✅ 결제 성공:', paymentIntent.id);
                     
-                    // 3. 주문 정보를 Firebase에 저장
-                    await saveOrderToFirebase(paymentIntent.id, amount, orderData);
-                    
+                    // 주문 정보는 processOrder에서 저장하므로 여기서는 결과만 반환
                     return {
                         success: true,
                         paymentIntentId: paymentIntent.id
@@ -3517,26 +3515,6 @@
                 console.error('❌ Stripe 결제 처리 실패:', error);
                 throw error;
             }
-        }
-        
-        // 주문 정보를 Firebase에 저장
-        async function saveOrderToFirebase(paymentIntentId, amount, orderData) {
-            const db = firebase.firestore();
-            
-            const orderRecord = {
-                paymentIntentId: paymentIntentId,
-                amount: amount,
-                currency: 'jpy',
-                orderData: orderData,
-                paymentStatus: 'succeeded',
-                orderStatus: 'confirmed',
-                createdAt: new Date(),
-                userEmail: currentUser.email,
-                userId: currentUser.uid
-            };
-            
-            await db.collection('orders').add(orderRecord);
-            console.log('✅ 주문 정보 Firebase 저장 완료');
         }
 
     </script>
