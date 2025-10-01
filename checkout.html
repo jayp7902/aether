@@ -2254,10 +2254,26 @@
                 };
 
                 const cart = getCart();
+                console.log('🛒 카트 상품 정보:', cart);
                 if (!cart || cart.length === 0) {
                     showAlert('payment-alert', 'カートが空です。商品を追加してから注文してください。', 'danger');
                     throw new Error('카트가 비어있음');
                 }
+                
+                // 카트 아이템 구조 확인 및 정규화
+                const normalizedCart = cart.map(item => {
+                    // 상품 이름이 여러 필드에 있을 수 있으므로 정규화
+                    const itemName = item.name || item.title || item.productName || item.productTitle || 'Unknown Product';
+                    console.log('📦 상품 정보:', {
+                        original: item,
+                        normalized: itemName
+                    });
+                    return {
+                        ...item,
+                        name: itemName, // 상품 이름 명시적으로 설정
+                        productName: itemName // 백업 필드
+                    };
+                });
 
                 // 현재 사용자 정보 가져오기
                 let currentUser = null;
@@ -2275,7 +2291,7 @@
                 }
 
                 // 주문 처리 (Firebase 또는 로컬 저장)
-                const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+                const subtotal = normalizedCart.reduce((total, item) => total + (item.price * item.quantity), 0);
                 const shippingFee = subtotal >= 3000 ? 0 : 500; // 배송비 계산
                 const earnedPoints = Math.floor(subtotal * 0.03);
                 
@@ -2299,7 +2315,7 @@
                 
                 const orderData = {
                     id: 'ORDER-' + Date.now(),
-                    items: cart,
+                    items: normalizedCart, // 정규화된 카트 사용
                     shipping: shippingInfo,
                     payment: {
                         method: selectedMethod,

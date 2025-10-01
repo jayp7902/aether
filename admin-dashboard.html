@@ -5191,13 +5191,22 @@
                         </div>
                     
                         <div class="order-total">
-                            <div class="japanese-text">
-                                <small>獲得ポイント: ${(order.earnedPoints || Math.floor((order.originalAmount || order.totalAmount || 0) * 0.03))}P</small>
-                                ${(order.usedPoints || order.pointDiscount || 0) > 0 ? `<br><small class="text-dark fw-bold">使用ポイント: ${(order.usedPoints || order.pointDiscount || 0).toLocaleString()}P</small>` : ''}
+                            <div class="japanese-text" style="font-size: 0.85rem;">
+                                <div class="mb-1">
+                                    <small>商品小計: ¥${(order.subtotal || 0).toLocaleString()}</small>
+                                </div>
+                                <div class="mb-1">
+                                    <small>配送料: ¥${(order.shippingFee || 0).toLocaleString()}</small>
+                                </div>
+                                ${(order.usedPoints || order.pointDiscount || 0) > 0 ? `
+                                <div class="mb-1">
+                                    <small class="text-dark fw-bold">使用ポイント: -${(order.usedPoints || order.pointDiscount || 0).toLocaleString()}P</small>
+                                </div>` : ''}
+                                <div class="mb-1">
+                                    <small class="text-success">獲得ポイント: +${(order.earnedPoints || Math.floor((order.subtotal || order.totalAmount || 0) * 0.03))}P</small>
+                                </div>
                             </div>
-                            <div class="total-amount">
-                                ${(order.usedPoints || order.pointDiscount || 0) > 0 ? 
-                                    `<div class="text-muted"><small>定価: ¥${(order.originalAmount || order.totalAmount || 0).toLocaleString()}</small></div>` : ''}
+                            <div class="total-amount" style="border-top: 2px solid #dee2e6; padding-top: 8px; margin-top: 8px;">
                                 合計: ¥${(order.totalAmount || 0).toLocaleString()}
                             </div>
                         </div>
@@ -5262,6 +5271,7 @@
         function getStatusText(status) {
             const statusMap = {
                 'pending': '処理待ち',
+                'pending_payment': '入金待ち',
                 'processing': '処理中',
                 'shipping': '配送中',
                 'completed': '完了',
