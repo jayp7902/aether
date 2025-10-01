@@ -41,15 +41,22 @@ exports.handler = async (event, context) => {
     }
 
     // Stripe PaymentIntent 생성
+    // metadata는 500자 제한이 있으므로 최소한의 정보만 전달
+    const metadata = {
+      orderId: orderData.id || 'ORDER-' + Date.now(),
+      userEmail: orderData.userEmail || orderData.customerEmail || 'unknown',
+      itemCount: orderData.items ? orderData.items.length : 0,
+      subtotal: orderData.subtotal || amount,
+    };
+    
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount), // 엔화는 소수점 없음
       currency: currency || 'jpy',
       automatic_payment_methods: {
         enabled: true,
       },
-      metadata: {
-        orderData: JSON.stringify(orderData),
-      },
+      metadata: metadata,
+      description: `注文 ${metadata.orderId} - ${metadata.itemCount}点`,
     });
 
     console.log('✅ PaymentIntent 생성 완료:', paymentIntent.id);
