@@ -2276,6 +2276,7 @@
 
                 // 주문 처리 (Firebase 또는 로컬 저장)
                 const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+                const shippingFee = subtotal >= 3000 ? 0 : 500; // 배송비 계산
                 const earnedPoints = Math.floor(subtotal * 0.03);
                 
                 // 포인트 사용량 재확인 (주문 처리 직전)
@@ -2283,9 +2284,18 @@
                 const inputValue = pointsInput ? parseInt(pointsInput.value) || 0 : 0;
                 const usedPoints = Math.max(inputValue, pointsToUse || 0);
                 
-                // 포인트 사용 정보 계산
-                const finalTotal = subtotal - usedPoints;
+                // 최종 금액 계산 (배송비 포함, 포인트 할인 적용)
+                const totalBeforeDiscount = subtotal + shippingFee;
+                const finalTotal = Math.max(0, totalBeforeDiscount - usedPoints);
                 const pointDiscount = usedPoints;
+                
+                console.log('📊 주문 금액 계산:', {
+                    subtotal: subtotal,
+                    shippingFee: shippingFee,
+                    totalBeforeDiscount: totalBeforeDiscount,
+                    usedPoints: usedPoints,
+                    finalTotal: finalTotal
+                });
                 
                 const orderData = {
                     id: 'ORDER-' + Date.now(),
@@ -2293,14 +2303,15 @@
                     shipping: shippingInfo,
                     payment: {
                         method: selectedMethod,
-                        total: document.getElementById('total').textContent
+                        total: '¥' + finalTotal.toLocaleString()
                     },
                     orderDate: firebase.firestore.Timestamp.now(),
-                    status: 'processing',
-                    // 포인트 정보 추가
+                    status: selectedMethod === 'bank-transfer' ? 'pending_payment' : 'processing',
+                    // 금액 정보 추가
                     earnedPoints: earnedPoints,
                     subtotal: subtotal,
-                    totalAmount: finalTotal, // 포인트 할인 적용된 최종 금액
+                    shippingFee: shippingFee,
+                    totalAmount: finalTotal, // 배송비 포함, 포인트 할인 적용된 최종 금액
                     pointDiscount: pointDiscount, // 사용한 포인트
                     usedPoints: usedPoints, // 사용한 포인트 (호환성)
                     originalAmount: subtotal, // 포인트 할인 전 원래 금액
@@ -2389,16 +2400,19 @@
                             currentUser: !!user
                         });
                         
-                        // 주문 정보를 Firestore에 저장 (이메일 기반 문서 ID 사용)
+                        // 주문 정보를 Firestore에 저장
                         console.log('📝 Firebase 주문 저장 시작...');
                         try {
                             const timestamp = Date.now();
-                            const orderDocId = `${user.email.replace('@', '_at_').replace('.', '_dot_')}_${timestamp}`;
+                            // 주문 ID를 간단하고 읽기 쉽게 생성 (ORDER-타임스탬프)
+                            const orderDocId = `ORDER-${timestamp}`;
                             
                             const orderRef = firebase.firestore().collection('orders').doc(orderDocId);
                             await orderRef.set({
                                 ...orderData,
+                                orderId: orderDocId,
                                 userId: user.uid,
+                                userEmail: user.email, // 이메일 명시적으로 저장
                                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
                             });
                             orderId = orderDocId;
@@ -3641,14 +3655,14 @@
     <div class="modal fade" id="bankTransferCompleteModal" tabindex="-1" aria-labelledby="bankTransferCompleteModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content" style="border-radius: 15px; border: none; box-shadow: 0 10px 40px rgba(0,0,0,0.15);">
-                <div class="modal-header" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-bottom: 2px solid #dee2e6; border-radius: 15px 15px 0 0;">
-                    <h5 class="modal-title japanese-heading" id="bankTransferCompleteModalLabel" style="color: #495057; font-weight: 600;">
-                        <i class="fas fa-check-circle me-2" style="color: #28a745;"></i>ご注文ありがとうございます
+                <div class="modal-header" style="background: #000000; border-bottom: none; border-radius: 15px 15px 0 0; padding: 20px 30px;">
+                    <h5 class="modal-title japanese-heading w-100 text-center" id="bankTransferCompleteModalLabel" style="color: #ffffff; font-weight: 600; font-size: 1.3rem;">
+                        <i class="fas fa-check-circle me-2"></i>ご注文ありがとうございます
                     </h5>
                 </div>
                 <div class="modal-body" style="padding: 30px;">
                     <div class="text-center mb-4">
-                        <div style="font-size: 4rem; color: #28a745;">
+                        <div style="font-size: 4rem; color: #343a40;">
                             <i class="fas fa-university"></i>
                         </div>
                         <h6 class="japanese-heading mt-3 mb-2" style="color: #495057; font-size: 1.2rem;">
