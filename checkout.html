@@ -2173,47 +2173,21 @@
             // 결제 정보 검증
                 let paymentData = null;
             if (selectedMethod === 'credit') {
-                    const cardNumberInput = document.getElementById('card-number');
-                    const cardExpiryInput = document.getElementById('card-expiry');
-                    const cardCvvInput = document.getElementById('card-cvv');
-                    const cardNameInput = document.getElementById('card-name');
+                    // Stripe Elements 사용 - 카드 정보는 Stripe가 직접 처리
+                    const cardName = document.getElementById('card-name')?.value;
                     
-                    const cardNumber = cardNumberInput.value;
-                    const cardExpiry = cardExpiryInput.value;
-                    // CVC는 마스킹된 경우 원본 값 사용
-                    const cardCvv = cardCvvInput.dataset.originalCvc || cardCvvInput.value;
-                    const cardName = cardNameInput.value;
-
-                if (!cardNumber || !cardExpiry || !cardCvv || !cardName) {
-                        showAlert('payment-alert', 'クレジットカード情報をすべて入力してください。', 'danger');
-                        throw new Error('카드 정보가 누락됨');
-                }
-
-                if (!validateCardNumber(cardNumber)) {
-                    showAlert('payment-alert', 'カード番号が正しくありません。', 'danger');
-                        throw new Error('카드 번호가 유효하지 않음');
-                }
-
-                if (!/^\d{2}\/\d{2}$/.test(cardExpiry)) {
-                        showAlert('payment-alert', '有効期限の形式が正しくありません（MM/YY）。', 'danger');
-                        throw new Error('카드 유효기간 형식이 잘못됨');
-                }
-
-                if (!/^\d{3,4}$/.test(cardCvv)) {
-                        showAlert('payment-alert', 'セキュリティコードが正しくありません（3-4桁）。', 'danger');
-                        throw new Error('CVV가 유효하지 않음');
+                    if (!cardName) {
+                        showAlert('payment-alert', 'カード名義人を入力してください。', 'danger');
+                        throw new Error('카드 명의인이 누락됨');
                     }
                     
-                    // 카드 정보 저장용 데이터 준비
-                    paymentData = {
-                        cardNumber: cardNumber,
-                        cardExpiry: cardExpiry,
-                        cardCvc: cardCvv,
-                        cardName: cardName,
-                        paymentMethod: 'credit'
-                    };
+                    // Stripe Elements가 유효한지 확인
+                    if (!cardElement) {
+                        showAlert('payment-alert', 'カード情報を入力してください。', 'danger');
+                        throw new Error('Stripe Elements가 초기화되지 않음');
+                    }
                     
-                    console.log('카드 정보 수집 완료 (저장 준비)');
+                    console.log('✅ Stripe 카드 정보 확인 완료');
                 }
 
                 // 주문 데이터 준비
@@ -2320,6 +2294,26 @@
                 
                 console.log('포인트 사용:', usedPoints, '포인트 적립:', earnedPoints);
                 let orderId = null;
+                
+                // Stripe 결제 처리 (크레딧카드인 경우)
+                if (selectedMethod === 'credit') {
+                    console.log('💳 Stripe 결제 시작');
+                    try {
+                        const paymentResult = await processStripePayment(finalTotal, orderData);
+                        if (!paymentResult.success) {
+                            throw new Error('決済に失敗しました');
+                        }
+                        console.log('✅ Stripe 결제 성공:', paymentResult.paymentIntentId);
+                        
+                        // 결제 성공한 PaymentIntent ID를 주문 데이터에 추가
+                        orderData.paymentIntentId = paymentResult.paymentIntentId;
+                        orderData.paymentStatus = 'paid';
+                    } catch (paymentError) {
+                        console.error('❌ Stripe 결제 실패:', paymentError);
+                        showAlert('payment-alert', paymentError.message || '決済処理に失敗しました。', 'danger');
+                        throw paymentError;
+                    }
+                }
                 
                 try {
                     // Firebase 사용자가 있으면 Firebase에 저장
@@ -3451,25 +3445,58 @@
             }
             
             try {
-                // 1. Firebase Functions를 통해 PaymentIntent 생성
-                // (백엔드 API 필요 - 나중에 구현)
+                // 1. Netlify Function을 통해 PaymentIntent 생성
+                console.log('📡 Netlify Function 호출 시작');
+                const response = await fetch('/.netlify/functions/create-payment-intent', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        amount: amount,
+                        currency: 'jpy',
+                        orderData: orderData
+                    })
+                });
                 
-                // 임시: 테스트 모드에서는 토큰만 생성
-                const {token, error} = await stripe.createToken(cardElement);
-                
-                if (error) {
-                    throw new Error(error.message);
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || '決済処理に失敗しました');
                 }
                 
-                console.log('✅ Stripe 토큰 생성 완료:', token.id);
+                const { clientSecret, paymentIntentId } = await response.json();
+                console.log('✅ PaymentIntent 생성 완료:', paymentIntentId);
                 
-                // 2. 토큰을 Firebase에 저장하여 백엔드에서 처리
-                await saveStripeTokenToFirebase(token.id, amount, orderData);
+                // 2. Stripe로 결제 확인
+                const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(
+                    clientSecret,
+                    {
+                        payment_method: {
+                            card: cardElement,
+                            billing_details: {
+                                name: document.getElementById('card-name').value,
+                            }
+                        }
+                    }
+                );
                 
-                return {
-                    success: true,
-                    tokenId: token.id
-                };
+                if (confirmError) {
+                    throw new Error(confirmError.message);
+                }
+                
+                if (paymentIntent.status === 'succeeded') {
+                    console.log('✅ 결제 성공:', paymentIntent.id);
+                    
+                    // 3. 주문 정보를 Firebase에 저장
+                    await saveOrderToFirebase(paymentIntent.id, amount, orderData);
+                    
+                    return {
+                        success: true,
+                        paymentIntentId: paymentIntent.id
+                    };
+                } else {
+                    throw new Error('決済が完了しませんでした');
+                }
                 
             } catch (error) {
                 console.error('❌ Stripe 결제 처리 실패:', error);
@@ -3477,22 +3504,24 @@
             }
         }
         
-        // Stripe 토큰을 Firebase에 저장
-        async function saveStripeTokenToFirebase(tokenId, amount, orderData) {
+        // 주문 정보를 Firebase에 저장
+        async function saveOrderToFirebase(paymentIntentId, amount, orderData) {
             const db = firebase.firestore();
             
-            const paymentData = {
-                tokenId: tokenId,
+            const orderRecord = {
+                paymentIntentId: paymentIntentId,
                 amount: amount,
                 currency: 'jpy',
                 orderData: orderData,
-                status: 'pending',
+                paymentStatus: 'succeeded',
+                orderStatus: 'confirmed',
                 createdAt: new Date(),
-                userEmail: currentUser.email
+                userEmail: currentUser.email,
+                userId: currentUser.uid
             };
             
-            await db.collection('stripe_payments').add(paymentData);
-            console.log('✅ Stripe 토큰 Firebase 저장 완료');
+            await db.collection('orders').add(orderRecord);
+            console.log('✅ 주문 정보 Firebase 저장 완료');
         }
 
     </script>
