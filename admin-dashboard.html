@@ -15022,7 +15022,7 @@
                     const data = doc.data();
                     document.getElementById('bank-name').value = data.bankName || '';
                     document.getElementById('branch-name').value = data.branchName || '';
-                    document.getElementById('account-type').value = data.accountType || 'futsu';
+                    document.getElementById('account-type').value = data.accountType || '普通';
                     document.getElementById('account-number').value = data.accountNumber || '';
                     document.getElementById('account-holder').value = data.accountHolder || '';
                     console.log('✅ 계좌 정보 로드 완료');
@@ -15123,18 +15123,18 @@
                     
                     <div id="bank-account-alert" class="alert" style="display: none;"></div>
                     
-                    <div class="card">
+                    <div class="card" style="background-color: #f8f9fa; border: 1px solid #dee2e6;">
                         <div class="card-body">
                             <form onsubmit="event.preventDefault(); saveBankAccountSettings();">
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label for="bank-name" class="form-label japanese-text">
+                                            <label for="bank-name" class="form-label japanese-text" style="color: #495057; font-weight: 600;">
                                                 銀行名 <span class="text-danger">*</span>
                                             </label>
                                             <input type="text" class="form-control" id="bank-name" 
-                                                   placeholder="例：三菱UFJ銀行" required>
-                                            <small class="form-text text-muted japanese-text">
+                                                   placeholder="例：三菱UFJ銀行" required style="background-color: #ffffff; border: 1px solid #ced4da; color: #495057;">
+                                            <small class="form-text japanese-text" style="color: #6c757d;">
                                                 正式名称を入力してください
                                             </small>
                                         </div>
@@ -15142,12 +15142,12 @@
                                     
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label for="branch-name" class="form-label japanese-text">
+                                            <label for="branch-name" class="form-label japanese-text" style="color: #495057; font-weight: 600;">
                                                 支店名 <span class="text-danger">*</span>
                                             </label>
                                             <input type="text" class="form-control" id="branch-name" 
-                                                   placeholder="例：渋谷支店" required>
-                                            <small class="form-text text-muted japanese-text">
+                                                   placeholder="例：渋谷支店" required style="background-color: #ffffff; border: 1px solid #ced4da; color: #495057;">
+                                            <small class="form-text japanese-text" style="color: #6c757d;">
                                                 支店名を入力してください
                                             </small>
                                         </div>
@@ -15157,25 +15157,25 @@
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label for="account-type" class="form-label japanese-text">
+                                            <label for="account-type" class="form-label japanese-text" style="color: #495057; font-weight: 600;">
                                                 口座種別 <span class="text-danger">*</span>
                                             </label>
-                                            <select class="form-select" id="account-type" required>
-                                                <option value="futsu">普通</option>
-                                                <option value="touza">当座</option>
-                                                <option value="chochiku">貯蓄</option>
+                                            <select class="form-select" id="account-type" required style="background-color: #ffffff; border: 1px solid #ced4da; color: #495057;">
+                                                <option value="普通">普通</option>
+                                                <option value="当座">当座</option>
+                                                <option value="貯蓄">貯蓄</option>
                                             </select>
                                         </div>
                                     </div>
                                     
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label for="account-number" class="form-label japanese-text">
+                                            <label for="account-number" class="form-label japanese-text" style="color: #495057; font-weight: 600;">
                                                 口座番号 <span class="text-danger">*</span>
                                             </label>
                                             <input type="text" class="form-control" id="account-number" 
-                                                   placeholder="例：1234567" pattern="[0-9]+" required>
-                                            <small class="form-text text-muted japanese-text">
+                                                   placeholder="例：1234567" pattern="[0-9]+" required style="background-color: #ffffff; border: 1px solid #ced4da; color: #495057;">
+                                            <small class="form-text japanese-text" style="color: #6c757d;">
                                                 数字のみ入力してください
                                             </small>
                                         </div>
@@ -15185,12 +15185,12 @@
                                 <div class="row">
                                     <div class="col-md-12">
                                         <div class="mb-3">
-                                            <label for="account-holder" class="form-label japanese-text">
+                                            <label for="account-holder" class="form-label japanese-text" style="color: #495057; font-weight: 600;">
                                                 口座名義 <span class="text-danger">*</span>
                                             </label>
                                             <input type="text" class="form-control" id="account-holder" 
-                                                   placeholder="例：カ)ジェイコス" required>
-                                            <small class="form-text text-muted japanese-text">
+                                                   placeholder="例：カ)ジェイコス" required style="background-color: #ffffff; border: 1px solid #ced4da; color: #495057;">
+                                            <small class="form-text japanese-text" style="color: #6c757d;">
                                                 カタカナで入力してください（法人の場合は「カ）」または「(株)」を含む）
                                             </small>
                                         </div>
