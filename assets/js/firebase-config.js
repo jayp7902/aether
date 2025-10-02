@@ -1263,15 +1263,24 @@ class FirebaseService {
             const userDoc = await db.collection('users').doc(userEmail).get();
             const currentPoints = userDoc.exists ? (userDoc.data().points || 0) : 0;
             
+            // 사용자의 실제 Firebase Auth UID 찾기
+            let actualUserId = userEmail; // 기본값은 이메일
+            if (userDoc.exists && userDoc.data().uid) {
+                actualUserId = userDoc.data().uid;
+                console.log('✅ 사용자 문서에서 UID 발견:', actualUserId);
+            } else {
+                console.log('⚠️ 사용자 문서에 UID가 없어 이메일 사용:', userEmail);
+            }
+            
             // 포인트 업데이트
             await db.collection('users').doc(userEmail).set({
                 points: currentPoints + points,
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             }, { merge: true });
 
-            // 포인트 이력 저장
+            // 포인트 이력 저장 (Firebase Auth UID 사용)
             await db.collection('pointHistory').add({
-                userId: userEmail,
+                userId: actualUserId,  // ✅ Firebase Auth UID 사용
                 userEmail: userEmail,
                 points: points,
                 type: 'earn',
@@ -1280,7 +1289,7 @@ class FirebaseService {
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
 
-            console.log('포인트 적립 성공:', points, '사용자:', userEmail);
+            console.log('포인트 적립 성공:', points, '사용자:', userEmail, 'UID:', actualUserId);
             return { success: true, points: currentPoints + points };
         } catch (error) {
             console.error('포인트 적립 실패:', error);
@@ -1321,15 +1330,24 @@ class FirebaseService {
             
             const newPoints = currentPoints - points;
             
+            // 사용자의 실제 Firebase Auth UID 찾기
+            let actualUserId = userEmail; // 기본값은 이메일
+            if (userDoc.exists && userDoc.data().uid) {
+                actualUserId = userDoc.data().uid;
+                console.log('✅ 사용자 문서에서 UID 발견:', actualUserId);
+            } else {
+                console.log('⚠️ 사용자 문서에 UID가 없어 이메일 사용:', userEmail);
+            }
+            
             // 포인트 업데이트
             await db.collection('users').doc(userEmail).set({
                 points: newPoints,
                 updatedAt: firebase.firestore.FieldValue.serverTimestamp()
             }, { merge: true });
 
-            // 포인트 이력 저장
+            // 포인트 이력 저장 (Firebase Auth UID 사용)
             await db.collection('pointHistory').add({
-                userId: userEmail,
+                userId: actualUserId,  // ✅ Firebase Auth UID 사용
                 userEmail: userEmail,
                 points: points,
                 type: 'use',
@@ -1338,7 +1356,7 @@ class FirebaseService {
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
 
-            console.log('포인트 사용 성공:', points, '사용자:', userEmail);
+            console.log('포인트 사용 성공:', points, '사용자:', userEmail, 'UID:', actualUserId);
             return { success: true, points: newPoints };
         } catch (error) {
             console.error('포인트 사용 실패:', error);
