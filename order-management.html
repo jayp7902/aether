@@ -354,18 +354,20 @@
         
         // 주문 관리 시스템 초기화
         function initializeOrderManagement() {
-            // Firebase 인증 확인
-            firebase.auth().onAuthStateChanged((user) => {
-                if (user) {
-                    currentUser = user;
-                    console.log('✅ 사용자 인증 완료:', user.email);
+            console.log('🔍 FirebaseService 초기화 대기 중...');
+            
+            // FirebaseService가 초기화될 때까지 대기
+            const checkFirebaseService = () => {
+                if (window.FirebaseService && window.FirebaseService.db) {
+                    console.log('✅ FirebaseService 초기화 완료, 주문 데이터 로드 시작');
                     loadOrders();
                 } else {
-                    console.log('❌ 사용자 인증 필요');
-                    // 로그인 페이지로 리다이렉트
-                    window.location.href = 'login.html';
+                    console.log('⏳ FirebaseService 초기화 대기 중...');
+                    setTimeout(checkFirebaseService, 100);
                 }
-            });
+            };
+            
+            checkFirebaseService();
         }
         
         // 주문 데이터 로드
@@ -417,9 +419,99 @@
                     <i class="fas fa-shopping-cart"></i>
                     <h4 class="japanese-heading">注文データがありません</h4>
                     <p class="japanese-text">Firebase Firestoreのordersコレクションにデータがありません。</p>
-                    <p class="japanese-text">Firebaseコンソールでordersコレクションを確認してください。</p>
+                    <p class="japanese-text">テスト用の注文データを作成しますか？</p>
+                    <button class="btn btn-secondary" onclick="createTestOrders()">
+                        <i class="fas fa-plus me-2"></i>テスト注文を作成
+                    </button>
                 </div>
             `;
+        }
+        
+        // 테스트 주문 생성
+        function createTestOrders() {
+            if (!confirm('テスト用の注文データを作成しますか？')) {
+                return;
+            }
+            
+            const testOrders = [
+                {
+                    orderDate: new Date().toISOString(),
+                    status: 'pending',
+                    items: [
+                        { name: 'LALARECIPE BAKUCHINOL EYE CREAM', quantity: 1, price: 2980 },
+                        { name: 'YUZU VITA C CREAM', quantity: 2, price: 3500 }
+                    ],
+                    totalAmount: 9980,
+                    customer: { 
+                        name: '田中太郎', 
+                        email: 'tanaka@example.com', 
+                        phone: '090-1234-5678' 
+                    },
+                    shippingAddress: {
+                        name: '田中太郎',
+                        address: '東京都渋谷区恵比寿1-2-3',
+                        phone: '090-1234-5678'
+                    }
+                },
+                {
+                    orderDate: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
+                    status: 'processing',
+                    items: [
+                        { name: 'COSCELL GREEN PAPAYA PDRN PORE AMPOULE', quantity: 1, price: 4200 }
+                    ],
+                    totalAmount: 4200,
+                    customer: { 
+                        name: '佐藤花子', 
+                        email: 'sato@example.com', 
+                        phone: '090-2345-6789' 
+                    },
+                    shippingAddress: {
+                        name: '佐藤花子',
+                        address: '大阪府大阪市北区梅田1-1-1',
+                        phone: '090-2345-6789'
+                    }
+                },
+                {
+                    orderDate: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
+                    status: 'shipping',
+                    items: [
+                        { name: 'LUCINDE RETINOL VOLUME EYEBAG CREAM', quantity: 1, price: 3800 },
+                        { name: 'MAKE HEAL GREEN PAPAYA PDRN PORE AMPOULE', quantity: 1, price: 4500 }
+                    ],
+                    totalAmount: 8300,
+                    customer: { 
+                        name: '鈴木一郎', 
+                        email: 'suzuki@example.com', 
+                        phone: '090-3456-7890' 
+                    },
+                    shippingAddress: {
+                        name: '鈴木一郎',
+                        address: '神奈川県横浜市西区みなとみらい2-2-2',
+                        phone: '090-3456-7890'
+                    }
+                }
+            ];
+            
+            console.log('📝 테스트 주문 데이터 생성 중...');
+            
+            // Firebase에 테스트 주문 추가
+            const batch = window.FirebaseService.db.batch();
+            testOrders.forEach((order, index) => {
+                const docRef = window.FirebaseService.db.collection('orders').doc();
+                batch.set(docRef, order);
+            });
+            
+            batch.commit()
+                .then(() => {
+                    console.log('✅ 테스트 주문 데이터 생성 완료');
+                    showSuccess('テスト注文データが作成されました。');
+                    // 데이터 다시 로드
+                    loadOrders();
+                })
+                .catch((error) => {
+                    console.error('❌ 테스트 주문 생성 실패:', error);
+                    showError('テスト注文データの作成に失敗しました。');
+                });
         }
         
         // 주문 통계 업데이트
