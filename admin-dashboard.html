@@ -1583,93 +1583,16 @@
             </div>
             <!-- 포인트 관리 탭 끝 -->
 
-            <!-- 주문 관리 탭 -->
+            <!-- 주문 관리 탭 (order-management.html로 리다이렉트) -->
             <div class="tab-pane fade" id="orders-section" role="tabpanel" aria-labelledby="orders-tab">
                 <div class="order-management pt-5">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h3 class="japanese-heading mb-0">
-                            <i class="fas fa-shopping-cart me-2"></i>注文管理
-                        </h3>
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-outline-secondary" onclick="refreshOrders()">
-                                <i class="fas fa-sync-alt me-1"></i>更新
-                            </button>
-                            <button class="btn btn-dark" onclick="exportOrders()">
-                                <i class="fas fa-download me-1"></i>エクスポート
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- 주문 통계 -->
-                    <div class="order-stats-grid">
-                        <div class="order-stat-card">
-                            <div class="order-stat-number" id="today-orders">0</div>
-                            <div class="stat-label japanese-text">本日の注文</div>
-                        </div>
-                        <div class="order-stat-card">
-                            <div class="order-stat-number" id="today-sales">¥0</div>
-                            <div class="stat-label japanese-text">本日の売上</div>
-                        </div>
-                        <div class="order-stat-card">
-                            <div class="order-stat-number" id="pending-orders">0</div>
-                            <div class="stat-label japanese-text">処理待ち</div>
-                        </div>
-                        <div class="order-stat-card">
-                            <div class="order-stat-number" id="total-customers">0</div>
-                            <div class="stat-label japanese-text">総顧客数</div>
-                        </div>
-                    </div>
-
-                    <!-- 주문 필터 -->
-                    <div class="order-filters">
-                        <div class="row">
-                            <div class="col-md-3">
-                                <label class="form-label japanese-text">注文状態</label>
-                                <select class="form-select" id="status-filter" onchange="filterOrders()">
-                                    <option value="">全て</option>
-                                    <option value="pending">処理待ち</option>
-                                    <option value="processing">処理中</option>
-                                    <option value="shipping">配送中</option>
-                                    <option value="completed">完了</option>
-                                    <option value="cancelled">キャンセル</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label japanese-text">期間</label>
-                                <select class="form-select" id="date-filter" onchange="filterOrders()">
-                                    <option value="today">今日</option>
-                                    <option value="week">今週</option>
-                                    <option value="month">今月</option>
-                                    <option value="all">全期間</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label japanese-text">検索</label>
-                                <div class="input-group">
-                                    <input type="text" class="form-control" id="search-input" placeholder="注文番号、顧客名で検索" onkeyup="searchOrders()">
-                                    <button class="btn btn-outline-secondary" onclick="clearSearch()">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="col-md-2">
-                                <label class="form-label japanese-text">&nbsp;</label>
-                                <div>
-                                    <button class="btn btn-outline-secondary w-100" onclick="clearAllFilters()">
-                                        <i class="fas fa-filter me-1"></i>リセット
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 주문 목록 -->
-                    <div id="orders-container">
-                        <div class="empty-orders">
-                            <i class="fas fa-shopping-cart"></i>
-                            <h4 class="japanese-heading">注文データを読み込み中...</h4>
-                            <p class="japanese-text">잠시만 기다려주세요.</p>
-                        </div>
+                    <div class="text-center py-5">
+                        <i class="fas fa-shopping-cart fa-3x text-muted mb-4"></i>
+                        <h3 class="japanese-heading mb-3">注文管理</h3>
+                        <p class="text-muted japanese-text mb-4">専用の注文管理ページに移動します</p>
+                        <button class="btn btn-dark btn-lg" onclick="window.location.href='order-management.html'">
+                            <i class="fas fa-external-link-alt me-2"></i>注文管理ページへ移動
+                        </button>
                     </div>
                 </div>
             </div>
@@ -2913,15 +2836,9 @@
             showTab('orders-section');
             updateTabButtons('orders-tab');
             
-            // Firebase에서 실제 주문 데이터 로드
-            console.log('🔥 Firebase에서 주문 데이터 로드 시작...');
-            if (typeof loadOrders === 'function') {
-                loadOrders().catch(error => {
-                    console.error('❌ 주문 로드 실패:', error);
-                });
-            } else {
-                console.warn('loadOrders 함수를 찾을 수 없습니다');
-            }
+            // 주문관리 페이지로 리다이렉트
+            console.log('🔄 주문관리 페이지로 이동');
+            window.location.href = 'order-management.html';
             
             // 기본 테스트 주문 데이터 (백업용)
             const emergencyOrders = [
