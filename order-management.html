@@ -389,14 +389,27 @@
         function loadOrders() {
             console.log('📊 Firebase에서 주문 데이터 로드 시작');
             
-            // FirebaseService가 초기화되었는지 확인
-            if (!window.FirebaseService || !window.FirebaseService.db) {
-                console.error('❌ FirebaseService 또는 Firestore 인스턴스를 찾을 수 없습니다.');
+            // 여러 방법으로 Firestore 인스턴스 확인
+            let db = null;
+            
+            if (window.FirebaseService && window.FirebaseService.db) {
+                db = window.FirebaseService.db;
+                console.log('✅ FirebaseService.db 사용');
+            } else if (window.db) {
+                db = window.db;
+                console.log('✅ window.db 사용');
+            } else {
+                console.error('❌ Firestore 인스턴스를 찾을 수 없습니다.');
+                console.log('🔍 사용 가능한 객체들:');
+                console.log('- window.FirebaseService:', typeof window.FirebaseService);
+                console.log('- window.FirebaseService.db:', typeof window.FirebaseService?.db);
+                console.log('- window.db:', typeof window.db);
                 showError('Firebase 연결에 문제가 발생했습니다. 잠시 후 다시 시도해주세요.');
                 return;
             }
             
-            const ordersRef = window.FirebaseService.db.collection('orders');
+            const ordersRef = db.collection('orders');
+            console.log('📋 orders 컬렉션 참조 생성 완료');
             
             ordersRef.get()
                 .then((querySnapshot) => {
