@@ -618,6 +618,8 @@
         
         // 통계 카드 클릭으로 필터링
         function filterByStatus(status) {
+            console.log('📊 통계 카드 클릭:', status);
+            
             // 모든 통계 카드에서 active 클래스 제거
             document.querySelectorAll('.stat-card').forEach(card => {
                 card.classList.remove('active');
@@ -627,6 +629,7 @@
             const clickedCard = document.querySelector(`[data-status="${status}"]`);
             if (clickedCard) {
                 clickedCard.classList.add('active');
+                console.log('✅ 활성 카드 설정:', status);
             }
             
             // 상태 필터 설정
@@ -634,6 +637,8 @@
             
             // 필터링 적용
             filterOrders();
+            
+            console.log('🔍 필터링 적용 완료');
         }
         
         // 주문 목록 표시
@@ -966,6 +971,9 @@
             const dateFilter = document.getElementById('date-filter').value;
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
             
+            console.log('🔍 필터링 시작:', { statusFilter, dateFilter, searchTerm });
+            console.log('📊 전체 주문 수:', allOrders.length);
+            
             filteredOrders = allOrders.filter(order => {
                 // 상태 필터
                 if (statusFilter) {
@@ -1017,6 +1025,7 @@
                 return true;
             });
             
+            console.log('✅ 필터링 완료:', filteredOrders.length, '개 주문 표시');
             displayOrders();
         }
         
