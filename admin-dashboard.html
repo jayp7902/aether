@@ -13686,21 +13686,41 @@
                     
                     console.log('Firebase에서 포인트 이력 로드 완료:', pointHistory.length, '건');
                     
-                    // 포인트 이력에서 실제 포인트 계산
+                    // 포인트 페이지와 동일한 방식으로 포인트 계산
+                    let earnedPoints = 0;
+                    let usedPoints = 0;
                     let calculatedPoints = 0;
+                    
                     if (pointHistory.length > 0) {
-                        calculatedPoints = pointHistory.reduce((total, item) => {
-                            // 포인트 이력에서 포인트 값 찾기 (여러 필드명 확인)
-                            const points = item.points || item.pointChange || item.amount || 0;
-                            console.log(`포인트 이력 항목: ${item.reason || item.description || item.type} - ${points}pt`);
-                            console.log(`  - item.points: ${item.points}`);
-                            console.log(`  - item.pointChange: ${item.pointChange}`);
-                            console.log(`  - item.amount: ${item.amount}`);
-                            return total + points;
-                        }, 0);
+                        pointHistory.forEach(item => {
+                            const points = item.points || 0;
+                            console.log(`포인트 이력 항목: ${item.reason || item.description || item.type} - ${points}pt (타입: ${item.type})`);
+                            
+                            // 포인트 페이지와 동일한 타입별 계산
+                            if (item.type === 'earn' || item.type === 'admin_add' || item.type === 'welcome_bonus') {
+                                earnedPoints += points;
+                                console.log('적립 포인트 추가:', points, '총 적립:', earnedPoints);
+                            } else if (item.type === 'use' || item.type === 'admin_subtract') {
+                                usedPoints += points;
+                                console.log('사용 포인트 추가:', points, '총 사용:', usedPoints);
+                            } else {
+                                // 타입이 없는 경우 포인트 값이 양수면 적립, 음수면 사용으로 처리
+                                if (points > 0) {
+                                    earnedPoints += points;
+                                } else if (points < 0) {
+                                    usedPoints += Math.abs(points);
+                                }
+                            }
+                        });
                         
-                        console.log('🔍 포인트 이력에서 계산된 총 포인트:', calculatedPoints);
-                        console.log('🔍 기존 userData.points:', currentCustomer.points);
+                        // 최종 포인트 계산 (적립 - 사용)
+                        calculatedPoints = earnedPoints - usedPoints;
+                        
+                        console.log('🔍 포인트 페이지 방식 계산 결과:');
+                        console.log('  - 총 적립 포인트:', earnedPoints);
+                        console.log('  - 총 사용 포인트:', usedPoints);
+                        console.log('  - 최종 포인트:', calculatedPoints);
+                        console.log('  - 기존 userData.points:', currentCustomer.points);
                         
                         // 계산된 포인트로 고객 정보 업데이트
                         currentCustomer.points = calculatedPoints;
@@ -13712,7 +13732,7 @@
                         console.log('포인트 이력 정렬 결과 (최신순):');
                         pointHistory.forEach((item, index) => {
                             const timestamp = item.createdAt || item.timestamp;
-                            console.log(`${index + 1}. ${item.reason || item.description} - ${item.points || 0}pt - ${timestamp}`);
+                            console.log(`${index + 1}. ${item.reason || item.description} - ${item.points || 0}pt (${item.type}) - ${timestamp}`);
                         });
                     } else {
                         console.log('포인트 이력이 없어서 포인트를 0으로 설정');
@@ -13789,19 +13809,28 @@
                     minute: '2-digit'
                 });
 
-                // 포인트 값 찾기 (여러 필드명 확인)
-                const points = item.points || item.pointChange || item.amount || 0;
+                // 포인트 페이지와 동일한 방식으로 포인트 표시
+                const points = item.points || 0;
                 
                 let pointsStr, pointsClass;
                 if (item.type === 'use' || item.type === 'admin_subtract') {
                     pointsStr = `-${points}`;
                     pointsClass = 'text-danger';
-                } else if (item.type === 'earn' || item.type === 'admin_add') {
+                } else if (item.type === 'earn' || item.type === 'admin_add' || item.type === 'welcome_bonus') {
                     pointsStr = `+${points}`;
                     pointsClass = 'text-success';
                 } else {
-                    pointsStr = points > 0 ? `+${points}` : points;
-                    pointsClass = points > 0 ? 'text-success' : 'text-dark';
+                    // 타입이 없는 경우 포인트 값에 따라 표시
+                    if (points > 0) {
+                        pointsStr = `+${points}`;
+                        pointsClass = 'text-success';
+                    } else if (points < 0) {
+                        pointsStr = `${points}`;
+                        pointsClass = 'text-danger';
+                    } else {
+                        pointsStr = '0';
+                        pointsClass = 'text-muted';
+                    }
                 }
 
                 let description = 'ポイント取引';
@@ -15272,3 +15301,4 @@
     
 </body>
 </html>
+
