@@ -4368,34 +4368,56 @@
                 
                 const db = firebase.firestore();
                 
-                // 이메일로 사용자 검색 (문서 ID가 이메일인 경우)
+                // 포인트 페이지와 동일한 방식으로 사용자 검색 (서버에서 직접 가져오기)
                 let userDoc = null;
                 try {
-                    userDoc = await db.collection('users').doc(email).get();
+                    // 먼저 이메일을 문서 ID로 검색 (서버에서 직접)
+                    userDoc = await db.collection('users').doc(email).get({ source: 'server' });
+                    console.log('이메일로 문서 검색 결과 (서버에서):', userDoc.exists);
                 } catch (error) {
                     console.log('이메일로 문서 검색 실패, 쿼리로 재시도:', error);
                 }
                 
-                // 문서 ID로 찾지 못한 경우 쿼리로 검색
+                // 문서 ID로 찾지 못한 경우 쿼리로 검색 (서버에서 직접)
                 if (!userDoc || !userDoc.exists) {
-                    const querySnapshot = await db.collection('users').where('email', '==', email).limit(1).get();
+                    console.log('이메일로 찾지 못함, 쿼리로 검색 시도');
+                    const querySnapshot = await db.collection('users')
+                        .where('email', '==', email)
+                        .limit(1)
+                        .get({ source: 'server' });
+                    
                     if (!querySnapshot.empty) {
                         userDoc = querySnapshot.docs[0];
+                        console.log('쿼리로 사용자 찾음:', userDoc.id);
                     }
                 }
                 
                 if (userDoc && userDoc.exists) {
                     const userData = userDoc.data();
+                    const userPoints = userData.points || 0;
+                    
+                    // 포인트 페이지와 동일한 상세 로깅
+                    console.log('🔍 관리자 페이지 포인트 상세 분석:');
+                    console.log('  - userData.points:', userData.points);
+                    console.log('  - typeof userData.points:', typeof userData.points);
+                    console.log('  - userData.points === undefined:', userData.points === undefined);
+                    console.log('  - userData.points === null:', userData.points === null);
+                    console.log('  - userData.points === 0:', userData.points === 0);
+                    console.log('  - userData 전체 키:', Object.keys(userData));
+                    console.log('  - 최종 포인트 값:', userPoints);
+                    
                     currentCustomer = {
                         uid: userDoc.id,
                         name: userData.name || userData.displayName || 'Unknown',
                         email: userData.email || email,
-                        points: userData.points || 0,
+                        points: userPoints,
                         phone: userData.phone || '',
                         createdAt: userData.createdAt
                     };
+                    
+                    console.log('✅ 관리자 페이지 고객 정보 설정 완료:', currentCustomer);
                     showCustomerInfo();
-                    showAdminAlert(`${currentCustomer.name || currentCustomer.email} 様を見つけました`, 'success');
+                    showAdminAlert(`${currentCustomer.name || currentCustomer.email} 様を見つけました (ポイント: ${userPoints}pt)`, 'success');
                 } else {
                     showAdminAlert('該当するお客様が見つかりません', 'warning');
                 }
