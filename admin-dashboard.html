@@ -4406,26 +4406,8 @@
                     console.log('  - userData 전체 키:', Object.keys(userData));
                     console.log('  - 최종 포인트 값:', userPoints);
                     
-                    // 실제 Firebase Auth UID 찾기
-                    let actualUid = userData.uid;
-                    if (!actualUid) {
-                        // Firebase Auth에서 실제 UID 찾기
-                        const authUser = firebase.auth().currentUser;
-                        if (authUser && authUser.email === email) {
-                            actualUid = authUser.uid;
-                            console.log('Firebase Auth에서 실제 UID 찾음:', actualUid);
-                        } else {
-                            // admin7@gmail.com의 경우 특별 처리
-                            if (email === 'admin7@gmail.com') {
-                                actualUid = 'GZ6Wfu2g1hdta3vwIOs3XXwwvOm1';
-                                console.log('admin7@gmail.com 특별 처리 - UID 설정:', actualUid);
-                            } else {
-                                // 임시로 이메일을 UID로 사용
-                                actualUid = userDoc.id;
-                                console.log('이메일을 UID로 사용:', actualUid);
-                            }
-                        }
-                    }
+                    // 통일된 UID 찾기 함수
+                    let actualUid = await findUserUID(email, userData, db);
                     
                     currentCustomer = {
                         uid: actualUid,
@@ -13632,6 +13614,91 @@
         }
         
         console.log('✅ 전역 함수 설정 완료');
+
+        // 통일된 사용자 UID 찾기 함수
+        async function findUserUID(email, userData, db) {
+            console.log(`🔍 ${email}의 실제 UID 찾기 시작`);
+            
+            // 1단계: 사용자 문서에 UID가 있는지 확인
+            if (userData && userData.uid) {
+                console.log(`✅ 사용자 문서에서 UID 발견: ${userData.uid}`);
+                return userData.uid;
+            }
+            
+            // 2단계: Firebase Auth에서 현재 로그인된 사용자 확인
+            const authUser = firebase.auth().currentUser;
+            if (authUser && authUser.email === email) {
+                console.log(`✅ Firebase Auth에서 UID 발견: ${authUser.uid}`);
+                return authUser.uid;
+            }
+            
+            // 3단계: 포인트 이력에서 해당 이메일의 UID 찾기
+            console.log(`🔍 포인트 이력에서 ${email}의 UID 검색 중...`);
+            try {
+                const pointHistoryQuery = await db.collection('pointHistory')
+                    .where('userEmail', '==', email)
+                    .limit(5) // 여러 개 확인
+                    .get({ source: 'server' });
+                
+                if (!pointHistoryQuery.empty) {
+                    // 가장 많이 나타나는 UID 찾기
+                    const uidCounts = {};
+                    pointHistoryQuery.docs.forEach(doc => {
+                        const data = doc.data();
+                        if (data.userId) {
+                            uidCounts[data.userId] = (uidCounts[data.userId] || 0) + 1;
+                        }
+                    });
+                    
+                    // 가장 많이 나타나는 UID 선택
+                    const mostCommonUID = Object.keys(uidCounts).reduce((a, b) => 
+                        uidCounts[a] > uidCounts[b] ? a : b
+                    );
+                    
+                    if (mostCommonUID) {
+                        console.log(`✅ 포인트 이력에서 가장 많이 나타나는 UID 발견: ${mostCommonUID} (${uidCounts[mostCommonUID]}회)`);
+                        return mostCommonUID;
+                    }
+                }
+            } catch (error) {
+                console.log(`❌ 포인트 이력 검색 실패:`, error);
+            }
+            
+            // 4단계: 모든 포인트 이력에서 해당 이메일 검색 (더 넓은 범위)
+            try {
+                console.log(`🔍 전체 포인트 이력에서 ${email} 검색 중...`);
+                const allPointHistory = await db.collection('pointHistory').get({ source: 'server' });
+                
+                const matchingUIDs = [];
+                allPointHistory.docs.forEach(doc => {
+                    const data = doc.data();
+                    if (data.userEmail === email && data.userId) {
+                        matchingUIDs.push(data.userId);
+                    }
+                });
+                
+                if (matchingUIDs.length > 0) {
+                    // 가장 많이 나타나는 UID 찾기
+                    const uidCounts = {};
+                    matchingUIDs.forEach(uid => {
+                        uidCounts[uid] = (uidCounts[uid] || 0) + 1;
+                    });
+                    
+                    const mostCommonUID = Object.keys(uidCounts).reduce((a, b) => 
+                        uidCounts[a] > uidCounts[b] ? a : b
+                    );
+                    
+                    console.log(`✅ 전체 검색에서 UID 발견: ${mostCommonUID} (${uidCounts[mostCommonUID]}회)`);
+                    return mostCommonUID;
+                }
+            } catch (error) {
+                console.log(`❌ 전체 포인트 이력 검색 실패:`, error);
+            }
+            
+            // 5단계: 폴백 - 이메일을 UID로 사용
+            console.log(`⚠️ UID를 찾을 수 없어 이메일 사용: ${email}`);
+            return email;
+        }
 
         // 고객 포인트 이력 로드
         async function loadCustomerPointHistory() {
