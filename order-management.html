@@ -155,6 +155,29 @@
             color: #999;
         }
         
+        /* 토스트 메시지 애니메이션 */
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+        
         .order-list-container {
             background: white;
             border-radius: 15px;
@@ -404,9 +427,12 @@
                     </div>
                     <div class="col-md-2">
                         <label class="form-label japanese-text">&nbsp;</label>
-                        <div>
-                            <button class="btn btn-outline-secondary w-100" onclick="clearAllFilters()">
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-secondary flex-fill" onclick="clearAllFilters()">
                                 <i class="fas fa-filter me-1"></i>リセット
+                            </button>
+                            <button class="btn btn-outline-dark flex-fill" onclick="downloadCSV()">
+                                <i class="fas fa-download me-1"></i>CSV
                             </button>
                         </div>
                     </div>
@@ -1336,6 +1362,232 @@
         
         function refreshOrders() {
             loadOrders();
+        }
+        
+        // CSV 다운로드 함수
+        function downloadCSV() {
+            try {
+                console.log('📊 CSV 다운로드 시작');
+                
+                // 현재 필터링된 주문 데이터 사용
+                const ordersToExport = filteredOrders.length > 0 ? filteredOrders : allOrders;
+                
+                if (ordersToExport.length === 0) {
+                    alert('エクスポートする注文データがありません。');
+                    return;
+                }
+                
+                // CSV 헤더 정의
+                const headers = [
+                    '注文番号',
+                    '注文日時',
+                    '顧客名',
+                    'メールアドレス',
+                    '電話番号',
+                    '配送先住所',
+                    '注文状態',
+                    '支払い方法',
+                    '商品金額',
+                    '配送料',
+                    'ポイント使用',
+                    '合計金額',
+                    '商品詳細'
+                ];
+                
+                // CSV 데이터 생성
+                const csvData = ordersToExport.map(order => {
+                    // 날짜 처리
+                    let orderDate = '';
+                    if (order.orderDate) {
+                        const date = new Date(order.orderDate.seconds ? order.orderDate.seconds * 1000 : order.orderDate);
+                        if (!isNaN(date.getTime())) {
+                            orderDate = date.toLocaleString('ja-JP');
+                        }
+                    } else if (order.createdAt) {
+                        const date = new Date(order.createdAt.seconds ? order.createdAt.seconds * 1000 : order.createdAt);
+                        if (!isNaN(date.getTime())) {
+                            orderDate = date.toLocaleString('ja-JP');
+                        }
+                    }
+                    
+                    // 고객 이름 처리
+                    let customerName = '';
+                    if (order.shipping && order.shipping.name && order.shipping.name !== 'null') {
+                        customerName = order.shipping.name;
+                    } else if (order.customer && order.customer.name && order.customer.name !== 'null') {
+                        customerName = order.customer.name;
+                    } else if (order.userName && order.userName !== 'null') {
+                        customerName = order.userName;
+                    } else if (order.customerName && order.customerName !== 'null') {
+                        customerName = order.customerName;
+                    }
+                    
+                    // 이메일 처리
+                    const customerEmail = order.customer ? order.customer.email : (order.customerEmail || order.userEmail || '');
+                    
+                    // 전화번호 처리
+                    const customerPhone = order.shipping ? order.shipping.phone : (order.customer ? order.customer.phone : (order.customerPhone || ''));
+                    
+                    // 배송 주소 처리
+                    let shippingAddress = '';
+                    if (order.shipping) {
+                        const parts = [];
+                        if (order.shipping.postal) parts.push(order.shipping.postal);
+                        if (order.shipping.prefecture) parts.push(order.shipping.prefecture);
+                        if (order.shipping.city) parts.push(order.shipping.city);
+                        if (order.shipping.address1) parts.push(order.shipping.address1);
+                        if (order.shipping.address2) parts.push(order.shipping.address2);
+                        shippingAddress = parts.join(' ');
+                    }
+                    
+                    // 주문 상태 처리
+                    const orderStatus = getStatusText(order.status);
+                    
+                    // 결제 방법 처리
+                    let paymentMethod = '';
+                    if (order.paymentMethod) {
+                        paymentMethod = order.paymentMethod === 'card' ? 'カード' : '銀行振込';
+                    } else if (order.payment && order.payment.method) {
+                        paymentMethod = order.payment.method === 'card' ? 'カード' : '銀行振込';
+                    }
+                    
+                    // 금액 정보 처리
+                    const subtotal = order.subtotal || order.originalAmount || 0;
+                    const shippingFee = order.shippingFee || order.shipping?.shippingFee || 0;
+                    const usedPoints = order.usedPoints || order.pointDiscount || 0;
+                    const totalAmount = order.totalAmount || 0;
+                    
+                    // 상품 상세 정보 처리
+                    let productDetails = '';
+                    if (order.items && order.items.length > 0) {
+                        productDetails = order.items.map(item => {
+                            const quantity = item.quantity || 1;
+                            const price = item.price || 0;
+                            return `${item.name || item.productName || '商品'} x${quantity} (¥${price.toLocaleString()})`;
+                        }).join('; ');
+                    }
+                    
+                    return [
+                        order.id || '',
+                        orderDate,
+                        customerName,
+                        customerEmail,
+                        customerPhone,
+                        shippingAddress,
+                        orderStatus,
+                        paymentMethod,
+                        subtotal.toLocaleString(),
+                        shippingFee.toLocaleString(),
+                        usedPoints.toLocaleString(),
+                        totalAmount.toLocaleString(),
+                        productDetails
+                    ];
+                });
+                
+                // CSV 문자열 생성
+                const csvContent = [
+                    headers.join(','),
+                    ...csvData.map(row => 
+                        row.map(field => {
+                            // 필드에 쉼표나 따옴표가 있으면 따옴표로 감싸기
+                            const fieldStr = String(field || '');
+                            if (fieldStr.includes(',') || fieldStr.includes('"') || fieldStr.includes('\n')) {
+                                return `"${fieldStr.replace(/"/g, '""')}"`;
+                            }
+                            return fieldStr;
+                        }).join(',')
+                    )
+                ].join('\n');
+                
+                // BOM 추가 (Excel에서 한글 깨짐 방지)
+                const BOM = '\uFEFF';
+                const csvWithBOM = BOM + csvContent;
+                
+                // 파일명 생성 (현재 날짜와 필터 정보 포함)
+                const now = new Date();
+                const dateStr = now.toISOString().split('T')[0];
+                const statusFilter = document.getElementById('status-filter').value;
+                const dateFilter = document.getElementById('date-filter').value;
+                
+                let fileName = `注文データ_${dateStr}`;
+                if (statusFilter) {
+                    const statusText = getStatusText(statusFilter);
+                    fileName += `_${statusText}`;
+                }
+                if (dateFilter !== 'all') {
+                    fileName += `_${dateFilter}`;
+                }
+                fileName += '.csv';
+                
+                // 파일 다운로드
+                const blob = new Blob([csvWithBOM], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', fileName);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                console.log(`✅ CSV 다운로드 완료: ${fileName} (${ordersToExport.length}건)`);
+                
+                // 성공 메시지 표시
+                showToast('CSVファイルをダウンロードしました', 'success', 3000);
+                
+            } catch (error) {
+                console.error('❌ CSV 다운로드 실패:', error);
+                alert('CSVダウンロード中にエラーが発生しました。');
+            }
+        }
+        
+        // 토스트 메시지 표시 함수
+        function showToast(message, type = 'info', duration = 3000) {
+            // 기존 토스트 제거
+            const existingToast = document.querySelector('.custom-toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+            
+            // 토스트 생성
+            const toast = document.createElement('div');
+            toast.className = 'custom-toast';
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 9999;
+                background: #f8f9fa;
+                border: 1px solid #6c757d;
+                border-radius: 8px;
+                padding: 12px 16px;
+                color: #343a40;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                font-size: 14px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                animation: slideInRight 0.3s ease-out;
+            `;
+            
+            toast.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-check-circle" style="color: #28a745;"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // 자동 제거
+            setTimeout(() => {
+                if (toast && toast.parentNode) {
+                    toast.style.animation = 'slideOutRight 0.3s ease-in';
+                    setTimeout(() => {
+                        if (toast && toast.parentNode) {
+                            toast.remove();
+                        }
+                    }, 300);
+                }
+            }, duration);
         }
         
         function exportOrders() {
