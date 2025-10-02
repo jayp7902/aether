@@ -4469,6 +4469,8 @@
                     currentCustomer.points += points;
                     document.getElementById('customer-points').textContent = currentCustomer.points.toLocaleString();
                     
+                    // 포인트 이력 새로고침
+                    loadCustomerPointHistory();
                     
                     // 성공 메시지
                     showAdminAlert(`${points}ポイントを付与しました！`, 'success');
@@ -13681,7 +13683,7 @@
                         }
                     });
                     
-                    // 클라이언트에서 정렬 및 제한
+                    // 클라이언트에서 정렬 및 제한 (최신순)
                     pointHistory.sort((a, b) => {
                         const getTimestamp = (item) => {
                             if (!item) return new Date(0);
@@ -13715,8 +13717,15 @@
                             // 기본값으로 현재 시간 사용
                             return new Date();
                         };
-                        return getTimestamp(b) - getTimestamp(a);
-                    }).slice(0, 10);
+                        
+                        const timeA = getTimestamp(a);
+                        const timeB = getTimestamp(b);
+                        
+                        // 최신순 정렬 (b - a)
+                        return timeB - timeA;
+                    });
+                    
+                    console.log('포인트 이력 정렬 완료:', pointHistory.length, '건');
                     
                     console.log('Firebase에서 포인트 이력 로드 완료:', pointHistory.length, '건');
                     
@@ -13778,7 +13787,17 @@
                         console.log('포인트 이력 정렬 결과 (최신순):');
                         pointHistory.forEach((item, index) => {
                             const timestamp = item.createdAt || item.timestamp;
-                            console.log(`${index + 1}. ${item.reason || item.description} - ${item.points || 0}pt (${item.type}) - ${timestamp}`);
+                            let timeStr = '';
+                            
+                            if (timestamp && timestamp.toDate && typeof timestamp.toDate === 'function') {
+                                timeStr = timestamp.toDate().toLocaleString('ja-JP');
+                            } else if (timestamp) {
+                                timeStr = new Date(timestamp).toLocaleString('ja-JP');
+                            } else {
+                                timeStr = '시간 정보 없음';
+                            }
+                            
+                            console.log(`${index + 1}. ${item.reason || item.description} - ${item.points || 0}pt (${item.type}) - ${timeStr}`);
                         });
                     } else {
                         console.log('포인트 이력이 없어서 포인트를 0으로 설정');
