@@ -1366,8 +1366,19 @@ class FirebaseService {
         }
 
         try {
-            const doc = await db.collection('users').doc(uid).get();
-            const points = doc.exists ? (doc.data().points || 0) : 0;
+            // 서버에서 직접 최신 데이터 가져오기 (포인트 페이지와 동일)
+            const doc = await db.collection('users').doc(uid).get({ source: 'server' });
+            const userData = doc.exists ? doc.data() : null;
+            const points = userData ? (userData.points || 0) : 0;
+            
+            // 포인트 페이지와 동일한 상세 로깅
+            console.log('🔍 getUserPoints 포인트 상세 분석:');
+            console.log('  - uid:', uid);
+            console.log('  - doc.exists:', doc.exists);
+            console.log('  - userData:', userData);
+            console.log('  - userData.points:', userData ? userData.points : 'N/A');
+            console.log('  - typeof userData.points:', userData ? typeof userData.points : 'N/A');
+            console.log('  - 최종 포인트 값:', points);
             
             console.log('포인트 조회 성공:', points);
             return points;
@@ -2276,13 +2287,23 @@ class FirebaseService {
                 const snapshot = await db.collection('users')
                     .where('qrToken', '==', qrToken)
                     .limit(1)
-                    .get();
+                    .get({ source: 'server' });
                 
                 if (!snapshot.empty) {
                     const userDoc = snapshot.docs[0];
                     const userData = userDoc.data();
                     
                     console.log('Firebase에서 QR 토큰 사용자 조회 성공');
+                    
+                    // 포인트 페이지와 동일한 상세 로깅
+                    console.log('🔍 QR토큰 검색 포인트 상세 분석:');
+                    console.log('  - userData.points:', userData.points);
+                    console.log('  - typeof userData.points:', typeof userData.points);
+                    console.log('  - userData.points === undefined:', userData.points === undefined);
+                    console.log('  - userData.points === null:', userData.points === null);
+                    console.log('  - userData.points === 0:', userData.points === 0);
+                    console.log('  - userData 전체 키:', Object.keys(userData));
+                    
                     console.log('Firebase 사용자 데이터:', {
                         uid: userDoc.id,
                         name: userData.name,
