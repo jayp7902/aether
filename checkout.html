@@ -2552,11 +2552,6 @@
                         } else {
                             console.log('ℹ️ 포인트 적립 없음 - 적립 이력 저장 건너뜀');
                         }
-                        
-                        // 포인트 사용/적립 후 현재 포인트 업데이트
-                        console.log('🔄 포인트 사용/적립 후 현재 포인트 업데이트');
-                        currentUserPoints = newPoints;
-                        showPointSection();
 
                         // Firebase 전용 주문 처리 완료
                         console.log('✅ Firebase 전용 주문 처리 완료:', {
@@ -2658,12 +2653,6 @@
                 } else {
                     // 카드 결제: 카트 비우고 포인트 페이지로 이동
                     await clearCart();
-                    
-                    // 포인트 업데이트 (카드 결제 완료 후)
-                    console.log('🔄 카드 결제 완료 후 포인트 업데이트');
-                    currentUserPoints = newPoints;
-                    showPointSection();
-                    
                     setTimeout(() => {
                         window.location.href = `points.html?newOrder=${orderId}&earnedPoints=${earnedPoints}`;
                     }, 1000);
@@ -3213,13 +3202,6 @@
                 // UI 업데이트
                 document.getElementById('point-discount').textContent = `-¥${pointsToUse.toLocaleString()}`;
                 
-                // 사용 가능한 포인트 표시 업데이트 (실시간)
-                const availablePointsEl = document.getElementById('available-points');
-                if (availablePointsEl) {
-                    const remainingPoints = Math.max(0, currentUserPoints - pointsToUse);
-                    availablePointsEl.textContent = remainingPoints.toLocaleString() + 'pt';
-                }
-                
                 // 주문 요약 업데이트
                 updateOrderSummary();
                 
@@ -3661,10 +3643,6 @@
                 } else {
                     console.warn('계좌 정보가 설정되지 않았습니다');
                 }
-                
-                // 포인트 업데이트 (계좌이체 완료 후)
-                console.log('🔄 계좌이체 완료 후 포인트 업데이트');
-                await forceLoadUserPoints();
                 
                 // 모달 표시
                 const modal = new bootstrap.Modal(document.getElementById('bankTransferCompleteModal'));
