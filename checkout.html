@@ -1648,10 +1648,20 @@
             }
             
             if (cart.length === 0) {
-                console.log('⚠️ renderOrderItems: 카트가 비어있어서 cart.html로 리디렉션');
-                setTimeout(() => {
-                window.location.href = 'cart.html';
-                }, 100);
+                console.log('⚠️ renderOrderItems: 카트가 비어있음');
+                
+                // 모달이 표시된 상태가 아닐 때만 리디렉션
+                const bankTransferModal = document.getElementById('bankTransferCompleteModal');
+                const isModalVisible = bankTransferModal && bankTransferModal.classList.contains('show');
+                
+                if (!isModalVisible) {
+                    console.log('⚠️ 모달이 표시되지 않음 - cart.html로 리디렉션');
+                    setTimeout(() => {
+                        window.location.href = 'cart.html';
+                    }, 100);
+                } else {
+                    console.log('✅ 모달이 표시됨 - 리디렉션 건너뜀');
+                }
                 return;
             }
 
@@ -3648,14 +3658,28 @@
         
         // 계좌이체 완료 모달 닫기 및 메인 페이지로 이동
         async function closeBankTransferModal() {
-            console.log('🗑️ 카트 비우기 및 메인 페이지로 이동');
+            console.log('🗑️ 모달 닫기 및 메인 페이지로 이동');
             
             try {
-                // 카트 비우기
-                await clearCart();
-                console.log('✅ 카트 비우기 완료');
+                // 모달 먼저 닫기
+                const modal = bootstrap.Modal.getInstance(document.getElementById('bankTransferCompleteModal'));
+                if (modal) {
+                    modal.hide();
+                    console.log('✅ 모달 닫기 완료');
+                }
+                
+                // 잠시 대기 후 카트 비우기
+                setTimeout(async () => {
+                    try {
+                        await clearCart();
+                        console.log('✅ 카트 비우기 완료');
+                    } catch (error) {
+                        console.error('❌ 카트 비우기 실패:', error);
+                    }
+                }, 500);
+                
             } catch (error) {
-                console.error('❌ 카트 비우기 실패:', error);
+                console.error('❌ 모달 닫기 실패:', error);
             }
             
             // 메인 페이지로 이동
