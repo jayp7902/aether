@@ -658,10 +658,43 @@
         
         // 주문 아이템 HTML 생성
         function createOrderItemHTML(order) {
-            const orderDate = new Date(order.orderDate).toLocaleDateString('ja-JP');
+            // 날짜 처리 - 여러 필드에서 날짜 찾기
+            let orderDate = '날짜 없음';
+            if (order.orderDate) {
+                const date = new Date(order.orderDate.seconds ? order.orderDate.seconds * 1000 : order.orderDate);
+                if (!isNaN(date.getTime())) {
+                    orderDate = date.toLocaleDateString('ja-JP');
+                }
+            } else if (order.createdAt) {
+                const date = new Date(order.createdAt.seconds ? order.createdAt.seconds * 1000 : order.createdAt);
+                if (!isNaN(date.getTime())) {
+                    orderDate = date.toLocaleDateString('ja-JP');
+                }
+            }
+            
             const totalAmount = order.totalAmount ? order.totalAmount.toLocaleString() : '0';
-            const customerName = order.customer ? order.customer.name : '不明';
-            const customerEmail = order.customer ? order.customer.email : '';
+            
+            // 고객 이름 처리 - 여러 필드에서 이름 찾기
+            let customerName = '不明';
+            if (order.customer && order.customer.name && order.customer.name !== 'null') {
+                customerName = order.customer.name;
+            } else if (order.userName && order.userName !== 'null') {
+                customerName = order.userName;
+            } else if (order.customerName && order.customerName !== 'null') {
+                customerName = order.customerName;
+            }
+            
+            const customerEmail = order.customer ? order.customer.email : (order.customerEmail || order.userEmail || '');
+            
+            // 결제 방법 처리
+            let paymentMethod = '不明';
+            if (order.paymentMethod) {
+                paymentMethod = order.paymentMethod === 'card' ? 'カード' : 
+                               order.paymentMethod === 'bank-transfer' ? '銀行振込' : order.paymentMethod;
+            } else if (order.payment && order.payment.method) {
+                paymentMethod = order.payment.method === 'card' ? 'カード' : 
+                               order.payment.method === 'bank-transfer' ? '銀行振込' : order.payment.method;
+            }
             
             return `
                 <div class="order-item">
@@ -682,6 +715,7 @@
                         <div class="col-md-2">
                             <div class="fw-bold">¥${totalAmount}</div>
                             <small class="text-muted">${order.items ? order.items.length : 0} 商品</small>
+                            <br><small class="text-muted">${paymentMethod}</small>
                         </div>
                         <div class="col-md-4">
                             <div class="order-actions">
@@ -798,8 +832,44 @@
         
         // 주문 상세 HTML 생성
         function createOrderDetailHTML(order) {
-            const orderDate = new Date(order.orderDate).toLocaleString('ja-JP');
+            // 날짜 처리 - 여러 필드에서 날짜 찾기
+            let orderDate = '날짜 없음';
+            if (order.orderDate) {
+                const date = new Date(order.orderDate.seconds ? order.orderDate.seconds * 1000 : order.orderDate);
+                if (!isNaN(date.getTime())) {
+                    orderDate = date.toLocaleString('ja-JP');
+                }
+            } else if (order.createdAt) {
+                const date = new Date(order.createdAt.seconds ? order.createdAt.seconds * 1000 : order.createdAt);
+                if (!isNaN(date.getTime())) {
+                    orderDate = date.toLocaleString('ja-JP');
+                }
+            }
+            
             const totalAmount = order.totalAmount ? order.totalAmount.toLocaleString() : '0';
+            
+            // 고객 이름 처리 - 여러 필드에서 이름 찾기
+            let customerName = '不明';
+            if (order.customer && order.customer.name && order.customer.name !== 'null') {
+                customerName = order.customer.name;
+            } else if (order.userName && order.userName !== 'null') {
+                customerName = order.userName;
+            } else if (order.customerName && order.customerName !== 'null') {
+                customerName = order.customerName;
+            }
+            
+            const customerEmail = order.customer ? order.customer.email : (order.customerEmail || order.userEmail || '不明');
+            const customerPhone = order.customer ? order.customer.phone : (order.customerPhone || '不明');
+            
+            // 결제 방법 처리
+            let paymentMethod = '不明';
+            if (order.paymentMethod) {
+                paymentMethod = order.paymentMethod === 'card' ? 'カード' : 
+                               order.paymentMethod === 'bank-transfer' ? '銀行振込' : order.paymentMethod;
+            } else if (order.payment && order.payment.method) {
+                paymentMethod = order.payment.method === 'card' ? 'カード' : 
+                               order.payment.method === 'bank-transfer' ? '銀行振込' : order.payment.method;
+            }
             
             let itemsHTML = '';
             if (order.items && order.items.length > 0) {
@@ -822,14 +892,15 @@
                             <tr><td>注文日時:</td><td>${orderDate}</td></tr>
                             <tr><td>状態:</td><td><span class="order-status status-${order.status}">${getStatusText(order.status)}</span></td></tr>
                             <tr><td>合計金額:</td><td class="fw-bold">¥${totalAmount}</td></tr>
+                            <tr><td>支払い方法:</td><td>${paymentMethod}</td></tr>
                         </table>
                     </div>
                     <div class="col-md-6">
                         <h6 class="japanese-heading">顧客情報</h6>
                         <table class="table table-sm">
-                            <tr><td>名前:</td><td>${order.customer ? order.customer.name : '不明'}</td></tr>
-                            <tr><td>メール:</td><td>${order.customer ? order.customer.email : '不明'}</td></tr>
-                            <tr><td>電話:</td><td>${order.customer ? order.customer.phone : '不明'}</td></tr>
+                            <tr><td>名前:</td><td>${customerName}</td></tr>
+                            <tr><td>メール:</td><td>${customerEmail}</td></tr>
+                            <tr><td>電話:</td><td>${customerPhone}</td></tr>
                         </table>
                     </div>
                 </div>
@@ -869,7 +940,16 @@
                 
                 // 날짜 필터
                 if (dateFilter !== 'all') {
-                    const orderDate = new Date(order.orderDate);
+                    // 날짜 처리 - 여러 필드에서 날짜 찾기
+                    let orderDate = null;
+                    if (order.orderDate) {
+                        orderDate = new Date(order.orderDate.seconds ? order.orderDate.seconds * 1000 : order.orderDate);
+                    } else if (order.createdAt) {
+                        orderDate = new Date(order.createdAt.seconds ? order.createdAt.seconds * 1000 : order.createdAt);
+                    }
+                    
+                    if (!orderDate || isNaN(orderDate.getTime())) return false;
+                    
                     const now = new Date();
                     
                     switch(dateFilter) {
