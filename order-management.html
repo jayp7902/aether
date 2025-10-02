@@ -354,20 +354,35 @@
         
         // 주문 관리 시스템 초기화
         function initializeOrderManagement() {
-            console.log('🔍 FirebaseService 초기화 대기 중...');
+            console.log('🔍 Firebase 초기화 이벤트 대기 중...');
             
-            // FirebaseService가 초기화될 때까지 대기
-            const checkFirebaseService = () => {
+            // Firebase 초기화 이벤트 리스너 등록
+            window.addEventListener('firebaseInitialized', function(event) {
+                console.log('🎉 Firebase 초기화 이벤트 수신:', event.detail);
+                
+                // FirebaseService 인스턴스 생성
+                if (window.FirebaseService && !window.FirebaseService.db) {
+                    const firebaseService = new window.FirebaseService();
+                    window.FirebaseService.db = firebaseService.db;
+                    console.log('✅ FirebaseService 인스턴스 생성 완료');
+                }
+                
+                // 주문 데이터 로드 시작
+                setTimeout(() => {
+                    console.log('📊 주문 데이터 로드 시작');
+                    loadOrders();
+                }, 500);
+            });
+            
+            // 백업: FirebaseService 직접 확인 (이벤트가 발생하지 않은 경우)
+            setTimeout(() => {
                 if (window.FirebaseService && window.FirebaseService.db) {
-                    console.log('✅ FirebaseService 초기화 완료, 주문 데이터 로드 시작');
+                    console.log('✅ FirebaseService 직접 확인 성공, 주문 데이터 로드 시작');
                     loadOrders();
                 } else {
-                    console.log('⏳ FirebaseService 초기화 대기 중...');
-                    setTimeout(checkFirebaseService, 100);
+                    console.log('⚠️ Firebase 초기화 이벤트를 기다리는 중...');
                 }
-            };
-            
-            checkFirebaseService();
+            }, 2000);
         }
         
         // 주문 데이터 로드
