@@ -13628,7 +13628,7 @@
                         userEmail: currentCustomer.email
                     });
                     
-                    const historySnapshot = await db.collection('pointHistory').get();
+                    const historySnapshot = await db.collection('pointHistory').get({ source: 'server' });
                     
                     const pointHistory = [];
                     historySnapshot.forEach(doc => {
@@ -13686,13 +13686,38 @@
                     
                     console.log('Firebase에서 포인트 이력 로드 완료:', pointHistory.length, '건');
                     
-                    // 정렬 결과 확인을 위한 로그
+                    // 포인트 이력에서 실제 포인트 계산
+                    let calculatedPoints = 0;
                     if (pointHistory.length > 0) {
+                        calculatedPoints = pointHistory.reduce((total, item) => {
+                            // 포인트 이력에서 포인트 값 찾기 (여러 필드명 확인)
+                            const points = item.points || item.pointChange || item.amount || 0;
+                            console.log(`포인트 이력 항목: ${item.reason || item.description || item.type} - ${points}pt`);
+                            console.log(`  - item.points: ${item.points}`);
+                            console.log(`  - item.pointChange: ${item.pointChange}`);
+                            console.log(`  - item.amount: ${item.amount}`);
+                            return total + points;
+                        }, 0);
+                        
+                        console.log('🔍 포인트 이력에서 계산된 총 포인트:', calculatedPoints);
+                        console.log('🔍 기존 userData.points:', currentCustomer.points);
+                        
+                        // 계산된 포인트로 고객 정보 업데이트
+                        currentCustomer.points = calculatedPoints;
+                        
+                        // UI에 계산된 포인트 표시
+                        document.getElementById('customer-points').textContent = calculatedPoints.toLocaleString();
+                        
+                        // 정렬 결과 확인을 위한 로그
                         console.log('포인트 이력 정렬 결과 (최신순):');
                         pointHistory.forEach((item, index) => {
                             const timestamp = item.createdAt || item.timestamp;
-                            console.log(`${index + 1}. ${item.reason || item.description} - ${timestamp}`);
+                            console.log(`${index + 1}. ${item.reason || item.description} - ${item.points || 0}pt - ${timestamp}`);
                         });
+                    } else {
+                        console.log('포인트 이력이 없어서 포인트를 0으로 설정');
+                        currentCustomer.points = 0;
+                        document.getElementById('customer-points').textContent = '0';
                     }
                     
                     displayCustomerPointHistory(pointHistory);
@@ -13764,16 +13789,19 @@
                     minute: '2-digit'
                 });
 
+                // 포인트 값 찾기 (여러 필드명 확인)
+                const points = item.points || item.pointChange || item.amount || 0;
+                
                 let pointsStr, pointsClass;
                 if (item.type === 'use' || item.type === 'admin_subtract') {
-                    pointsStr = `-${item.points}`;
+                    pointsStr = `-${points}`;
                     pointsClass = 'text-danger';
                 } else if (item.type === 'earn' || item.type === 'admin_add') {
-                    pointsStr = `+${item.points}`;
+                    pointsStr = `+${points}`;
                     pointsClass = 'text-success';
                 } else {
-                    pointsStr = item.points > 0 ? `+${item.points}` : item.points;
-                    pointsClass = item.points > 0 ? 'text-success' : 'text-dark';
+                    pointsStr = points > 0 ? `+${points}` : points;
+                    pointsClass = points > 0 ? 'text-success' : 'text-dark';
                 }
 
                 let description = 'ポイント取引';
