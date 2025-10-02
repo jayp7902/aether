@@ -30,23 +30,31 @@
         
         .order-stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 1rem;
             margin-bottom: 2rem;
         }
         
         .stat-card {
             background: white;
-            border-radius: 15px;
-            padding: 1.5rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.08);
             border-left: 4px solid #6c757d;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            text-align: center;
         }
         
         .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+        
+        .stat-card.active {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            border-left-width: 6px;
         }
         
         .stat-card.pending { border-left-color: #ffc107; }
@@ -56,17 +64,18 @@
         .stat-card.cancelled { border-left-color: #dc3545; }
         
         .stat-number {
-            font-size: 2.5rem;
+            font-size: 1.8rem;
             font-weight: bold;
             color: #212529;
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.3rem;
         }
         
         .stat-label {
             color: #6c757d;
-            font-size: 0.9rem;
+            font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            line-height: 1.2;
         }
         
         .order-filters {
@@ -190,8 +199,20 @@
             }
             
             .order-stats-grid {
-                grid-template-columns: 1fr;
-                gap: 1rem;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 0.5rem;
+            }
+            
+            .stat-card {
+                padding: 0.8rem 0.5rem;
+            }
+            
+            .stat-number {
+                font-size: 1.4rem;
+            }
+            
+            .stat-label {
+                font-size: 0.65rem;
             }
             
             .order-item {
@@ -201,6 +222,24 @@
             .order-actions {
                 justify-content: center;
                 margin-top: 1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .order-stats-grid {
+                gap: 0.3rem;
+            }
+            
+            .stat-card {
+                padding: 0.6rem 0.3rem;
+            }
+            
+            .stat-number {
+                font-size: 1.2rem;
+            }
+            
+            .stat-label {
+                font-size: 0.6rem;
             }
         }
     </style>
@@ -232,23 +271,23 @@
                 
                 <!-- 주문 통계 -->
                 <div class="order-stats-grid">
-                    <div class="stat-card pending">
+                    <div class="stat-card pending" onclick="filterByStatus('pending')" data-status="pending">
                         <div class="stat-number" id="pending-count">0</div>
                         <div class="stat-label">処理待ち</div>
                     </div>
-                    <div class="stat-card processing">
+                    <div class="stat-card processing" onclick="filterByStatus('processing')" data-status="processing">
                         <div class="stat-number" id="processing-count">0</div>
                         <div class="stat-label">処理中</div>
                     </div>
-                    <div class="stat-card shipping">
+                    <div class="stat-card shipping" onclick="filterByStatus('shipping')" data-status="shipping">
                         <div class="stat-number" id="shipping-count">0</div>
                         <div class="stat-label">配送中</div>
                     </div>
-                    <div class="stat-card completed">
+                    <div class="stat-card completed" onclick="filterByStatus('completed')" data-status="completed">
                         <div class="stat-number" id="completed-count">0</div>
                         <div class="stat-label">完了</div>
                     </div>
-                    <div class="stat-card cancelled">
+                    <div class="stat-card cancelled" onclick="filterByStatus('cancelled')" data-status="cancelled">
                         <div class="stat-number" id="cancelled-count">0</div>
                         <div class="stat-label">キャンセル</div>
                     </div>
@@ -411,7 +450,7 @@
             const ordersRef = db.collection('orders');
             console.log('📋 orders 컬렉션 참조 생성 완료');
             
-            ordersRef.get()
+            ordersRef.orderBy('orderDate', 'desc').get()
                 .then((querySnapshot) => {
                     allOrders = [];
                     console.log('📋 Firestore 쿼리 결과:', querySnapshot.size, '개 문서');
@@ -423,12 +462,21 @@
                         allOrders.push(orderData);
                     });
                     
-                    console.log('✅ 주문 데이터 로드 완료:', allOrders.length, '개');
+                    // 날짜별로 다시 정렬 (최신순)
+                    allOrders.sort((a, b) => {
+                        const dateA = new Date(a.orderDate || a.createdAt || 0);
+                        const dateB = new Date(b.orderDate || b.createdAt || 0);
+                        return dateB - dateA;
+                    });
+                    
+                    console.log('✅ 주문 데이터 로드 완료:', allOrders.length, '개 (최신순 정렬)');
                     
                     if (allOrders.length === 0) {
                         console.log('⚠️ 주문 데이터가 없습니다. Firebase 콘솔에서 orders 컬렉션을 확인해주세요.');
                         showEmptyState();
                     } else {
+                        // 초기 필터링 적용 (모든 주문 표시)
+                        filteredOrders = [...allOrders];
                         updateOrderStatistics();
                         displayOrders();
                     }
@@ -563,6 +611,26 @@
             document.getElementById('shipping-count').textContent = stats.shipping;
             document.getElementById('completed-count').textContent = stats.completed;
             document.getElementById('cancelled-count').textContent = stats.cancelled;
+        }
+        
+        // 통계 카드 클릭으로 필터링
+        function filterByStatus(status) {
+            // 모든 통계 카드에서 active 클래스 제거
+            document.querySelectorAll('.stat-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
+            // 클릭된 카드에 active 클래스 추가
+            const clickedCard = document.querySelector(`[data-status="${status}"]`);
+            if (clickedCard) {
+                clickedCard.classList.add('active');
+            }
+            
+            // 상태 필터 설정
+            document.getElementById('status-filter').value = status;
+            
+            // 필터링 적용
+            filterOrders();
         }
         
         // 주문 목록 표시
@@ -841,8 +909,13 @@
         }
         
         function clearAllFilters() {
+            // 모든 통계 카드에서 active 클래스 제거
+            document.querySelectorAll('.stat-card').forEach(card => {
+                card.classList.remove('active');
+            });
+            
             document.getElementById('status-filter').value = '';
-            document.getElementById('date-filter').value = 'today';
+            document.getElementById('date-filter').value = 'all';
             document.getElementById('search-input').value = '';
             filterOrders();
         }
@@ -882,12 +955,7 @@
             console.log('ℹ️', message);
         }
         
-        // 초기 필터링 적용
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(() => {
-                filterOrders();
-            }, 1000);
-        });
+        // 초기 필터링 적용 (제거 - loadOrders에서 처리)
     </script>
 </body>
 </html>
