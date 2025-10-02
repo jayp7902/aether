@@ -252,7 +252,7 @@ async function initializeFirebase() {
         window.firebaseLastRequest = Date.now();
         
         // 전역 Firebase 객체 설정
-        setGlobalFirebaseObjects();
+        setGlobalFirebaseObjects(auth, db, storage);
         
         // Firebase 초기화 완료 이벤트 발생
         window.dispatchEvent(new CustomEvent('firebaseInitialized', {
@@ -2834,16 +2834,26 @@ window.FirebaseService_isFirebaseAvailable = function() {
 };
 
 // Firebase 객체들을 안전하게 전역 변수로 노출 (초기화 완료 후)
-function setGlobalFirebaseObjects() {
+function setGlobalFirebaseObjects(auth, db, storage) {
     console.log('🔧 전역 Firebase 객체 설정 중...');
     
+    // 전역 변수로 Firebase 객체들 설정
+    if (auth) {
+        window.auth = auth;
+        console.log('✅ window.auth 설정 완료');
+    }
+    if (db) {
+        window.db = db;
+        console.log('✅ window.db 설정 완료');
+    }
+    if (storage) {
+        window.storage = storage;
+        console.log('✅ window.storage 설정 완료');
+    }
+    
     // FirebaseService에 db 인스턴스 설정
-    if (window.FirebaseService && window.FirebaseService.db) {
-        console.log('✅ FirebaseService.db 이미 설정됨');
-    } else if (window.FirebaseService) {
-        // FirebaseService 인스턴스 생성 및 db 설정
-        const firebaseService = new window.FirebaseService();
-        window.FirebaseService.db = firebaseService.db;
+    if (window.FirebaseService && db) {
+        window.FirebaseService.db = db;
         console.log('✅ FirebaseService.db 설정 완료');
     }
     
