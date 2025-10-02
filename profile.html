@@ -1007,12 +1007,20 @@
                     <div class="alert alert-secondary japanese-text" role="alert">
                         <strong>⚠️ 重要な警告</strong><br>
                         アカウントを削除すると、以下のデータがすべて失われます：
-                        <ul class="mt-2 mb-0">
+                        <ul class="mt-2 mb-2">
                             <li>プロフィール情報</li>
                             <li>注文履歴</li>
                             <li>配送先住所</li>
+                            <li>ポイント履歴</li>
                         </ul>
                         <strong>この操作は取り消すことができません。</strong>
+                    </div>
+                    
+                    <div class="alert alert-warning japanese-text" role="alert">
+                        <strong>📋 再登録制限について</strong><br>
+                        アカウント削除後、同一のメールアドレスによる再登録は<strong>6ヶ月間制限</strong>されます。<br>
+                        この制限は、ウェルカムボーナスポイントの濫用防止を目的としています。<br>
+                        <small class="text-muted">詳細は<a href="#" onclick="showTermsModal()" class="text-decoration-none">利用規約</a>をご確認ください。</small>
                     </div>
                     
                     <div class="alert alert-light japanese-text d-none" id="delete-alert"></div>
@@ -3507,7 +3515,29 @@
         // DOMContentLoaded 이벤트 리스너
 
     </script>
-    
+
+    <!-- 利用規約 Modal -->
+    <div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title japanese-heading" id="termsModalLabel">利用規約</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body japanese-text">
+                    <h6>第10条（アカウント削除および再登録制限）</h6>
+                    <p>1. お客様がアカウントを削除した場合、当社は当該お客様の個人情報および関連データを削除します。</p>
+                    <p>2. アカウント削除後、同一のメールアドレスによる再登録は6ヶ月間制限されます。この制限は、ウェルカムボーナスポイントの濫用防止およびサービスの健全な運営を目的とします。</p>
+                    <p>3. 再登録制限期間中に同一メールアドレスで登録を試行した場合、当社は登録を拒否することができます。</p>
+                    <p>4. 6ヶ月経過後、同一メールアドレスによる再登録が可能となります。</p>
+                    <p>5. 当社は、システムの記録により削除されたアカウントの履歴を追跡し、不正な再登録を防止するための措置を講じることができます。</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary japanese-text" data-bs-dismiss="modal">閉じる</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>
