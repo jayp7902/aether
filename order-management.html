@@ -680,7 +680,11 @@
                 }
             }
             
-            const totalAmount = order.totalAmount ? order.totalAmount.toLocaleString() : '0';
+            // 금액 정보 처리
+            const subtotal = order.subtotal || order.originalAmount || 0;
+            const shippingFee = order.shippingFee || order.shipping?.shippingFee || 0;
+            const usedPoints = order.usedPoints || order.pointDiscount || 0;
+            const totalAmount = order.totalAmount || 0;
             
             // 고객 이름 처리 - shipping.name 우선, 여러 필드에서 이름 찾기
             let customerName = '不明';
@@ -735,8 +739,10 @@
                             </span>
                         </div>
                         <div class="col-md-2">
-                            <div class="fw-bold">¥${totalAmount}</div>
-                            <small class="text-muted">${order.items ? order.items.length : 0} 商品</small>
+                            <div class="fw-bold">¥${totalAmount.toLocaleString()}</div>
+                            <small class="text-muted">商品: ¥${subtotal.toLocaleString()}</small>
+                            ${shippingFee > 0 ? `<br><small class="text-muted">配送: ¥${shippingFee.toLocaleString()}</small>` : ''}
+                            ${usedPoints > 0 ? `<br><small class="text-muted">ポイント: -¥${usedPoints.toLocaleString()}</small>` : ''}
                             <br><small class="text-muted">${paymentMethod}</small>
                         </div>
                         <div class="col-md-4">
@@ -870,7 +876,11 @@
                 }
             }
             
-            const totalAmount = order.totalAmount ? order.totalAmount.toLocaleString() : '0';
+            // 금액 정보 처리 (상세 모달용)
+            const subtotal = order.subtotal || order.originalAmount || 0;
+            const shippingFee = order.shippingFee || order.shipping?.shippingFee || 0;
+            const usedPoints = order.usedPoints || order.pointDiscount || 0;
+            const totalAmount = order.totalAmount || 0;
             
             // 고객 이름 처리 - shipping.name 우선, 여러 필드에서 이름 찾기
             let customerName = '不明';
@@ -929,7 +939,10 @@
                             <tr><td>注文番号:</td><td>${order.id}</td></tr>
                             <tr><td>注文日時:</td><td>${orderDate}</td></tr>
                             <tr><td>状態:</td><td><span class="order-status status-${order.status}">${getStatusText(order.status)}</span></td></tr>
-                            <tr><td>合計金額:</td><td class="fw-bold">¥${totalAmount}</td></tr>
+                            <tr><td>商品金額:</td><td>¥${subtotal.toLocaleString()}</td></tr>
+                            ${shippingFee > 0 ? `<tr><td>配送料:</td><td>¥${shippingFee.toLocaleString()}</td></tr>` : ''}
+                            ${usedPoints > 0 ? `<tr><td>ポイント使用:</td><td>-¥${usedPoints.toLocaleString()}</td></tr>` : ''}
+                            <tr><td>合計金額:</td><td class="fw-bold">¥${totalAmount.toLocaleString()}</td></tr>
                             <tr><td>支払い方法:</td><td>${paymentMethod}</td></tr>
                         </table>
                     </div>
