@@ -117,6 +117,7 @@
         }
         
         .status-pending { background: #fff3cd; color: #856404; }
+        .status-pending_payment { background: #fff3cd; color: #856404; }
         .status-processing { background: #d1ecf1; color: #0c5460; }
         .status-shipping { background: #cce5ff; color: #004085; }
         .status-completed { background: #d4edda; color: #155724; }
@@ -660,17 +661,17 @@
         
         // 주문 아이템 HTML 생성
         function createOrderItemHTML(order) {
-            // 날짜 처리 - 여러 필드에서 날짜 찾기
+            // 날짜 처리 - 여러 필드에서 날짜 찾기 (날짜 + 시간)
             let orderDate = '날짜 없음';
             if (order.orderDate) {
                 const date = new Date(order.orderDate.seconds ? order.orderDate.seconds * 1000 : order.orderDate);
                 if (!isNaN(date.getTime())) {
-                    orderDate = date.toLocaleDateString('ja-JP');
+                    orderDate = date.toLocaleDateString('ja-JP') + ' ' + date.toLocaleTimeString('ja-JP', {hour: '2-digit', minute: '2-digit'});
                 }
             } else if (order.createdAt) {
                 const date = new Date(order.createdAt.seconds ? order.createdAt.seconds * 1000 : order.createdAt);
                 if (!isNaN(date.getTime())) {
-                    orderDate = date.toLocaleDateString('ja-JP');
+                    orderDate = date.toLocaleDateString('ja-JP') + ' ' + date.toLocaleTimeString('ja-JP', {hour: '2-digit', minute: '2-digit'});
                 }
             }
             
@@ -750,6 +751,7 @@
         function getActionButtons(status, orderId) {
             switch(status) {
                 case 'pending':
+                case 'pending_payment':
                     return `
                         <button class="btn btn-action btn-process" onclick="updateOrderStatus('${orderId}', 'processing')">
                             <i class="fas fa-check me-1"></i>処理開始
@@ -849,7 +851,7 @@
         
         // 주문 상세 HTML 생성
         function createOrderDetailHTML(order) {
-            // 날짜 처리 - 여러 필드에서 날짜 찾기
+            // 날짜 처리 - 여러 필드에서 날짜 찾기 (날짜 + 시간)
             let orderDate = '날짜 없음';
             if (order.orderDate) {
                 const date = new Date(order.orderDate.seconds ? order.orderDate.seconds * 1000 : order.orderDate);
