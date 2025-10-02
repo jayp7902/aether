@@ -4407,7 +4407,8 @@
                     console.log('  - 최종 포인트 값:', userPoints);
                     
                     currentCustomer = {
-                        uid: userDoc.id,
+                        uid: userData.uid || userDoc.id, // 실제 UID 우선, 없으면 문서 ID
+                        documentId: userDoc.id, // 문서 ID 별도 저장
                         name: userData.name || userData.displayName || 'Unknown',
                         email: userData.email || email,
                         points: userPoints,
@@ -13647,13 +13648,16 @@
                             points: data.points,
                             reason: data.reason,
                             currentUserUid: currentCustomer.uid,
-                            currentUserEmail: currentCustomer.email
+                            currentUserDocumentId: currentCustomer.documentId,
+                            currentUserEmail: currentCustomer.email,
+                            timestamp: data.createdAt || data.timestamp
                         });
                         
-                        // 포인트 페이지와 동일한 매칭 조건
+                        // 포인트 페이지와 동일한 매칭 조건 + 문서 ID도 확인
                         if (data.userId === currentCustomer.uid || 
                             data.userEmail === currentCustomer.email ||
-                            data.userId === currentCustomer.email) {
+                            data.userId === currentCustomer.email ||
+                            data.userId === currentCustomer.documentId) {
                             
                             pointHistory.push({
                                 id: doc.id,
