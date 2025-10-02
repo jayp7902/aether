@@ -13704,11 +13704,15 @@
                                 usedPoints += points;
                                 console.log('사용 포인트 추가:', points, '총 사용:', usedPoints);
                             } else {
-                                // 타입이 없는 경우 포인트 값이 양수면 적립, 음수면 사용으로 처리
+                                // 타입이 없는 경우 포인트 값이 양수면 적립, 음수면 사용으로 처리 (포인트 페이지와 동일)
                                 if (points > 0) {
                                     earnedPoints += points;
+                                    console.log('타입 없음 - 양수 포인트 적립:', points, '총 적립:', earnedPoints);
                                 } else if (points < 0) {
                                     usedPoints += Math.abs(points);
+                                    console.log('타입 없음 - 음수 포인트 사용:', Math.abs(points), '총 사용:', usedPoints);
+                                } else {
+                                    console.log('타입 없음 - 포인트 0:', points);
                                 }
                             }
                         });
@@ -13820,7 +13824,7 @@
                     pointsStr = `+${points}`;
                     pointsClass = 'text-success';
                 } else {
-                    // 타입이 없는 경우 포인트 값에 따라 표시
+                    // 타입이 없는 경우 포인트 값에 따라 표시 (양수면 적립, 음수면 사용)
                     if (points > 0) {
                         pointsStr = `+${points}`;
                         pointsClass = 'text-success';
