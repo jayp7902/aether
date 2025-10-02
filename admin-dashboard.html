@@ -473,6 +473,26 @@
             border-color: #dee2e6;
         }
 
+        /* 주문 관리 링크 스타일 */
+        .order-management-link {
+            display: inline-block;
+            padding: 12px 20px;
+            color: #6c757d;
+            text-decoration: none;
+            border: 2px solid transparent;
+            border-radius: 25px;
+            margin: 0 5px;
+            font-weight: 500;
+            transition: all 0.15s ease-in-out;
+        }
+
+        .order-management-link:hover {
+            background: #f8f9fa;
+            border-color: #dee2e6;
+            color: #495057;
+            text-decoration: none;
+        }
+
         /* 탭 전환 애니메이션 */
         .tab-pane {
             transition: opacity 0.3s ease-in-out;
@@ -1331,7 +1351,7 @@
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                        <a href="order-management.html" class="nav-link" id="orders-tab">
+                        <a href="order-management.html" class="nav-link order-management-link" id="orders-tab">
                         <i class="fas fa-shopping-cart me-2"></i>注文管理
                     </a>
                 </li>
