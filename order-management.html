@@ -594,6 +594,7 @@
         function updateOrderStatistics() {
             const stats = {
                 pending: 0,
+                pending_payment: 0,
                 processing: 0,
                 shipping: 0,
                 completed: 0,
@@ -606,7 +607,8 @@
                 }
             });
             
-            document.getElementById('pending-count').textContent = stats.pending;
+            // pending과 pending_payment를 합쳐서 표시
+            document.getElementById('pending-count').textContent = stats.pending + stats.pending_payment;
             document.getElementById('processing-count').textContent = stats.processing;
             document.getElementById('shipping-count').textContent = stats.shipping;
             document.getElementById('completed-count').textContent = stats.completed;
@@ -674,9 +676,11 @@
             
             const totalAmount = order.totalAmount ? order.totalAmount.toLocaleString() : '0';
             
-            // 고객 이름 처리 - 여러 필드에서 이름 찾기
+            // 고객 이름 처리 - shipping.name 우선, 여러 필드에서 이름 찾기
             let customerName = '不明';
-            if (order.customer && order.customer.name && order.customer.name !== 'null') {
+            if (order.shipping && order.shipping.name && order.shipping.name !== 'null') {
+                customerName = order.shipping.name;
+            } else if (order.customer && order.customer.name && order.customer.name !== 'null') {
                 customerName = order.customer.name;
             } else if (order.userName && order.userName !== 'null') {
                 customerName = order.userName;
@@ -685,6 +689,17 @@
             }
             
             const customerEmail = order.customer ? order.customer.email : (order.customerEmail || order.userEmail || '');
+            
+            // 배송 주소 처리
+            let shippingAddress = '';
+            if (order.shipping) {
+                const parts = [];
+                if (order.shipping.prefecture) parts.push(order.shipping.prefecture);
+                if (order.shipping.city) parts.push(order.shipping.city);
+                if (order.shipping.address1) parts.push(order.shipping.address1);
+                if (order.shipping.address2) parts.push(order.shipping.address2);
+                shippingAddress = parts.join(' ');
+            }
             
             // 결제 방법 처리
             let paymentMethod = '不明';
@@ -706,6 +721,7 @@
                         <div class="col-md-2">
                             <div class="fw-bold">${customerName}</div>
                             <small class="text-muted">${customerEmail}</small>
+                            ${shippingAddress ? `<br><small class="text-muted">${shippingAddress}</small>` : ''}
                         </div>
                         <div class="col-md-2">
                             <span class="order-status status-${order.status}">
@@ -767,6 +783,7 @@
         function getStatusText(status) {
             const statusMap = {
                 'pending': '処理待ち',
+                'pending_payment': '支払い待ち',
                 'processing': '処理中',
                 'shipping': '配送中',
                 'completed': '完了',
@@ -848,9 +865,11 @@
             
             const totalAmount = order.totalAmount ? order.totalAmount.toLocaleString() : '0';
             
-            // 고객 이름 처리 - 여러 필드에서 이름 찾기
+            // 고객 이름 처리 - shipping.name 우선, 여러 필드에서 이름 찾기
             let customerName = '不明';
-            if (order.customer && order.customer.name && order.customer.name !== 'null') {
+            if (order.shipping && order.shipping.name && order.shipping.name !== 'null') {
+                customerName = order.shipping.name;
+            } else if (order.customer && order.customer.name && order.customer.name !== 'null') {
                 customerName = order.customer.name;
             } else if (order.userName && order.userName !== 'null') {
                 customerName = order.userName;
@@ -859,7 +878,19 @@
             }
             
             const customerEmail = order.customer ? order.customer.email : (order.customerEmail || order.userEmail || '不明');
-            const customerPhone = order.customer ? order.customer.phone : (order.customerPhone || '不明');
+            const customerPhone = order.shipping ? order.shipping.phone : (order.customer ? order.customer.phone : (order.customerPhone || '不明'));
+            
+            // 배송 주소 처리 (상세 모달용)
+            let fullShippingAddress = '';
+            if (order.shipping) {
+                const parts = [];
+                if (order.shipping.postal) parts.push(`〒${order.shipping.postal}`);
+                if (order.shipping.prefecture) parts.push(order.shipping.prefecture);
+                if (order.shipping.city) parts.push(order.shipping.city);
+                if (order.shipping.address1) parts.push(order.shipping.address1);
+                if (order.shipping.address2) parts.push(order.shipping.address2);
+                fullShippingAddress = parts.join(' ');
+            }
             
             // 결제 방법 처리
             let paymentMethod = '不明';
@@ -901,6 +932,7 @@
                             <tr><td>名前:</td><td>${customerName}</td></tr>
                             <tr><td>メール:</td><td>${customerEmail}</td></tr>
                             <tr><td>電話:</td><td>${customerPhone}</td></tr>
+                            ${fullShippingAddress ? `<tr><td>配送先:</td><td>${fullShippingAddress}</td></tr>` : ''}
                         </table>
                     </div>
                 </div>
@@ -934,8 +966,15 @@
             
             filteredOrders = allOrders.filter(order => {
                 // 상태 필터
-                if (statusFilter && order.status !== statusFilter) {
-                    return false;
+                if (statusFilter) {
+                    if (statusFilter === 'pending') {
+                        // pending 필터는 pending과 pending_payment 모두 포함
+                        if (order.status !== 'pending' && order.status !== 'pending_payment') {
+                            return false;
+                        }
+                    } else if (order.status !== statusFilter) {
+                        return false;
+                    }
                 }
                 
                 // 날짜 필터
