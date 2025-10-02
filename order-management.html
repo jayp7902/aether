@@ -385,10 +385,10 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label japanese-text">期間</label>
-                        <select class="form-select" id="date-filter" onchange="filterOrders()">
+                        <select class="form-select" id="date-filter" onchange="onDateFilterChange()">
                             <option value="today">今日</option>
-                            <option value="week">今週</option>
                             <option value="month">今月</option>
+                            <option value="year">今年</option>
                             <option value="all">全期間</option>
                         </select>
                     </div>
@@ -497,7 +497,27 @@
         
         // 날짜 네비게이션 함수
         function navigateDate(direction) {
-            currentDate.setDate(currentDate.getDate() + direction);
+            const dateFilter = document.getElementById('date-filter').value;
+            
+            switch(dateFilter) {
+                case 'today':
+                    // 일 단위로 이동
+                    currentDate.setDate(currentDate.getDate() + direction);
+                    break;
+                case 'month':
+                    // 월 단위로 이동
+                    currentDate.setMonth(currentDate.getMonth() + direction);
+                    break;
+                case 'year':
+                    // 년 단위로 이동
+                    currentDate.setFullYear(currentDate.getFullYear() + direction);
+                    break;
+                default:
+                    // 기본적으로 일 단위로 이동
+                    currentDate.setDate(currentDate.getDate() + direction);
+                    break;
+            }
+            
             updateDateDisplay();
             filterOrders();
         }
