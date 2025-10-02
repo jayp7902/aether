@@ -372,25 +372,54 @@
         function loadOrders() {
             console.log('📊 Firebase에서 주문 데이터 로드 시작');
             
-            const ordersRef = firebase.firestore().collection('orders');
+            // FirebaseService가 초기화되었는지 확인
+            if (!window.FirebaseService || !window.FirebaseService.db) {
+                console.error('❌ FirebaseService 또는 Firestore 인스턴스를 찾을 수 없습니다.');
+                showError('Firebase 연결에 문제가 발생했습니다. 잠시 후 다시 시도해주세요.');
+                return;
+            }
             
-            ordersRef.orderBy('orderDate', 'desc').get()
+            const ordersRef = window.FirebaseService.db.collection('orders');
+            
+            ordersRef.get()
                 .then((querySnapshot) => {
                     allOrders = [];
+                    console.log('📋 Firestore 쿼리 결과:', querySnapshot.size, '개 문서');
+                    
                     querySnapshot.forEach((doc) => {
                         const orderData = doc.data();
                         orderData.id = doc.id;
+                        console.log('📄 주문 데이터:', doc.id, orderData);
                         allOrders.push(orderData);
                     });
                     
                     console.log('✅ 주문 데이터 로드 완료:', allOrders.length, '개');
-                    updateOrderStatistics();
-                    displayOrders();
+                    
+                    if (allOrders.length === 0) {
+                        console.log('⚠️ 주문 데이터가 없습니다. Firebase 콘솔에서 orders 컬렉션을 확인해주세요.');
+                        showEmptyState();
+                    } else {
+                        updateOrderStatistics();
+                        displayOrders();
+                    }
                 })
                 .catch((error) => {
                     console.error('❌ 주문 데이터 로드 실패:', error);
-                    showError('주문 데이터를 불러오는데 실패했습니다.');
+                    showError('주문 데이터를 불러오는데 실패했습니다: ' + error.message);
                 });
+        }
+        
+        // 빈 상태 표시
+        function showEmptyState() {
+            const container = document.getElementById('orders-container');
+            container.innerHTML = `
+                <div class="empty-orders">
+                    <i class="fas fa-shopping-cart"></i>
+                    <h4 class="japanese-heading">注文データがありません</h4>
+                    <p class="japanese-text">Firebase Firestoreのordersコレクションにデータがありません。</p>
+                    <p class="japanese-text">Firebaseコンソールでordersコレクションを確認してください。</p>
+                </div>
+            `;
         }
         
         // 주문 통계 업데이트
@@ -530,11 +559,17 @@
                 return;
             }
             
-            const orderRef = firebase.firestore().collection('orders').doc(orderId);
+            if (!window.FirebaseService || !window.FirebaseService.db) {
+                console.error('❌ FirebaseService를 찾을 수 없습니다.');
+                showError('Firebase 연결에 문제가 발생했습니다.');
+                return;
+            }
+            
+            const orderRef = window.FirebaseService.db.collection('orders').doc(orderId);
             
             orderRef.update({
                 status: newStatus,
-                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                updatedAt: new Date().toISOString()
             })
             .then(() => {
                 console.log('✅ 주문 상태 업데이트 완료:', orderId, newStatus);
