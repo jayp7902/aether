@@ -254,6 +254,13 @@ async function initializeFirebase() {
         // 전역 Firebase 객체 설정
         setGlobalFirebaseObjects(auth, db, storage);
         
+        // 블랙리스트 자동 정리 (백그라운드에서 실행)
+        if (typeof FirebaseService !== 'undefined') {
+            FirebaseService.cleanupExpiredBlacklist().catch(error => {
+                console.warn('블랙리스트 정리 실패:', error);
+            });
+        }
+        
         // Firebase 초기화 완료 이벤트 발생
         window.dispatchEvent(new CustomEvent('firebaseInitialized', {
             detail: { success: true, auth, db, storage }
@@ -402,6 +409,18 @@ class FirebaseService {
         throw new Error('사용자 이메일을 찾을 수 없습니다. 다시 로그인해주세요.');
     }
 
+    // 사용자 IP 주소 가져오기
+    static async getUserIP() {
+        try {
+            const response = await fetch('https://api.ipify.org?format=json');
+            const data = await response.json();
+            return data.ip;
+        } catch (error) {
+            console.warn('IP 주소 가져오기 실패:', error);
+            return 'unknown';
+        }
+    }
+
     // Firebase 사용 가능 여부 체크 (매우 안전한 검사)
     static isFirebaseAvailable() {
         const checks = {
@@ -484,10 +503,15 @@ class FirebaseService {
 
     // Firebase에서만 중복 체크 (로컬 저장소 사용 안함)
     console.log('🔍 이메일 중복 체크 시작:', email);
-    const isDuplicate = await this.checkEmailDuplicate(email);
-    if (isDuplicate) {
-        console.log('❌ 중복 이메일 발견:', email);
-        return { success: false, error: 'このメールアドレスは既に使用されています。' };
+    const duplicateCheck = await this.checkEmailDuplicate(email);
+    if (duplicateCheck.isDuplicate) {
+        console.log('❌ 중복 이메일 발견:', email, duplicateCheck.error);
+        return { 
+            success: false, 
+            error: duplicateCheck.error,
+            isBlacklisted: duplicateCheck.isBlacklisted || false,
+            canRejoinAfter: duplicateCheck.canRejoinAfter || null
+        };
     }
     console.log('✅ 이메일 중복 체크 통과:', email);
 
@@ -687,25 +711,56 @@ class FirebaseService {
         }
     }
 
-    // 이메일 중복 체크 (Firebase + localStorage + Firebase Auth)
+    // 이메일 중복 체크 (Firebase + 블랙리스트 체크)
     static async checkEmailDuplicate(email) {
         try {
             console.log('중복 체크 시작:', email);
             
-            // 1. Firebase Auth에서 중복 체크 (가장 확실한 방법)
+            // 1. 탈퇴한 이메일 블랙리스트 체크
             if (this.isFirebaseAvailable()) {
+                try {
+                    const deletedEmailDoc = await db.collection('deletedEmails').doc(email).get();
+                    if (deletedEmailDoc.exists) {
+                        const deletedData = deletedEmailDoc.data();
+                        const canRejoinAfter = deletedData.canRejoinAfter.toDate();
+                        const now = new Date();
+                        
+                        if (now < canRejoinAfter) {
+                            const remainingDays = Math.ceil((canRejoinAfter - now) / (1000 * 60 * 60 * 24));
+                            console.log('탈퇴한 이메일 재가입 시도:', email, '남은 일수:', remainingDays);
+                            return {
+                                isDuplicate: true,
+                                error: `このメールアドレスは${remainingDays}日後に再登録可能です。`,
+                                canRejoinAfter: canRejoinAfter,
+                                isBlacklisted: true
+                            };
+                        } else {
+                            // 6개월 경과 시 블랙리스트에서 제거
+                            console.log('6개월 경과, 블랙리스트에서 제거:', email);
+                            await db.collection('deletedEmails').doc(email).delete();
+                        }
+                    }
+                } catch (blacklistError) {
+                    console.warn('블랙리스트 체크 실패:', blacklistError);
+                }
+                
+                // 2. Firebase Auth에서 중복 체크 (가장 확실한 방법)
                 try {
                     // Firebase Auth fetchSignInMethodsForEmail 사용
                     const signInMethods = await auth.fetchSignInMethodsForEmail(email);
                     if (signInMethods && signInMethods.length > 0) {
                         console.log('Firebase Auth에서 중복 이메일 발견:', email);
-                        return true;
+                        return {
+                            isDuplicate: true,
+                            error: 'このメールアドレスは既に使用されています。',
+                            isBlacklisted: false
+                        };
                     }
                 } catch (authError) {
                     console.warn('Firebase Auth 중복 체크 실패:', authError);
                 }
                 
-                // 2. Firestore에서 중복 체크
+                // 3. Firestore에서 중복 체크
                 try {
                     const usersSnapshot = await db.collection('users')
                         .where('email', '==', email)
@@ -714,20 +769,55 @@ class FirebaseService {
                     
                     if (!usersSnapshot.empty) {
                         console.log('Firestore에서 중복 이메일 발견:', email);
-                        return true;
+                        return {
+                            isDuplicate: true,
+                            error: 'このメールアドレスは既に使用されています。',
+                            isBlacklisted: false
+                        };
                     }
                 } catch (firestoreError) {
                     console.warn('Firestore 중복 체크 실패:', firestoreError);
                 }
             }
 
-            // 3. localStorage 중복 체크 제거 (Firebase만 사용)
-
             console.log('중복 체크 완료: 사용 가능한 이메일', email);
-            return false;
+            return { isDuplicate: false };
         } catch (error) {
             console.error('중복 체크 실패:', error);
-            return false; // 에러 시 허용 (사용자 경험 우선)
+            return { isDuplicate: false }; // 에러 시 허용 (사용자 경험 우선)
+        }
+    }
+
+    // 블랙리스트 자동 정리 (6개월 경과된 항목 제거)
+    static async cleanupExpiredBlacklist() {
+        try {
+            console.log('🧹 블랙리스트 자동 정리 시작...');
+            
+            if (!this.isFirebaseAvailable()) {
+                console.log('Firebase 사용 불가, 블랙리스트 정리 건너뜀');
+                return;
+            }
+            
+            const now = new Date();
+            const expiredSnapshot = await db.collection('deletedEmails')
+                .where('canRejoinAfter', '<=', now)
+                .get();
+            
+            if (expiredSnapshot.empty) {
+                console.log('정리할 만료된 블랙리스트 항목 없음');
+                return;
+            }
+            
+            const batch = db.batch();
+            expiredSnapshot.forEach(doc => {
+                batch.delete(doc.ref);
+            });
+            
+            await batch.commit();
+            console.log(`✅ 만료된 블랙리스트 ${expiredSnapshot.size}개 항목 정리 완료`);
+            
+        } catch (error) {
+            console.error('블랙리스트 정리 실패:', error);
         }
     }
 
@@ -1088,11 +1178,29 @@ class FirebaseService {
                         await qrBatch.commit();
                         console.log('QR 토큰 삭제 성공:', qrTokenSnapshot.size, '건');
 
-                        // 6. Firebase Auth에서 사용자 삭제
+                        // 6. 탈퇴한 이메일을 블랙리스트에 추가 (6개월 재가입 제한)
+                        try {
+                            const canRejoinAfter = new Date(Date.now() + 6 * 30 * 24 * 60 * 60 * 1000); // 6개월 후
+                            await db.collection('deletedEmails').doc(email).set({
+                                email: email,
+                                uid: uid,
+                                deletedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                                canRejoinAfter: canRejoinAfter,
+                                reason: 'user_deleted_account',
+                                ipAddress: await this.getUserIP(),
+                                userAgent: navigator.userAgent
+                            });
+                            console.log('탈퇴 이메일 블랙리스트 추가 성공:', email, '재가입 가능일:', canRejoinAfter);
+                        } catch (blacklistError) {
+                            console.warn('블랙리스트 추가 실패:', blacklistError);
+                            // 블랙리스트 추가 실패해도 계정 삭제는 계속 진행
+                        }
+
+                        // 7. Firebase Auth에서 사용자 삭제
                         await user.delete();
                         console.log('Firebase Auth 사용자 삭제 성공');
                         
-                        // 7. localStorage 정리
+                        // 8. localStorage 정리
                         this.clearUserDataFromLocalStorage(email);
                         
                         deleteSuccessful = true;
