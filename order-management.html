@@ -57,39 +57,6 @@
             border-left-width: 6px;
         }
         
-        /* 날짜 네비게이션 스타일 */
-        .date-navigation {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 8px;
-        }
-        
-        .date-display {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 6px;
-            padding: 8px 16px;
-            min-width: 120px;
-            text-align: center;
-            font-weight: 500;
-            color: #495057;
-        }
-        
-        .date-navigation .btn {
-            width: 32px;
-            height: 32px;
-            padding: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .date-options .form-select-sm {
-            font-size: 0.875rem;
-        }
-        
         .stat-card.pending { border-left-color: #ffc107; }
         .stat-card.processing { border-left-color: #17a2b8; }
         .stat-card.shipping { border-left-color: #007bff; }
@@ -184,6 +151,10 @@
         
         .btn-cancel { background: #dc3545; color: white; border: none; }
         .btn-cancel:hover { background: #c82333; color: white; }
+        
+        /* 반품 버튼 스타일 (완료된 주문의 취소 버튼) */
+        .btn-return { background: #fd7e14; color: white; }
+        .btn-return:hover { background: #e55a00; color: white; }
         
         .japanese-heading {
             font-family: 'Hiragino Sans', 'Yu Gothic', 'Meiryo', sans-serif;
@@ -344,25 +315,12 @@
                     </div>
                     <div class="col-md-3">
                         <label class="form-label japanese-text">期間</label>
-                        <div class="date-navigation">
-                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="changeDate(-1)" title="前日">
-                                <i class="fas fa-chevron-left"></i>
-                            </button>
-                            <div class="date-display" id="current-date-display">
-                                <span id="selected-date">今日</span>
-                            </div>
-                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="changeDate(1)" title="翌日">
-                                <i class="fas fa-chevron-right"></i>
-                            </button>
-                        </div>
-                        <div class="date-options mt-2">
-                            <select class="form-select form-select-sm" id="date-filter" onchange="filterOrders()">
-                                <option value="today">今日</option>
-                                <option value="week">今週</option>
-                                <option value="month">今月</option>
-                                <option value="all">全期間</option>
-                            </select>
-                        </div>
+                        <select class="form-select" id="date-filter" onchange="filterOrders()">
+                            <option value="today">今日</option>
+                            <option value="week">今週</option>
+                            <option value="month">今月</option>
+                            <option value="all">全期間</option>
+                        </select>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label japanese-text">検索</label>
@@ -430,46 +388,11 @@
         // 전역 변수
         let allOrders = [];
         let filteredOrders = [];
-        let currentSelectedDate = new Date(); // 현재 선택된 날짜
         let currentUser = null;
-        
-        // 날짜 변경 함수
-        function changeDate(direction) {
-            currentSelectedDate.setDate(currentSelectedDate.getDate() + direction);
-            updateDateDisplay();
-            filterOrders();
-        }
-        
-        // 날짜 표시 업데이트
-        function updateDateDisplay() {
-            const today = new Date();
-            const selectedDateElement = document.getElementById('selected-date');
-            
-            if (isSameDate(currentSelectedDate, today)) {
-                selectedDateElement.textContent = '今日';
-            } else {
-                const dateStr = currentSelectedDate.toLocaleDateString('ja-JP', {
-                    month: 'short',
-                    day: 'numeric',
-                    weekday: 'short'
-                });
-                selectedDateElement.textContent = dateStr;
-            }
-        }
-        
-        // 두 날짜가 같은지 확인
-        function isSameDate(date1, date2) {
-            return date1.getFullYear() === date2.getFullYear() &&
-                   date1.getMonth() === date2.getMonth() &&
-                   date1.getDate() === date2.getDate();
-        }
         
         // 페이지 로드 시 초기화
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 주문 관리 시스템 초기화 시작');
-            
-            // 날짜 표시 초기화
-            updateDateDisplay();
             initializeOrderManagement();
         });
         
@@ -841,36 +764,55 @@
         
         // 상태별 액션 버튼 생성
         function getActionButtons(status, orderId) {
+            let buttons = '';
+            
+            // 상태별 메인 액션 버튼
             switch(status) {
                 case 'pending':
                 case 'pending_payment':
-                    return `
+                    buttons += `
                         <button class="btn btn-action btn-process" onclick="updateOrderStatus('${orderId}', 'processing')">
                             <i class="fas fa-check me-1"></i>処理開始
                         </button>
-                        <button class="btn btn-action btn-cancel" onclick="updateOrderStatus('${orderId}', 'cancelled')">
-                            <i class="fas fa-times me-1"></i>キャンセル
-                        </button>
                     `;
+                    break;
                 case 'processing':
-                    return `
+                    buttons += `
                         <button class="btn btn-action btn-ship" onclick="updateOrderStatus('${orderId}', 'shipping')">
                             <i class="fas fa-truck me-1"></i>配送開始
                         </button>
                     `;
+                    break;
                 case 'shipping':
-                    return `
+                    buttons += `
                         <button class="btn btn-action btn-complete" onclick="updateOrderStatus('${orderId}', 'completed')">
                             <i class="fas fa-check-circle me-1"></i>完了
                         </button>
                     `;
+                    break;
                 case 'completed':
-                    return `<span class="text-muted">完了済み</span>`;
+                    buttons += `<span class="text-muted">完了済み</span>`;
+                    break;
                 case 'cancelled':
-                    return `<span class="text-muted">キャンセル済み</span>`;
-                default:
-                    return '';
+                    buttons += `<span class="text-muted">キャンセル済み</span>`;
+                    break;
             }
+            
+            // 모든 상태에서 취소 버튼 표시 (반품 처리 포함)
+            if (status !== 'cancelled') {
+                // 완료된 주문의 경우 반품으로 표시
+                const cancelText = status === 'completed' ? '返品' : 'キャンセル';
+                const cancelIcon = status === 'completed' ? 'fa-undo' : 'fa-times';
+                const cancelClass = status === 'completed' ? 'btn btn-action btn-cancel btn-return' : 'btn btn-action btn-cancel';
+                
+                buttons += `
+                    <button class="${cancelClass}" onclick="updateOrderStatus('${orderId}', 'cancelled')">
+                        <i class="fas ${cancelIcon} me-1"></i>${cancelText}
+                    </button>
+                `;
+            }
+            
+            return buttons;
         }
         
         // 상태 텍스트 변환
@@ -1097,15 +1039,14 @@
                     
                     switch(dateFilter) {
                         case 'today':
-                            // 선택된 날짜와 비교
-                            if (!isSameDate(orderDate, currentSelectedDate)) return false;
+                            if (orderDate.toDateString() !== now.toDateString()) return false;
                             break;
                         case 'week':
-                            const weekAgo = new Date(currentSelectedDate.getTime() - 7 * 24 * 60 * 60 * 1000);
+                            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
                             if (orderDate < weekAgo) return false;
                             break;
                         case 'month':
-                            const monthAgo = new Date(currentSelectedDate.getFullYear(), currentSelectedDate.getMonth(), 1);
+                            const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
                             if (orderDate < monthAgo) return false;
                             break;
                     }
@@ -1138,10 +1079,6 @@
             document.querySelectorAll('.stat-card').forEach(card => {
                 card.classList.remove('active');
             });
-            
-            // 날짜를 오늘로 리셋
-            currentSelectedDate = new Date();
-            updateDateDisplay();
             
             document.getElementById('status-filter').value = '';
             document.getElementById('date-filter').value = 'all';
