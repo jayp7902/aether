@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management - Aether</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/css/custom.css">
+    
+    <style>
+        /* 주문 관리 시스템 전용 스타일 */
+        .order-management-container {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+        
+        .order-header {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .order-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            border-left: 4px solid #6c757d;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        
+        .stat-card.pending { border-left-color: #ffc107; }
+        .stat-card.processing { border-left-color: #17a2b8; }
+        .stat-card.shipping { border-left-color: #007bff; }
+        .stat-card.completed { border-left-color: #28a745; }
+        .stat-card.cancelled { border-left-color: #dc3545; }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #212529;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .order-filters {
+            background: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+        }
+        
+        .order-list-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            overflow: hidden;
+        }
+        
+        .order-item {
+            border-bottom: 1px solid #e9ecef;
+            padding: 1.5rem;
+            transition: background-color 0.3s ease;
+        }
+        
+        .order-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .order-item:last-child {
+            border-bottom: none;
+        }
+        
+        .order-status {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-processing { background: #d1ecf1; color: #0c5460; }
+        .status-shipping { background: #cce5ff; color: #004085; }
+        .status-completed { background: #d4edda; color: #155724; }
+        .status-cancelled { background: #f8d7da; color: #721c24; }
+        
+        .order-actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn-action {
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-view { background: #6c757d; color: white; border: none; }
+        .btn-view:hover { background: #5a6268; color: white; }
+        
+        .btn-process { background: #17a2b8; color: white; border: none; }
+        .btn-process:hover { background: #138496; color: white; }
+        
+        .btn-ship { background: #007bff; color: white; border: none; }
+        .btn-ship:hover { background: #0056b3; color: white; }
+        
+        .btn-complete { background: #28a745; color: white; border: none; }
+        .btn-complete:hover { background: #1e7e34; color: white; }
+        
+        .btn-cancel { background: #dc3545; color: white; border: none; }
+        .btn-cancel:hover { background: #c82333; color: white; }
+        
+        .japanese-heading {
+            font-family: 'Hiragino Sans', 'Yu Gothic', 'Meiryo', sans-serif;
+            font-weight: 600;
+            color: #212529;
+        }
+        
+        .japanese-text {
+            font-family: 'Hiragino Sans', 'Yu Gothic', 'Meiryo', sans-serif;
+            color: #6c757d;
+        }
+        
+        .empty-orders {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #6c757d;
+        }
+        
+        .empty-orders i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .loading-spinner {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 3rem;
+        }
+        
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+            border-width: 0.3em;
+        }
+        
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .order-management-container {
+                padding: 1rem 0;
+            }
+            
+            .order-header {
+                padding: 1.5rem;
+                margin-bottom: 1rem;
+            }
+            
+            .order-stats-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .order-item {
+                padding: 1rem;
+            }
+            
+            .order-actions {
+                justify-content: center;
+                margin-top: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="order-management-container">
+        <div class="container-fluid">
+            <!-- 헤더 -->
+            <div class="order-header">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h1 class="japanese-heading mb-2">
+                            <i class="fas fa-shopping-cart me-3"></i>注文管理システム
+                        </h1>
+                        <p class="japanese-text mb-0">Order Management System</p>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-secondary" onclick="refreshOrders()">
+                            <i class="fas fa-sync-alt me-2"></i>更新
+                        </button>
+                        <button class="btn btn-dark" onclick="exportOrders()">
+                            <i class="fas fa-download me-2"></i>エクスポート
+                        </button>
+                        <a href="admin-dashboard.html" class="btn btn-outline-dark">
+                            <i class="fas fa-arrow-left me-2"></i>管理ダッシュボード
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- 주문 통계 -->
+                <div class="order-stats-grid">
+                    <div class="stat-card pending">
+                        <div class="stat-number" id="pending-count">0</div>
+                        <div class="stat-label">処理待ち</div>
+                    </div>
+                    <div class="stat-card processing">
+                        <div class="stat-number" id="processing-count">0</div>
+                        <div class="stat-label">処理中</div>
+                    </div>
+                    <div class="stat-card shipping">
+                        <div class="stat-number" id="shipping-count">0</div>
+                        <div class="stat-label">配送中</div>
+                    </div>
+                    <div class="stat-card completed">
+                        <div class="stat-number" id="completed-count">0</div>
+                        <div class="stat-label">完了</div>
+                    </div>
+                    <div class="stat-card cancelled">
+                        <div class="stat-number" id="cancelled-count">0</div>
+                        <div class="stat-label">キャンセル</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 필터 -->
+            <div class="order-filters">
+                <div class="row">
+                    <div class="col-md-3">
+                        <label class="form-label japanese-text">注文状態</label>
+                        <select class="form-select" id="status-filter" onchange="filterOrders()">
+                            <option value="">全て</option>
+                            <option value="pending">処理待ち</option>
+                            <option value="processing">処理中</option>
+                            <option value="shipping">配送中</option>
+                            <option value="completed">完了</option>
+                            <option value="cancelled">キャンセル</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label japanese-text">期間</label>
+                        <select class="form-select" id="date-filter" onchange="filterOrders()">
+                            <option value="today">今日</option>
+                            <option value="week">今週</option>
+                            <option value="month">今月</option>
+                            <option value="all">全期間</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label japanese-text">検索</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="search-input" 
+                                   placeholder="注文番号、顧客名で検索" onkeyup="searchOrders()">
+                            <button class="btn btn-outline-secondary" onclick="clearSearch()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label japanese-text">&nbsp;</label>
+                        <div>
+                            <button class="btn btn-outline-secondary w-100" onclick="clearAllFilters()">
+                                <i class="fas fa-filter me-1"></i>リセット
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 주문 목록 -->
+            <div class="order-list-container">
+                <div id="orders-container">
+                    <div class="loading-spinner">
+                        <div class="spinner-border text-secondary" role="status">
+                            <span class="visually-hidden">読み込み中...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 주문 상세 모달 -->
+    <div class="modal fade" id="orderDetailModal" tabindex="-1" aria-labelledby="orderDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title japanese-heading" id="orderDetailModalLabel">注文詳細</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="order-detail-content">
+                    <!-- 주문 상세 내용이 여기에 표시됩니다 -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+                    <button type="button" class="btn btn-dark" onclick="printOrder()">印刷</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <!-- Firebase Config -->
+    <script src="assets/js/firebase-config.js"></script>
+    
+    <script>
+        // 전역 변수
+        let allOrders = [];
+        let filteredOrders = [];
+        let currentUser = null;
+        
+        // 페이지 로드 시 초기화
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 주문 관리 시스템 초기화 시작');
+            initializeOrderManagement();
+        });
+        
+        // 주문 관리 시스템 초기화
+        function initializeOrderManagement() {
+            // Firebase 인증 확인
+            firebase.auth().onAuthStateChanged((user) => {
+                if (user) {
+                    currentUser = user;
+                    console.log('✅ 사용자 인증 완료:', user.email);
+                    loadOrders();
+                } else {
+                    console.log('❌ 사용자 인증 필요');
+                    // 로그인 페이지로 리다이렉트
+                    window.location.href = 'login.html';
+                }
+            });
+        }
+        
+        // 주문 데이터 로드
+        function loadOrders() {
+            console.log('📊 Firebase에서 주문 데이터 로드 시작');
+            
+            const ordersRef = firebase.firestore().collection('orders');
+            
+            ordersRef.orderBy('orderDate', 'desc').get()
+                .then((querySnapshot) => {
+                    allOrders = [];
+                    querySnapshot.forEach((doc) => {
+                        const orderData = doc.data();
+                        orderData.id = doc.id;
+                        allOrders.push(orderData);
+                    });
+                    
+                    console.log('✅ 주문 데이터 로드 완료:', allOrders.length, '개');
+                    updateOrderStatistics();
+                    displayOrders();
+                })
+                .catch((error) => {
+                    console.error('❌ 주문 데이터 로드 실패:', error);
+                    showError('주문 데이터를 불러오는데 실패했습니다.');
+                });
+        }
+        
+        // 주문 통계 업데이트
+        function updateOrderStatistics() {
+            const stats = {
+                pending: 0,
+                processing: 0,
+                shipping: 0,
+                completed: 0,
+                cancelled: 0
+            };
+            
+            allOrders.forEach(order => {
+                if (stats.hasOwnProperty(order.status)) {
+                    stats[order.status]++;
+                }
+            });
+            
+            document.getElementById('pending-count').textContent = stats.pending;
+            document.getElementById('processing-count').textContent = stats.processing;
+            document.getElementById('shipping-count').textContent = stats.shipping;
+            document.getElementById('completed-count').textContent = stats.completed;
+            document.getElementById('cancelled-count').textContent = stats.cancelled;
+        }
+        
+        // 주문 목록 표시
+        function displayOrders() {
+            const container = document.getElementById('orders-container');
+            
+            if (filteredOrders.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-orders">
+                        <i class="fas fa-shopping-cart"></i>
+                        <h4 class="japanese-heading">注文がありません</h4>
+                        <p class="japanese-text">条件に一致する注文が見つかりませんでした。</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            let html = '';
+            filteredOrders.forEach(order => {
+                html += createOrderItemHTML(order);
+            });
+            
+            container.innerHTML = html;
+        }
+        
+        // 주문 아이템 HTML 생성
+        function createOrderItemHTML(order) {
+            const orderDate = new Date(order.orderDate).toLocaleDateString('ja-JP');
+            const totalAmount = order.totalAmount ? order.totalAmount.toLocaleString() : '0';
+            const customerName = order.customer ? order.customer.name : '不明';
+            const customerEmail = order.customer ? order.customer.email : '';
+            
+            return `
+                <div class="order-item">
+                    <div class="row align-items-center">
+                        <div class="col-md-2">
+                            <div class="fw-bold">${order.id}</div>
+                            <small class="text-muted">${orderDate}</small>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="fw-bold">${customerName}</div>
+                            <small class="text-muted">${customerEmail}</small>
+                        </div>
+                        <div class="col-md-2">
+                            <span class="order-status status-${order.status}">
+                                ${getStatusText(order.status)}
+                            </span>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="fw-bold">¥${totalAmount}</div>
+                            <small class="text-muted">${order.items ? order.items.length : 0} 商品</small>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="order-actions">
+                                <button class="btn btn-action btn-view" onclick="viewOrderDetail('${order.id}')">
+                                    <i class="fas fa-eye me-1"></i>詳細
+                                </button>
+                                ${getActionButtons(order.status, order.id)}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 상태별 액션 버튼 생성
+        function getActionButtons(status, orderId) {
+            switch(status) {
+                case 'pending':
+                    return `
+                        <button class="btn btn-action btn-process" onclick="updateOrderStatus('${orderId}', 'processing')">
+                            <i class="fas fa-check me-1"></i>処理開始
+                        </button>
+                        <button class="btn btn-action btn-cancel" onclick="updateOrderStatus('${orderId}', 'cancelled')">
+                            <i class="fas fa-times me-1"></i>キャンセル
+                        </button>
+                    `;
+                case 'processing':
+                    return `
+                        <button class="btn btn-action btn-ship" onclick="updateOrderStatus('${orderId}', 'shipping')">
+                            <i class="fas fa-truck me-1"></i>配送開始
+                        </button>
+                    `;
+                case 'shipping':
+                    return `
+                        <button class="btn btn-action btn-complete" onclick="updateOrderStatus('${orderId}', 'completed')">
+                            <i class="fas fa-check-circle me-1"></i>完了
+                        </button>
+                    `;
+                case 'completed':
+                    return `<span class="text-muted">完了済み</span>`;
+                case 'cancelled':
+                    return `<span class="text-muted">キャンセル済み</span>`;
+                default:
+                    return '';
+            }
+        }
+        
+        // 상태 텍스트 변환
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': '処理待ち',
+                'processing': '処理中',
+                'shipping': '配送中',
+                'completed': '完了',
+                'cancelled': 'キャンセル'
+            };
+            return statusMap[status] || status;
+        }
+        
+        // 주문 상태 업데이트
+        function updateOrderStatus(orderId, newStatus) {
+            if (!confirm('注文状態を変更しますか？')) {
+                return;
+            }
+            
+            const orderRef = firebase.firestore().collection('orders').doc(orderId);
+            
+            orderRef.update({
+                status: newStatus,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
+                console.log('✅ 주문 상태 업데이트 완료:', orderId, newStatus);
+                
+                // 로컬 데이터 업데이트
+                const orderIndex = allOrders.findIndex(order => order.id === orderId);
+                if (orderIndex !== -1) {
+                    allOrders[orderIndex].status = newStatus;
+                    updateOrderStatistics();
+                    displayOrders();
+                }
+                
+                // 이메일 알림 발송 (향후 구현)
+                sendOrderStatusNotification(orderId, newStatus);
+                
+                showSuccess('注文状態が更新されました。');
+            })
+            .catch((error) => {
+                console.error('❌ 주문 상태 업데이트 실패:', error);
+                showError('注文状態の更新に失敗しました。');
+            });
+        }
+        
+        // 주문 상세 보기
+        function viewOrderDetail(orderId) {
+            const order = allOrders.find(o => o.id === orderId);
+            if (!order) {
+                showError('注文情報が見つかりません。');
+                return;
+            }
+            
+            const modalContent = createOrderDetailHTML(order);
+            document.getElementById('order-detail-content').innerHTML = modalContent;
+            
+            const modal = new bootstrap.Modal(document.getElementById('orderDetailModal'));
+            modal.show();
+        }
+        
+        // 주문 상세 HTML 생성
+        function createOrderDetailHTML(order) {
+            const orderDate = new Date(order.orderDate).toLocaleString('ja-JP');
+            const totalAmount = order.totalAmount ? order.totalAmount.toLocaleString() : '0';
+            
+            let itemsHTML = '';
+            if (order.items && order.items.length > 0) {
+                itemsHTML = order.items.map(item => `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td class="text-center">${item.quantity}</td>
+                        <td class="text-end">¥${item.price ? item.price.toLocaleString() : '0'}</td>
+                        <td class="text-end">¥${(item.price * item.quantity).toLocaleString()}</td>
+                    </tr>
+                `).join('');
+            }
+            
+            return `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="japanese-heading">注文情報</h6>
+                        <table class="table table-sm">
+                            <tr><td>注文番号:</td><td>${order.id}</td></tr>
+                            <tr><td>注文日時:</td><td>${orderDate}</td></tr>
+                            <tr><td>状態:</td><td><span class="order-status status-${order.status}">${getStatusText(order.status)}</span></td></tr>
+                            <tr><td>合計金額:</td><td class="fw-bold">¥${totalAmount}</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="japanese-heading">顧客情報</h6>
+                        <table class="table table-sm">
+                            <tr><td>名前:</td><td>${order.customer ? order.customer.name : '不明'}</td></tr>
+                            <tr><td>メール:</td><td>${order.customer ? order.customer.email : '不明'}</td></tr>
+                            <tr><td>電話:</td><td>${order.customer ? order.customer.phone : '不明'}</td></tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <h6 class="japanese-heading">注文商品</h6>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>商品名</th>
+                                    <th class="text-center">数量</th>
+                                    <th class="text-end">単価</th>
+                                    <th class="text-end">小計</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${itemsHTML}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // 필터링 함수들
+        function filterOrders() {
+            const statusFilter = document.getElementById('status-filter').value;
+            const dateFilter = document.getElementById('date-filter').value;
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            
+            filteredOrders = allOrders.filter(order => {
+                // 상태 필터
+                if (statusFilter && order.status !== statusFilter) {
+                    return false;
+                }
+                
+                // 날짜 필터
+                if (dateFilter !== 'all') {
+                    const orderDate = new Date(order.orderDate);
+                    const now = new Date();
+                    
+                    switch(dateFilter) {
+                        case 'today':
+                            if (orderDate.toDateString() !== now.toDateString()) return false;
+                            break;
+                        case 'week':
+                            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                            if (orderDate < weekAgo) return false;
+                            break;
+                        case 'month':
+                            const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                            if (orderDate < monthAgo) return false;
+                            break;
+                    }
+                }
+                
+                // 검색 필터
+                if (searchTerm) {
+                    const searchableText = `${order.id} ${order.customer ? order.customer.name : ''} ${order.customer ? order.customer.email : ''}`.toLowerCase();
+                    if (!searchableText.includes(searchTerm)) return false;
+                }
+                
+                return true;
+            });
+            
+            displayOrders();
+        }
+        
+        function searchOrders() {
+            filterOrders();
+        }
+        
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            filterOrders();
+        }
+        
+        function clearAllFilters() {
+            document.getElementById('status-filter').value = '';
+            document.getElementById('date-filter').value = 'today';
+            document.getElementById('search-input').value = '';
+            filterOrders();
+        }
+        
+        function refreshOrders() {
+            loadOrders();
+        }
+        
+        function exportOrders() {
+            // CSV 내보내기 기능 (향후 구현)
+            showInfo('エクスポート機能は準備中です。');
+        }
+        
+        function printOrder() {
+            window.print();
+        }
+        
+        // 이메일 알림 발송 (향후 구현)
+        function sendOrderStatusNotification(orderId, newStatus) {
+            console.log('📧 이메일 알림 발송 예정:', orderId, newStatus);
+            // Gmail API 연동 후 구현
+        }
+        
+        // 유틸리티 함수들
+        function showSuccess(message) {
+            // 성공 메시지 표시 (향후 구현)
+            console.log('✅', message);
+        }
+        
+        function showError(message) {
+            // 에러 메시지 표시 (향후 구현)
+            console.error('❌', message);
+        }
+        
+        function showInfo(message) {
+            // 정보 메시지 표시 (향후 구현)
+            console.log('ℹ️', message);
+        }
+        
+        // 초기 필터링 적용
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                filterOrders();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
