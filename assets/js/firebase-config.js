@@ -2835,15 +2835,19 @@ window.FirebaseService_isFirebaseAvailable = function() {
 
 // Firebase 객체들을 안전하게 전역 변수로 노출 (초기화 완료 후)
 function setGlobalFirebaseObjects() {
-    if (typeof firebase !== 'undefined') {
-        window.firebase = firebase;
+    console.log('🔧 전역 Firebase 객체 설정 중...');
+    
+    // FirebaseService에 db 인스턴스 설정
+    if (window.FirebaseService && window.FirebaseService.db) {
+        console.log('✅ FirebaseService.db 이미 설정됨');
+    } else if (window.FirebaseService) {
+        // FirebaseService 인스턴스 생성 및 db 설정
+        const firebaseService = new window.FirebaseService();
+        window.FirebaseService.db = firebaseService.db;
+        console.log('✅ FirebaseService.db 설정 완료');
     }
-    if (typeof auth !== 'undefined') {
-        window.auth = auth;
-    }
-    if (typeof db !== 'undefined') {
-        window.db = db;
-    }
+    
+    console.log('🔧 전역 Firebase 객체 설정 완료');
 }
 
 // FirebaseService 로드 확인 로그 - v2.8 (에러 메시지 일관성 수정)
