@@ -1539,7 +1539,7 @@
                             
                             <div class="mb-3">
                                 <label class="form-label japanese-text">理由</label>
-                                <select class="form-control" id="point-reason">
+                                <select class="form-control" id="point-reason" onchange="toggleBarcodeField()">
                                     <option value="店舗購入">店舗購入</option>
                                     <option value="特別付与">特別付与</option>
                                     <option value="イベント特典">イベント特典</option>
@@ -1549,6 +1549,18 @@
                                     <option value="修正">修正</option>
                                     <option value="その他">その他</option>
                                 </select>
+                            </div>
+                            
+                            <!-- 바코드 입력 필드 (포인트 사용 시에만 표시) -->
+                            <div class="mb-3" id="barcode-field" style="display: none;">
+                                <label class="form-label japanese-text">バーコード/QRコード</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="barcode-input" placeholder="バーコードまたはQRコードを入力">
+                                    <button class="btn btn-outline-secondary" type="button" onclick="openBarcodeScannerModal()">
+                                        <i class="fas fa-camera me-1"></i>スキャン
+                                    </button>
+                                </div>
+                                <div class="form-text">ポイント使用時はバーコードまたはQRコードの入力が必要です</div>
                             </div>
                             
                             <div class="row">
@@ -2797,6 +2809,55 @@
                     <button type="button" class="btn btn-secondary" onclick="sendEmailCampaign()">
                         <i class="fas fa-paper-plane me-2"></i>送信
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 바코드 스캔 모달 -->
+    <div class="modal fade" id="barcodeScannerModal" tabindex="-1" aria-labelledby="barcodeScannerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title japanese-heading" id="barcodeScannerModalLabel">
+                        <i class="fas fa-barcode me-2"></i>バーコードスキャン
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="scan-overlay">
+                                <video id="barcode-scanner-video" autoplay muted playsinline style="width: 100%; height: 300px; background: #000;"></video>
+                                <div class="scan-line"></div>
+                            </div>
+                            <div class="mt-3 text-center">
+                                <button class="btn btn-dark" onclick="startBarcodeScanner()">
+                                    <i class="fas fa-camera me-2"></i>スキャン開始
+                                </button>
+                                <button class="btn btn-secondary" onclick="stopBarcodeScanner()">
+                                    <i class="fas fa-stop me-2"></i>停止
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="japanese-heading">手動入力</h6>
+                            <p class="japanese-text text-muted">スキャンできない場合</p>
+                            <div class="input-group mb-3">
+                                <input type="text" class="form-control" id="manual-barcode-input" placeholder="バーコードを入力">
+                                <button class="btn btn-outline-secondary" onclick="processManualBarcode()">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                            <div class="alert alert-info japanese-text">
+                                <i class="fas fa-info-circle me-2"></i>
+                                バーコードまたはQRコードをスキャンして、ポイント使用の対象商品を特定します。
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary japanese-text" data-bs-dismiss="modal">閉じる</button>
                 </div>
             </div>
         </div>
@@ -4554,6 +4615,15 @@
                 return;
             }
             
+            // 포인트 사용 시 바코드 입력 검증
+            if (reason === 'ポイント使用') {
+                const barcodeValue = document.getElementById('barcode-input').value.trim();
+                if (!barcodeValue) {
+                    showAdminAlert('ポイント使用時はバーコードまたはQRコードの入力が必要です', 'warning');
+                    return;
+                }
+            }
+            
             createCustomConfirmModal(
                 'ポイント差引確認',
                 `${points}ポイントを差し引きますか？<br><small class="text-muted">理由: ${reason}</small>`,
@@ -4571,10 +4641,17 @@
             try {
                 showAdminAlert('ポイントを差し引き中...', 'info');
                 
+                // 포인트 사용 시 바코드 정보 포함
+                let finalReason = reason;
+                if (reason === 'ポイント使用') {
+                    const barcodeValue = document.getElementById('barcode-input').value.trim();
+                    finalReason = `${reason} - ${barcodeValue}`;
+                }
+                
                 const result = await FirebaseService.usePoints(
                     currentCustomer.uid,
                     points,
-                    reason
+                    finalReason
                 );
                 
                 if (result.success) {
@@ -6466,6 +6543,103 @@
                     </div>
                 `;
             }
+        }
+
+        // 바코드 필드 토글 함수
+        function toggleBarcodeField() {
+            const reason = document.getElementById('point-reason').value;
+            const barcodeField = document.getElementById('barcode-field');
+            
+            if (reason === 'ポイント使用') {
+                barcodeField.style.display = 'block';
+            } else {
+                barcodeField.style.display = 'none';
+                document.getElementById('barcode-input').value = '';
+            }
+        }
+
+        // 바코드 스캔 모달 열기
+        function openBarcodeScannerModal() {
+            const modal = new bootstrap.Modal(document.getElementById('barcodeScannerModal'));
+            modal.show();
+            startBarcodeScanner();
+        }
+
+        // 바코드 스캐너 변수들
+        let barcodeStream = null;
+        let barcodeScanning = false;
+        let barcodeScanInterval = null;
+
+        // 바코드 스캐너 시작
+        async function startBarcodeScanner() {
+            try {
+                console.log('바코드 스캐너 시작');
+                
+                const video = document.getElementById('barcode-scanner-video');
+                const constraints = {
+                    video: {
+                        facingMode: 'environment' // 후면 카메라 우선
+                    }
+                };
+
+                barcodeStream = await navigator.mediaDevices.getUserMedia(constraints);
+                video.srcObject = barcodeStream;
+                barcodeScanning = true;
+
+                // 바코드 스캔 시도 (간단한 구현)
+                barcodeScanInterval = setInterval(() => {
+                    if (barcodeScanning) {
+                        // 실제 바코드 스캔 로직은 ZXing 라이브러리 등을 사용해야 함
+                        // 여기서는 수동 입력을 유도
+                    }
+                }, 1000);
+
+            } catch (error) {
+                console.error('바코드 스캐너 시작 실패:', error);
+                showAdminAlert('カメラへのアクセスが拒否されました。手動入力を使用してください。', 'warning');
+            }
+        }
+
+        // 바코드 스캐너 중지
+        function stopBarcodeScanner() {
+            console.log('바코드 스캐너 중지');
+            barcodeScanning = false;
+            
+            if (barcodeScanInterval) {
+                clearInterval(barcodeScanInterval);
+                barcodeScanInterval = null;
+            }
+            
+            if (barcodeStream) {
+                barcodeStream.getTracks().forEach(track => track.stop());
+                barcodeStream = null;
+            }
+            
+            const video = document.getElementById('barcode-scanner-video');
+            video.srcObject = null;
+        }
+
+        // 수동 바코드 처리
+        function processManualBarcode() {
+            const manualInput = document.getElementById('manual-barcode-input');
+            const barcodeValue = manualInput.value.trim();
+            
+            if (!barcodeValue) {
+                showAdminAlert('バーコードを入力してください', 'warning');
+                return;
+            }
+            
+            // 바코드 값을 메인 입력 필드에 설정
+            document.getElementById('barcode-input').value = barcodeValue;
+            
+            // 모달 닫기
+            const modal = bootstrap.Modal.getInstance(document.getElementById('barcodeScannerModal'));
+            modal.hide();
+            
+            // 스캐너 중지
+            stopBarcodeScanner();
+            
+            showAdminAlert('バーコードが設定されました', 'success');
         }
 
         // 전역 탭 전환 함수들 (DOMContentLoaded 이벤트 리스너 밖에 정의)
