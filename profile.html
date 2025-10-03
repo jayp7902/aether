@@ -2742,32 +2742,13 @@
         
 
         
-        // 주문 이력 로드 함수 초기화
+        // 주문 이력 로드 함수 초기화 (병렬 처리 최적화)
         async function initializeProfile() {
             try {
                 console.log('프로필 페이지 초기화 시작');
                 
-                // 1. 프로필 헤더 로드
-                await loadProfileHeader();
-                
-                // 2. 프로필 사진 로드
-                await loadProfilePhotoFromFirebase();
-                
-                // 2. 주문 이력 로드 (강화된 버전)
-                console.log('=== 주문 이력 로드 준비 ===');
-                
+                // Firebase 사용자 ID 즉시 확인
                 let userId = null;
-                let loginStatus = null;
-                
-                // 로그인 상태 확인 (다중 방식)
-                try {
-                    loginStatus = getLoginStatus();
-                    console.log('getLoginStatus() 결과:', loginStatus);
-                } catch (error) {
-                    console.warn('getLoginStatus() 실패:', error);
-                }
-                
-                // Firebase 사용자 확인 (안전한 방식)
                 try {
                     if (typeof firebase !== 'undefined' && firebase.auth && firebase.auth().currentUser) {
                         const firebaseUser = firebase.auth().currentUser;
@@ -2778,32 +2759,24 @@
                     console.warn('Firebase 사용자 확인 실패:', firebaseError);
                 }
                 
-                // Firebase 전용 사용자 확인
-                if (!userId) {
-                    try {
-                        const currentUser = firebase.auth().currentUser;
-                        if (currentUser) {
-                            userId = currentUser.uid;
-                            console.log('✅ Firebase 사용자 ID:', userId);
-                        }
-                    } catch (directError) {
-                        console.warn('⚠️ Firebase 사용자 확인 실패:', directError);
-                    }
-                }
+                // 병렬로 모든 작업 실행 (순차 실행 → 병렬 실행)
+                const initPromises = [
+                    loadProfileHeader(),
+                    loadProfilePhotoFromFirebase(),
+                    loadSavedProfileInfo()
+                ];
                 
-                // 주문 이력 로드 (기본적으로 모든 주문 표시)
+                // 주문 이력 로드 추가
                 if (userId) {
                     console.log('주문 이력 로드 시작:', userId);
-                    await loadOrderHistory(userId);
+                    initPromises.push(loadOrderHistory(userId));
                 } else {
                     console.log('로그인 상태 불명 - 모든 주문 표시');
-                    await loadOrderHistory('ALL_ORDERS');
+                    initPromises.push(loadOrderHistory('ALL_ORDERS'));
                 }
                 
-                // 주문이 없는 경우는 정상적인 상황 (신규 사용자)
-                
-                // 3. 저장된 프로필 정보 로드
-                await loadSavedProfileInfo();
+                // 모든 작업을 병렬로 실행
+                await Promise.allSettled(initPromises);
                 
                 console.log('프로필 페이지 초기화 완료');
                 
@@ -3969,7 +3942,7 @@
             try {
                 console.log('=== 인증 상태 확인 시작 ===');
                 
-                // Firebase 초기화 대기 (최적화됨)
+                // Firebase 초기화 대기 (더 빠른 방식)
                 const waitForFirebase = () => {
                     return new Promise((resolve) => {
                         const checkFirebase = () => {
@@ -3977,7 +3950,7 @@
                                 console.log('Firebase 초기화 완료');
                                 resolve();
                             } else {
-                                setTimeout(checkFirebase, 50); // 100ms → 50ms로 단축
+                                setTimeout(checkFirebase, 25); // 50ms → 25ms로 더 단축
                             }
                         };
                         checkFirebase();
@@ -4069,6 +4042,9 @@
         // 중복 실행 방지 플래그
         let profilePageInitialized = false;
         
+        // auth-utils.js 중복 초기화 방지
+        window.profilePageInitialized = true;
+        
         // 통합된 DOMContentLoaded 이벤트 리스너 (최적화됨)
         document.addEventListener('DOMContentLoaded', function() {
             if (profilePageInitialized) {
@@ -4113,22 +4089,22 @@
                 return new bootstrap.Dropdown(dropdownToggleEl);
             });
             
-            // Firebase 초기화 대기 (최적화된 방식)
+            // Firebase 초기화 대기 (더 빠른 방식)
             const firebaseInitCheck = setInterval(() => {
                 if (typeof firebase !== 'undefined' && firebase.auth) {
                     console.log('Firebase 초기화 완료, 인증 상태 확인 시작');
                     clearInterval(firebaseInitCheck);
                     checkAuthState();
                 }
-            }, 50); // 100ms → 50ms로 단축
+            }, 25); // 50ms → 25ms로 더 단축
             
-            // 5초 후에도 Firebase가 초기화되지 않으면 타임아웃 (10초 → 5초로 단축)
+            // 3초 후에도 Firebase가 초기화되지 않으면 타임아웃 (5초 → 3초로 단축)
             setTimeout(() => {
                 if (typeof firebase === 'undefined' || !firebase.auth) {
                     console.error('Firebase 초기화 타임아웃');
                     clearInterval(firebaseInitCheck);
                 }
-            }, 5000);
+            }, 3000);
         });
 
     </script>
