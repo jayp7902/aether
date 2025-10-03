@@ -2941,7 +2941,7 @@
         function generatePDF(orderId) {
             const receiptContent = document.getElementById('receipt-content');
             const opt = {
-                margin: [5, 5, 5, 5], // 상하좌우 5mm 마진 (최소화)
+                margin: [2, 5, 5, 5], // 상단 2mm, 나머지 5mm 마진 (상단 최소화)
                 filename: `領収書_${orderId}.pdf`,
                 image: { type: 'jpeg', quality: 0.95 },
                 html2canvas: { 
@@ -3022,7 +3022,7 @@
                             font-family: 'Noto Sans JP', sans-serif;
                             max-width: 210mm;
                             margin: 0 auto;
-                            padding: 6mm;
+                            padding: 3mm 6mm 6mm 6mm;
                             background: white;
                             color: #333;
                             min-height: 297mm;
@@ -3031,13 +3031,13 @@
                         
                         .receipt-header {
                             text-align: center;
-                            margin-bottom: 8px;
+                            margin: 0 0 5px 0;
                             border-bottom: 2px solid #333;
-                            padding-bottom: 5px;
+                            padding-bottom: 3px;
                         }
                         
                         .company-logo {
-                            margin-bottom: 4px;
+                            margin: 0 0 2px 0;
                         }
                         
                         .company-logo img {
@@ -3049,20 +3049,20 @@
                             font-family: 'Noto Sans JP', sans-serif;
                             font-size: 20px;
                             font-weight: bold;
-                            margin: 5px 0;
+                            margin: 2px 0;
                         }
                         
                         .receipt-info {
                             display: flex;
                             justify-content: space-between;
-                            margin-bottom: 6px;
+                            margin: 0 0 4px 0;
                             font-family: 'Noto Sans JP', sans-serif;
                             font-size: 9px;
                         }
                         
                         .recipient-section {
                             text-align: center;
-                            margin: 8px 0;
+                            margin: 4px 0;
                             font-family: 'Noto Sans JP', sans-serif;
                             font-size: 13px;
                             font-weight: bold;
@@ -3070,24 +3070,24 @@
                         
                         .amount-section {
                             text-align: center;
-                            margin: 8px 0;
+                            margin: 4px 0;
                             font-family: 'Noto Sans JP', sans-serif;
                             font-size: 15px;
                             font-weight: bold;
                         }
                         
                         .order-details {
-                            margin: 8px 0;
+                            margin: 4px 0;
                         }
                         
                         .detail-section {
-                            margin-bottom: 6px;
+                            margin-bottom: 4px;
                         }
                         
                         .detail-title {
                             font-family: 'Noto Sans JP', sans-serif;
                             font-weight: bold;
-                            margin-bottom: 3px;
+                            margin-bottom: 2px;
                             border-bottom: 1px solid #ddd;
                             padding-bottom: 1px;
                             font-size: 11px;
@@ -3105,7 +3105,7 @@
                         .items-table {
                             width: 100%;
                             border-collapse: collapse;
-                            margin: 5px 0;
+                            margin: 3px 0;
                             font-family: 'Noto Sans JP', sans-serif;
                         }
                         
@@ -3125,7 +3125,7 @@
                         }
                         
                         .total-section {
-                            margin: 8px 0;
+                            margin: 4px 0;
                         }
                         
                         .total-row {
@@ -3148,8 +3148,8 @@
                         
                         .payment-breakdown {
                             background-color: #f8f9fa;
-                            padding: 4px;
-                            margin: 5px 0;
+                            padding: 3px;
+                            margin: 3px 0;
                             border-radius: 3px;
                             font-family: 'Noto Sans JP', sans-serif;
                         }
@@ -3171,8 +3171,8 @@
                         
                         .shipping-info {
                             background-color: #f8f9fa;
-                            padding: 4px;
-                            margin: 5px 0;
+                            padding: 3px;
+                            margin: 3px 0;
                             border-radius: 3px;
                             font-family: 'Noto Sans JP', sans-serif;
                         }
@@ -3180,7 +3180,7 @@
                         @media print {
                             .receipt-container {
                                 margin: 0;
-                                padding: 5mm;
+                                padding: 2mm 5mm 5mm 5mm;
                                 max-width: 210mm;
                                 min-height: 297mm;
                                 page-break-inside: avoid;
@@ -3197,7 +3197,7 @@
                         
                         @page {
                             size: A4;
-                            margin: 5mm;
+                            margin: 2mm 5mm 5mm 5mm;
                         }
                     </style>
                     
