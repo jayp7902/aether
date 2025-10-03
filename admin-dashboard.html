@@ -4520,7 +4520,7 @@
                 showAdminAlert('ポイントを付与中...', 'info');
                 
                 const result = await FirebaseService.addPoints(
-                    currentCustomer.uid,
+                    currentCustomer.email,
                     points,
                     `店舗購入 ¥${amount.toLocaleString()}`
                 );
@@ -4577,7 +4577,7 @@
                 showAdminAlert('ポイントを追加中...', 'info');
                 
                 const result = await FirebaseService.addPoints(
-                    currentCustomer.uid,
+                    currentCustomer.email,
                     points,
                     reason
                 );
@@ -4649,7 +4649,7 @@
                 }
                 
                 const result = await FirebaseService.usePoints(
-                    currentCustomer.uid,
+                    currentCustomer.email,
                     points,
                     finalReason
                 );
