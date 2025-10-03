@@ -3047,10 +3047,12 @@
                         }
                         
                         .company-logo {
-                            font-size: 28px;
-                            font-weight: bold;
-                            color: #dc3545;
                             margin-bottom: 10px;
+                        }
+                        
+                        .company-logo img {
+                            max-height: 60px;
+                            width: auto;
                         }
                         
                         .receipt-title {
@@ -3175,7 +3177,10 @@
                     </style>
                     
                     <div class="receipt-header">
-                        <div class="company-logo">Aether Store</div>
+                        <div class="company-logo">
+                            <img src="assets/img/logo.png" alt="Aether Store" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                            <div style="display: none; font-size: 28px; font-weight: bold; color: #dc3545;">Aether Store</div>
+                        </div>
                         <div class="receipt-title">領収書</div>
                         <div class="receipt-info">
                             <div>
