@@ -2880,8 +2880,8 @@
                 console.log('영수증 HTML 생성 완료, 길이:', receiptHTML.length);
                 
                 const modalHTML = `
-                    <div class="modal fade" id="receiptPreviewModal" tabindex="-1" aria-labelledby="receiptPreviewModalLabel" aria-hidden="true">
-                        <div class="modal-dialog modal-xl">
+                    <div class="modal fade" id="receiptPreviewModal" tabindex="-1" aria-labelledby="receiptPreviewModalLabel" aria-hidden="true" style="z-index: 1055;">
+                        <div class="modal-dialog modal-xl modal-dialog-scrollable">
                             <div class="modal-content">
                                 <div class="modal-header">
                                     <h5 class="modal-title japanese-heading" id="receiptPreviewModalLabel">
@@ -2889,7 +2889,7 @@
                                     </h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
-                                <div class="modal-body p-0">
+                                <div class="modal-body p-0" style="max-height: 80vh; overflow-y: auto;">
                                     <div id="receipt-content">
                                         ${receiptHTML}
                                     </div>
@@ -2917,20 +2917,46 @@
                 document.body.insertAdjacentHTML('beforeend', modalHTML);
                 console.log('모달 HTML 추가 완료');
                 
-                // 모달 표시
+                // 모달 표시 (Bootstrap 5 방식)
                 const modalElement = document.getElementById('receiptPreviewModal');
                 console.log('모달 요소 찾음:', modalElement);
                 
                 if (modalElement) {
-                    const modal = new bootstrap.Modal(modalElement);
+                    // Bootstrap 모달 인스턴스 생성
+                    const modal = new bootstrap.Modal(modalElement, {
+                        backdrop: true,
+                        keyboard: true,
+                        focus: true
+                    });
+                    
+                    // 모달 이벤트 리스너 추가
+                    modalElement.addEventListener('shown.bs.modal', function () {
+                        console.log('모달 표시 완료 (이벤트)');
+                    });
+                    
+                    modalElement.addEventListener('hidden.bs.modal', function () {
+                        console.log('모달 숨김 완료 (이벤트)');
+                        // 모달 제거
+                        modalElement.remove();
+                    });
+                    
+                    // 모달 표시
                     modal.show();
-                    console.log('모달 표시 완료');
+                    console.log('모달 표시 명령 완료');
                     
                     // 모달이 실제로 표시되었는지 확인
                     setTimeout(() => {
                         const isVisible = modalElement.classList.contains('show');
-                        console.log('모달 표시 상태:', isVisible);
-                    }, 100);
+                        const isInDOM = document.body.contains(modalElement);
+                        console.log('모달 표시 상태:', isVisible, 'DOM 존재:', isInDOM);
+                        
+                        if (!isVisible) {
+                            console.log('모달 강제 표시 시도');
+                            modalElement.classList.add('show');
+                            modalElement.style.display = 'block';
+                            modalElement.setAttribute('aria-hidden', 'false');
+                        }
+                    }, 200);
                 } else {
                     console.error('모달 요소를 찾을 수 없습니다');
                 }
