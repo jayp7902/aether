@@ -2870,46 +2870,60 @@
 
         // 영수증 미리보기 모달 표시
         function showReceiptPreview(receiptData) {
-            const modalHTML = `
-                <div class="modal fade" id="receiptPreviewModal" tabindex="-1" aria-labelledby="receiptPreviewModalLabel" aria-hidden="true">
-                    <div class="modal-dialog modal-xl">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title japanese-heading" id="receiptPreviewModalLabel">
-                                    <i class="fas fa-receipt me-2"></i>領収書 - ${receiptData.orderId}
-                                </h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body p-0">
-                                <div id="receipt-content">
-                                    ${generateReceiptHTML(receiptData)}
+            try {
+                console.log('영수증 미리보기 시작:', receiptData);
+                
+                // 영수증 HTML 생성
+                const receiptHTML = generateReceiptHTML(receiptData);
+                console.log('영수증 HTML 생성 완료, 길이:', receiptHTML.length);
+                
+                const modalHTML = `
+                    <div class="modal fade" id="receiptPreviewModal" tabindex="-1" aria-labelledby="receiptPreviewModalLabel" aria-hidden="true">
+                        <div class="modal-dialog modal-xl">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title japanese-heading" id="receiptPreviewModalLabel">
+                                        <i class="fas fa-receipt me-2"></i>領収書 - ${receiptData.orderId}
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary japanese-text" data-bs-dismiss="modal">
-                                    <i class="fas fa-times me-1"></i>閉じる
-                                </button>
-                                <button type="button" class="btn btn-dark japanese-text" onclick="downloadReceiptPDF('${receiptData.orderId}')">
-                                    <i class="fas fa-download me-1"></i>PDFダウンロード
-                                </button>
+                                <div class="modal-body p-0">
+                                    <div id="receipt-content">
+                                        ${receiptHTML}
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary japanese-text" data-bs-dismiss="modal">
+                                        <i class="fas fa-times me-1"></i>閉じる
+                                    </button>
+                                    <button type="button" class="btn btn-dark japanese-text" onclick="downloadReceiptPDF('${receiptData.orderId}')">
+                                        <i class="fas fa-download me-1"></i>PDFダウンロード
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            `;
-            
-            // 기존 모달 제거
-            const existingModal = document.getElementById('receiptPreviewModal');
-            if (existingModal) {
-                existingModal.remove();
+                `;
+                
+                // 기존 모달 제거
+                const existingModal = document.getElementById('receiptPreviewModal');
+                if (existingModal) {
+                    existingModal.remove();
+                }
+                
+                // 새 모달 추가
+                document.body.insertAdjacentHTML('beforeend', modalHTML);
+                console.log('모달 HTML 추가 완료');
+                
+                // 모달 표시
+                const modal = new bootstrap.Modal(document.getElementById('receiptPreviewModal'));
+                modal.show();
+                console.log('모달 표시 완료');
+                
+            } catch (error) {
+                console.error('영수증 미리보기 오류:', error);
+                alert('영수증 미리보기 중 오류가 발생했습니다: ' + error.message);
             }
-            
-            // 새 모달 추가
-            document.body.insertAdjacentHTML('beforeend', modalHTML);
-            
-            // 모달 표시
-            const modal = new bootstrap.Modal(document.getElementById('receiptPreviewModal'));
-            modal.show();
         }
 
 
@@ -3011,11 +3025,16 @@
 
         // 영수증 HTML 생성 (전문적인 형태)
         function generateReceiptHTML(receiptData) {
-            const paymentMethodText = receiptData.paymentMethod === 'card' ? 'クレジットカード' : 
-                                    receiptData.paymentMethod === 'bank-transfer' ? '銀行振込' : 
-                                    receiptData.paymentMethod;
-            
-            return `
+            try {
+                console.log('영수증 HTML 생성 시작:', receiptData);
+                
+                const paymentMethodText = receiptData.paymentMethod === 'card' ? 'クレジットカード' : 
+                                        receiptData.paymentMethod === 'bank-transfer' ? '銀行振込' : 
+                                        receiptData.paymentMethod;
+                
+                console.log('결제 방법 텍스트:', paymentMethodText);
+                
+                const html = `
                 <div class="receipt-container">
                     <style>
                         .receipt-container {
@@ -3365,6 +3384,14 @@
                     </div>
                 </div>
             `;
+                
+                console.log('영수증 HTML 생성 완료, 길이:', html.length);
+                return html;
+                
+            } catch (error) {
+                console.error('영수증 HTML 생성 오류:', error);
+                return '<div class="alert alert-danger">영수증 생성 중 오류가 발생했습니다.</div>';
+            }
         }
 
         // 날짜 변환 함수들 (간단한 형식)
