@@ -1626,10 +1626,10 @@
                 renderOrderItems();
                 updateCartCount();
                 
-                // 카트가 비어있으면 카트 페이지로 이동
+                // 카트가 비어있으면 홈페이지로 이동
                 if (currentCart.length === 0) {
                     alert('カートが空です。商品を追加してください。');
-                    window.location.href = 'cart.html';
+                    window.location.href = 'index.html';
                 }
             }
         }
@@ -1662,9 +1662,9 @@
                 const isModalVisible = bankTransferModal && bankTransferModal.classList.contains('show');
                 
                 if (!isModalVisible) {
-                    console.log('⚠️ 모달이 표시되지 않음 - cart.html로 리디렉션');
+                    console.log('⚠️ 모달이 표시되지 않음 - index.html로 리디렉션');
                     setTimeout(() => {
-                        window.location.href = 'cart.html';
+                        window.location.href = 'index.html';
                     }, 100);
                 } else {
                     console.log('✅ 모달이 표시됨 - 리디렉션 건너뜀');
@@ -2658,10 +2658,10 @@
                     // 계좌이체: 입금 안내 모달 표시 (카트는 모달에서 처리)
                     showBankTransferCompleteModal(orderId, finalTotal);
                 } else {
-                    // 카드 결제: 카트 비우고 포인트 페이지로 이동
+                    // 카드 결제: 카트 비우고 홈페이지로 이동
                     await clearCart();
                     setTimeout(() => {
-                        window.location.href = `points.html?newOrder=${orderId}&earnedPoints=${earnedPoints}`;
+                        window.location.href = `index.html?newOrder=${orderId}&earnedPoints=${earnedPoints}`;
                     }, 1000);
                 }
                 
@@ -3675,7 +3675,11 @@
                     console.log('✅ 모달 닫기 완료');
                 }
                 
-                // 잠시 대기 후 카트 비우기
+                // 즉시 홈페이지로 이동 (카트 비우기는 백그라운드에서 처리)
+                console.log('🏠 메인 페이지로 이동');
+                window.location.href = 'index.html';
+                
+                // 백그라운드에서 카트 비우기
                 setTimeout(async () => {
                     try {
                         await clearCart();
@@ -3683,15 +3687,13 @@
                     } catch (error) {
                         console.error('❌ 카트 비우기 실패:', error);
                     }
-                }, 500);
+                }, 100);
                 
             } catch (error) {
                 console.error('❌ 모달 닫기 실패:', error);
+                // 에러가 발생해도 홈페이지로 이동
+                window.location.href = 'index.html';
             }
-            
-            // 메인 페이지로 이동
-            console.log('🏠 메인 페이지로 이동');
-            window.location.href = 'index.html';
         }
 
     </script>
