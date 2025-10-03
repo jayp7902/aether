@@ -2967,20 +2967,24 @@
         function generatePDF(orderId) {
             const receiptContent = document.getElementById('receipt-content');
             const opt = {
-                margin: [15, 15, 15, 15], // 상하좌우 15mm 마진
+                margin: [8, 8, 8, 8], // 상하좌우 8mm 마진 (더 작게)
                 filename: `領収書_${orderId}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
+                image: { type: 'jpeg', quality: 0.95 },
                 html2canvas: { 
-                    scale: 1.5,
+                    scale: 2, // 더 높은 해상도
                     useCORS: true,
-                    letterRendering: true
+                    letterRendering: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff'
                 },
                 jsPDF: { 
                     unit: 'mm', 
                     format: 'a4', 
                     orientation: 'portrait',
-                    compress: true
-                }
+                    compress: true,
+                    precision: 2
+                },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } // 페이지 나누기 방지
             };
             
             html2pdf().set(opt).from(receiptContent).save();
@@ -3044,7 +3048,7 @@
                             font-family: 'Noto Sans JP', sans-serif;
                             max-width: 210mm;
                             margin: 0 auto;
-                            padding: 15mm;
+                            padding: 10mm;
                             background: white;
                             color: #333;
                             min-height: 297mm;
@@ -3053,164 +3057,173 @@
                         
                         .receipt-header {
                             text-align: center;
-                            margin-bottom: 20px;
+                            margin-bottom: 12px;
                             border-bottom: 2px solid #333;
-                            padding-bottom: 15px;
+                            padding-bottom: 8px;
                         }
                         
                         .company-logo {
-                            margin-bottom: 10px;
+                            margin-bottom: 6px;
                         }
                         
                         .company-logo img {
-                            max-height: 90px;
+                            max-height: 60px;
                             width: auto;
                         }
                         
                         .receipt-title {
                             font-family: 'Noto Sans JP', sans-serif;
-                            font-size: 28px;
+                            font-size: 22px;
                             font-weight: bold;
-                            margin: 15px 0;
+                            margin: 8px 0;
                         }
                         
                         .receipt-info {
                             display: flex;
                             justify-content: space-between;
-                            margin-bottom: 15px;
+                            margin-bottom: 10px;
                             font-family: 'Noto Sans JP', sans-serif;
-                            font-size: 12px;
+                            font-size: 10px;
                         }
                         
                         .recipient-section {
                             text-align: center;
-                            margin: 20px 0;
+                            margin: 12px 0;
                             font-family: 'Noto Sans JP', sans-serif;
-                            font-size: 16px;
+                            font-size: 14px;
                             font-weight: bold;
                         }
                         
                         .amount-section {
                             text-align: center;
-                            margin: 20px 0;
+                            margin: 12px 0;
                             font-family: 'Noto Sans JP', sans-serif;
-                            font-size: 20px;
+                            font-size: 16px;
                             font-weight: bold;
                         }
                         
                         .order-details {
-                            margin: 20px 0;
+                            margin: 12px 0;
                         }
                         
                         .detail-section {
-                            margin-bottom: 15px;
+                            margin-bottom: 10px;
                         }
                         
                         .detail-title {
                             font-family: 'Noto Sans JP', sans-serif;
                             font-weight: bold;
-                            margin-bottom: 8px;
+                            margin-bottom: 5px;
                             border-bottom: 1px solid #ddd;
-                            padding-bottom: 3px;
-                            font-size: 14px;
+                            padding-bottom: 2px;
+                            font-size: 12px;
                         }
                         
                         .detail-row {
                             display: flex;
                             justify-content: space-between;
-                            margin-bottom: 3px;
+                            margin-bottom: 2px;
                             padding: 1px 0;
                             font-family: 'Noto Sans JP', sans-serif;
-                            font-size: 12px;
+                            font-size: 10px;
                         }
                         
                         .items-table {
                             width: 100%;
                             border-collapse: collapse;
-                            margin: 15px 0;
+                            margin: 8px 0;
                             font-family: 'Noto Sans JP', sans-serif;
                         }
                         
                         .items-table th,
                         .items-table td {
                             border: 1px solid #ddd;
-                            padding: 6px;
+                            padding: 4px;
                             text-align: left;
                             font-family: 'Noto Sans JP', sans-serif;
-                            font-size: 11px;
+                            font-size: 9px;
                         }
                         
                         .items-table th {
                             background-color: #f8f9fa;
                             font-weight: bold;
-                            font-size: 12px;
+                            font-size: 10px;
                         }
                         
                         .total-section {
-                            margin: 20px 0;
+                            margin: 12px 0;
                         }
                         
                         .total-row {
                             display: flex;
                             justify-content: space-between;
-                            margin-bottom: 5px;
-                            padding: 3px 0;
+                            margin-bottom: 3px;
+                            padding: 2px 0;
                             font-family: 'Noto Sans JP', sans-serif;
-                            font-size: 12px;
+                            font-size: 10px;
                         }
                         
                         .total-final {
                             font-family: 'Noto Sans JP', sans-serif;
                             font-weight: bold;
-                            font-size: 14px;
+                            font-size: 12px;
                             border-top: 2px solid #333;
-                            padding-top: 8px;
-                            margin-top: 8px;
+                            padding-top: 5px;
+                            margin-top: 5px;
                         }
                         
                         .payment-breakdown {
                             background-color: #f8f9fa;
-                            padding: 10px;
-                            margin: 15px 0;
-                            border-radius: 5px;
+                            padding: 6px;
+                            margin: 8px 0;
+                            border-radius: 3px;
                             font-family: 'Noto Sans JP', sans-serif;
                         }
                         
                         .tax-breakdown {
                             font-family: 'Noto Sans JP', sans-serif;
-                            font-size: 10px;
+                            font-size: 9px;
                             color: #666;
-                            margin-top: 8px;
+                            margin-top: 5px;
                         }
                         
                         .disclaimer {
                             font-family: 'Noto Sans JP', sans-serif;
-                            font-size: 10px;
+                            font-size: 8px;
                             color: #666;
-                            margin-top: 15px;
+                            margin-top: 8px;
                             text-align: center;
                         }
                         
                         .shipping-info {
                             background-color: #f8f9fa;
-                            padding: 10px;
-                            margin: 15px 0;
-                            border-radius: 5px;
+                            padding: 6px;
+                            margin: 8px 0;
+                            border-radius: 3px;
                             font-family: 'Noto Sans JP', sans-serif;
                         }
                         
                         @media print {
                             .receipt-container {
                                 margin: 0;
-                                padding: 15mm;
+                                padding: 8mm;
                                 max-width: 210mm;
                                 min-height: 297mm;
+                                page-break-inside: avoid;
+                            }
+                            
+                            .detail-section {
+                                page-break-inside: avoid;
+                            }
+                            
+                            .items-table {
+                                page-break-inside: avoid;
                             }
                         }
                         
                         @page {
                             size: A4;
-                            margin: 0;
+                            margin: 8mm;
                         }
                     </style>
                     
@@ -3264,20 +3277,12 @@
                         <div class="detail-section">
                             <div class="detail-title">領収者情報</div>
                             <div class="detail-row">
-                                <span>領収者:</span>
                                 <span>株式会社JAYCOS</span>
-                            </div>
-                            <div class="detail-row">
-                                <span>店舗名:</span>
-                                <span>Aether Store</span>
-                            </div>
-                            <div class="detail-row">
-                                <span>店舗住所:</span>
                                 <span>〒169-0072 東京都新宿区大久保2丁目21-10 ジュネス大久保 102号</span>
                             </div>
                             <div class="detail-row">
-                                <span>電話番号:</span>
-                                <span>03.3200.5547</span>
+                                <span>TEL: 03.3200.5547</span>
+                                <span></span>
                             </div>
                         </div>
                         
@@ -3340,17 +3345,10 @@
                         </div>
                         
                         <div class="detail-section">
-                            <div class="detail-title">注文情報</div>
-                            <div class="shipping-info">
-                                <div class="detail-title">配送情報</div>
-                                <div class="detail-row">
-                                    <span>配送方法:</span>
-                                    <span>宅配便</span>
-                                </div>
-                                <div class="detail-row">
-                                    <span>お届け先住所:</span>
-                                    <span>${receiptData.shippingAddress.postal || ''} ${receiptData.shippingAddress.prefecture || ''} ${receiptData.shippingAddress.city || ''} ${receiptData.shippingAddress.address1 || ''} ${receiptData.shippingAddress.address2 || ''}</span>
-                                </div>
+                            <div class="detail-title">配送情報</div>
+                            <div class="detail-row">
+                                <span>お届け先:</span>
+                                <span>${receiptData.shippingAddress.postal || ''} ${receiptData.shippingAddress.prefecture || ''} ${receiptData.shippingAddress.city || ''}</span>
                             </div>
                         </div>
                         
