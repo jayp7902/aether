@@ -2966,11 +2966,20 @@
         function generatePDF(orderId) {
             const receiptContent = document.getElementById('receipt-content');
             const opt = {
-                margin: 10,
+                margin: [15, 15, 15, 15], // 상하좌우 15mm 마진
                 filename: `領収書_${orderId}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                html2canvas: { 
+                    scale: 1.5,
+                    useCORS: true,
+                    letterRendering: true
+                },
+                jsPDF: { 
+                    unit: 'mm', 
+                    format: 'a4', 
+                    orientation: 'portrait',
+                    compress: true
+                }
             };
             
             html2pdf().set(opt).from(receiptContent).save();
@@ -3032,18 +3041,20 @@
                     <style>
                         .receipt-container {
                             font-family: 'Noto Sans JP', sans-serif;
-                            max-width: 800px;
+                            max-width: 210mm;
                             margin: 0 auto;
-                            padding: 20px;
+                            padding: 15mm;
                             background: white;
                             color: #333;
+                            min-height: 297mm;
+                            box-sizing: border-box;
                         }
                         
                         .receipt-header {
                             text-align: center;
-                            margin-bottom: 30px;
+                            margin-bottom: 20px;
                             border-bottom: 2px solid #333;
-                            padding-bottom: 20px;
+                            padding-bottom: 15px;
                         }
                         
                         .company-logo {
@@ -3051,128 +3062,154 @@
                         }
                         
                         .company-logo img {
-                            max-height: 60px;
+                            max-height: 90px;
                             width: auto;
                         }
                         
                         .receipt-title {
-                            font-size: 32px;
+                            font-family: 'Noto Sans JP', sans-serif;
+                            font-size: 28px;
                             font-weight: bold;
-                            margin: 20px 0;
+                            margin: 15px 0;
                         }
                         
                         .receipt-info {
                             display: flex;
                             justify-content: space-between;
-                            margin-bottom: 20px;
-                            font-size: 14px;
+                            margin-bottom: 15px;
+                            font-family: 'Noto Sans JP', sans-serif;
+                            font-size: 12px;
                         }
                         
                         .recipient-section {
                             text-align: center;
-                            margin: 30px 0;
-                            font-size: 18px;
+                            margin: 20px 0;
+                            font-family: 'Noto Sans JP', sans-serif;
+                            font-size: 16px;
                             font-weight: bold;
                         }
                         
                         .amount-section {
                             text-align: center;
-                            margin: 30px 0;
-                            font-size: 24px;
+                            margin: 20px 0;
+                            font-family: 'Noto Sans JP', sans-serif;
+                            font-size: 20px;
                             font-weight: bold;
                         }
                         
                         .order-details {
-                            margin: 30px 0;
+                            margin: 20px 0;
                         }
                         
                         .detail-section {
-                            margin-bottom: 25px;
+                            margin-bottom: 15px;
                         }
                         
                         .detail-title {
+                            font-family: 'Noto Sans JP', sans-serif;
                             font-weight: bold;
-                            margin-bottom: 10px;
+                            margin-bottom: 8px;
                             border-bottom: 1px solid #ddd;
-                            padding-bottom: 5px;
+                            padding-bottom: 3px;
+                            font-size: 14px;
                         }
                         
                         .detail-row {
                             display: flex;
                             justify-content: space-between;
-                            margin-bottom: 5px;
-                            padding: 2px 0;
+                            margin-bottom: 3px;
+                            padding: 1px 0;
+                            font-family: 'Noto Sans JP', sans-serif;
+                            font-size: 12px;
                         }
                         
                         .items-table {
                             width: 100%;
                             border-collapse: collapse;
-                            margin: 20px 0;
+                            margin: 15px 0;
+                            font-family: 'Noto Sans JP', sans-serif;
                         }
                         
                         .items-table th,
                         .items-table td {
                             border: 1px solid #ddd;
-                            padding: 8px;
+                            padding: 6px;
                             text-align: left;
+                            font-family: 'Noto Sans JP', sans-serif;
+                            font-size: 11px;
                         }
                         
                         .items-table th {
                             background-color: #f8f9fa;
                             font-weight: bold;
+                            font-size: 12px;
                         }
                         
                         .total-section {
-                            margin: 30px 0;
+                            margin: 20px 0;
                         }
                         
                         .total-row {
                             display: flex;
                             justify-content: space-between;
-                            margin-bottom: 8px;
-                            padding: 5px 0;
+                            margin-bottom: 5px;
+                            padding: 3px 0;
+                            font-family: 'Noto Sans JP', sans-serif;
+                            font-size: 12px;
                         }
                         
                         .total-final {
+                            font-family: 'Noto Sans JP', sans-serif;
                             font-weight: bold;
-                            font-size: 18px;
+                            font-size: 14px;
                             border-top: 2px solid #333;
-                            padding-top: 10px;
-                            margin-top: 10px;
+                            padding-top: 8px;
+                            margin-top: 8px;
                         }
                         
                         .payment-breakdown {
                             background-color: #f8f9fa;
-                            padding: 15px;
-                            margin: 20px 0;
+                            padding: 10px;
+                            margin: 15px 0;
                             border-radius: 5px;
+                            font-family: 'Noto Sans JP', sans-serif;
                         }
                         
                         .tax-breakdown {
-                            font-size: 12px;
+                            font-family: 'Noto Sans JP', sans-serif;
+                            font-size: 10px;
                             color: #666;
-                            margin-top: 10px;
+                            margin-top: 8px;
                         }
                         
                         .disclaimer {
-                            font-size: 12px;
+                            font-family: 'Noto Sans JP', sans-serif;
+                            font-size: 10px;
                             color: #666;
-                            margin-top: 20px;
+                            margin-top: 15px;
                             text-align: center;
                         }
                         
                         .shipping-info {
                             background-color: #f8f9fa;
-                            padding: 15px;
-                            margin: 20px 0;
+                            padding: 10px;
+                            margin: 15px 0;
                             border-radius: 5px;
+                            font-family: 'Noto Sans JP', sans-serif;
                         }
                         
                         @media print {
                             .receipt-container {
                                 margin: 0;
-                                padding: 10px;
+                                padding: 15mm;
+                                max-width: 210mm;
+                                min-height: 297mm;
                             }
+                        }
+                        
+                        @page {
+                            size: A4;
+                            margin: 0;
                         }
                     </style>
                     
