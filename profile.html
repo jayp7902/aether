@@ -1680,9 +1680,9 @@
         function getCurrentUser() {
             console.log('🔍 profile.html getCurrentUser 호출');
             
-            // Firebase 사용자만 확인
+            // Firebase 사용자만 확인 (firebase-config.js 전역 변수 사용)
             try {
-                if (typeof firebase !== 'undefined' && firebase.auth) {
+                if (typeof firebase !== 'undefined' && firebase.auth && window.auth && window.db) {
                     const firebaseUser = firebase.auth().currentUser;
                     console.log('🔍 profile.html Firebase currentUser:', firebaseUser ? firebaseUser.email : 'null');
                     
@@ -1693,7 +1693,7 @@
                         console.log('❌ profile.html Firebase 사용자 없음 (로그아웃 상태 또는 인증 상태 복원 중)');
                     }
                 } else {
-                    console.log('❌ profile.html Firebase Auth 사용 불가능');
+                    console.log('❌ profile.html Firebase Auth 사용 불가능 (전역 변수 미설정)');
                 }
             } catch (error) {
                 console.warn('profile.html Firebase 사용자 확인 중 오류:', error);
@@ -2471,13 +2471,15 @@
                 
                 let profileData = null;
                 
-                // 1. Firebase에서 로드 시도 (초기화 상태 확인 후)
+                // 1. Firebase에서 로드 시도 (firebase-config.js 전역 변수 확인)
                 if (typeof window.FirebaseService !== 'undefined' && 
                     window.FirebaseService.isFirebaseAvailable() && 
                     typeof firebase !== 'undefined' && 
                     firebase.app && 
                     firebase.auth && 
-                    firebase.firestore) {
+                    firebase.firestore &&
+                    window.auth && 
+                    window.db) {
                     try {
                         const user = firebase.auth().currentUser;
                         if (user && user.email) {
@@ -2647,14 +2649,16 @@
                 let userData = null;
                 let userPoints = 0;
                 
-                // 1. Firebase에서 로드 시도 (안전한 방식)
+                // 1. Firebase에서 로드 시도 (firebase-config.js 전역 변수 사용)
                 try {
                     if (typeof window.FirebaseService !== 'undefined' && 
                         window.FirebaseService.isFirebaseAvailable() && 
                         typeof firebase !== 'undefined' && 
                         firebase.app && 
                         firebase.auth && 
-                        firebase.firestore) {
+                        firebase.firestore &&
+                        window.auth && 
+                        window.db) {
                         
                         let user = firebase.auth().currentUser;
                         
@@ -3942,15 +3946,15 @@
             try {
                 console.log('=== 인증 상태 확인 시작 ===');
                 
-                // Firebase 초기화 대기 (간단한 방식)
+                // Firebase 초기화 대기 (firebase-config.js 전역 변수 확인)
                 const waitForFirebase = () => {
                     return new Promise((resolve) => {
                         const checkFirebase = () => {
-                            if (typeof firebase !== 'undefined' && firebase.auth) {
-                                console.log('Firebase 초기화 완료');
+                            if (typeof firebase !== 'undefined' && firebase.auth && window.auth && window.db) {
+                                console.log('Firebase 초기화 완료 (전역 변수 확인)');
                                 resolve();
                             } else {
-                                setTimeout(checkFirebase, 25);
+                                setTimeout(checkFirebase, 100);
                             }
                         };
                         checkFirebase();
@@ -4056,6 +4060,7 @@
         
         // auth-utils.js 중복 초기화 방지
         window.profilePageInitialized = true;
+        window.disableAuthUtilsInit = true; // auth-utils.js 초기화 비활성화
         
         // 통합된 DOMContentLoaded 이벤트 리스너 (최적화됨)
         document.addEventListener('DOMContentLoaded', function() {
@@ -4101,18 +4106,19 @@
                 return new bootstrap.Dropdown(dropdownToggleEl);
             });
             
-            // Firebase 초기화 대기 (간단한 방식)
+            // Firebase 초기화 대기 (firebase-config.js 완료 대기)
             const firebaseInitCheck = setInterval(() => {
-                if (typeof firebase !== 'undefined' && firebase.auth) {
-                    console.log('Firebase 초기화 완료, 인증 상태 확인 시작');
+                // firebase-config.js에서 설정한 전역 변수 확인
+                if (typeof firebase !== 'undefined' && firebase.auth && window.auth && window.db) {
+                    console.log('Firebase 초기화 완료 (전역 변수 확인), 인증 상태 확인 시작');
                     clearInterval(firebaseInitCheck);
                     
                     // Firebase 초기화 완료 후 잠시 대기 후 인증 상태 확인
                     setTimeout(() => {
                         checkAuthState();
-                    }, 500); // 500ms 대기 후 인증 상태 확인
+                    }, 1000); // 1초 대기 후 인증 상태 확인
                 }
-            }, 25); // 25ms 간격 유지
+            }, 100); // 100ms 간격으로 변경
             
             // 3초 후에도 Firebase가 초기화되지 않으면 타임아웃 (5초 → 3초로 단축)
             setTimeout(() => {
