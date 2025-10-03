@@ -1336,7 +1336,8 @@
                     await firebase.firestore().collection('users').doc(user.email).update({
                         address: addressData,
                         shippingAddress: addressData, // 체크아웃 페이지 호환성을 위해 추가
-                        lastUsedAddress: addressData  // 체크아웃 페이지 호환성을 위해 추가
+                        lastUsedAddress: addressData, // 체크아웃 페이지 호환성을 위해 추가
+                        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                     });
                     
                     // 성공 시 알림 메시지 표시
