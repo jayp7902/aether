@@ -2348,8 +2348,8 @@
                         
                         console.log('✅ Firebase Auth에서 사용자 정보 가져와서 프로필 헤더 업데이트 완료');
                     } else {
-                        console.log('Firebase Auth에서도 사용자 정보를 찾을 수 없음 - 로그인 페이지로 리다이렉트');
-                        window.location.href = 'login.html';
+                        console.log('Firebase Auth에서도 사용자 정보를 찾을 수 없음 - 인증 상태 확인 대기');
+                        // 로그인 페이지로 즉시 리다이렉트하지 않고 인증 상태 확인 대기
                     }
                 }
             } catch (error) {
@@ -2357,7 +2357,8 @@
                 // 오류 발생 시에도 Firebase Auth에서 사용자 정보 확인
                 const currentUser = getCurrentUser();
                 if (!currentUser) {
-                    window.location.href = 'login.html';
+                    console.log('오류 발생 후에도 사용자 정보 없음 - 인증 상태 확인 대기');
+                    // 로그인 페이지로 즉시 리다이렉트하지 않고 인증 상태 확인 대기
                 }
             }
         }
@@ -4036,9 +4037,54 @@
             try {
                 console.log('=== 인증 상태 확인 시작 ===');
                 
-                // Firebase 인증 상태 확인
-                if (typeof firebase !== 'undefined' && firebase.auth) {
+                // Firebase 초기화 대기
+                const waitForFirebase = () => {
+                    return new Promise((resolve) => {
+                        const checkFirebase = () => {
+                            if (typeof firebase !== 'undefined' && firebase.auth) {
+                                console.log('Firebase 초기화 완료');
+                                resolve();
+                            } else {
+                                console.log('Firebase 초기화 대기 중...');
+                                setTimeout(checkFirebase, 100);
+                            }
+                        };
+                        checkFirebase();
+                    });
+                };
+                
+                waitForFirebase().then(() => {
                     console.log('Firebase 인증 상태 확인 중...');
+                    
+                    // 인증 상태 변경 리스너 설정 (한 번만)
+                    if (!window.profileAuthStateUnsubscribe) {
+                        window.profileAuthStateUnsubscribe = firebase.auth().onAuthStateChanged(function(user) {
+                            console.log('Firebase 인증 상태 변경:', user ? '로그인됨' : '로그아웃됨');
+                            if (user) {
+                                console.log('✅ Firebase 인증 상태 변경: 로그인됨', user.email);
+                                
+                                // 사용자 메뉴 직접 업데이트 (auth-utils.js 호출 방지)
+                                updateUserMenuDirectly();
+                                console.log('✅ profile.html - 사용자 메뉴 직접 업데이트 완료');
+                                
+                                // 프로필 헤더 업데이트
+                                const userData = {
+                                    name: user.displayName || user.email.split('@')[0],
+                                    email: user.email
+                                };
+                                updateProfileHeader(userData);
+                                
+                                // 프로필 페이지 초기화
+                                initializeProfile();
+                            } else {
+                                console.log('❌ Firebase 인증 상태 변경: 로그아웃됨');
+                                // 로그아웃 상태일 때 로그인 페이지로 리다이렉트
+                                setTimeout(() => {
+                                    window.location.href = 'login.html';
+                                }, 1000);
+                            }
+                        });
+                    }
                     
                     // 현재 사용자 상태 확인
                     const currentUser = firebase.auth().currentUser;
@@ -4061,76 +4107,18 @@
                         // 프로필 페이지 초기화
                         initializeProfile();
                     } else {
-                        console.log('❌ Firebase 사용자 로그아웃 상태 - 잠시 대기 후 재확인');
-                        // 로그아웃 상태일 때 잠시 대기 후 재확인 (Firebase 초기화 지연 때문일 수 있음)
-                        setTimeout(() => {
-                            const retryUser = firebase.auth().currentUser;
-                            if (retryUser) {
-                                console.log('✅ 재확인 후 Firebase 사용자 발견:', retryUser.email);
-                                
-                                // 사용자 메뉴 직접 업데이트 (auth-utils.js 호출 방지)
-                                updateUserMenuDirectly();
-                                console.log('✅ profile.html - 재확인 후 메뉴 직접 업데이트 완료');
-                                
-                                const userData = {
-                                    name: retryUser.displayName || retryUser.email.split('@')[0],
-                                    email: retryUser.email
-                                };
-                                updateProfileHeader(userData);
-                                initializeProfile();
-                            } else {
-                                console.log('❌ 재확인 후에도 Firebase 사용자 없음 - 로그인 페이지로 리다이렉트');
-                                window.location.href = 'login.html';
-                            }
-                        }, 2000);
+                        console.log('❌ Firebase 사용자 로그아웃 상태 - 인증 상태 변경 리스너에서 처리 대기');
+                        // 인증 상태 변경 리스너에서 처리하도록 대기
                     }
-                    
-                    // 인증 상태 변경 리스너 설정
-                    window.profileAuthStateUnsubscribe = firebase.auth().onAuthStateChanged(function(user) {
-                        console.log('Firebase 인증 상태 변경:', user ? '로그인됨' : '로그아웃됨');
-                        if (user) {
-                            console.log('✅ Firebase 인증 상태 변경: 로그인됨', user.email);
-                            
-                            // 사용자 메뉴 직접 업데이트 (auth-utils.js 호출 방지)
-                            updateUserMenuDirectly();
-                            console.log('✅ profile.html - 사용자 메뉴 직접 업데이트 완료');
-                            
-                            // 프로필 헤더 업데이트
-                            const userData = {
-                                name: user.displayName || user.email.split('@')[0],
-                                email: user.email
-                            };
-                            updateProfileHeader(userData);
-                        } else {
-                            console.log('❌ Firebase 인증 상태 변경: 로그아웃됨');
-                            // 로그아웃 상태일 때 로그인 페이지로 리다이렉트
-                            setTimeout(() => {
-                                window.location.href = 'login.html';
-                            }, 1000);
-                        }
-                    });
-                } else {
-                    console.log('Firebase 없음 - 잠시 대기 후 재시도');
-                    // Firebase가 없는 경우 잠시 대기 후 재시도
-                    setTimeout(() => {
-                        if (typeof firebase !== 'undefined' && firebase.auth) {
-                            console.log('Firebase 초기화 완료, 인증 상태 재확인');
-                            checkAuthState();
-                        } else {
-                            console.log('Firebase 초기화 실패 - 로그인 페이지로 리다이렉트');
-                            window.location.href = 'login.html';
-                        }
-                    }, 3000);
-                }
+                });
             } catch (error) {
-                console.warn('인증 상태 확인 실패:', error);
-                // 에러 발생 시 잠시 대기 후 재시도
+                console.error('인증 상태 확인 중 오류:', error);
+                // 오류 발생 시에도 잠시 대기 후 재시도
                 setTimeout(() => {
-                    console.log('에러 후 재시도...');
                     checkAuthState();
                 }, 2000);
             }
-        }
+        };
 
         // 사용자 메뉴 업데이트 (auth-utils.js의 함수 사용) - 제거됨, updateUserMenuDirectly 사용
 
@@ -4141,6 +4129,51 @@
         // 불필요한 함수들 제거됨 - checkAuthState에서 모든 인증 상태 관리
 
         // DOMContentLoaded 이벤트 리스너
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('프로필 페이지 DOM 로드 완료');
+            
+            // auth-utils.js 로드 확인
+            if (typeof getLoginStatus === 'function') {
+                console.log('auth-utils.js 로드 확인:', typeof getLoginStatus);
+            }
+            
+            // custom.js 로드 확인
+            if (typeof window.showToast === 'function') {
+                console.log('custom.js 로드 확인:', typeof window.showToast);
+            }
+            
+            // 생년월일 입력 필드 초기화
+            console.log('생년월일 입력 필드 초기화 시작');
+            const birthdateInputs = ['profile-birthdate', 'edit-birthdate'];
+            birthdateInputs.forEach(inputId => {
+                const input = document.getElementById(inputId);
+                if (input) {
+                    input.type = 'date';
+                    input.max = new Date().toISOString().split('T')[0];
+                    console.log('생년월일 입력 필드 초기화 완료:', inputId);
+                }
+            });
+            
+            // Firebase 초기화 대기
+            console.log('Firebase 초기화 대기 중...');
+            
+            // Firebase 초기화 완료 후 인증 상태 확인
+            const firebaseInitCheck = setInterval(() => {
+                if (typeof firebase !== 'undefined' && firebase.auth) {
+                    console.log('Firebase 초기화 완료, 인증 상태 확인 시작');
+                    clearInterval(firebaseInitCheck);
+                    checkAuthState();
+                }
+            }, 100);
+            
+            // 10초 후에도 Firebase가 초기화되지 않으면 타임아웃
+            setTimeout(() => {
+                if (typeof firebase === 'undefined' || !firebase.auth) {
+                    console.error('Firebase 초기화 타임아웃');
+                    clearInterval(firebaseInitCheck);
+                }
+            }, 10000);
+        });
 
     </script>
 
