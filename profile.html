@@ -1690,7 +1690,7 @@
                         console.log('✅ profile.html Firebase 사용자 확인됨:', firebaseUser.email);
                         return firebaseUser;
                     } else {
-                        console.log('❌ profile.html Firebase 사용자 없음 (로그아웃 상태)');
+                        console.log('❌ profile.html Firebase 사용자 없음 (로그아웃 상태 또는 인증 상태 복원 중)');
                     }
                 } else {
                     console.log('❌ profile.html Firebase Auth 사용 불가능');
@@ -3942,15 +3942,36 @@
             try {
                 console.log('=== 인증 상태 확인 시작 ===');
                 
-                // Firebase 초기화 대기 (더 빠른 방식)
+                // Firebase 초기화 및 인증 상태 복원 대기
                 const waitForFirebase = () => {
                     return new Promise((resolve) => {
                         const checkFirebase = () => {
                             if (typeof firebase !== 'undefined' && firebase.auth) {
                                 console.log('Firebase 초기화 완료');
-                                resolve();
+                                
+                                // Firebase Auth 초기화 완료 후 인증 상태 복원 대기
+                                const waitForAuthState = () => {
+                                    return new Promise((authResolve) => {
+                                        const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
+                                            unsubscribe(); // 리스너 해제
+                                            console.log('Firebase 인증 상태 복원 완료:', user ? user.email : 'null');
+                                            authResolve(user);
+                                        });
+                                        
+                                        // 2초 후에도 인증 상태가 복원되지 않으면 타임아웃
+                                        setTimeout(() => {
+                                            unsubscribe();
+                                            console.log('Firebase 인증 상태 복원 타임아웃');
+                                            authResolve(null);
+                                        }, 2000);
+                                    });
+                                };
+                                
+                                waitForAuthState().then(() => {
+                                    resolve();
+                                });
                             } else {
-                                setTimeout(checkFirebase, 25); // 50ms → 25ms로 더 단축
+                                setTimeout(checkFirebase, 25);
                             }
                         };
                         checkFirebase();
@@ -4089,14 +4110,27 @@
                 return new bootstrap.Dropdown(dropdownToggleEl);
             });
             
-            // Firebase 초기화 대기 (더 빠른 방식)
+            // Firebase 초기화 및 인증 상태 복원 대기
             const firebaseInitCheck = setInterval(() => {
                 if (typeof firebase !== 'undefined' && firebase.auth) {
-                    console.log('Firebase 초기화 완료, 인증 상태 확인 시작');
+                    console.log('Firebase 초기화 완료, 인증 상태 복원 대기');
                     clearInterval(firebaseInitCheck);
-                    checkAuthState();
+                    
+                    // Firebase Auth 인증 상태 복원 대기
+                    const authStateCheck = firebase.auth().onAuthStateChanged((user) => {
+                        authStateCheck(); // 리스너 해제
+                        console.log('Firebase 인증 상태 복원 완료:', user ? user.email : 'null');
+                        checkAuthState();
+                    });
+                    
+                    // 3초 후에도 인증 상태가 복원되지 않으면 타임아웃
+                    setTimeout(() => {
+                        authStateCheck(); // 리스너 해제
+                        console.log('Firebase 인증 상태 복원 타임아웃, 강제 진행');
+                        checkAuthState();
+                    }, 3000);
                 }
-            }, 25); // 50ms → 25ms로 더 단축
+            }, 25); // 25ms 간격 유지
             
             // 3초 후에도 Firebase가 초기화되지 않으면 타임아웃 (5초 → 3초로 단축)
             setTimeout(() => {
