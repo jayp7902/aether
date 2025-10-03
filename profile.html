@@ -2887,10 +2887,7 @@
                                 <button type="button" class="btn btn-secondary japanese-text" data-bs-dismiss="modal">
                                     <i class="fas fa-times me-1"></i>閉じる
                                 </button>
-                                <button type="button" class="btn btn-dark japanese-text" onclick="printReceipt('${receiptData.orderId}')">
-                                    <i class="fas fa-print me-1"></i>印刷
-                                </button>
-                                <button type="button" class="btn btn-outline-dark japanese-text" onclick="downloadReceiptPDF('${receiptData.orderId}')">
+                                <button type="button" class="btn btn-dark japanese-text" onclick="downloadReceiptPDF('${receiptData.orderId}')">
                                     <i class="fas fa-download me-1"></i>PDFダウンロード
                                 </button>
                             </div>
@@ -2913,40 +2910,6 @@
             modal.show();
         }
 
-        // 영수증 인쇄
-        function printReceipt(orderId) {
-            try {
-                const receiptContent = document.getElementById('receipt-content').innerHTML;
-                const printWindow = window.open('', '_blank');
-                printWindow.document.write(`
-                    <!DOCTYPE html>
-                    <html lang="ja">
-                    <head>
-                        <meta charset="UTF-8">
-                        <title>領収書 - ${orderId}</title>
-                        <style>
-                            body { font-family: 'Noto Sans JP', sans-serif; margin: 0; padding: 20px; }
-                            @media print {
-                                body { margin: 0; padding: 10px; }
-                            }
-                        </style>
-                    </head>
-                    <body>
-                        ${receiptContent}
-                    </body>
-                    </html>
-                `);
-                printWindow.document.close();
-                
-                setTimeout(() => {
-                    printWindow.print();
-                }, 500);
-                
-            } catch (error) {
-                console.error('영수증 인쇄 실패:', error);
-                alert('영수증 인쇄 중 오류가 발생했습니다.');
-            }
-        }
 
         // PDF 다운로드 (html2pdf 라이브러리 사용)
         function downloadReceiptPDF(orderId) {
@@ -2998,8 +2961,21 @@
             const totalAmount = orderData.totalAmount || 0;
             const earnedPoints = orderData.earnedPoints || 0;
             
+            // 세금 계산 (상품금액 + 배송비에 10% 소비세)
+            const totalBeforeTax = subtotal + shippingFee;
+            const taxAmount = Math.floor(totalBeforeTax * 0.1); // 10% 소비세
+            const totalWithTax = totalBeforeTax + taxAmount;
+            
+            // 영수증 번호 생성 (날짜 + 주문번호)
+            const today = new Date();
+            const dateStr = today.getFullYear().toString() + 
+                           (today.getMonth() + 1).toString().padStart(2, '0') + 
+                           today.getDate().toString().padStart(2, '0');
+            const receiptNumber = `RCP-${dateStr}-${orderData.id || orderData.orderId}`;
+            
             return {
                 orderId: orderData.id || orderData.orderId,
+                receiptNumber: receiptNumber,
                 orderDate: orderDate.toLocaleString('ja-JP'),
                 customerName: orderData.shipping?.name || orderData.customer?.name || 'N/A',
                 customerEmail: orderData.customerEmail || orderData.userEmail || 'N/A',
@@ -3010,7 +2986,11 @@
                 totalAmount: totalAmount,
                 earnedPoints: earnedPoints,
                 shippingAddress: orderData.shipping || {},
-                paymentMethod: orderData.paymentMethod || (orderData.payment?.method || 'N/A')
+                paymentMethod: orderData.paymentMethod || (orderData.payment?.method || 'N/A'),
+                // 세금 정보 추가
+                totalBeforeTax: totalBeforeTax,
+                taxAmount: taxAmount,
+                totalWithTax: totalWithTax
             };
         }
 
@@ -3019,14 +2999,6 @@
             const paymentMethodText = receiptData.paymentMethod === 'card' ? 'クレジットカード' : 
                                     receiptData.paymentMethod === 'bank-transfer' ? '銀行振込' : 
                                     receiptData.paymentMethod;
-            
-            // 세금 계산 (일본 소비세 10%)
-            const taxRate = 0.1;
-            const subtotalExcludingTax = Math.floor(receiptData.subtotal / (1 + taxRate));
-            const taxAmount = receiptData.subtotal - subtotalExcludingTax;
-            
-            // 영수증 번호 생성 (주문번호 기반)
-            const receiptNumber = `RCP-${receiptData.orderId}`;
             
             return `
                 <div class="receipt-container">
@@ -3180,7 +3152,7 @@
                         <div class="receipt-title">領収書</div>
                         <div class="receipt-info">
                             <div>
-                                <strong>領収書番号:</strong> ${receiptNumber}<br>
+                                <strong>領収書番号:</strong> ${receiptData.receiptNumber}<br>
                                 <strong>発行日:</strong> ${new Date().toLocaleDateString('ja-JP')}
                             </div>
                             <div>
@@ -3195,7 +3167,7 @@
                     </div>
                     
                     <div class="amount-section">
-                        ${receiptData.totalAmount.toLocaleString()}円領収しました
+                        ${receiptData.totalWithTax.toLocaleString()}円領収しました
                     </div>
                     
                     <div class="order-details">
@@ -3223,7 +3195,7 @@
                             <div class="detail-title">領収者情報</div>
                             <div class="detail-row">
                                 <span>領収者:</span>
-                                <span>Aether Store Co., Ltd.</span>
+                                <span>株式会社JAYCOS</span>
                             </div>
                             <div class="detail-row">
                                 <span>店舗名:</span>
@@ -3231,11 +3203,11 @@
                             </div>
                             <div class="detail-row">
                                 <span>店舗住所:</span>
-                                <span>〒100-0001 東京都千代田区千代田1-1-1</span>
+                                <span>〒169-0072 東京都新宿区大久保2丁目21-10 ジュネス大久保 102号</span>
                             </div>
                             <div class="detail-row">
                                 <span>電話番号:</span>
-                                <span>03-1234-5678</span>
+                                <span>03.3200.5547</span>
                             </div>
                         </div>
                         
@@ -3249,13 +3221,21 @@
                                 <span>配送料:</span>
                                 <span>${receiptData.shippingFee === 0 ? '無料' : '¥' + receiptData.shippingFee.toLocaleString()}</span>
                             </div>
+                            <div class="detail-row">
+                                <span>小計:</span>
+                                <span>¥${receiptData.totalBeforeTax.toLocaleString()}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>消費税(10%):</span>
+                                <span>¥${receiptData.taxAmount.toLocaleString()}</span>
+                            </div>
                             <div class="detail-row total-final">
                                 <span>総合計:</span>
-                                <span>¥${receiptData.totalAmount.toLocaleString()}</span>
+                                <span>¥${receiptData.totalWithTax.toLocaleString()}</span>
                             </div>
                             <div class="detail-row">
                                 <span>支払い金額:</span>
-                                <span>¥${(receiptData.totalAmount - receiptData.usedPoints).toLocaleString()}</span>
+                                <span>¥${(receiptData.totalWithTax - receiptData.usedPoints).toLocaleString()}</span>
                             </div>
                         </div>
                         
@@ -3268,7 +3248,7 @@
                             </div>
                             <div class="detail-row">
                                 <span>${paymentMethodText}:</span>
-                                <span>¥${(receiptData.totalAmount - receiptData.usedPoints).toLocaleString()}</span>
+                                <span>¥${(receiptData.totalWithTax - receiptData.usedPoints).toLocaleString()}</span>
                             </div>
                         </div>
                         ` : ''}
@@ -3277,11 +3257,11 @@
                             <div class="detail-title">課税内訳</div>
                             <div class="detail-row">
                                 <span>10%対象:</span>
-                                <span>¥${subtotalExcludingTax.toLocaleString()}</span>
+                                <span>¥${receiptData.totalBeforeTax.toLocaleString()}</span>
                             </div>
                             <div class="detail-row">
                                 <span>うち10%対象消費税:</span>
-                                <span>¥${taxAmount.toLocaleString()}</span>
+                                <span>¥${receiptData.taxAmount.toLocaleString()}</span>
                             </div>
                             <div class="disclaimer">
                                 ※表示金額は全て税込です<br>
