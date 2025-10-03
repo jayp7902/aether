@@ -2837,8 +2837,18 @@
                 const receiptHTML = generateReceiptHTML(receiptData);
                 console.log('영수증 HTML 생성 완료, 길이:', receiptHTML.length);
                 
-                // PDF 생성
+                // PDF 생성 또는 인쇄 대안 제공
                 generateReceiptPDF(receiptHTML, orderId);
+                
+                // PDF 생성 실패 시 대안으로 인쇄 기능 제공
+                setTimeout(() => {
+                    if (typeof html2pdf === 'undefined') {
+                        console.log('PDF 생성 실패, 인쇄 대안 제공');
+                        if (confirm('PDF 생성에 실패했습니다. 인쇄 대화상자를 열까요?')) {
+                            openPrintDialog(receiptHTML);
+                        }
+                    }
+                }, 3000);
                 
             } catch (error) {
                 console.error('영수증 다운로드 실패:', error);
@@ -2875,68 +2885,145 @@
         // PDF 생성 함수
         function generateReceiptPDF(receiptHTML, orderId) {
             try {
+                console.log('PDF 생성 함수 호출:', orderId);
+                
                 // html2pdf 라이브러리가 로드되어 있는지 확인
                 if (typeof html2pdf === 'undefined') {
+                    console.log('html2pdf 라이브러리 로드 중...');
+                    
                     // html2pdf 라이브러리 동적 로드
                     const script = document.createElement('script');
                     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
                     script.onload = () => {
+                        console.log('html2pdf 라이브러리 로드 완료');
                         createReceiptPDF(receiptHTML, orderId);
                     };
                     script.onerror = () => {
+                        console.error('html2pdf 라이브러리 로드 실패');
                         alert('PDF 생성 라이브러리를 로드할 수 없습니다. 인쇄 기능을 사용해주세요.');
                     };
                     document.head.appendChild(script);
                 } else {
+                    console.log('html2pdf 라이브러리 이미 로드됨');
                     createReceiptPDF(receiptHTML, orderId);
                 }
             } catch (error) {
                 console.error('PDF 생성 실패:', error);
-                alert('PDF 생성 중 오류가 발생했습니다.');
+                alert('PDF 생성 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        // 인쇄 대화상자 열기 함수
+        function openPrintDialog(receiptHTML) {
+            try {
+                console.log('인쇄 대화상자 열기');
+                
+                // 새 창 열기
+                const printWindow = window.open('', '_blank', 'width=800,height=600');
+                if (printWindow) {
+                    printWindow.document.write(`
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <title>領収書</title>
+                            <style>
+                                body { margin: 0; padding: 0; }
+                                @media print {
+                                    body { margin: 0; padding: 0; }
+                                    @page { size: A4; margin: 8mm; }
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            ${receiptHTML}
+                        </body>
+                        </html>
+                    `);
+                    
+                    printWindow.document.close();
+                    
+                    // 인쇄 대화상자 열기
+                    setTimeout(() => {
+                        printWindow.print();
+                        printWindow.close();
+                    }, 500);
+                } else {
+                    alert('팝업이 차단되었습니다. 팝업 차단을 해제하고 다시 시도해주세요.');
+                }
+            } catch (error) {
+                console.error('인쇄 대화상자 열기 실패:', error);
+                alert('인쇄 대화상자를 열 수 없습니다.');
             }
         }
 
         // 실제 PDF 생성 함수
         function createReceiptPDF(receiptHTML, orderId) {
             try {
-                // 임시 div 생성
+                console.log('PDF 생성 시작:', orderId);
+                console.log('영수증 HTML 길이:', receiptHTML.length);
+                
+                // 임시 div 생성 및 스타일링
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = receiptHTML;
                 tempDiv.style.position = 'absolute';
                 tempDiv.style.left = '-9999px';
                 tempDiv.style.top = '-9999px';
+                tempDiv.style.width = '210mm';
+                tempDiv.style.height = '297mm';
+                tempDiv.style.background = 'white';
+                tempDiv.style.overflow = 'visible';
+                tempDiv.style.zIndex = '-1';
+                
                 document.body.appendChild(tempDiv);
+                console.log('임시 div 생성 완료');
                 
-                const opt = {
-                    margin: [5, 5, 5, 5],
-                    filename: `領収書_${orderId}.pdf`,
-                    image: { type: 'jpeg', quality: 0.95 },
-                    html2canvas: { 
-                        scale: 2,
-                        useCORS: true,
-                        letterRendering: true,
-                        allowTaint: true,
-                        backgroundColor: '#ffffff'
-                    },
-                    jsPDF: { 
-                        unit: 'mm', 
-                        format: 'a4', 
-                        orientation: 'portrait',
-                        compress: true,
-                        precision: 2
-                    },
-                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-                };
-                
-                html2pdf().set(opt).from(tempDiv).save().then(() => {
-                    // 임시 div 제거
-                    document.body.removeChild(tempDiv);
-                    console.log('PDF 생성 완료');
-                });
+                // 잠시 대기 후 PDF 생성 (렌더링 완료 대기)
+                setTimeout(() => {
+                    console.log('PDF 생성 옵션 설정 중...');
+                    
+                    const opt = {
+                        margin: [5, 5, 5, 5],
+                        filename: `領収書_${orderId}.pdf`,
+                        image: { type: 'jpeg', quality: 0.95 },
+                        html2canvas: { 
+                            scale: 1.5,
+                            useCORS: true,
+                            letterRendering: true,
+                            allowTaint: true,
+                            backgroundColor: '#ffffff',
+                            width: 794, // A4 width in pixels at 96 DPI
+                            height: 1123 // A4 height in pixels at 96 DPI
+                        },
+                        jsPDF: { 
+                            unit: 'mm', 
+                            format: 'a4', 
+                            orientation: 'portrait',
+                            compress: true,
+                            precision: 2
+                        },
+                        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                    };
+                    
+                    console.log('html2pdf 실행 중...');
+                    html2pdf().set(opt).from(tempDiv).save().then(() => {
+                        console.log('PDF 생성 완료');
+                        // 임시 div 제거
+                        if (document.body.contains(tempDiv)) {
+                            document.body.removeChild(tempDiv);
+                        }
+                    }).catch((error) => {
+                        console.error('PDF 생성 실패:', error);
+                        alert('PDF 생성 중 오류가 발생했습니다: ' + error.message);
+                        // 임시 div 제거
+                        if (document.body.contains(tempDiv)) {
+                            document.body.removeChild(tempDiv);
+                        }
+                    });
+                }, 500); // 0.5초 대기
                 
             } catch (error) {
                 console.error('PDF 생성 실패:', error);
-                alert('PDF 생성 중 오류가 발생했습니다.');
+                alert('PDF 생성 중 오류가 발생했습니다: ' + error.message);
             }
         }
 
@@ -3000,13 +3087,15 @@
                         .receipt-container {
                             font-family: 'Noto Sans JP', sans-serif;
                             width: 210mm;
-                            height: 297mm;
+                            min-height: 297mm;
                             margin: 0 auto;
                             padding: 8mm;
                             background: white;
                             color: #333;
                             box-sizing: border-box;
                             position: relative;
+                            display: block;
+                            overflow: visible;
                         }
                         
                         .receipt-header {
