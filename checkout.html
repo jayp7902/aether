@@ -2455,10 +2455,10 @@
                             throw orderError;
                         }
 
-                        // 현재 사용자의 포인트 정보 가져오기
+                        // 현재 사용자의 포인트 정보 가져오기 (이메일을 문서 ID로 사용)
                         console.log('👤 사용자 포인트 정보 조회 중...');
                         try {
-                            const userDoc = await firebase.firestore().collection('users').doc(user.uid).get();
+                            const userDoc = await firebase.firestore().collection('users').doc(user.email).get();
                             const currentPoints = userDoc.exists ? (userDoc.data().points || 0) : 0;
                             console.log('📊 현재 포인트:', currentPoints);
                             
@@ -2467,9 +2467,9 @@
                             newPoints = currentPoints - finalUsedPoints + earnedPoints;
                             console.log(`💰 포인트 변화: ${currentPoints} - ${finalUsedPoints} + ${earnedPoints} = ${newPoints}`);
                             
-                            // Firestore에 포인트 업데이트
+                            // Firestore에 포인트 업데이트 (이메일을 문서 ID로 사용)
                             console.log('💾 Firebase 포인트 업데이트 시작...');
-                            await firebase.firestore().collection('users').doc(user.uid).update({
+                            await firebase.firestore().collection('users').doc(user.email).update({
                                 points: newPoints,
                                 pointsUpdatedAt: new Date()
                             });
@@ -2598,8 +2598,8 @@
                             totalOrders: firebase.firestore.FieldValue.increment(1)
                         };
                         
-                        // Firebase 프로필 업데이트
-                        await firebase.firestore().collection('users').doc(user.uid).update(profileUpdateData);
+                        // Firebase 프로필 업데이트 (이메일을 문서 ID로 사용)
+                        await firebase.firestore().collection('users').doc(user.email).update(profileUpdateData);
                         console.log('프로필 정보 자동 업데이트 완료:', profileUpdateData);
                     } else {
                         // Firebase 전용 사용 - 로그인이 필요함
@@ -2728,7 +2728,7 @@
                 console.log('✅ 사용자 프로필 데이터 로드:', userData);
                 
                 // 배송 정보 필드에 프로필 정보 설정 (여러 필드명 지원)
-                const addressData = userData.shippingAddress || userData.lastUsedAddress || userData;
+                const addressData = userData.address || userData.shippingAddress || userData.lastUsedAddress || userData;
                 
                 if (addressData) {
                     const fields = {
