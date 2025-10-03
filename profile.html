@@ -3942,34 +3942,13 @@
             try {
                 console.log('=== 인증 상태 확인 시작 ===');
                 
-                // Firebase 초기화 및 인증 상태 복원 대기
+                // Firebase 초기화 대기 (간단한 방식)
                 const waitForFirebase = () => {
                     return new Promise((resolve) => {
                         const checkFirebase = () => {
                             if (typeof firebase !== 'undefined' && firebase.auth) {
                                 console.log('Firebase 초기화 완료');
-                                
-                                // Firebase Auth 초기화 완료 후 인증 상태 복원 대기
-                                const waitForAuthState = () => {
-                                    return new Promise((authResolve) => {
-                                        const unsubscribe = firebase.auth().onAuthStateChanged((user) => {
-                                            unsubscribe(); // 리스너 해제
-                                            console.log('Firebase 인증 상태 복원 완료:', user ? user.email : 'null');
-                                            authResolve(user);
-                                        });
-                                        
-                                        // 2초 후에도 인증 상태가 복원되지 않으면 타임아웃
-                                        setTimeout(() => {
-                                            unsubscribe();
-                                            console.log('Firebase 인증 상태 복원 타임아웃');
-                                            authResolve(null);
-                                        }, 2000);
-                                    });
-                                };
-                                
-                                waitForAuthState().then(() => {
-                                    resolve();
-                                });
+                                resolve();
                             } else {
                                 setTimeout(checkFirebase, 25);
                             }
@@ -4014,33 +3993,45 @@
                         });
                     }
                     
-                    // 현재 사용자 상태 확인
-                    const currentUser = firebase.auth().currentUser;
-                    console.log('현재 Firebase 사용자:', currentUser ? currentUser.email : 'null');
+                    // 현재 사용자 상태 확인 (여러 번 시도)
+                    let retryCount = 0;
+                    const maxRetries = 10;
                     
-                    if (currentUser) {
-                        console.log('✅ Firebase 사용자 로그인 상태 확인됨:', currentUser.email);
+                    const checkCurrentUser = () => {
+                        const currentUser = firebase.auth().currentUser;
+                        console.log(`현재 Firebase 사용자 (시도 ${retryCount + 1}/${maxRetries}):`, currentUser ? currentUser.email : 'null');
                         
-                        // 사용자 메뉴 직접 업데이트 (auth-utils.js 호출 방지)
-                        updateUserMenuDirectly();
-                        console.log('✅ profile.html - 현재 사용자 메뉴 직접 업데이트 완료');
-                        
-                        // 프로필 헤더 업데이트
-                        const userData = {
-                            name: currentUser.displayName || currentUser.email.split('@')[0],
-                            email: currentUser.email
-                        };
-                        updateProfileHeader(userData);
-                        
-                        // 프로필 페이지 초기화
-                        initializeProfile();
-                        
-                        // 인증 상태 확인 완료
-                        authStateCheckInProgress = false;
-                    } else {
-                        console.log('❌ Firebase 사용자 로그아웃 상태 - 인증 상태 변경 리스너에서 처리 대기');
-                        // 인증 상태 변경 리스너에서 처리하도록 대기
-                    }
+                        if (currentUser) {
+                            console.log('✅ Firebase 사용자 로그인 상태 확인됨:', currentUser.email);
+                            
+                            // 사용자 메뉴 직접 업데이트 (auth-utils.js 호출 방지)
+                            updateUserMenuDirectly();
+                            console.log('✅ profile.html - 현재 사용자 메뉴 직접 업데이트 완료');
+                            
+                            // 프로필 헤더 업데이트
+                            const userData = {
+                                name: currentUser.displayName || currentUser.email.split('@')[0],
+                                email: currentUser.email
+                            };
+                            updateProfileHeader(userData);
+                            
+                            // 프로필 페이지 초기화
+                            initializeProfile();
+                            
+                            // 인증 상태 확인 완료
+                            authStateCheckInProgress = false;
+                        } else if (retryCount < maxRetries) {
+                            retryCount++;
+                            console.log(`Firebase 사용자 없음, ${retryCount}/${maxRetries} 재시도 중...`);
+                            setTimeout(checkCurrentUser, 200); // 200ms 후 재시도
+                        } else {
+                            console.log('❌ Firebase 사용자 로그아웃 상태 - 인증 상태 변경 리스너에서 처리 대기');
+                            // 인증 상태 변경 리스너에서 처리하도록 대기
+                        }
+                    };
+                    
+                    // 즉시 첫 번째 확인 실행
+                    checkCurrentUser();
                 });
             } catch (error) {
                 console.error('인증 상태 확인 중 오류:', error);
@@ -4110,25 +4101,16 @@
                 return new bootstrap.Dropdown(dropdownToggleEl);
             });
             
-            // Firebase 초기화 및 인증 상태 복원 대기
+            // Firebase 초기화 대기 (간단한 방식)
             const firebaseInitCheck = setInterval(() => {
                 if (typeof firebase !== 'undefined' && firebase.auth) {
-                    console.log('Firebase 초기화 완료, 인증 상태 복원 대기');
+                    console.log('Firebase 초기화 완료, 인증 상태 확인 시작');
                     clearInterval(firebaseInitCheck);
                     
-                    // Firebase Auth 인증 상태 복원 대기
-                    const authStateCheck = firebase.auth().onAuthStateChanged((user) => {
-                        authStateCheck(); // 리스너 해제
-                        console.log('Firebase 인증 상태 복원 완료:', user ? user.email : 'null');
-                        checkAuthState();
-                    });
-                    
-                    // 3초 후에도 인증 상태가 복원되지 않으면 타임아웃
+                    // Firebase 초기화 완료 후 잠시 대기 후 인증 상태 확인
                     setTimeout(() => {
-                        authStateCheck(); // 리스너 해제
-                        console.log('Firebase 인증 상태 복원 타임아웃, 강제 진행');
                         checkAuthState();
-                    }, 3000);
+                    }, 500); // 500ms 대기 후 인증 상태 확인
                 }
             }, 25); // 25ms 간격 유지
             
