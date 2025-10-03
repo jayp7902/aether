@@ -31,6 +31,50 @@
             font-weight: 600;
             line-height: 1.4;
         }
+
+        /* 주문 상태별 스타일 (주문 관리 페이지와 동일) */
+        .order-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-pending_payment {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-processing {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status-shipping {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-completed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-default {
+            background: #e2e3e5;
+            color: #383d41;
+        }
         
         /* 일본어 날짜 입력 필드 스타일 */
         input[type="date"][lang="ja"] {
@@ -1460,6 +1504,8 @@
                 // 주문 이력 HTML 생성
                 let ordersHtml = '';
                 orders.forEach(order => {
+                    // 주문 데이터를 전역 변수로 저장 (영수증 다운로드용)
+                    window[`orderData_${order.id || order.orderId}`] = order;
                     console.log('주문 데이터:', order);
 
                     // 날짜 형식 처리 (다양한 형식 지원)
@@ -1565,7 +1611,16 @@
                                             <i class="fas fa-map-marker-alt me-2"></i>配送先:
                                             ${order.shipping?.prefecture || ''} ${order.shipping?.city || ''}
                                         </span>
-                                        <span class="badge bg-secondary japanese-text">${order.status === 'processing' ? '処理中' : '完了'}</span>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="order-status ${getStatusClass(order.status)} japanese-text">
+                                                ${getStatusText(order.status)}
+                                            </span>
+                                            ${order.status === 'completed' ? `
+                                                <button class="btn btn-sm btn-outline-dark" onclick="downloadReceipt('${order.id || order.orderId}', orderData_${order.id || order.orderId})" title="領収書をダウンロード">
+                                                    <i class="fas fa-receipt me-1"></i>領収書
+                                                </button>
+                                            ` : ''}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -2761,6 +2816,188 @@
             }
         }
         
+        // 주문 상태 텍스트 변환 (주문 관리 페이지와 동일)
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': '処理待ち',
+                'pending_payment': '支払い待ち',
+                'processing': '処理中',
+                'shipping': '配送中',
+                'completed': '完了',
+                'cancelled': 'キャンセル'
+            };
+            return statusMap[status] || status;
+        }
+
+        // 주문 상태별 CSS 클래스 반환
+        function getStatusClass(status) {
+            const statusClassMap = {
+                'pending': 'status-pending',
+                'pending_payment': 'status-pending_payment',
+                'processing': 'status-processing',
+                'shipping': 'status-shipping',
+                'completed': 'status-completed',
+                'cancelled': 'status-cancelled'
+            };
+            return statusClassMap[status] || 'status-default';
+        }
+
+        // 영수증 다운로드 함수
+        function downloadReceipt(orderId, orderData) {
+            try {
+                console.log('영수증 다운로드 시작:', orderId);
+                
+                // 주문 데이터에서 영수증 정보 생성
+                const receiptData = generateReceiptData(orderData);
+                
+                // HTML 영수증 생성
+                const receiptHTML = generateReceiptHTML(receiptData);
+                
+                // 새 창에서 영수증 열기
+                const printWindow = window.open('', '_blank');
+                printWindow.document.write(receiptHTML);
+                printWindow.document.close();
+                
+                // 인쇄 대화상자 열기
+                setTimeout(() => {
+                    printWindow.print();
+                }, 500);
+                
+            } catch (error) {
+                console.error('영수증 다운로드 실패:', error);
+                alert('영수증 다운로드 중 오류가 발생했습니다.');
+            }
+        }
+
+        // 영수증 데이터 생성
+        function generateReceiptData(orderData) {
+            const orderDate = orderData.orderDate?.seconds ? 
+                new Date(orderData.orderDate.seconds * 1000) : 
+                new Date(orderData.orderDate || orderData.createdAt);
+            
+            const subtotal = orderData.subtotal || orderData.originalAmount || 0;
+            const shippingFee = orderData.shippingFee || 0;
+            const usedPoints = orderData.usedPoints || orderData.pointDiscount || 0;
+            const totalAmount = orderData.totalAmount || 0;
+            const earnedPoints = orderData.earnedPoints || 0;
+            
+            return {
+                orderId: orderData.id || orderData.orderId,
+                orderDate: orderDate.toLocaleString('ja-JP'),
+                customerName: orderData.shipping?.name || orderData.customer?.name || 'N/A',
+                customerEmail: orderData.customerEmail || orderData.userEmail || 'N/A',
+                items: orderData.items || [],
+                subtotal: subtotal,
+                shippingFee: shippingFee,
+                usedPoints: usedPoints,
+                totalAmount: totalAmount,
+                earnedPoints: earnedPoints,
+                shippingAddress: orderData.shipping || {},
+                paymentMethod: orderData.paymentMethod || (orderData.payment?.method || 'N/A')
+            };
+        }
+
+        // 영수증 HTML 생성
+        function generateReceiptHTML(receiptData) {
+            const paymentMethodText = receiptData.paymentMethod === 'card' ? 'クレジットカード' : 
+                                    receiptData.paymentMethod === 'bank-transfer' ? '銀行振込' : 
+                                    receiptData.paymentMethod;
+            
+            return `
+                <!DOCTYPE html>
+                <html lang="ja">
+                <head>
+                    <meta charset="UTF-8">
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                    <title>領収書 - ${receiptData.orderId}</title>
+                    <style>
+                        body { font-family: 'Noto Sans JP', sans-serif; margin: 20px; }
+                        .receipt { max-width: 600px; margin: 0 auto; }
+                        .header { text-align: center; margin-bottom: 30px; }
+                        .company-name { font-size: 24px; font-weight: bold; margin-bottom: 10px; }
+                        .receipt-title { font-size: 20px; margin-bottom: 20px; }
+                        .order-info { margin-bottom: 20px; }
+                        .items-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                        .items-table th, .items-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        .items-table th { background-color: #f5f5f5; }
+                        .total-section { margin-top: 20px; }
+                        .total-row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+                        .total-final { font-weight: bold; font-size: 18px; border-top: 2px solid #333; padding-top: 10px; }
+                        .footer { margin-top: 30px; text-align: center; font-size: 12px; color: #666; }
+                    </style>
+                </head>
+                <body>
+                    <div class="receipt">
+                        <div class="header">
+                            <div class="company-name">Aether Store</div>
+                            <div class="receipt-title">領収書</div>
+                        </div>
+                        
+                        <div class="order-info">
+                            <p><strong>注文番号:</strong> ${receiptData.orderId}</p>
+                            <p><strong>注文日時:</strong> ${receiptData.orderDate}</p>
+                            <p><strong>お客様名:</strong> ${receiptData.customerName}</p>
+                            <p><strong>メールアドレス:</strong> ${receiptData.customerEmail}</p>
+                        </div>
+                        
+                        <table class="items-table">
+                            <thead>
+                                <tr>
+                                    <th>商品名</th>
+                                    <th>数量</th>
+                                    <th>単価</th>
+                                    <th>小計</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${receiptData.items.map(item => `
+                                    <tr>
+                                        <td>${item.name}</td>
+                                        <td>${item.quantity}</td>
+                                        <td>¥${item.price.toLocaleString()}</td>
+                                        <td>¥${(item.price * item.quantity).toLocaleString()}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        
+                        <div class="total-section">
+                            <div class="total-row">
+                                <span>商品合計:</span>
+                                <span>¥${receiptData.subtotal.toLocaleString()}</span>
+                            </div>
+                            <div class="total-row">
+                                <span>配送料:</span>
+                                <span>${receiptData.shippingFee === 0 ? '無料' : '¥' + receiptData.shippingFee.toLocaleString()}</span>
+                            </div>
+                            ${receiptData.usedPoints > 0 ? `
+                            <div class="total-row">
+                                <span>ポイント使用:</span>
+                                <span>-¥${receiptData.usedPoints.toLocaleString()}</span>
+                            </div>
+                            ` : ''}
+                            <div class="total-row total-final">
+                                <span>合計金額:</span>
+                                <span>¥${receiptData.totalAmount.toLocaleString()}</span>
+                            </div>
+                            ${receiptData.earnedPoints > 0 ? `
+                            <div class="total-row">
+                                <span>獲得ポイント:</span>
+                                <span>${receiptData.earnedPoints}pt</span>
+                            </div>
+                            ` : ''}
+                        </div>
+                        
+                        <div class="footer">
+                            <p>ご利用ありがとうございました。</p>
+                            <p>この領収書は印刷してご保存ください。</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
+        }
+
         // 날짜 변환 함수들 (간단한 형식)
         function convertToJapaneseDate(dateString) {
             if (!dateString) return '';
