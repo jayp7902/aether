@@ -2818,10 +2818,10 @@
             return statusClassMap[status] || 'status-default';
         }
 
-        // 영수증 다운로드 함수 (미리보기 + 다운로드)
+        // 새로운 영수증 다운로드 함수 (직접 PDF 생성)
         function downloadReceipt(orderId, orderData) {
             try {
-                console.log('영수증 다운로드 시작:', orderId, orderData);
+                console.log('새로운 영수증 다운로드 시작:', orderId, orderData);
                 
                 if (!orderData) {
                     console.error('주문 데이터가 없습니다:', orderId);
@@ -2829,14 +2829,16 @@
                     return;
                 }
                 
-                // 주문 데이터에서 영수증 정보 생성
+                // 영수증 데이터 생성
                 const receiptData = generateReceiptData(orderData);
                 console.log('영수증 데이터 생성 완료:', receiptData);
                 
-                // 영수증 미리보기 모달 표시
-                console.log('showReceiptPreview 호출 시작');
-                showReceiptPreview(receiptData);
-                console.log('showReceiptPreview 호출 완료');
+                // 영수증 HTML 생성
+                const receiptHTML = generateReceiptHTML(receiptData);
+                console.log('영수증 HTML 생성 완료, 길이:', receiptHTML.length);
+                
+                // PDF 생성
+                generateReceiptPDF(receiptHTML, orderId);
                 
             } catch (error) {
                 console.error('영수증 다운로드 실패:', error);
@@ -2861,7 +2863,7 @@
                 
                 console.log('주문 데이터 찾음:', orderData);
                 
-                // 기존 downloadReceipt 함수 호출
+                // 새로운 downloadReceipt 함수 호출
                 downloadReceipt(orderId, orderData);
                 
             } catch (error) {
@@ -2870,106 +2872,8 @@
             }
         }
 
-        // 영수증 미리보기 모달 표시
-        function showReceiptPreview(receiptData) {
-            try {
-                console.log('영수증 미리보기 시작:', receiptData);
-                
-                // 영수증 HTML 생성
-                const receiptHTML = generateReceiptHTML(receiptData);
-                console.log('영수증 HTML 생성 완료, 길이:', receiptHTML.length);
-                
-                const modalHTML = `
-                    <div class="modal fade" id="receiptPreviewModal" tabindex="-1" aria-labelledby="receiptPreviewModalLabel" aria-hidden="true" style="z-index: 1055;">
-                        <div class="modal-dialog modal-xl modal-dialog-scrollable">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title japanese-heading" id="receiptPreviewModalLabel">
-                                        <i class="fas fa-receipt me-2"></i>領収書 - ${receiptData.orderId}
-                                    </h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body p-0" style="max-height: 80vh; overflow-y: auto;">
-                                    <div id="receipt-content">
-                                        ${receiptHTML}
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary japanese-text" data-bs-dismiss="modal">
-                                        <i class="fas fa-times me-1"></i>閉じる
-                                    </button>
-                                    <button type="button" class="btn btn-dark japanese-text" onclick="downloadReceiptPDF('${receiptData.orderId}')">
-                                        <i class="fas fa-download me-1"></i>PDFダウンロード
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                // 기존 모달 제거
-                const existingModal = document.getElementById('receiptPreviewModal');
-                if (existingModal) {
-                    existingModal.remove();
-                }
-                
-                // 새 모달 추가
-                document.body.insertAdjacentHTML('beforeend', modalHTML);
-                console.log('모달 HTML 추가 완료');
-                
-                // 모달 표시 (Bootstrap 5 방식)
-                const modalElement = document.getElementById('receiptPreviewModal');
-                console.log('모달 요소 찾음:', modalElement);
-                
-                if (modalElement) {
-                    // Bootstrap 모달 인스턴스 생성
-                    const modal = new bootstrap.Modal(modalElement, {
-                        backdrop: true,
-                        keyboard: true,
-                        focus: true
-                    });
-                    
-                    // 모달 이벤트 리스너 추가
-                    modalElement.addEventListener('shown.bs.modal', function () {
-                        console.log('모달 표시 완료 (이벤트)');
-                    });
-                    
-                    modalElement.addEventListener('hidden.bs.modal', function () {
-                        console.log('모달 숨김 완료 (이벤트)');
-                        // 모달 제거
-                        modalElement.remove();
-                    });
-                    
-                    // 모달 표시
-                    modal.show();
-                    console.log('모달 표시 명령 완료');
-                    
-                    // 모달이 실제로 표시되었는지 확인
-                    setTimeout(() => {
-                        const isVisible = modalElement.classList.contains('show');
-                        const isInDOM = document.body.contains(modalElement);
-                        console.log('모달 표시 상태:', isVisible, 'DOM 존재:', isInDOM);
-                        
-                        if (!isVisible) {
-                            console.log('모달 강제 표시 시도');
-                            modalElement.classList.add('show');
-                            modalElement.style.display = 'block';
-                            modalElement.setAttribute('aria-hidden', 'false');
-                        }
-                    }, 200);
-                } else {
-                    console.error('모달 요소를 찾을 수 없습니다');
-                }
-                
-            } catch (error) {
-                console.error('영수증 미리보기 오류:', error);
-                alert('영수증 미리보기 중 오류가 발생했습니다: ' + error.message);
-            }
-        }
-
-
-        // PDF 다운로드 (html2pdf 라이브러리 사용)
-        function downloadReceiptPDF(orderId) {
+        // PDF 생성 함수
+        function generateReceiptPDF(receiptHTML, orderId) {
             try {
                 // html2pdf 라이브러리가 로드되어 있는지 확인
                 if (typeof html2pdf === 'undefined') {
@@ -2977,46 +2881,63 @@
                     const script = document.createElement('script');
                     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
                     script.onload = () => {
-                        generatePDF(orderId);
+                        createReceiptPDF(receiptHTML, orderId);
                     };
                     script.onerror = () => {
                         alert('PDF 생성 라이브러리를 로드할 수 없습니다. 인쇄 기능을 사용해주세요.');
                     };
                     document.head.appendChild(script);
                 } else {
-                    generatePDF(orderId);
+                    createReceiptPDF(receiptHTML, orderId);
                 }
             } catch (error) {
-                console.error('PDF 다운로드 실패:', error);
-                alert('PDF 다운로드 중 오류가 발생했습니다.');
+                console.error('PDF 생성 실패:', error);
+                alert('PDF 생성 중 오류가 발생했습니다.');
             }
         }
 
-        // PDF 생성
-        function generatePDF(orderId) {
-            const receiptContent = document.getElementById('receipt-content');
-            const opt = {
-                margin: [1, 5, 5, 5], // 상단 1mm, 나머지 5mm 마진 (상단 최소화)
-                filename: `領収書_${orderId}.pdf`,
-                image: { type: 'jpeg', quality: 0.95 },
-                html2canvas: { 
-                    scale: 2, // 더 높은 해상도
-                    useCORS: true,
-                    letterRendering: true,
-                    allowTaint: true,
-                    backgroundColor: '#ffffff'
-                },
-                jsPDF: { 
-                    unit: 'mm', 
-                    format: 'a4', 
-                    orientation: 'portrait',
-                    compress: true,
-                    precision: 2
-                },
-                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } // 페이지 나누기 방지
-            };
-            
-            html2pdf().set(opt).from(receiptContent).save();
+        // 실제 PDF 생성 함수
+        function createReceiptPDF(receiptHTML, orderId) {
+            try {
+                // 임시 div 생성
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = receiptHTML;
+                tempDiv.style.position = 'absolute';
+                tempDiv.style.left = '-9999px';
+                tempDiv.style.top = '-9999px';
+                document.body.appendChild(tempDiv);
+                
+                const opt = {
+                    margin: [5, 5, 5, 5],
+                    filename: `領収書_${orderId}.pdf`,
+                    image: { type: 'jpeg', quality: 0.95 },
+                    html2canvas: { 
+                        scale: 2,
+                        useCORS: true,
+                        letterRendering: true,
+                        allowTaint: true,
+                        backgroundColor: '#ffffff'
+                    },
+                    jsPDF: { 
+                        unit: 'mm', 
+                        format: 'a4', 
+                        orientation: 'portrait',
+                        compress: true,
+                        precision: 2
+                    },
+                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                };
+                
+                html2pdf().set(opt).from(tempDiv).save().then(() => {
+                    // 임시 div 제거
+                    document.body.removeChild(tempDiv);
+                    console.log('PDF 생성 완료');
+                });
+                
+            } catch (error) {
+                console.error('PDF 생성 실패:', error);
+                alert('PDF 생성 중 오류가 발생했습니다.');
+            }
         }
 
         // 영수증 데이터 생성
@@ -3064,218 +2985,180 @@
             };
         }
 
-        // 영수증 HTML 생성 (전문적인 형태)
+        // 새로운 영수증 HTML 생성 (이미지 기반)
         function generateReceiptHTML(receiptData) {
             try {
-                console.log('영수증 HTML 생성 시작:', receiptData);
-                console.log('영수증 데이터 키들:', Object.keys(receiptData));
-                console.log('주문 ID:', receiptData.orderId);
-                console.log('고객명:', receiptData.customerName);
-                console.log('총액:', receiptData.totalWithTax);
-                console.log('상품 목록:', receiptData.items);
+                console.log('새로운 영수증 HTML 생성 시작:', receiptData);
                 
                 const paymentMethodText = receiptData.paymentMethod === 'card' ? 'クレジットカード' : 
                                         receiptData.paymentMethod === 'bank-transfer' ? '銀行振込' : 
                                         receiptData.paymentMethod;
-                
-                console.log('결제 방법 텍스트:', paymentMethodText);
                 
                 const html = `
                 <div class="receipt-container">
                     <style>
                         .receipt-container {
                             font-family: 'Noto Sans JP', sans-serif;
-                            max-width: 210mm;
+                            width: 210mm;
+                            height: 297mm;
                             margin: 0 auto;
-                            padding: 3mm 6mm 6mm 6mm;
+                            padding: 8mm;
                             background: white;
                             color: #333;
                             box-sizing: border-box;
-                            display: flex;
-                            flex-direction: column;
-                            justify-content: flex-start;
-                            align-items: stretch;
+                            position: relative;
                         }
                         
                         .receipt-header {
                             text-align: center;
-                            margin: 0 0 5px 0;
+                            margin-bottom: 15px;
                             border-bottom: 2px solid #333;
-                            padding-bottom: 3px;
+                            padding-bottom: 10px;
                         }
                         
                         .company-logo {
-                            margin: 0 0 2px 0;
+                            margin-bottom: 10px;
                         }
                         
                         .company-logo img {
-                            max-height: 60px;
+                            max-height: 50px;
                             width: auto;
                         }
                         
                         .receipt-title {
-                            font-family: 'Noto Sans JP', sans-serif;
-                            font-size: 20px;
+                            font-size: 24px;
                             font-weight: bold;
-                            margin: 2px 0;
+                            margin: 10px 0;
                         }
                         
                         .receipt-info {
                             display: flex;
                             justify-content: space-between;
-                            margin: 0 0 4px 0;
-                            font-family: 'Noto Sans JP', sans-serif;
-                            font-size: 9px;
+                            margin-bottom: 15px;
+                            font-size: 10px;
                         }
                         
                         .recipient-section {
-                            text-align: center;
-                            margin: 4px 0;
-                            font-family: 'Noto Sans JP', sans-serif;
-                            font-size: 13px;
+                            text-align: left;
+                            margin: 15px 0;
+                            font-size: 16px;
                             font-weight: bold;
                         }
                         
                         .amount-section {
-                            text-align: center;
-                            margin: 4px 0;
-                            font-family: 'Noto Sans JP', sans-serif;
-                            font-size: 15px;
+                            text-align: left;
+                            margin: 15px 0;
+                            font-size: 18px;
                             font-weight: bold;
-                        }
-                        
-                        .order-details {
-                            margin: 4px 0;
                         }
                         
                         .detail-section {
-                            margin-bottom: 4px;
+                            margin-bottom: 15px;
                         }
                         
                         .detail-title {
-                            font-family: 'Noto Sans JP', sans-serif;
                             font-weight: bold;
-                            margin-bottom: 2px;
-                            border-bottom: 1px solid #ddd;
-                            padding-bottom: 1px;
-                            font-size: 11px;
+                            margin-bottom: 8px;
+                            padding: 5px;
+                            background-color: #f5f5f5;
+                            border-left: 3px solid #333;
+                            font-size: 12px;
                         }
                         
                         .detail-row {
                             display: flex;
                             justify-content: space-between;
-                            margin-bottom: 1px;
-                            padding: 0;
-                            font-family: 'Noto Sans JP', sans-serif;
-                            font-size: 9px;
+                            margin-bottom: 3px;
+                            padding: 2px 0;
+                            font-size: 10px;
                         }
                         
                         .items-table {
                             width: 100%;
                             border-collapse: collapse;
-                            margin: 3px 0;
-                            font-family: 'Noto Sans JP', sans-serif;
+                            margin: 10px 0;
+                            font-size: 9px;
                         }
                         
                         .items-table th,
                         .items-table td {
                             border: 1px solid #ddd;
-                            padding: 2px;
+                            padding: 4px;
                             text-align: left;
-                            font-family: 'Noto Sans JP', sans-serif;
-                            font-size: 8px;
                         }
                         
                         .items-table th {
-                            background-color: #f8f9fa;
+                            background-color: #f5f5f5;
                             font-weight: bold;
-                            font-size: 9px;
                         }
                         
                         .total-section {
-                            margin: 4px 0;
+                            margin: 15px 0;
                         }
                         
                         .total-row {
                             display: flex;
                             justify-content: space-between;
-                            margin-bottom: 2px;
-                            padding: 1px 0;
-                            font-family: 'Noto Sans JP', sans-serif;
-                            font-size: 9px;
+                            margin-bottom: 5px;
+                            padding: 3px 0;
+                            font-size: 10px;
                         }
                         
                         .total-final {
-                            font-family: 'Noto Sans JP', sans-serif;
                             font-weight: bold;
-                            font-size: 11px;
+                            font-size: 12px;
                             border-top: 2px solid #333;
-                            padding-top: 3px;
-                            margin-top: 3px;
+                            padding-top: 5px;
+                            margin-top: 5px;
                         }
                         
                         .payment-breakdown {
                             background-color: #f8f9fa;
-                            padding: 3px;
-                            margin: 3px 0;
+                            padding: 8px;
+                            margin: 10px 0;
                             border-radius: 3px;
-                            font-family: 'Noto Sans JP', sans-serif;
                         }
                         
                         .tax-breakdown {
-                            font-family: 'Noto Sans JP', sans-serif;
-                            font-size: 8px;
+                            font-size: 9px;
                             color: #666;
-                            margin-top: 3px;
+                            margin-top: 5px;
                         }
                         
                         .disclaimer {
-                            font-family: 'Noto Sans JP', sans-serif;
-                            font-size: 7px;
+                            font-size: 8px;
                             color: #666;
-                            margin-top: 5px;
-                            text-align: center;
+                            margin-top: 10px;
+                            text-align: right;
                         }
                         
                         .shipping-info {
                             background-color: #f8f9fa;
-                            padding: 3px;
-                            margin: 3px 0;
+                            padding: 8px;
+                            margin: 10px 0;
                             border-radius: 3px;
-                            font-family: 'Noto Sans JP', sans-serif;
                         }
                         
                         @media print {
                             .receipt-container {
                                 margin: 0;
-                                padding: 2mm 5mm 5mm 5mm;
-                                max-width: 210mm;
-                                page-break-inside: avoid;
-                                display: flex;
-                                flex-direction: column;
-                                justify-content: flex-start;
-                                align-items: stretch;
-                            }
-                            
-                            .detail-section {
-                                page-break-inside: avoid;
-                            }
-                            
-                            .items-table {
+                                padding: 8mm;
+                                width: 210mm;
+                                height: 297mm;
                                 page-break-inside: avoid;
                             }
                         }
                         
                         @page {
                             size: A4;
-                            margin: 2mm 5mm 5mm 5mm;
+                            margin: 8mm;
                         }
                     </style>
                     
                     <div class="receipt-header">
                         <div class="company-logo">
                             <img src="assets/img/logo.png" alt="Aether Store" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
-                            <div style="display: none; font-size: 28px; font-weight: bold; color: #dc3545;">Aether Store</div>
+                            <div style="display: none; font-size: 24px; font-weight: bold; color: #333;">Aether Store</div>
                         </div>
                         <div class="receipt-title">領収書</div>
                         <div class="receipt-info">
@@ -3298,140 +3181,152 @@
                         ${receiptData.totalWithTax.toLocaleString()}円領収しました
                     </div>
                     
-                    <div class="order-details">
-                        <div class="detail-section">
-                            <div class="detail-title">利用情報</div>
-                            <div class="detail-row">
-                                <span>注文番号:</span>
-                                <span>${receiptData.orderId}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span>注文日:</span>
-                                <span>${receiptData.orderDate}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span>お支払い方法:</span>
-                                <span>${paymentMethodText}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span>発送日:</span>
-                                <span>${new Date().toLocaleDateString('ja-JP')}</span>
-                            </div>
+                    <div class="detail-section">
+                        <div class="detail-title">利用情報</div>
+                        <div class="detail-row">
+                            <span>注文番号:</span>
+                            <span>${receiptData.orderId}</span>
                         </div>
-                        
-                        <div class="detail-section">
-                            <div class="detail-title">領収者情報</div>
-                            <div class="detail-row">
-                                <span>株式会社JAYCOS</span>
-                                <span>〒169-0072 東京都新宿区大久保2丁目21-10 ジュネス大久保 102号</span>
-                            </div>
-                            <div class="detail-row">
-                                <span>TEL: 03.3200.5547</span>
-                                <span></span>
-                            </div>
+                        <div class="detail-row">
+                            <span>注文日:</span>
+                            <span>${receiptData.orderDate}</span>
                         </div>
-                        
-                        <div class="detail-section">
-                            <div class="detail-title">注文合計</div>
-                            <div class="detail-row">
-                                <span>商品小計:</span>
-                                <span>¥${receiptData.subtotal.toLocaleString()}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span>配送料:</span>
-                                <span>${receiptData.shippingFee === 0 ? '無料' : '¥' + receiptData.shippingFee.toLocaleString()}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span>小計:</span>
-                                <span>¥${receiptData.totalBeforeTax.toLocaleString()}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span>消費税(10%):</span>
-                                <span>¥${receiptData.taxAmount.toLocaleString()}</span>
-                            </div>
-                            <div class="detail-row total-final">
-                                <span>総合計:</span>
-                                <span>¥${receiptData.totalWithTax.toLocaleString()}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span>支払い金額:</span>
-                                <span>¥${(receiptData.totalWithTax - receiptData.usedPoints).toLocaleString()}</span>
-                            </div>
+                        <div class="detail-row">
+                            <span>お支払い方法:</span>
+                            <span>${paymentMethodText}</span>
                         </div>
-                        
-                        ${receiptData.usedPoints > 0 ? `
-                        <div class="payment-breakdown">
-                            <div class="detail-title">支払い内訳</div>
-                            <div class="detail-row">
-                                <span>ポイント利用:</span>
-                                <span>¥${receiptData.usedPoints.toLocaleString()}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span>${paymentMethodText}:</span>
-                                <span>¥${(receiptData.totalWithTax - receiptData.usedPoints).toLocaleString()}</span>
-                            </div>
+                        <div class="detail-row">
+                            <span>発送日:</span>
+                            <span>${new Date().toLocaleDateString('ja-JP')}</span>
                         </div>
-                        ` : ''}
-                        
-                        <div class="tax-breakdown">
-                            <div class="detail-title">課税内訳</div>
-                            <div class="detail-row">
-                                <span>10%対象:</span>
-                                <span>¥${receiptData.totalBeforeTax.toLocaleString()}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span>うち10%対象消費税:</span>
-                                <span>¥${receiptData.taxAmount.toLocaleString()}</span>
-                            </div>
-                            <div class="disclaimer">
-                                ※表示金額は全て税込です<br>
-                                ※支払い金額は総合計からポイントを除いた金額です
-                            </div>
+                    </div>
+                    
+                    <div class="detail-section">
+                        <div class="detail-title">領収者情報</div>
+                        <div class="detail-row">
+                            <span>領収者:</span>
+                            <span>株式会社JAYCOS</span>
                         </div>
-                        
-                        <div class="detail-section">
-                            <div class="detail-title">配送情報</div>
-                            <div class="detail-row">
-                                <span>お届け先:</span>
-                                <span>${receiptData.shippingAddress.postal || ''} ${receiptData.shippingAddress.prefecture || ''} ${receiptData.shippingAddress.city || ''}</span>
-                            </div>
+                        <div class="detail-row">
+                            <span>店舗名:</span>
+                            <span>Aether Store</span>
                         </div>
-                        
-                        <div class="detail-section">
-                            <div class="detail-title">商品明細</div>
-                            <table class="items-table">
-                                <thead>
+                        <div class="detail-row">
+                            <span>店舗住所:</span>
+                            <span>〒169-0072 東京都新宿区大久保2丁目21-10 ジュネス大久保 102号</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>電話番号:</span>
+                            <span>03.3200.5547</span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-section">
+                        <div class="detail-title">注文合計</div>
+                        <div class="detail-row">
+                            <span>商品小計:</span>
+                            <span>¥${receiptData.subtotal.toLocaleString()}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>配送料:</span>
+                            <span>${receiptData.shippingFee === 0 ? '無料' : '¥' + receiptData.shippingFee.toLocaleString()}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>小計:</span>
+                            <span>¥${receiptData.totalBeforeTax.toLocaleString()}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>消費税(10%):</span>
+                            <span>¥${receiptData.taxAmount.toLocaleString()}</span>
+                        </div>
+                        <div class="detail-row total-final">
+                            <span>総合計:</span>
+                            <span>¥${receiptData.totalWithTax.toLocaleString()}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>支払い金額:</span>
+                            <span>¥${(receiptData.totalWithTax - receiptData.usedPoints).toLocaleString()}</span>
+                        </div>
+                    </div>
+                    
+                    ${receiptData.usedPoints > 0 ? `
+                    <div class="payment-breakdown">
+                        <div class="detail-title">支払い内訳</div>
+                        <div class="detail-row">
+                            <span>ポイント利用:</span>
+                            <span>¥${receiptData.usedPoints.toLocaleString()}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>${paymentMethodText}:</span>
+                            <span>¥${(receiptData.totalWithTax - receiptData.usedPoints).toLocaleString()}</span>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+                    <div class="tax-breakdown">
+                        <div class="detail-title">課税内訳</div>
+                        <div class="detail-row">
+                            <span>10%対象:</span>
+                            <span>¥${receiptData.totalBeforeTax.toLocaleString()}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>うち10%対象消費税:</span>
+                            <span>¥${receiptData.taxAmount.toLocaleString()}</span>
+                        </div>
+                        <div class="disclaimer">
+                            ※表示金額は全て税込です<br>
+                            ※支払い金額は総合計からポイントを除いた金額です
+                        </div>
+                    </div>
+                    
+                    <div class="detail-section">
+                        <div class="detail-title">配送情報</div>
+                        <div class="detail-row">
+                            <span>配送方法:</span>
+                            <span>宅配便</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>お届け先:</span>
+                            <span>${receiptData.shippingAddress.postal || ''} ${receiptData.shippingAddress.prefecture || ''} ${receiptData.shippingAddress.city || ''}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-section">
+                        <div class="detail-title">商品明細</div>
+                        <table class="items-table">
+                            <thead>
+                                <tr>
+                                    <th>明細種別</th>
+                                    <th>商品番号</th>
+                                    <th>商品名</th>
+                                    <th>数量</th>
+                                    <th>単価(税込)</th>
+                                    <th>税率</th>
+                                    <th>小計(税込)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${receiptData.items.map((item, index) => `
                                     <tr>
-                                        <th>No.</th>
-                                        <th>商品名</th>
-                                        <th>数量</th>
-                                        <th>単価(税込)</th>
-                                        <th>税率</th>
-                                        <th>小計(税込)</th>
+                                        <td>${index === 0 ? '初回注文' : '追加注文'}</td>
+                                        <td>${item.id || 'N/A'}</td>
+                                        <td>${item.name}</td>
+                                        <td>${item.quantity}</td>
+                                        <td>¥${item.price.toLocaleString()}</td>
+                                        <td>10%</td>
+                                        <td>¥${(item.price * item.quantity).toLocaleString()}</td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    ${receiptData.items.map((item, index) => `
-                                        <tr>
-                                            <td>${index + 1}</td>
-                                            <td>${item.name}</td>
-                                            <td>${item.quantity}</td>
-                                            <td>¥${item.price.toLocaleString()}</td>
-                                            <td>10%</td>
-                                            <td>¥${(item.price * item.quantity).toLocaleString()}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                            <div class="disclaimer">
-                                ※表示金額は全て税込です
-                            </div>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        <div class="disclaimer">
+                            ※表示金額は全て税込です
                         </div>
                     </div>
                 </div>
-            `;
+                `;
                 
-                console.log('영수증 HTML 생성 완료, 길이:', html.length);
+                console.log('새로운 영수증 HTML 생성 완료, 길이:', html.length);
                 return html;
                 
             } catch (error) {
