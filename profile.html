@@ -3302,6 +3302,16 @@
                             margin-bottom: 15px;
                         }
                         
+                        .detail-section.two-column {
+                            display: flex;
+                            gap: 20px;
+                        }
+                        
+                        .detail-section.two-column .column {
+                            flex: 1;
+                            min-width: 0;
+                        }
+                        
                         .detail-title {
                             font-weight: bold;
                             margin-bottom: 8px;
@@ -3435,71 +3445,87 @@
                         ${receiptData.totalWithTax.toLocaleString()}円領収しました
                     </div>
                     
-                    <div class="detail-section">
-                        <div class="detail-title">利用情報</div>
-                        <div class="detail-row">
-                            <span>注文番号:</span>
-                            <span>${receiptData.orderId}</span>
+                    <div class="detail-section two-column">
+                        <div class="column">
+                            <div class="detail-title">利用情報</div>
+                            <div class="detail-row">
+                                <span>注文番号:</span>
+                                <span>${receiptData.orderId}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>注文日:</span>
+                                <span>${receiptData.orderDate}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>お支払い方法:</span>
+                                <span>${paymentMethodText}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>発送日:</span>
+                                <span>${new Date().toLocaleDateString('ja-JP')}</span>
+                            </div>
                         </div>
-                        <div class="detail-row">
-                            <span>注文日:</span>
-                            <span>${receiptData.orderDate}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span>お支払い方法:</span>
-                            <span>${paymentMethodText}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span>発送日:</span>
-                            <span>${new Date().toLocaleDateString('ja-JP')}</span>
+                        
+                        <div class="column">
+                            <div class="detail-title">領収者情報</div>
+                            <div class="detail-row">
+                                <span>領収者:</span>
+                                <span>株式会社JAYCOS</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>店舗名:</span>
+                                <span>Aether Store</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>店舗住所:</span>
+                                <span>〒169-0072 東京都新宿区大久保2丁目21-10 ジュネス大久保 102号</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>電話番号:</span>
+                                <span>03.3200.5547</span>
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="detail-section">
-                        <div class="detail-title">領収者情報</div>
-                        <div class="detail-row">
-                            <span>領収者:</span>
-                            <span>株式会社JAYCOS</span>
+                    <div class="detail-section two-column">
+                        <div class="column">
+                            <div class="detail-title">注文合計</div>
+                            <div class="detail-row">
+                                <span>商品小計:</span>
+                                <span>¥${receiptData.subtotal.toLocaleString()}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>配送料:</span>
+                                <span>${receiptData.shippingFee === 0 ? '無料' : '¥' + receiptData.shippingFee.toLocaleString()}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>小計:</span>
+                                <span>¥${receiptData.totalBeforeTax.toLocaleString()}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>消費税(10%):</span>
+                                <span>¥${receiptData.taxAmount.toLocaleString()}</span>
+                            </div>
+                            <div class="detail-row total-final">
+                                <span>総合計:</span>
+                                <span>¥${receiptData.totalWithTax.toLocaleString()}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>支払い金額:</span>
+                                <span>¥${(receiptData.totalWithTax - receiptData.usedPoints).toLocaleString()}</span>
+                            </div>
                         </div>
-                        <div class="detail-row">
-                            <span>店舗名:</span>
-                            <span>Aether Store</span>
-                        </div>
-                        <div class="detail-row">
-                            <span>店舗住所:</span>
-                            <span>〒169-0072 東京都新宿区大久保2丁目21-10 ジュネス大久保 102号</span>
-                        </div>
-                        <div class="detail-row">
-                            <span>電話番号:</span>
-                            <span>03.3200.5547</span>
-                        </div>
-                    </div>
-                    
-                    <div class="detail-section">
-                        <div class="detail-title">注文合計</div>
-                        <div class="detail-row">
-                            <span>商品小計:</span>
-                            <span>¥${receiptData.subtotal.toLocaleString()}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span>配送料:</span>
-                            <span>${receiptData.shippingFee === 0 ? '無料' : '¥' + receiptData.shippingFee.toLocaleString()}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span>小計:</span>
-                            <span>¥${receiptData.totalBeforeTax.toLocaleString()}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span>消費税(10%):</span>
-                            <span>¥${receiptData.taxAmount.toLocaleString()}</span>
-                        </div>
-                        <div class="detail-row total-final">
-                            <span>総合計:</span>
-                            <span>¥${receiptData.totalWithTax.toLocaleString()}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span>支払い金額:</span>
-                            <span>¥${(receiptData.totalWithTax - receiptData.usedPoints).toLocaleString()}</span>
+                        
+                        <div class="column">
+                            <div class="detail-title">課税内訳</div>
+                            <div class="detail-row">
+                                <span>10%対象:</span>
+                                <span>¥${receiptData.totalBeforeTax.toLocaleString()}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>うち10%対象消費税:</span>
+                                <span>¥${receiptData.taxAmount.toLocaleString()}</span>
+                            </div>
                         </div>
                     </div>
                     
@@ -3517,20 +3543,9 @@
                     </div>
                     ` : ''}
                     
-                    <div class="tax-breakdown">
-                        <div class="detail-title">課税内訳</div>
-                        <div class="detail-row">
-                            <span>10%対象:</span>
-                            <span>¥${receiptData.totalBeforeTax.toLocaleString()}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span>うち10%対象消費税:</span>
-                            <span>¥${receiptData.taxAmount.toLocaleString()}</span>
-                        </div>
-                        <div class="disclaimer">
-                            ※表示金額は全て税込です<br>
-                            ※支払い金額は総合計からポイントを除いた金額です
-                        </div>
+                    <div class="disclaimer">
+                        ※表示金額は全て税込です<br>
+                        ※支払い金額は総合計からポイントを除いた金額です
                     </div>
                     
                     <div class="detail-section">
