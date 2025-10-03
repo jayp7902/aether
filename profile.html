@@ -1505,8 +1505,9 @@
                 let ordersHtml = '';
                 orders.forEach(order => {
                     // 주문 데이터를 전역 변수로 저장 (영수증 다운로드용)
-                    window[`orderData_${order.id || order.orderId}`] = order;
-                    console.log('주문 데이터:', order);
+                    const orderKey = `orderData_${order.id || order.orderId}`;
+                    window[orderKey] = order;
+                    console.log('주문 데이터 전역 변수 저장:', orderKey, order);
 
                     // 날짜 형식 처리 (다양한 형식 지원)
                     let orderDate;
@@ -1616,7 +1617,7 @@
                                                 ${getStatusText(order.status)}
                                             </span>
                                             ${order.status === 'completed' ? `
-                                                <button class="btn btn-sm btn-outline-dark" onclick="downloadReceipt('${order.id || order.orderId}', orderData_${order.id || order.orderId})" title="領収書を表示・ダウンロード">
+                                                <button class="btn btn-sm btn-outline-dark" onclick="downloadReceiptFromOrder('${order.id || order.orderId}')" title="領収書を表示・ダウンロード">
                                                     <i class="fas fa-receipt me-1"></i>領収書
                                                 </button>
                                             ` : ''}
@@ -2859,6 +2860,32 @@
                 
                 // 영수증 미리보기 모달 표시
                 showReceiptPreview(receiptData);
+                
+            } catch (error) {
+                console.error('영수증 다운로드 실패:', error);
+                alert('영수증 다운로드 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        // 주문 ID로 영수증 다운로드 (전역 변수에서 주문 데이터 찾기)
+        function downloadReceiptFromOrder(orderId) {
+            try {
+                console.log('영수증 다운로드 시작 (주문 ID):', orderId);
+                
+                // 전역 변수에서 주문 데이터 찾기
+                const orderData = window[`orderData_${orderId}`];
+                
+                if (!orderData) {
+                    console.error('주문 데이터를 찾을 수 없습니다:', orderId);
+                    console.log('사용 가능한 전역 변수들:', Object.keys(window).filter(key => key.startsWith('orderData_')));
+                    alert('주문 데이터를 찾을 수 없습니다. 페이지를 새로고침해주세요.');
+                    return;
+                }
+                
+                console.log('주문 데이터 찾음:', orderData);
+                
+                // 기존 downloadReceipt 함수 호출
+                downloadReceipt(orderId, orderData);
                 
             } catch (error) {
                 console.error('영수증 다운로드 실패:', error);
