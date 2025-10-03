@@ -3219,7 +3219,7 @@
                 usedPoints: usedPoints,
                 totalAmount: totalAmount,
                 earnedPoints: earnedPoints,
-                shippingAddress: orderData.shipping || {},
+                shippingAddress: orderData.shipping || orderData.shippingAddress || {},
                 paymentMethod: orderData.paymentMethod || (orderData.payment?.method || 'N/A'),
                 // 세금 정보 추가
                 totalBeforeTax: totalBeforeTax,
@@ -3253,7 +3253,7 @@
                             display: block;
                             overflow: visible;
                             page-break-inside: avoid;
-                            font-size: 0.95em; /* 5% 줄임 */
+                            font-size: 0.90em; /* 10% 줄임 (5% + 5%) */
                         }
                         
                         .receipt-container * {
@@ -3562,7 +3562,13 @@
                         </div>
                         <div class="detail-row">
                             <span>お届け先:</span>
-                            <span>${receiptData.shippingAddress.postal || ''} ${receiptData.shippingAddress.prefecture || ''} ${receiptData.shippingAddress.city || ''}</span>
+                            <span>${[
+                                receiptData.shippingAddress.postal || '',
+                                receiptData.shippingAddress.prefecture || '',
+                                receiptData.shippingAddress.city || '',
+                                receiptData.shippingAddress.address1 || '',
+                                receiptData.shippingAddress.address2 || ''
+                            ].filter(part => part.trim() !== '').join(' ')}</span>
                         </div>
                     </div>
                     
