@@ -3241,7 +3241,7 @@
                 <div class="receipt-container">
                     <style>
                         .receipt-container {
-                            font-family: 'Noto Sans JP', sans-serif;
+                            font-family: 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic', 'Meiryo', sans-serif !important;
                             width: 210mm;
                             min-height: 297mm;
                             margin: 0 auto;
@@ -3253,6 +3253,11 @@
                             display: block;
                             overflow: visible;
                             page-break-inside: avoid;
+                            font-size: 0.95em; /* 5% 줄임 */
+                        }
+                        
+                        .receipt-container * {
+                            font-family: 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic', 'Meiryo', sans-serif !important;
                         }
                         
                         .receipt-header {
@@ -3260,6 +3265,7 @@
                             margin-bottom: 15px;
                             border-bottom: 2px solid #333;
                             padding-bottom: 10px;
+                            font-size: 1.05em; /* 헤더는 원래 크기 유지 */
                         }
                         
                         .company-logo {
@@ -3333,7 +3339,7 @@
                             width: 100%;
                             border-collapse: collapse;
                             margin: 10px 0;
-                            font-size: 9px;
+                            font-size: 1.05em; /* 상품명세는 원래 크기 유지 */
                         }
                         
                         .items-table th,
@@ -3565,8 +3571,7 @@
                         <table class="items-table">
                             <thead>
                                 <tr>
-                                    <th>明細種別</th>
-                                    <th>商品番号</th>
+                                    <th>No.</th>
                                     <th>商品名</th>
                                     <th>数量</th>
                                     <th>単価(税込)</th>
@@ -3577,8 +3582,7 @@
                             <tbody>
                                 ${receiptData.items.map((item, index) => `
                                     <tr>
-                                        <td>${index === 0 ? '初回注文' : '追加注文'}</td>
-                                        <td>${item.id || 'N/A'}</td>
+                                        <td>${index + 1}</td>
                                         <td>${item.name}</td>
                                         <td>${item.quantity}</td>
                                         <td>¥${item.price.toLocaleString()}</td>
