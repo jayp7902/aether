@@ -3490,45 +3490,31 @@
                         </div>
                     </div>
                     
-                    <div class="detail-section two-column">
-                        <div class="column">
-                            <div class="detail-title">注文合計</div>
-                            <div class="detail-row">
-                                <span>商品小計:</span>
-                                <span>¥${receiptData.subtotal.toLocaleString()}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span>配送料:</span>
-                                <span>${receiptData.shippingFee === 0 ? '無料' : '¥' + receiptData.shippingFee.toLocaleString()}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span>小計:</span>
-                                <span>¥${receiptData.totalBeforeTax.toLocaleString()}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span>消費税(10%):</span>
-                                <span>¥${receiptData.taxAmount.toLocaleString()}</span>
-                            </div>
-                            <div class="detail-row total-final">
-                                <span>総合計:</span>
-                                <span>¥${receiptData.totalWithTax.toLocaleString()}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span>支払い金額:</span>
-                                <span>¥${(receiptData.totalWithTax - receiptData.usedPoints).toLocaleString()}</span>
-                            </div>
+                    <div class="detail-section">
+                        <div class="detail-title">注文合計</div>
+                        <div class="detail-row">
+                            <span>商品小計:</span>
+                            <span>¥${receiptData.subtotal.toLocaleString()}</span>
                         </div>
-                        
-                        <div class="column">
-                            <div class="detail-title">課税内訳</div>
-                            <div class="detail-row">
-                                <span>10%対象:</span>
-                                <span>¥${receiptData.totalBeforeTax.toLocaleString()}</span>
-                            </div>
-                            <div class="detail-row">
-                                <span>うち10%対象消費税:</span>
-                                <span>¥${receiptData.taxAmount.toLocaleString()}</span>
-                            </div>
+                        <div class="detail-row">
+                            <span>配送料:</span>
+                            <span>${receiptData.shippingFee === 0 ? '無料' : '¥' + receiptData.shippingFee.toLocaleString()}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>小計:</span>
+                            <span>¥${receiptData.totalBeforeTax.toLocaleString()}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>消費税(10%):</span>
+                            <span>¥${receiptData.taxAmount.toLocaleString()}</span>
+                        </div>
+                        <div class="detail-row total-final">
+                            <span>総合計:</span>
+                            <span>¥${receiptData.totalWithTax.toLocaleString()}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>支払い金額:</span>
+                            <span>¥${(receiptData.totalWithTax - receiptData.usedPoints).toLocaleString()}</span>
                         </div>
                     </div>
                     
