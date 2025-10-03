@@ -2941,7 +2941,7 @@
         function generatePDF(orderId) {
             const receiptContent = document.getElementById('receipt-content');
             const opt = {
-                margin: [2, 5, 5, 5], // 상단 2mm, 나머지 5mm 마진 (상단 최소화)
+                margin: [1, 5, 5, 5], // 상단 1mm, 나머지 5mm 마진 (상단 최소화)
                 filename: `領収書_${orderId}.pdf`,
                 image: { type: 'jpeg', quality: 0.95 },
                 html2canvas: { 
@@ -3025,8 +3025,11 @@
                             padding: 3mm 6mm 6mm 6mm;
                             background: white;
                             color: #333;
-                            min-height: 297mm;
                             box-sizing: border-box;
+                            display: flex;
+                            flex-direction: column;
+                            justify-content: flex-start;
+                            align-items: stretch;
                         }
                         
                         .receipt-header {
@@ -3182,8 +3185,11 @@
                                 margin: 0;
                                 padding: 2mm 5mm 5mm 5mm;
                                 max-width: 210mm;
-                                min-height: 297mm;
                                 page-break-inside: avoid;
+                                display: flex;
+                                flex-direction: column;
+                                justify-content: flex-start;
+                                align-items: stretch;
                             }
                             
                             .detail-section {
