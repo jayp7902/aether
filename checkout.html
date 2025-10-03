@@ -2502,6 +2502,7 @@
                             try {
                                 const pointHistoryRef = await firebase.firestore().collection('pointHistory').add({
                                     userId: user.uid,
+                                    userEmail: user.email,
                                     orderId: orderId,
                                     points: finalUsedPoints,
                                     type: 'use',
@@ -2538,6 +2539,7 @@
                             try {
                                 const earnHistoryRef = await firebase.firestore().collection('pointHistory').add({
                                     userId: user.uid,
+                                    userEmail: user.email,
                                     orderId: orderId,
                                     points: earnedPoints,
                                     type: 'earn',
