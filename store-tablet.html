@@ -2064,6 +2064,11 @@
                     document.getElementById('points-to-add').value = '';
                     document.querySelectorAll('.quick-amount-btn').forEach(btn => btn.classList.remove('active'));
                     
+                    // 고객 정보 섹션으로 돌아가기
+                    setTimeout(() => {
+                        backToCustomerInfo();
+                    }, 1500);
+                    
                 } else {
                     console.error('포인트 부여 실패:', result.error);
                     showStoreAlert('ポイント付与に失敗しました。', 'danger');
@@ -2538,6 +2543,11 @@
                     
                     // 포인트 이력 새로고침
                     // loadCustomerPointHistory(); // 제거됨 - 전체 포인트 이용현황에서 확인 가능
+                    
+                    // 고객 정보 섹션으로 돌아가기
+                    setTimeout(() => {
+                        backToCustomerInfo();
+                    }, 1500);
                 } else {
                     showStoreAlert('ポイント追加に失敗しました。', 'danger');
                 }
@@ -2627,6 +2637,11 @@
                     
                     // 포인트 이력 새로고침
                     // loadCustomerPointHistory(); // 제거됨 - 전체 포인트 이용현황에서 확인 가능
+                    
+                    // 고객 정보 섹션으로 돌아가기
+                    setTimeout(() => {
+                        backToCustomerInfo();
+                    }, 1500);
                 } else {
                     showStoreAlert(`ポイント差引に失敗しました: ${result.error || '不明なエラー'}`, 'danger');
                 }
