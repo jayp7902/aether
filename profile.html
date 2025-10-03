@@ -3963,8 +3963,9 @@
                     
                     // 인증 상태 변경 리스너 설정 (한 번만)
                     if (!window.profileAuthStateUnsubscribe) {
+                        console.log('🔧 Firebase 인증 상태 변경 리스너 설정 중...');
                         window.profileAuthStateUnsubscribe = firebase.auth().onAuthStateChanged(function(user) {
-                            console.log('Firebase 인증 상태 변경:', user ? '로그인됨' : '로그아웃됨');
+                            console.log('🔄 Firebase 인증 상태 변경 감지:', user ? `로그인됨 (${user.email})` : '로그아웃됨');
                             if (user) {
                                 console.log('✅ Firebase 인증 상태 변경: 로그인됨', user.email);
                                 
@@ -3986,17 +3987,19 @@
                                 authStateCheckInProgress = false;
                             } else {
                                 console.log('❌ Firebase 인증 상태 변경: 로그아웃됨');
-                                // 로그아웃 상태일 때 로그인 페이지로 리다이렉트
-                                setTimeout(() => {
-                                    window.location.href = 'login.html';
-                                }, 1000);
+                                // 로그아웃 상태에서는 즉시 리다이렉트하지 않고 잠시 대기
+                                setTimeout(() => { 
+                                    console.log('🔄 로그인 페이지로 리다이렉트');
+                                    window.location.href = 'login.html'; 
+                                }, 2000);
                             }
                         });
+                        console.log('✅ Firebase 인증 상태 변경 리스너 설정 완료');
                     }
                     
-                    // 현재 사용자 상태 확인 (여러 번 시도)
+                    // 현재 사용자 상태 확인 (더 긴 시간 대기)
                     let retryCount = 0;
-                    const maxRetries = 10;
+                    const maxRetries = 20; // 20번으로 증가
                     
                     const checkCurrentUser = () => {
                         const currentUser = firebase.auth().currentUser;
@@ -4023,10 +4026,11 @@
                             authStateCheckInProgress = false;
                         } else if (retryCount < maxRetries) {
                             retryCount++;
-                            console.log(`Firebase 사용자 없음, ${retryCount}/${maxRetries} 재시도 중...`);
-                            setTimeout(checkCurrentUser, 200); // 200ms 후 재시도
+                            console.log(`Firebase 사용자 없음, ${retryCount}/${maxRetries} 재시도 중... (인증 상태 복원 대기)`);
+                            setTimeout(checkCurrentUser, 500); // 500ms 후 재시도 (더 긴 간격)
                         } else {
                             console.log('❌ Firebase 사용자 로그아웃 상태 - 인증 상태 변경 리스너에서 처리 대기');
+                            console.log('⏳ onAuthStateChanged 리스너에서 인증 상태 복원 대기 중...');
                             // 인증 상태 변경 리스너에서 처리하도록 대기
                         }
                     };
