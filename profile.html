@@ -2895,7 +2895,7 @@
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body p-0" style="max-height: 80vh; overflow-y: auto;">
-                                    <div id="receipt-content">
+                                    <div id="receipt-content" style="background: white; padding: 10px;">
                                         ${receiptHTML}
                                     </div>
                                 </div>
@@ -2953,7 +2953,7 @@
             try {
                 console.log('모달에서 PDF 다운로드 시작:', orderId);
                 
-                // 모달 내의 영수증 HTML 가져오기
+                // 모달 내의 영수증 내용 확인
                 const receiptContent = document.getElementById('receipt-content');
                 if (!receiptContent) {
                     console.error('영수증 내용을 찾을 수 없습니다');
@@ -2961,11 +2961,11 @@
                     return;
                 }
                 
-                const receiptHTML = receiptContent.innerHTML;
-                console.log('모달에서 영수증 HTML 추출 완료, 길이:', receiptHTML.length);
+                console.log('모달의 receipt-content 요소 확인됨');
+                console.log('영수증 내용 길이:', receiptContent.innerHTML.length);
                 
-                // PDF 생성
-                generateReceiptPDF(receiptHTML, orderId);
+                // 모달의 실제 렌더링된 요소를 직접 사용하여 PDF 생성
+                createReceiptPDF('', orderId); // HTML은 모달에서 직접 가져옴
                 
             } catch (error) {
                 console.error('PDF 다운로드 실패:', error);
@@ -3053,64 +3053,70 @@
                 console.log('PDF 생성 시작:', orderId);
                 console.log('영수증 HTML 길이:', receiptHTML.length);
                 
-                // 임시 div 생성 및 스타일링
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = receiptHTML;
-                tempDiv.style.position = 'absolute';
-                tempDiv.style.left = '-9999px';
-                tempDiv.style.top = '-9999px';
-                tempDiv.style.width = '210mm';
-                tempDiv.style.height = '297mm';
-                tempDiv.style.background = 'white';
-                tempDiv.style.overflow = 'visible';
-                tempDiv.style.zIndex = '-1';
+                // 모달에서 실제 렌더링된 요소를 사용
+                const receiptContent = document.getElementById('receipt-content');
+                let sourceElement;
                 
-                document.body.appendChild(tempDiv);
-                console.log('임시 div 생성 완료');
+                if (receiptContent && receiptContent.innerHTML.trim() !== '') {
+                    console.log('모달의 receipt-content 사용');
+                    sourceElement = receiptContent;
+                } else {
+                    console.log('임시 div 생성');
+                    // 임시 div 생성
+                    const tempDiv = document.createElement('div');
+                    tempDiv.innerHTML = receiptHTML;
+                    tempDiv.style.position = 'absolute';
+                    tempDiv.style.left = '-9999px';
+                    tempDiv.style.top = '-9999px';
+                    tempDiv.style.width = '210mm';
+                    tempDiv.style.background = 'white';
+                    tempDiv.style.overflow = 'visible';
+                    tempDiv.style.zIndex = '-1';
+                    document.body.appendChild(tempDiv);
+                    sourceElement = tempDiv;
+                }
                 
-                // 잠시 대기 후 PDF 생성 (렌더링 완료 대기)
-                setTimeout(() => {
-                    console.log('PDF 생성 옵션 설정 중...');
-                    
-                    const opt = {
-                        margin: [5, 5, 5, 5],
-                        filename: `領収書_${orderId}.pdf`,
-                        image: { type: 'jpeg', quality: 0.95 },
-                        html2canvas: { 
-                            scale: 1.5,
-                            useCORS: true,
-                            letterRendering: true,
-                            allowTaint: true,
-                            backgroundColor: '#ffffff',
-                            width: 794, // A4 width in pixels at 96 DPI
-                            height: 1123 // A4 height in pixels at 96 DPI
-                        },
-                        jsPDF: { 
-                            unit: 'mm', 
-                            format: 'a4', 
-                            orientation: 'portrait',
-                            compress: true,
-                            precision: 2
-                        },
-                        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-                    };
-                    
-                    console.log('html2pdf 실행 중...');
-                    html2pdf().set(opt).from(tempDiv).save().then(() => {
-                        console.log('PDF 생성 완료');
-                        // 임시 div 제거
-                        if (document.body.contains(tempDiv)) {
-                            document.body.removeChild(tempDiv);
-                        }
-                    }).catch((error) => {
-                        console.error('PDF 생성 실패:', error);
-                        alert('PDF 생성 중 오류가 발생했습니다: ' + error.message);
-                        // 임시 div 제거
-                        if (document.body.contains(tempDiv)) {
-                            document.body.removeChild(tempDiv);
-                        }
-                    });
-                }, 500); // 0.5초 대기
+                console.log('PDF 생성 옵션 설정 중...');
+                
+                const opt = {
+                    margin: [5, 5, 5, 5],
+                    filename: `領収書_${orderId}.pdf`,
+                    image: { type: 'jpeg', quality: 0.95 },
+                    html2canvas: { 
+                        scale: 2,
+                        useCORS: true,
+                        letterRendering: true,
+                        allowTaint: true,
+                        backgroundColor: '#ffffff',
+                        logging: true,
+                        width: 794,
+                        height: 1123
+                    },
+                    jsPDF: { 
+                        unit: 'mm', 
+                        format: 'a4', 
+                        orientation: 'portrait',
+                        compress: true,
+                        precision: 2
+                    },
+                    pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+                };
+                
+                console.log('html2pdf 실행 중...');
+                html2pdf().set(opt).from(sourceElement).save().then(() => {
+                    console.log('PDF 생성 완료');
+                    // 임시 div가 생성된 경우에만 제거
+                    if (sourceElement.parentNode && sourceElement.parentNode === document.body) {
+                        document.body.removeChild(sourceElement);
+                    }
+                }).catch((error) => {
+                    console.error('PDF 생성 실패:', error);
+                    alert('PDF 생성 중 오류가 발생했습니다: ' + error.message);
+                    // 임시 div가 생성된 경우에만 제거
+                    if (sourceElement.parentNode && sourceElement.parentNode === document.body) {
+                        document.body.removeChild(sourceElement);
+                    }
+                });
                 
             } catch (error) {
                 console.error('PDF 생성 실패:', error);
@@ -3187,6 +3193,7 @@
                             position: relative;
                             display: block;
                             overflow: visible;
+                            page-break-inside: avoid;
                         }
                         
                         .receipt-header {
