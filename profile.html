@@ -2953,6 +2953,41 @@
             try {
                 console.log('모달에서 PDF 다운로드 시작:', orderId);
                 
+                // html2pdf 라이브러리 확인
+                if (typeof html2pdf === 'undefined') {
+                    console.log('html2pdf 라이브러리 로드 중...');
+                    
+                    // html2pdf 라이브러리 동적 로드
+                    const script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+                    script.onload = () => {
+                        console.log('html2pdf 라이브러리 로드 완료');
+                        // 약간의 지연 후 실행
+                        setTimeout(() => {
+                            executePDFDownload(orderId);
+                        }, 200);
+                    };
+                    script.onerror = () => {
+                        console.error('html2pdf 라이브러리 로드 실패');
+                        alert('PDF 생성 라이브러리를 로드할 수 없습니다. 인쇄 기능을 사용해주세요.');
+                    };
+                    document.head.appendChild(script);
+                } else {
+                    console.log('html2pdf 라이브러리 이미 로드됨');
+                    executePDFDownload(orderId);
+                }
+                
+            } catch (error) {
+                console.error('PDF 다운로드 실패:', error);
+                alert('PDF 다운로드 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        // 실제 PDF 다운로드 실행 함수
+        function executePDFDownload(orderId) {
+            try {
+                console.log('PDF 다운로드 실행:', orderId);
+                
                 // 모달 내의 영수증 내용 확인
                 const receiptContent = document.getElementById('receipt-content');
                 if (!receiptContent) {
@@ -2968,7 +3003,7 @@
                 createReceiptPDF('', orderId); // HTML은 모달에서 직접 가져옴
                 
             } catch (error) {
-                console.error('PDF 다운로드 실패:', error);
+                console.error('PDF 다운로드 실행 실패:', error);
                 alert('PDF 다운로드 중 오류가 발생했습니다: ' + error.message);
             }
         }
@@ -2987,7 +3022,10 @@
                     script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
                     script.onload = () => {
                         console.log('html2pdf 라이브러리 로드 완료');
-                        createReceiptPDF(receiptHTML, orderId);
+                        // 약간의 지연 후 실행 (라이브러리 초기화 대기)
+                        setTimeout(() => {
+                            createReceiptPDF(receiptHTML, orderId);
+                        }, 100);
                     };
                     script.onerror = () => {
                         console.error('html2pdf 라이브러리 로드 실패');
@@ -3052,6 +3090,15 @@
             try {
                 console.log('PDF 생성 시작:', orderId);
                 console.log('영수증 HTML 길이:', receiptHTML.length);
+                
+                // html2pdf 라이브러리 재확인
+                if (typeof html2pdf === 'undefined') {
+                    console.error('html2pdf 라이브러리가 로드되지 않았습니다');
+                    alert('PDF 생성 라이브러리가 아직 로드되지 않았습니다. 잠시 후 다시 시도해주세요.');
+                    return;
+                }
+                
+                console.log('html2pdf 라이브러리 확인됨');
                 
                 // 모달에서 실제 렌더링된 요소를 사용
                 const receiptContent = document.getElementById('receipt-content');
