@@ -2818,10 +2818,10 @@
             return statusClassMap[status] || 'status-default';
         }
 
-        // 새로운 영수증 다운로드 함수 (직접 PDF 생성)
+        // 영수증 미리보기 모달 표시
         function downloadReceipt(orderId, orderData) {
             try {
-                console.log('새로운 영수증 다운로드 시작:', orderId, orderData);
+                console.log('영수증 미리보기 시작:', orderId, orderData);
                 
                 if (!orderData) {
                     console.error('주문 데이터가 없습니다:', orderId);
@@ -2833,26 +2833,12 @@
                 const receiptData = generateReceiptData(orderData);
                 console.log('영수증 데이터 생성 완료:', receiptData);
                 
-                // 영수증 HTML 생성
-                const receiptHTML = generateReceiptHTML(receiptData);
-                console.log('영수증 HTML 생성 완료, 길이:', receiptHTML.length);
-                
-                // PDF 생성 또는 인쇄 대안 제공
-                generateReceiptPDF(receiptHTML, orderId);
-                
-                // PDF 생성 실패 시 대안으로 인쇄 기능 제공
-                setTimeout(() => {
-                    if (typeof html2pdf === 'undefined') {
-                        console.log('PDF 생성 실패, 인쇄 대안 제공');
-                        if (confirm('PDF 생성에 실패했습니다. 인쇄 대화상자를 열까요?')) {
-                            openPrintDialog(receiptHTML);
-                        }
-                    }
-                }, 3000);
+                // 영수증 미리보기 모달 표시
+                showReceiptPreviewModal(receiptData);
                 
             } catch (error) {
-                console.error('영수증 다운로드 실패:', error);
-                alert('영수증 다운로드 중 오류가 발생했습니다: ' + error.message);
+                console.error('영수증 미리보기 실패:', error);
+                alert('영수증 미리보기 중 오류가 발생했습니다: ' + error.message);
             }
         }
 
@@ -2873,12 +2859,117 @@
                 
                 console.log('주문 데이터 찾음:', orderData);
                 
-                // 새로운 downloadReceipt 함수 호출
+                // 영수증 미리보기 모달 표시
                 downloadReceipt(orderId, orderData);
                 
             } catch (error) {
                 console.error('영수증 다운로드 실패:', error);
                 alert('영수증 다운로드 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        // 영수증 미리보기 모달 표시 함수
+        function showReceiptPreviewModal(receiptData) {
+            try {
+                console.log('영수증 미리보기 모달 시작:', receiptData);
+                
+                // 영수증 HTML 생성
+                const receiptHTML = generateReceiptHTML(receiptData);
+                console.log('영수증 HTML 생성 완료, 길이:', receiptHTML.length);
+                
+                // 기존 모달 제거
+                const existingModal = document.getElementById('receiptPreviewModal');
+                if (existingModal) {
+                    existingModal.remove();
+                }
+                
+                // 모달 HTML 생성
+                const modalHTML = `
+                    <div class="modal fade" id="receiptPreviewModal" tabindex="-1" aria-labelledby="receiptPreviewModalLabel" aria-hidden="true" style="z-index: 1055;">
+                        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <h5 class="modal-title japanese-heading" id="receiptPreviewModalLabel">
+                                        <i class="fas fa-receipt me-2"></i>領収書 - ${receiptData.orderId}
+                                    </h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body p-0" style="max-height: 80vh; overflow-y: auto;">
+                                    <div id="receipt-content">
+                                        ${receiptHTML}
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary japanese-text" data-bs-dismiss="modal">
+                                        <i class="fas fa-times me-1"></i>閉じる
+                                    </button>
+                                    <button type="button" class="btn btn-dark japanese-text" onclick="downloadReceiptPDF('${receiptData.orderId}')">
+                                        <i class="fas fa-download me-1"></i>PDFダウンロード
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // 모달 HTML 추가
+                document.body.insertAdjacentHTML('beforeend', modalHTML);
+                console.log('모달 HTML 추가 완료');
+                
+                // 모달 표시
+                const modalElement = document.getElementById('receiptPreviewModal');
+                if (modalElement) {
+                    const modal = new bootstrap.Modal(modalElement, {
+                        backdrop: true,
+                        keyboard: true,
+                        focus: true
+                    });
+                    
+                    // 모달 이벤트 리스너 추가
+                    modalElement.addEventListener('shown.bs.modal', function () {
+                        console.log('모달 표시 완료');
+                    });
+                    
+                    modalElement.addEventListener('hidden.bs.modal', function () {
+                        console.log('모달 숨김 완료');
+                        modalElement.remove();
+                    });
+                    
+                    // 모달 표시
+                    modal.show();
+                    console.log('모달 표시 명령 완료');
+                } else {
+                    console.error('모달 요소를 찾을 수 없습니다');
+                }
+                
+            } catch (error) {
+                console.error('영수증 미리보기 모달 오류:', error);
+                alert('영수증 미리보기 중 오류가 발생했습니다: ' + error.message);
+            }
+        }
+
+        // 모달에서 PDF 다운로드 버튼 클릭 시 호출되는 함수
+        function downloadReceiptPDF(orderId) {
+            try {
+                console.log('모달에서 PDF 다운로드 시작:', orderId);
+                
+                // 모달 내의 영수증 HTML 가져오기
+                const receiptContent = document.getElementById('receipt-content');
+                if (!receiptContent) {
+                    console.error('영수증 내용을 찾을 수 없습니다');
+                    alert('영수증 내용을 찾을 수 없습니다.');
+                    return;
+                }
+                
+                const receiptHTML = receiptContent.innerHTML;
+                console.log('모달에서 영수증 HTML 추출 완료, 길이:', receiptHTML.length);
+                
+                // PDF 생성
+                generateReceiptPDF(receiptHTML, orderId);
+                
+            } catch (error) {
+                console.error('PDF 다운로드 실패:', error);
+                alert('PDF 다운로드 중 오류가 발생했습니다: ' + error.message);
             }
         }
 
