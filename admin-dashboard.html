@@ -14108,6 +14108,7 @@
                             <div class="col-md-6">
                                 <div class="point-description japanese-text">${description}</div>
                                 <small class="text-muted japanese-text">${dateStr}</small>
+                                ${item.userEmail ? `<br><small class="text-info japanese-text">📧 ${item.userEmail}</small>` : ''}
                             </div>
                             <div class="col-md-6 text-end">
                                 <div class="point-amount ${pointsClass} japanese-text">${pointsStr} pt</div>
