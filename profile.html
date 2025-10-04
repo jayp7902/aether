@@ -3111,8 +3111,8 @@
                     // PDF 생성을 위해 스타일 강제 적용
                     receiptContent.style.textAlign = 'center';
                     receiptContent.style.margin = '0 auto';
-                    receiptContent.style.width = '180mm';
-                    receiptContent.style.maxWidth = '180mm';
+                    receiptContent.style.width = '190mm';
+                    receiptContent.style.maxWidth = '190mm';
                     
                     sourceElement = receiptContent;
                 } else {
@@ -3123,8 +3123,8 @@
                     tempDiv.style.position = 'absolute';
                     tempDiv.style.left = '-9999px';
                     tempDiv.style.top = '-9999px';
-                    tempDiv.style.width = '180mm'; // 210mm → 180mm
-                    tempDiv.style.maxWidth = '180mm';
+                    tempDiv.style.width = '190mm'; // 180mm → 190mm
+                    tempDiv.style.maxWidth = '190mm';
                     tempDiv.style.background = 'white';
                     tempDiv.style.overflow = 'visible';
                     tempDiv.style.zIndex = '-1';
@@ -3141,7 +3141,7 @@
                 console.log('PDF 생성 옵션 설정 중...');
                 
                 const opt = {
-                    margin: [15, 25, 15, 25], /* 좌우 마진 더 증가로 가운데 정렬 보장 */
+                    margin: [15, 20, 15, 20], /* 좌우 마진 균등 조정으로 가운데 정렬 */
                     filename: `領収書_${orderId}.pdf`,
                     image: { type: 'jpeg', quality: 0.95 },
                     html2canvas: { 
@@ -3151,11 +3151,11 @@
                         allowTaint: true,
                         backgroundColor: '#ffffff',
                         logging: true,
-                        width: 680, // 794 → 680 (중앙 정렬을 위한 폭 조정)
+                        width: 700, // 680 → 700 (가운데 정렬을 위한 폭 조정)
                         height: 1000, // 1123 → 1000 (한 페이지에 맞춤)
                         scrollX: 0,
                         scrollY: 0,
-                        windowWidth: 680,
+                        windowWidth: 700,
                         windowHeight: 1000
                     },
                     jsPDF: { 
@@ -3252,7 +3252,7 @@
                     <style>
                         .receipt-container {
                             font-family: 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic', 'Meiryo', sans-serif !important;
-                            width: 180mm; /* 210mm → 180mm (여백 확보) */
+                            width: 190mm; /* 180mm → 190mm (가운데 정렬을 위한 폭 조정) */
                             min-height: 297mm;
                             margin: 0 auto; /* 가운데 정렬 */
                             padding: 8mm;
@@ -3425,7 +3425,7 @@
                             .receipt-container {
                                 margin: 0 auto !important; /* 가운데 정렬 유지 */
                                 padding: 8mm;
-                                width: 180mm !important; /* 210mm → 180mm (여백 확보) */
+                                width: 190mm !important; /* 180mm → 190mm (가운데 정렬을 위한 폭 조정) */
                                 min-height: 297mm;
                                 page-break-inside: avoid;
                                 background: white !important;
