@@ -3274,7 +3274,7 @@
                         }
                         
                         .company-logo img {
-                            max-height: 50px;
+                            max-height: 75px; /* 50px → 75px (50% 증가) */
                             width: auto;
                         }
                         
@@ -3289,6 +3289,14 @@
                             justify-content: space-between;
                             margin-bottom: 15px;
                             font-size: 10px;
+                        }
+                        
+                        .receipt-info-left {
+                            text-align: left;
+                        }
+                        
+                        .receipt-info-right {
+                            text-align: right;
                         }
                         
                         .recipient-section {
@@ -3433,11 +3441,11 @@
                         </div>
                         <div class="receipt-title">領収書</div>
                         <div class="receipt-info">
-                            <div>
+                            <div class="receipt-info-left">
                                 <strong>領収書番号:</strong> ${receiptData.receiptNumber}<br>
                                 <strong>発行日:</strong> ${new Date().toLocaleDateString('ja-JP')}
                             </div>
-                            <div>
+                            <div class="receipt-info-right">
                                 <strong>注文番号:</strong> ${receiptData.orderId}<br>
                                 <strong>注文日:</strong> ${receiptData.orderDate}
                             </div>
@@ -3449,7 +3457,7 @@
                     </div>
                     
                     <div class="amount-section">
-                        ${receiptData.totalWithTax.toLocaleString()}円領収しました
+                        <strong>${receiptData.totalWithTax.toLocaleString()}円領収しました</strong>
                     </div>
                     
                     <div class="detail-section two-column">
