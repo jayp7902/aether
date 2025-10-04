@@ -3254,6 +3254,7 @@
                             overflow: visible;
                             page-break-inside: avoid;
                             font-size: 0.81em; /* 19% 줄임 (5% + 5% + 10%) */
+                            text-align: center; /* 전체 내용 가운데 정렬 */
                         }
                         
                         .receipt-container * {
@@ -3300,14 +3301,14 @@
                         }
                         
                         .recipient-section {
-                            text-align: left;
+                            text-align: center; /* 가운데 정렬 */
                             margin: 15px 0;
                             font-size: 16px;
                             font-weight: bold;
                         }
                         
                         .amount-section {
-                            text-align: left;
+                            text-align: center; /* 가운데 정렬 */
                             margin: 15px 0;
                             font-size: 18px;
                             font-weight: bold;
@@ -3347,7 +3348,7 @@
                         .items-table {
                             width: 100%;
                             border-collapse: collapse;
-                            margin: 8px 0; /* 10px → 8px */
+                            margin: 8px auto; /* 8px 0 → 8px auto (가운데 정렬) */
                             font-size: 1.05em; /* 상품명세는 원래 크기 유지 */
                         }
                         
@@ -3400,7 +3401,7 @@
                             font-size: 8px;
                             color: #666;
                             margin-top: 10px;
-                            text-align: right;
+                            text-align: center; /* right → center */
                         }
                         
                         .shipping-info {
