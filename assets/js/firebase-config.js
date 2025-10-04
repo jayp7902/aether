@@ -151,9 +151,11 @@ async function initializeFirebase() {
         }
 
         // Firebase 앱 초기화 (더 안전한 방식)
-        if (!firebase.apps.length) {
+        console.log('Firebase apps 상태:', firebase.apps ? firebase.apps.length : 'apps 속성 없음');
+        if (!firebase.apps || firebase.apps.length === 0) {
             console.log('Firebase 앱 초기화 중...');
             firebase.initializeApp(firebaseConfig);
+            console.log('Firebase 앱 초기화 완료');
         } else {
             console.log('Firebase 앱이 이미 초기화되어 있습니다.');
         }
@@ -365,9 +367,15 @@ async function waitForFirebaseAndInitialize() {
     const checkInterval = 100; // 100ms마다 확인
     let elapsedTime = 0;
     
+    console.log('🔄 Firebase SDK 로드 대기 시작...');
+    
     while (elapsedTime < maxWaitTime) {
-        if (typeof firebase !== 'undefined' && firebase.apps) {
-            console.log('Firebase SDK 로드 완료, 초기화 시작');
+        // Firebase SDK가 완전히 로드되었는지 확인
+        if (typeof firebase !== 'undefined' && 
+            firebase.initializeApp && 
+            firebase.auth && 
+            firebase.firestore) {
+            console.log('✅ Firebase SDK 로드 완료, 초기화 시작');
             try {
                 const result = await initializeFirebase();
                 if (result.success) {
@@ -385,11 +393,16 @@ async function waitForFirebaseAndInitialize() {
             }
         }
         
+        // 진행 상황 로그 (5초마다)
+        if (elapsedTime % 5000 === 0 && elapsedTime > 0) {
+            console.log(`⏳ Firebase SDK 로드 대기 중... (${elapsedTime/1000}초 경과)`);
+        }
+        
         await new Promise(resolve => setTimeout(resolve, checkInterval));
         elapsedTime += checkInterval;
     }
     
-    console.error('❌ Firebase SDK 로드 시간 초과');
+    console.error('❌ Firebase SDK 로드 시간 초과 (10초)');
     return false;
 }
 
@@ -507,38 +520,6 @@ class FirebaseService {
             return false;
         }
 
-        // 환영 메일 발송 함수
-        static async sendWelcomeEmail(email, name) {
-            try {
-                console.log('환영 메일 발송 시작:', email);
-                
-                const response = await fetch('/.netlify/functions/send-email', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        to: email,
-                        subject: 'ようこそ Aether Storeへ！ウェルカムボーナスポイント300ポイントプレゼント',
-                        type: 'welcome',
-                        data: {
-                            name: name,
-                            points: 300
-                        }
-                    })
-                });
-                
-                const result = await response.json();
-                if (result.success) {
-                    console.log('환영 메일 발송 완료:', email);
-                } else {
-                    console.error('환영 메일 발송 실패:', result.error);
-                }
-                
-            } catch (error) {
-                console.error('환영 메일 발송 오류:', error);
-            }
-        }
     }
 
     // 사용자 등록 (중복 체크 강화 + 재시도 메커니즘)
@@ -711,6 +692,39 @@ class FirebaseService {
             }
             
             return { success: false, error: errorMessage, code: error.code };
+        }
+    }
+
+    // 환영 메일 발송 함수
+    static async sendWelcomeEmail(email, name) {
+        try {
+            console.log('환영 메일 발송 시작:', email);
+            
+            const response = await fetch('/.netlify/functions/send-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    to: email,
+                    subject: 'ようこそ Aether Storeへ！ウェルカムボーナスポイント300ポイントプレゼント',
+                    type: 'welcome',
+                    data: {
+                        name: name,
+                        points: 300
+                    }
+                })
+            });
+            
+            const result = await response.json();
+            if (result.success) {
+                console.log('환영 메일 발송 완료:', email);
+            } else {
+                console.error('환영 메일 발송 실패:', result.error);
+            }
+            
+        } catch (error) {
+            console.error('환영 메일 발송 오류:', error);
         }
     }
 
@@ -3400,4 +3414,33 @@ document.addEventListener('DOMContentLoaded', function() {
             console.warn('자동 방문 기록 저장 및 카트 동기화 실패:', error);
         }
     }, 3000); // Firebase 초기화 대기 (3초로 증가)
-}); 
+});
+
+// 글로벌 Firebase 초기화 함수 (다른 스크립트에서 호출 가능)
+window.initializeFirebaseManually = async function() {
+    console.log('🔄 수동 Firebase 초기화 시작...');
+    try {
+        const result = await initializeFirebase();
+        if (result.success) {
+            console.log('✅ 수동 Firebase 초기화 성공');
+            return true;
+        } else {
+            console.warn('⚠️ 수동 Firebase 초기화 실패');
+            return false;
+        }
+    } catch (error) {
+        console.error('❌ 수동 Firebase 초기화 오류:', error);
+        return false;
+    }
+};
+
+// Firebase 상태 확인 함수
+window.checkFirebaseStatus = function() {
+    return {
+        firebase: typeof firebase !== 'undefined',
+        auth: typeof firebase !== 'undefined' && typeof firebase.auth !== 'undefined',
+        apps: typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0,
+        authInstance: typeof auth !== 'undefined',
+        dbInstance: typeof db !== 'undefined'
+    };
+}; 
