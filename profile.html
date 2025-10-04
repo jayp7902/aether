@@ -3145,7 +3145,7 @@
                     filename: `領収書_${orderId}.pdf`,
                     image: { type: 'jpeg', quality: 0.95 },
                     html2canvas: { 
-                        scale: 0.8, // 스케일 80% 크기 (0.9 → 0.8)
+                        scale: 1.0, // 스케일 100% 크기 (원본 크기)
                         useCORS: true,
                         letterRendering: true,
                         allowTaint: true,
