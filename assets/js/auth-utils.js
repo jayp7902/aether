@@ -60,7 +60,17 @@ function getCurrentUser() {
                 console.log('❌ auth-utils.js Firebase 사용자 없음 (로그아웃 상태)');
             }
         } else {
-            console.log('❌ auth-utils.js Firebase 초기화되지 않음');
+            console.log('❌ auth-utils.js Firebase 초기화되지 않음 - apps:', firebase?.apps?.length || 'undefined');
+            // Firebase 초기화가 실패한 경우 수동으로 재시도
+            if (typeof firebase !== 'undefined' && firebase.initializeApp && typeof initializeFirebase === 'function') {
+                console.log('🔄 Firebase 수동 초기화 시도...');
+                try {
+                    await initializeFirebase();
+                    console.log('✅ Firebase 수동 초기화 성공');
+                } catch (error) {
+                    console.warn('⚠️ Firebase 수동 초기화 실패:', error);
+                }
+            }
         }
     } catch (error) {
         console.warn('auth-utils.js Firebase 사용자 확인 중 오류:', error);
