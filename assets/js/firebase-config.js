@@ -477,6 +477,39 @@ class FirebaseService {
             console.warn('⚠️ Firebase 재연결 실패:', error.message);
             return false;
         }
+
+        // 환영 메일 발송 함수
+        static async sendWelcomeEmail(email, name) {
+            try {
+                console.log('환영 메일 발송 시작:', email);
+                
+                const response = await fetch('/.netlify/functions/send-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        to: email,
+                        subject: 'ようこそ Aether Storeへ！ウェルカムボーナスポイント300ポイントプレゼント',
+                        type: 'welcome',
+                        data: {
+                            name: name,
+                            points: 300
+                        }
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    console.log('환영 메일 발송 완료:', email);
+                } else {
+                    console.error('환영 메일 발송 실패:', result.error);
+                }
+                
+            } catch (error) {
+                console.error('환영 메일 발송 오류:', error);
+            }
+        }
     }
 
     // 사용자 등록 (중복 체크 강화 + 재시도 메커니즘)
@@ -576,6 +609,9 @@ class FirebaseService {
             // 웰컴 보너스 포인트 히스토리 저장
             await db.collection('pointHistory').add(welcomeBonusHistory);
             console.log('✅ 웰컴 보너스 포인트 히스토리 저장 완료');
+
+            // 환영 메일 발송
+            await this.sendWelcomeEmail(email, userData.name);
 
             // 저장 확인을 위한 조회
             try {
