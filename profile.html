@@ -2894,8 +2894,8 @@
                                     </h5>
                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
-                                <div class="modal-body p-0" style="max-height: 80vh; overflow-y: auto;">
-                                    <div id="receipt-content" style="background: white; padding: 10px; font-family: 'Noto Sans JP', sans-serif;">
+                                <div class="modal-body p-0" style="max-height: 80vh; overflow-y: auto; text-align: center;">
+                                    <div id="receipt-content" style="background: white; padding: 10px; font-family: 'Noto Sans JP', sans-serif; text-align: center; margin: 0 auto;">
                                         ${receiptHTML}
                                     </div>
                                 </div>
@@ -3107,6 +3107,13 @@
                 if (receiptContent && receiptContent.innerHTML.trim() !== '') {
                     console.log('모달의 receipt-content 사용');
                     console.log('모달 내용 확인:', receiptContent.innerHTML.substring(0, 200) + '...');
+                    
+                    // PDF 생성을 위해 스타일 강제 적용
+                    receiptContent.style.textAlign = 'center';
+                    receiptContent.style.margin = '0 auto';
+                    receiptContent.style.width = '180mm';
+                    receiptContent.style.maxWidth = '180mm';
+                    
                     sourceElement = receiptContent;
                 } else {
                     console.log('임시 div 생성');
@@ -3116,10 +3123,13 @@
                     tempDiv.style.position = 'absolute';
                     tempDiv.style.left = '-9999px';
                     tempDiv.style.top = '-9999px';
-                    tempDiv.style.width = '210mm';
+                    tempDiv.style.width = '180mm'; // 210mm → 180mm
+                    tempDiv.style.maxWidth = '180mm';
                     tempDiv.style.background = 'white';
                     tempDiv.style.overflow = 'visible';
                     tempDiv.style.zIndex = '-1';
+                    tempDiv.style.textAlign = 'center'; // 가운데 정렬
+                    tempDiv.style.margin = '0 auto'; // 가운데 정렬
                     document.body.appendChild(tempDiv);
                     sourceElement = tempDiv;
                 }
