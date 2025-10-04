@@ -622,8 +622,8 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
     <!-- 애플리케이션 스크립트 -->
-    <script src="assets/js/firebase-config.js?v=2.7"></script>
-    <script src="assets/js/auth-utils.js?v=2.6"></script>
+    <script src="assets/js/firebase-config-v3.js"></script>
+    <script src="assets/js/auth-utils-v3.js"></script>
     <script src="assets/js/custom.js?v=2.6"></script>
     
     <!-- 포인트 페이지와 동일한 QR 코드 생성 코드 -->
@@ -993,33 +993,33 @@
                 // 사용자 정보 로드 (포인트 페이지와 동일)
                 loadUserInfo();
                 
-                // Firebase 초기화 완료 대기 (개선된 방식)
+                // Firebase 초기화 완료 대기 (간단한 방식)
                 let firebaseReady = false;
                 
-                try {
-                    // firebase-config.js의 초기화 함수 사용
-                    if (typeof window.waitForFirebaseAndInitialize === 'function') {
-                        console.log('Firebase 초기화 함수 호출 중...');
-                        firebaseReady = await window.waitForFirebaseAndInitialize();
-                    } else if (typeof window.initializeFirebaseManually === 'function') {
-                        console.log('수동 Firebase 초기화 시도...');
-                        firebaseReady = await window.initializeFirebaseManually();
-                    } else {
-                        // 기본 대기 방식
-                        let attempts = 0;
-                        const maxAttempts = 100;
-                        while (!firebaseReady && attempts < maxAttempts) {
-                            if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0) {
-                                firebaseReady = true;
-                                console.log('Firebase 초기화 완료 확인됨');
-                            } else {
-                                await new Promise(resolve => setTimeout(resolve, 100));
-                                attempts++;
-                            }
+                // Firebase 상태 확인 함수
+                const checkFirebaseReady = () => {
+                    return typeof firebase !== 'undefined' && 
+                           firebase.apps && 
+                           firebase.apps.length > 0 &&
+                           typeof auth !== 'undefined' &&
+                           typeof db !== 'undefined';
+                };
+                
+                // 즉시 확인
+                if (checkFirebaseReady()) {
+                    firebaseReady = true;
+                    console.log('✅ Firebase 이미 초기화됨');
+                } else {
+                    // 짧은 대기 후 재확인
+                    console.log('⏳ Firebase 초기화 대기 중...');
+                    for (let i = 0; i < 50; i++) { // 5초 대기
+                        if (checkFirebaseReady()) {
+                            firebaseReady = true;
+                            console.log('✅ Firebase 초기화 완료');
+                            break;
                         }
+                        await new Promise(resolve => setTimeout(resolve, 100));
                     }
-                } catch (error) {
-                    console.warn('Firebase 초기화 중 오류:', error);
                 }
                 
                 if (!firebaseReady) {
