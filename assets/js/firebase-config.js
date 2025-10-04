@@ -3443,4 +3443,7 @@ window.checkFirebaseStatus = function() {
         authInstance: typeof auth !== 'undefined',
         dbInstance: typeof db !== 'undefined'
     };
-}; 
+};
+
+// Firebase 초기화 대기 함수를 글로벌로 노출
+window.waitForFirebaseAndInitialize = waitForFirebaseAndInitialize; 
