@@ -580,6 +580,41 @@
             }
         }
 
+        // 주문 완료 메일 발송 함수
+        async function sendOrderCompleteEmail(orderData) {
+            try {
+                console.log('주문 완료 메일 발송 시작:', orderData);
+                
+                const response = await fetch('/.netlify/functions/send-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        to: orderData.customerEmail || orderData.userEmail,
+                        subject: 'ご注文完了のお知らせ - Aether Store',
+                        type: 'order-complete',
+                        data: {
+                            orderId: orderData.id,
+                            customerName: orderData.customerName || orderData.userName,
+                            items: orderData.items || [],
+                            totalAmount: orderData.totalAmount || orderData.originalAmount
+                        }
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    console.log('주문 완료 메일 발송 완료');
+                } else {
+                    console.error('주문 완료 메일 발송 실패:', result.error);
+                }
+                
+            } catch (error) {
+                console.error('주문 완료 메일 발송 오류:', error);
+            }
+        }
+
         // 페이지 로드시 실행
         document.addEventListener('DOMContentLoaded', function() {
             // auth-utils.js의 updateUserMenu 함수 호출
@@ -588,6 +623,12 @@
             }
             updateCartCount();
             displayOrderInfo();
+            
+            // 주문 완료 메일 발송
+            const orderData = JSON.parse(sessionStorage.getItem('lastOrder') || '{}');
+            if (orderData.id) {
+                sendOrderCompleteEmail(orderData);
+            }
         });
     </script>
 </body>
