@@ -3254,7 +3254,7 @@
                             width: 185mm; /* 190mm → 185mm (완전 가운데 정렬을 위한 폭 조정) */
                             /* min-height 제거 - 내용에 맞게 자동 조정 */
                             margin: 0 auto; /* 가운데 정렬 */
-                            padding: 6mm; /* 12mm → 6mm (1페이지 맞추기 위해 줄임) */
+                            padding: 8mm; /* 6mm → 8mm (하단 여백 확보) */
                             background: white;
                             color: #333;
                             box-sizing: border-box;
@@ -3264,6 +3264,7 @@
                             page-break-inside: avoid;
                             font-size: 0.81em; /* 19% 줄임 (5% + 5% + 10%) */
                             text-align: center; /* 전체 내용 가운데 정렬 */
+                            border: 1px solid #ddd; /* 하단 박스 테두리 추가 */
                         }
                         
                         .receipt-container * {
@@ -3426,7 +3427,7 @@
                         @media print {
                             .receipt-container {
                                 margin: 0 auto !important; /* 가운데 정렬 유지 */
-                                padding: 6mm; /* 12mm → 6mm (1페이지 맞추기 위해 줄임) */
+                                padding: 8mm; /* 6mm → 8mm (하단 여백 확보) */
                                 width: 185mm !important; /* 190mm → 185mm (완전 가운데 정렬을 위한 폭 조정) */
                                 /* min-height 제거 - 내용에 맞게 자동 조정 */
                                 page-break-inside: avoid;
@@ -3503,7 +3504,7 @@
                             </div>
                             <div class="detail-row">
                                 <span>住所:</span>
-                                <span style="text-align: right; display: block;">東京都新宿区大久保2丁目21-10 ジュネス大久保 102号</span>
+                                <span style="text-align: right; display: block;">東京都新宿区<br>大久保2丁目21-10 ジュネス大久保 102号</span>
                             </div>
                             <div class="detail-row">
                                 <span>電話番号:</span>
@@ -3554,7 +3555,7 @@
                                     receiptData.shippingAddress.city || '',
                                     receiptData.shippingAddress.address1 || '',
                                     receiptData.shippingAddress.address2 || ''
-                                ].filter(part => part.trim() !== '').join(' ')}</span>
+                                ].filter(part => part.trim() !== '').map((part, index) => index === 0 ? part + '<br>' : part).join(' ')}</span>
                             </div>
                         </div>
                     </div>
