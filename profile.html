@@ -3131,7 +3131,7 @@
                 console.log('PDF 생성 옵션 설정 중...');
                 
                 const opt = {
-                    margin: [5, 5, 5, 5],
+                    margin: [10, 20, 10, 20], /* 좌우 마진 증가로 가운데 정렬 보장 */
                     filename: `領収書_${orderId}.pdf`,
                     image: { type: 'jpeg', quality: 0.95 },
                     html2canvas: { 
@@ -3413,13 +3413,14 @@
                         
                         @media print {
                             .receipt-container {
-                                margin: 0;
+                                margin: 0 auto !important; /* 가운데 정렬 유지 */
                                 padding: 8mm;
                                 width: 210mm;
                                 min-height: 297mm;
                                 page-break-inside: avoid;
                                 background: white !important;
                                 color: black !important;
+                                text-align: center !important; /* 가운데 정렬 유지 */
                             }
                             
                             .receipt-header,
