@@ -3143,9 +3143,9 @@
                 const opt = {
                     margin: [10, 8, 10, 8], /* 여백 줄임 - 상하좌우 모두 줄임 */
                     filename: `領収書_${orderId}.pdf`,
-                    image: { type: 'jpeg', quality: 1.0 }, // 최고 화질
+                    image: { type: 'jpeg', quality: 0.95 },
                     html2canvas: { 
-                        scale: 2.0, // 스케일 200% (고해상도로 렌더링 후 PDF에서 축소)
+                        scale: 0.95, // 스케일 95% 크기 (A4에 맞추기 위해 약간 축소)
                         useCORS: true,
                         letterRendering: true,
                         allowTaint: true,
