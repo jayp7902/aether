@@ -3131,22 +3131,22 @@
                 console.log('PDF 생성 옵션 설정 중...');
                 
                 const opt = {
-                    margin: [8, 8, 8, 8], // 여백 증가로 중앙 정렬 효과
+                    margin: [5, 5, 5, 5],
                     filename: `領収書_${orderId}.pdf`,
                     image: { type: 'jpeg', quality: 0.95 },
                     html2canvas: { 
-                        scale: 1.2, // 스케일 조정 (1.5 → 1.2)
+                        scale: 1.5, // 스케일 조정
                         useCORS: true,
                         letterRendering: true,
                         allowTaint: true,
                         backgroundColor: '#ffffff',
                         logging: true,
-                        width: 680, // 794 → 680 (중앙 정렬을 위한 폭 조정)
-                        height: 1000, // 1123 → 1000 (한 페이지에 맞춤)
+                        width: 794,
+                        height: 1123,
                         scrollX: 0,
                         scrollY: 0,
-                        windowWidth: 680,
-                        windowHeight: 1000
+                        windowWidth: 794,
+                        windowHeight: 1123
                     },
                     jsPDF: { 
                         unit: 'mm', 
@@ -3242,10 +3242,10 @@
                     <style>
                         .receipt-container {
                             font-family: 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic', 'Meiryo', sans-serif !important;
-                            width: 180mm; /* 210mm → 180mm (중앙 정렬을 위한 여백 확보) */
+                            width: 210mm;
                             min-height: 297mm;
                             margin: 0 auto;
-                            padding: 6mm; /* 8mm → 6mm (여백 줄임) */
+                            padding: 8mm;
                             background: white;
                             color: #333;
                             box-sizing: border-box;
@@ -3263,9 +3263,9 @@
                         
                         .receipt-header {
                             text-align: center;
-                            margin-bottom: 8px; /* 10px → 8px */
+                            margin-bottom: 10px; /* 15px → 10px */
                             border-bottom: 2px solid #333;
-                            padding-bottom: 6px; /* 8px → 6px */
+                            padding-bottom: 8px; /* 10px → 8px */
                             font-size: 1.05em; /* 헤더는 원래 크기 유지 */
                         }
                         
@@ -3274,7 +3274,7 @@
                         }
                         
                         .company-logo img {
-                            max-height: 75px; /* 50px → 75px (50% 증가) */
+                            max-height: 50px;
                             width: auto;
                         }
                         
@@ -3289,14 +3289,6 @@
                             justify-content: space-between;
                             margin-bottom: 15px;
                             font-size: 10px;
-                        }
-                        
-                        .receipt-info-left {
-                            text-align: left;
-                        }
-                        
-                        .receipt-info-right {
-                            text-align: right;
                         }
                         
                         .recipient-section {
@@ -3314,12 +3306,12 @@
                         }
                         
                         .detail-section {
-                            margin-bottom: 8px; /* 10px → 8px */
+                            margin-bottom: 10px; /* 15px → 10px */
                         }
                         
                         .detail-section.two-column {
                             display: flex;
-                            gap: 12px; /* 15px → 12px */
+                            gap: 15px; /* 20px → 15px */
                         }
                         
                         .detail-section.two-column .column {
@@ -3441,11 +3433,11 @@
                         </div>
                         <div class="receipt-title">領収書</div>
                         <div class="receipt-info">
-                            <div class="receipt-info-left">
+                            <div>
                                 <strong>領収書番号:</strong> ${receiptData.receiptNumber}<br>
                                 <strong>発行日:</strong> ${new Date().toLocaleDateString('ja-JP')}
                             </div>
-                            <div class="receipt-info-right">
+                            <div>
                                 <strong>注文番号:</strong> ${receiptData.orderId}<br>
                                 <strong>注文日:</strong> ${receiptData.orderDate}
                             </div>
@@ -3457,7 +3449,7 @@
                     </div>
                     
                     <div class="amount-section">
-                        <strong>${receiptData.totalWithTax.toLocaleString()}円領収しました</strong>
+                        ${receiptData.totalWithTax.toLocaleString()}円領収しました
                     </div>
                     
                     <div class="detail-section two-column">
