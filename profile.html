@@ -3490,31 +3490,51 @@
                         </div>
                     </div>
                     
-                    <div class="detail-section">
-                        <div class="detail-title">注文合計</div>
-                        <div class="detail-row">
-                            <span>商品小計:</span>
-                            <span>¥${receiptData.subtotal.toLocaleString()}</span>
+                    <div class="detail-section two-column">
+                        <div class="column">
+                            <div class="detail-title">注文合計</div>
+                            <div class="detail-row">
+                                <span>商品小計:</span>
+                                <span>¥${receiptData.subtotal.toLocaleString()}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>配送料:</span>
+                                <span>${receiptData.shippingFee === 0 ? '無料' : '¥' + receiptData.shippingFee.toLocaleString()}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>小計:</span>
+                                <span>¥${receiptData.totalBeforeTax.toLocaleString()}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>消費税(10%):</span>
+                                <span>¥${receiptData.taxAmount.toLocaleString()}</span>
+                            </div>
+                            <div class="detail-row total-final">
+                                <span>総合計:</span>
+                                <span>¥${receiptData.totalWithTax.toLocaleString()}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>支払い金額:</span>
+                                <span>¥${(receiptData.totalWithTax - receiptData.usedPoints).toLocaleString()}</span>
+                            </div>
                         </div>
-                        <div class="detail-row">
-                            <span>配送料:</span>
-                            <span>${receiptData.shippingFee === 0 ? '無料' : '¥' + receiptData.shippingFee.toLocaleString()}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span>小計:</span>
-                            <span>¥${receiptData.totalBeforeTax.toLocaleString()}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span>消費税(10%):</span>
-                            <span>¥${receiptData.taxAmount.toLocaleString()}</span>
-                        </div>
-                        <div class="detail-row total-final">
-                            <span>総合計:</span>
-                            <span>¥${receiptData.totalWithTax.toLocaleString()}</span>
-                        </div>
-                        <div class="detail-row">
-                            <span>支払い金額:</span>
-                            <span>¥${(receiptData.totalWithTax - receiptData.usedPoints).toLocaleString()}</span>
+                        
+                        <div class="column">
+                            <div class="detail-title">配送情報</div>
+                            <div class="detail-row">
+                                <span>配送方法:</span>
+                                <span>宅配便</span>
+                            </div>
+                            <div class="detail-row">
+                                <span>お届け先:</span>
+                                <span>${[
+                                    receiptData.shippingAddress.postal || '',
+                                    receiptData.shippingAddress.prefecture || '',
+                                    receiptData.shippingAddress.city || '',
+                                    receiptData.shippingAddress.address1 || '',
+                                    receiptData.shippingAddress.address2 || ''
+                                ].filter(part => part.trim() !== '').join(' ')}</span>
+                            </div>
                         </div>
                     </div>
                     
@@ -3537,23 +3557,6 @@
                         ※支払い金額は総合計からポイントを除いた金額です
                     </div>
                     
-                    <div class="detail-section">
-                        <div class="detail-title">配送情報</div>
-                        <div class="detail-row">
-                            <span>配送方法:</span>
-                            <span>宅配便</span>
-                        </div>
-                        <div class="detail-row">
-                            <span>お届け先:</span>
-                            <span>${[
-                                receiptData.shippingAddress.postal || '',
-                                receiptData.shippingAddress.prefecture || '',
-                                receiptData.shippingAddress.city || '',
-                                receiptData.shippingAddress.address1 || '',
-                                receiptData.shippingAddress.address2 || ''
-                            ].filter(part => part.trim() !== '').join(' ')}</span>
-                        </div>
-                    </div>
                     
                     <div class="detail-section">
                         <div class="detail-title">商品明細</div>
