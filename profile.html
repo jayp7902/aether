@@ -3131,22 +3131,22 @@
                 console.log('PDF 생성 옵션 설정 중...');
                 
                 const opt = {
-                    margin: [10, 20, 10, 20], /* 좌우 마진 증가로 가운데 정렬 보장 */
+                    margin: [15, 25, 15, 25], /* 좌우 마진 더 증가로 가운데 정렬 보장 */
                     filename: `領収書_${orderId}.pdf`,
                     image: { type: 'jpeg', quality: 0.95 },
                     html2canvas: { 
-                        scale: 1.5, // 스케일 조정
+                        scale: 1.2, // 스케일 조정 (1.5 → 1.2)
                         useCORS: true,
                         letterRendering: true,
                         allowTaint: true,
                         backgroundColor: '#ffffff',
                         logging: true,
-                        width: 794,
-                        height: 1123,
+                        width: 680, // 794 → 680 (중앙 정렬을 위한 폭 조정)
+                        height: 1000, // 1123 → 1000 (한 페이지에 맞춤)
                         scrollX: 0,
                         scrollY: 0,
-                        windowWidth: 794,
-                        windowHeight: 1123
+                        windowWidth: 680,
+                        windowHeight: 1000
                     },
                     jsPDF: { 
                         unit: 'mm', 
@@ -3242,9 +3242,9 @@
                     <style>
                         .receipt-container {
                             font-family: 'Noto Sans JP', 'Hiragino Sans', 'Yu Gothic', 'Meiryo', sans-serif !important;
-                            width: 210mm;
+                            width: 180mm; /* 210mm → 180mm (여백 확보) */
                             min-height: 297mm;
-                            margin: 0 auto;
+                            margin: 0 auto; /* 가운데 정렬 */
                             padding: 8mm;
                             background: white;
                             color: #333;
@@ -3415,7 +3415,7 @@
                             .receipt-container {
                                 margin: 0 auto !important; /* 가운데 정렬 유지 */
                                 padding: 8mm;
-                                width: 210mm;
+                                width: 180mm !important; /* 210mm → 180mm (여백 확보) */
                                 min-height: 297mm;
                                 page-break-inside: avoid;
                                 background: white !important;
