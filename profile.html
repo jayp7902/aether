@@ -3503,7 +3503,7 @@
                             </div>
                             <div class="detail-row">
                                 <span>住所:</span>
-                                <span>〒169-0072 東京都新宿区大久保2丁目21-10 ジュネス大久保 102号</span>
+                                <span style="text-align: right; display: block;">東京都新宿区大久保2丁目21-10 ジュネス大久保 102号</span>
                             </div>
                             <div class="detail-row">
                                 <span>電話番号:</span>
@@ -3549,8 +3549,7 @@
                             </div>
                             <div class="detail-row">
                                 <span>お届け先:</span>
-                                <span>${[
-                                    receiptData.shippingAddress.postal || '',
+                                <span style="text-align: right; display: block;">${[
                                     receiptData.shippingAddress.prefecture || '',
                                     receiptData.shippingAddress.city || '',
                                     receiptData.shippingAddress.address1 || '',
