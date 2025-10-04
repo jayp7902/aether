@@ -3150,12 +3150,17 @@
                         letterRendering: true,
                         allowTaint: true,
                         backgroundColor: '#ffffff',
-                        logging: true,
-                        // width와 height 제거 - scale로만 크기 조정
+                        logging: false, // 로깅 비활성화
                         scrollX: 0,
                         scrollY: 0,
-                        windowWidth: 680,
-                        windowHeight: 1000
+                        // 테두리 제거를 위한 옵션 추가
+                        ignoreElements: function(element) {
+                            // 모달 관련 요소들 무시
+                            return element.classList.contains('modal') || 
+                                   element.classList.contains('modal-dialog') ||
+                                   element.classList.contains('modal-content') ||
+                                   element.classList.contains('modal-body');
+                        }
                     },
                     jsPDF: { 
                         unit: 'mm', 
@@ -3551,11 +3556,10 @@
                             <div class="detail-row">
                                 <span>お届け先:</span>
                                 <span style="text-align: right; display: block;">${[
-                                    receiptData.shippingAddress.prefecture || '',
-                                    receiptData.shippingAddress.city || '',
+                                    (receiptData.shippingAddress.prefecture || '') + (receiptData.shippingAddress.city || ''),
                                     receiptData.shippingAddress.address1 || '',
                                     receiptData.shippingAddress.address2 || ''
-                                ].filter(part => part.trim() !== '').map((part, index) => index === 0 ? part + '<br>' : part).join(' ')}</span>
+                                ].filter(part => part.trim() !== '').join('<br>')}</span>
                             </div>
                         </div>
                     </div>
