@@ -353,37 +353,66 @@ async function retryFirebaseInit() {
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Firebase 초기화 시작');
     
-    // 약간의 지연 후 초기화 시도 (스크립트 로딩 완료 보장)
+    // 더 긴 지연 후 초기화 시도 (모든 스크립트 로딩 완료 보장)
     setTimeout(async () => {
-        // Firebase SDK 로드 확인 후 초기화
+        await waitForFirebaseAndInitialize();
+    }, 500);
+});
+
+// Firebase SDK 로드 대기 및 초기화 함수
+async function waitForFirebaseAndInitialize() {
+    const maxWaitTime = 10000; // 10초 최대 대기
+    const checkInterval = 100; // 100ms마다 확인
+    let elapsedTime = 0;
+    
+    while (elapsedTime < maxWaitTime) {
+        if (typeof firebase !== 'undefined' && firebase.apps) {
+            console.log('Firebase SDK 로드 완료, 초기화 시작');
+            try {
+                const result = await initializeFirebase();
+                if (result.success) {
+                    console.log('✅ Firebase 초기화 성공');
+                    return true;
+                } else {
+                    console.warn('⚠️ Firebase 초기화 실패, 재시도 중...');
+                    await retryFirebaseInit();
+                    return true;
+                }
+            } catch (error) {
+                console.error('❌ Firebase 초기화 중 오류:', error);
+                await retryFirebaseInit();
+                return false;
+            }
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, checkInterval));
+        elapsedTime += checkInterval;
+    }
+    
+    console.error('❌ Firebase SDK 로드 시간 초과');
+    return false;
+}
+
+// 기존 코드 백업용 (제거 예정)
+function oldFirebaseInit() {
+    // Firebase SDK 로드 대기
+    let attempts = 0;
+    const maxAttempts = 30;
+    const checkFirebase = setInterval(async () => {
+        attempts++;
         if (typeof firebase !== 'undefined') {
+            clearInterval(checkFirebase);
             console.log('Firebase SDK 로드 완료, 초기화 시작');
             const result = await initializeFirebase();
             if (!result.success) {
                 await retryFirebaseInit();
             }
-        } else {
-            console.log('Firebase SDK 로드 대기 중...');
-            // Firebase SDK 로드 대기
-            let attempts = 0;
-            const maxAttempts = 30;
-            const checkFirebase = setInterval(async () => {
-                attempts++;
-                if (typeof firebase !== 'undefined') {
-                    clearInterval(checkFirebase);
-                    console.log('Firebase SDK 로드 완료, 초기화 시작');
-                    const result = await initializeFirebase();
-                    if (!result.success) {
-                        await retryFirebaseInit();
-                    }
-                } else if (attempts >= maxAttempts) {
-                    clearInterval(checkFirebase);
-                    console.log('Firebase SDK 로드 실패');
-                }
-            }, 200);
+        } else if (attempts >= maxAttempts) {
+            clearInterval(checkFirebase);
+            console.log('Firebase SDK 로드 실패');
         }
-    }, 300); // 300ms 지연
-});
+    }, 200);
+}
 
 // Firebase 서비스 클래스 정의 후에 사용할 함수들 (나중에 정의)
 let checkFirestoreConnection, isOfflineMode, showOfflineModeAlert, waitForFirebaseComplete;
