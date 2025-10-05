@@ -4324,33 +4324,44 @@
                 // 메일 관리 섹션 내 탭 초기화 (이벤트 메일 탭 활성화 포함)
                 initializeEmailTabs();
                 
-                // 함수들이 정의될 때까지 기다린 후 호출 (최대 10회 재시도)
-                let retryCount = 0;
-                const maxRetries = 10;
-                const waitForFunctions = () => {
-                    // 디버깅: 전역 함수들 확인
-                    console.log('🔍 전역 함수 확인:', {
-                        loadEmailHistory: typeof loadEmailHistory,
-                        loadCustomerList: typeof loadCustomerList,
-                        windowLoadEmailHistory: typeof window.loadEmailHistory,
-                        windowLoadCustomerList: typeof window.loadCustomerList
-                    });
-                    
-                    if (typeof loadEmailHistory === 'function') {
-                        loadEmailHistory();
-                        console.log('✅ loadEmailHistory 함수 호출 완료');
-                    } else if (typeof window.loadEmailHistory === 'function') {
-                        window.loadEmailHistory();
-                        console.log('✅ window.loadEmailHistory 함수 호출 완료');
-                    } else if (retryCount < maxRetries) {
-                        retryCount++;
-                        console.log(`⏳ loadEmailHistory 함수 대기 중... (${retryCount}/${maxRetries})`);
-                        setTimeout(waitForFunctions, 200);
+                // 직접 이메일 이력 로드 실행
+                console.log('📧 직접 이메일 이력 로드 시도');
+                try {
+                    // Firebase에서 메일 발송 이력 로드
+                    if (typeof FirebaseService !== 'undefined' && FirebaseService.db) {
+                        FirebaseService.db.collection('emailHistory')
+                            .orderBy('sentAt', 'desc')
+                            .limit(20)
+                            .get()
+                            .then(snapshot => {
+                                const historyTable = document.getElementById('emailHistoryTable');
+                                if (historyTable) {
+                                    historyTable.innerHTML = '';
+                                    
+                                    snapshot.forEach(doc => {
+                                        const emailData = doc.data();
+                                        const row = document.createElement('tr');
+                                        row.innerHTML = `
+                                            <td>${new Date(emailData.sentAt.toDate()).toLocaleString('ja-JP')}</td>
+                                            <td>${emailData.subject}</td>
+                                            <td>${emailData.type}</td>
+                                            <td>${emailData.recipientCount}</td>
+                                            <td><span class="badge bg-success">配信完了</span></td>
+                                        `;
+                                        historyTable.appendChild(row);
+                                    });
+                                    console.log('✅ 이메일 이력 직접 로드 완료');
+                                }
+                            })
+                            .catch(error => {
+                                console.error('❌ 이메일 이력 로드 오류:', error);
+                            });
                     } else {
-                        console.error('❌ loadEmailHistory 함수를 찾을 수 없습니다. 페이지를 새로고침해주세요.');
+                        console.warn('⚠️ FirebaseService가 초기화되지 않음');
                     }
-                };
-                waitForFunctions();
+                } catch (error) {
+                    console.error('❌ 이메일 이력 로드 중 오류:', error);
+                }
                 
                 console.log('✅ 메일 관리 섹션 초기화 완료');
             }, 500);
@@ -4379,25 +4390,123 @@
                 setTimeout(() => {
                     console.log('📧 이벤트 메일 탭에서 고객 목록 로드 시작');
                     
-                    // 함수가 정의될 때까지 기다린 후 호출 (최대 10회 재시도)
-                    let retryCount = 0;
-                    const maxRetries = 10;
-                    const waitForCustomerList = () => {
-                        if (typeof loadCustomerList === 'function') {
-                            loadCustomerList();
-                            console.log('✅ loadCustomerList 함수 호출 완료');
-                        } else if (typeof window.loadCustomerList === 'function') {
-                            window.loadCustomerList();
-                            console.log('✅ window.loadCustomerList 함수 호출 완료');
-                        } else if (retryCount < maxRetries) {
-                            retryCount++;
-                            console.log(`⏳ loadCustomerList 함수 대기 중... (${retryCount}/${maxRetries})`);
-                            setTimeout(waitForCustomerList, 200);
-                        } else {
-                            console.error('❌ loadCustomerList 함수를 찾을 수 없습니다. 페이지를 새로고침해주세요.');
+                    // 직접 고객 목록 로드 실행
+                    console.log('📧 직접 고객 목록 로드 시도');
+                    try {
+                        const customerList = document.getElementById('customerList');
+                        if (!customerList) {
+                            console.error('❌ customerList 요소를 찾을 수 없습니다.');
+                            return;
                         }
-                    };
-                    waitForCustomerList();
+                        
+                        console.log('✅ customerList 요소 확인됨');
+                        
+                        // Firebase에서 고객 목록 로드
+                        if (typeof FirebaseService !== 'undefined' && FirebaseService.db) {
+                            console.log('🔥 Firebase에서 사용자 데이터 조회 시작...');
+                            FirebaseService.db.collection('users').get()
+                                .then(snapshot => {
+                                    console.log('📊 Firebase 응답:', snapshot.size, '명의 사용자');
+                                    customerList.innerHTML = '';
+                                    
+                                    if (snapshot.empty) {
+                                        customerList.innerHTML = `
+                                            <tr>
+                                                <td colspan="7" class="text-center text-muted py-4">
+                                                    <i class="fas fa-users me-2"></i>登録された顧客がいません
+                                                </td>
+                                            </tr>
+                                        `;
+                                        return;
+                                    }
+                                    
+                                    let customerCount = 0;
+                                    snapshot.forEach(doc => {
+                                        const userData = doc.data();
+                                        customerCount++;
+                                        
+                                        const customerRank = userData.customerRank || 'BRONZE';
+                                        const rankClass = customerRank === 'VIP' ? 'btn-dark' : 
+                                                        customerRank === 'GOLD' ? 'btn-secondary' : 'btn-outline-secondary';
+                                        
+                                        const row = document.createElement('tr');
+                                        row.setAttribute('id', `customer-${userData.id}`);
+                                        row.innerHTML = `
+                                            <td>
+                                                <input class="form-check-input customer-checkbox" type="checkbox" value="${userData.email}" id="customer-${userData.id}" onchange="updateSelectedCount()">
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <strong>${userData.name || '名前なし'}</strong>
+                                                    <br>
+                                                    <small class="text-muted">${userData.email}</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm ${rankClass}">
+                                                    <i class="fas fa-user me-1"></i>${customerRank}
+                                                </button>
+                                            </td>
+                                            <td class="order-count">
+                                                <span class="badge bg-secondary">0</span>
+                                            </td>
+                                            <td class="total-spent">
+                                                <strong>¥0</strong>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-dark">${userData.points || 0}ポイント</span>
+                                            </td>
+                                            <td>
+                                                <small>${(() => {
+                                                    try {
+                                                        const date = userData.createdAt?.toDate ? userData.createdAt.toDate() : new Date(userData.createdAt);
+                                                        return date.toLocaleDateString('ja-JP');
+                                                    } catch (e) {
+                                                        return '不明';
+                                                    }
+                                                })()}</small>
+                                            </td>
+                                        `;
+                                        customerList.appendChild(row);
+                                    });
+                                    
+                                    // 전체 선택 체크박스 업데이트
+                                    const selectAllCheckbox = document.getElementById('selectAllCustomers');
+                                    if (selectAllCheckbox) {
+                                        selectAllCheckbox.setAttribute('data-total-customers', customerCount);
+                                    }
+                                    
+                                    // 선택된 고객 수 업데이트
+                                    if (typeof updateSelectedCount === 'function') {
+                                        updateSelectedCount();
+                                    }
+                                    
+                                    console.log(`✅ ${customerCount}名の顧客データを読み込み完了`);
+                                })
+                                .catch(error => {
+                                    console.error('❌ 고객 목록 로드 오류:', error);
+                                    customerList.innerHTML = `
+                                        <tr>
+                                            <td colspan="7" class="text-center text-danger py-4">
+                                                <i class="fas fa-exclamation-triangle me-2"></i>顧客データの読み込みに失敗しました
+                                                <br><small>${error.message}</small>
+                                            </td>
+                                        </tr>
+                                    `;
+                                });
+                        } else {
+                            console.error('❌ FirebaseService가 초기화되지 않음');
+                            customerList.innerHTML = `
+                                <tr>
+                                    <td colspan="7" class="text-center text-warning py-4">
+                                        <i class="fas fa-exclamation-triangle me-2"></i>Firebaseに接続されていません
+                                    </td>
+                                </tr>
+                            `;
+                        }
+                    } catch (error) {
+                        console.error('❌ 고객 목록 로드 중 오류:', error);
+                    }
                 }, 200);
             } else {
                 console.error('❌ 이벤트 메일 탭 요소를 찾을 수 없음');
@@ -5585,39 +5694,118 @@
             hideAllTabs();
             document.getElementById('email-section').style.display = 'block';
             
-            // 함수들이 정의될 때까지 기다린 후 호출 (최대 10회 재시도)
-            let customerListRetryCount = 0;
-            let emailHistoryRetryCount = 0;
-            const maxRetries = 10;
+            console.log('📧 showEmailManagement - 직접 데이터 로드 시작');
             
-            const waitForCustomerList = () => {
-                if (typeof loadCustomerList === 'function') {
-                    loadCustomerList();
-                    console.log('✅ showEmailManagement - loadCustomerList 함수 호출 완료');
-                } else if (customerListRetryCount < maxRetries) {
-                    customerListRetryCount++;
-                    console.log(`⏳ showEmailManagement - loadCustomerList 함수 대기 중... (${customerListRetryCount}/${maxRetries})`);
-                    setTimeout(waitForCustomerList, 200);
-                } else {
-                    console.error('❌ showEmailManagement - loadCustomerList 함수를 찾을 수 없습니다.');
+            // 직접 고객 목록 로드
+            setTimeout(() => {
+                const customerList = document.getElementById('customerList');
+                if (customerList && typeof FirebaseService !== 'undefined' && FirebaseService.db) {
+                    console.log('🔥 showEmailManagement - Firebase에서 고객 데이터 조회');
+                    FirebaseService.db.collection('users').get()
+                        .then(snapshot => {
+                            console.log('📊 showEmailManagement - Firebase 응답:', snapshot.size, '명의 사용자');
+                            customerList.innerHTML = '';
+                            
+                            if (snapshot.empty) {
+                                customerList.innerHTML = `
+                                    <tr>
+                                        <td colspan="7" class="text-center text-muted py-4">
+                                            <i class="fas fa-users me-2"></i>登録された顧客がいません
+                                        </td>
+                                    </tr>
+                                `;
+                                return;
+                            }
+                            
+                            let customerCount = 0;
+                            snapshot.forEach(doc => {
+                                const userData = doc.data();
+                                customerCount++;
+                                
+                                const customerRank = userData.customerRank || 'BRONZE';
+                                const rankClass = customerRank === 'VIP' ? 'btn-dark' : 
+                                                customerRank === 'GOLD' ? 'btn-secondary' : 'btn-outline-secondary';
+                                
+                                const row = document.createElement('tr');
+                                row.setAttribute('id', `customer-${userData.id}`);
+                                row.innerHTML = `
+                                    <td>
+                                        <input class="form-check-input customer-checkbox" type="checkbox" value="${userData.email}" id="customer-${userData.id}" onchange="updateSelectedCount()">
+                                    </td>
+                                    <td>
+                                        <div>
+                                            <strong>${userData.name || '名前なし'}</strong>
+                                            <br>
+                                            <small class="text-muted">${userData.email}</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm ${rankClass}">
+                                            <i class="fas fa-user me-1"></i>${customerRank}
+                                        </button>
+                                    </td>
+                                    <td class="order-count">
+                                        <span class="badge bg-secondary">0</span>
+                                    </td>
+                                    <td class="total-spent">
+                                        <strong>¥0</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-dark">${userData.points || 0}ポイント</span>
+                                    </td>
+                                    <td>
+                                        <small>${(() => {
+                                            try {
+                                                const date = userData.createdAt?.toDate ? userData.createdAt.toDate() : new Date(userData.createdAt);
+                                                return date.toLocaleDateString('ja-JP');
+                                            } catch (e) {
+                                                return '不明';
+                                            }
+                                        })()}</small>
+                                    </td>
+                                `;
+                                customerList.appendChild(row);
+                            });
+                            
+                            console.log(`✅ showEmailManagement - ${customerCount}名の顧客データを読み込み完了`);
+                        })
+                        .catch(error => {
+                            console.error('❌ showEmailManagement - 고객 목록 로드 오류:', error);
+                        });
                 }
-            };
+            }, 100);
             
-            const waitForEmailHistory = () => {
-                if (typeof loadEmailHistory === 'function') {
-                    loadEmailHistory();
-                    console.log('✅ showEmailManagement - loadEmailHistory 함수 호출 완료');
-                } else if (emailHistoryRetryCount < maxRetries) {
-                    emailHistoryRetryCount++;
-                    console.log(`⏳ showEmailManagement - loadEmailHistory 함수 대기 중... (${emailHistoryRetryCount}/${maxRetries})`);
-                    setTimeout(waitForEmailHistory, 200);
-                } else {
-                    console.error('❌ showEmailManagement - loadEmailHistory 함수를 찾을 수 없습니다.');
+            // 직접 이메일 이력 로드
+            setTimeout(() => {
+                const historyTable = document.getElementById('emailHistoryTable');
+                if (historyTable && typeof FirebaseService !== 'undefined' && FirebaseService.db) {
+                    console.log('🔥 showEmailManagement - Firebase에서 이메일 이력 조회');
+                    FirebaseService.db.collection('emailHistory')
+                        .orderBy('sentAt', 'desc')
+                        .limit(20)
+                        .get()
+                        .then(snapshot => {
+                            historyTable.innerHTML = '';
+                            
+                            snapshot.forEach(doc => {
+                                const emailData = doc.data();
+                                const row = document.createElement('tr');
+                                row.innerHTML = `
+                                    <td>${new Date(emailData.sentAt.toDate()).toLocaleString('ja-JP')}</td>
+                                    <td>${emailData.subject}</td>
+                                    <td>${emailData.type}</td>
+                                    <td>${emailData.recipientCount}</td>
+                                    <td><span class="badge bg-success">配信完了</span></td>
+                                `;
+                                historyTable.appendChild(row);
+                            });
+                            console.log('✅ showEmailManagement - 이메일 이력 로드 완료');
+                        })
+                        .catch(error => {
+                            console.error('❌ showEmailManagement - 이메일 이력 로드 오류:', error);
+                        });
                 }
-            };
-            
-            waitForCustomerList();
-            waitForEmailHistory();
+            }, 200);
         }
 
         async function sendEventEmail() {
