@@ -505,7 +505,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <!-- Firebase Config -->
-    <script src="assets/js/firebase-config.js"></script>
+    <script src="assets/js/firebase-config-new.js"></script>
     
     <script>
         // 전역 변수
@@ -660,35 +660,73 @@
         
         // 주문 관리 시스템 초기화
         function initializeOrderManagement() {
-            console.log('🔍 Firebase 초기화 이벤트 대기 중...');
+            console.log('🔍 주문 관리 시스템 초기화 시작');
             
-            // Firebase 초기화 이벤트 리스너 등록
-            window.addEventListener('firebaseInitialized', function(event) {
-                console.log('🎉 Firebase 초기화 이벤트 수신:', event.detail);
+            // Firebase 초기화 상태 확인 함수
+            function checkFirebaseAndLoad() {
+                console.log('🔍 Firebase 초기화 상태 확인 중...');
                 
-                // FirebaseService 인스턴스 생성
-                if (window.FirebaseService && !window.FirebaseService.db) {
-                    const firebaseService = new window.FirebaseService();
-                    window.FirebaseService.db = firebaseService.db;
-                    console.log('✅ FirebaseService 인스턴스 생성 완료');
-                }
+                // 여러 방법으로 Firebase 상태 확인
+                let isFirebaseReady = false;
                 
-                // 주문 데이터 로드 시작
-                setTimeout(() => {
-                    console.log('📊 주문 데이터 로드 시작');
-                    loadOrders();
-                }, 500);
-            });
-            
-            // 백업: FirebaseService 직접 확인 (이벤트가 발생하지 않은 경우)
-            setTimeout(() => {
+                // 방법 1: window.FirebaseService 확인
                 if (window.FirebaseService && window.FirebaseService.db) {
-                    console.log('✅ FirebaseService 직접 확인 성공, 주문 데이터 로드 시작');
-                    loadOrders();
-                } else {
-                    console.log('⚠️ Firebase 초기화 이벤트를 기다리는 중...');
+                    console.log('✅ FirebaseService.db 사용 가능');
+                    isFirebaseReady = true;
                 }
-            }, 2000);
+                // 방법 2: window.db 확인
+                else if (window.db) {
+                    console.log('✅ window.db 사용 가능');
+                    isFirebaseReady = true;
+                }
+                // 방법 3: firebase.apps 확인
+                else if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0) {
+                    console.log('✅ firebase.apps 사용 가능');
+                    // FirebaseService 인스턴스 생성
+                    if (window.FirebaseService) {
+                        const firebaseService = new window.FirebaseService();
+                        window.FirebaseService.db = firebaseService.db;
+                        console.log('✅ FirebaseService 인스턴스 생성 완료');
+                        isFirebaseReady = true;
+                    }
+                }
+                
+                if (isFirebaseReady) {
+                    console.log('🎉 Firebase 준비 완료, 주문 데이터 로드 시작');
+                    setTimeout(() => {
+                        loadOrders();
+                    }, 300);
+                } else {
+                    console.log('⏳ Firebase 초기화 대기 중...');
+                }
+                
+                return isFirebaseReady;
+            }
+            
+            // 즉시 확인 시도
+            if (!checkFirebaseAndLoad()) {
+                // Firebase 초기화 이벤트 리스너 등록
+                window.addEventListener('firebaseInitialized', function(event) {
+                    console.log('🎉 Firebase 초기화 이벤트 수신:', event.detail);
+                    checkFirebaseAndLoad();
+                });
+                
+                // 백업: 주기적 확인 (최대 10초)
+                let attempts = 0;
+                const maxAttempts = 20; // 10초 (500ms * 20)
+                
+                const checkInterval = setInterval(() => {
+                    attempts++;
+                    console.log(`🔄 Firebase 상태 확인 시도 ${attempts}/${maxAttempts}`);
+                    
+                    if (checkFirebaseAndLoad() || attempts >= maxAttempts) {
+                        clearInterval(checkInterval);
+                        if (attempts >= maxAttempts) {
+                            console.error('❌ Firebase 초기화 시간 초과');
+                        }
+                    }
+                }, 500);
+            }
         }
         
         // 주문 데이터 로드
