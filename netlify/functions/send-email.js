@@ -338,10 +338,10 @@ const emailTemplates = {
                             </div>
                             
                             <!-- 환영 메시지 -->
-                            <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px; background-color: #ffffff; text-align: center;">
-                                <p style="text-align: center; margin: 10px 0;">Aetherにご登録いただき、ありがとうございます。</p>
-                                <p style="text-align: center; margin: 10px 0;">ご登録特典として<strong style="color: #333; background-color: #ffffff;">{{points}}ポイント</strong>をプレゼントいたします。</p>
-                                <p style="text-align: center; margin: 10px 0;">ぜひお買い物をお楽しみください！</p>
+                            <div style="font-size: 13.6px; line-height: 1.8; margin-bottom: 20px; background-color: #ffffff; text-align: center;">
+                                <p style="text-align: center; margin: 10px 0; font-size: 13.6px;">Aetherにご登録いただき、ありがとうございます。</p>
+                                <p style="text-align: center; margin: 10px 0; font-size: 13.6px;">ご登録特典として<strong style="color: #333; background-color: #ffffff;">{{points}}ポイント</strong>をプレゼントいたします。</p>
+                                <p style="text-align: center; margin: 10px 0; font-size: 13.6px;">ぜひお買い物をお楽しみください！</p>
                             </div>
                         </td>
                     </tr>
