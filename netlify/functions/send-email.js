@@ -332,11 +332,6 @@ const emailTemplates = {
                     <!-- 콘텐츠 -->
                     <tr>
                         <td style="background-color: #ffffff; padding: 30px; mso-padding-alt: 30px; text-align: center;">
-                            <!-- 인사 -->
-                            <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px auto; text-align: center; max-width: 400px;">
-                                <p style="margin: 0; background-color: #f0f0f0; text-align: center; font-size: 18px; font-weight: 600;">こんにちは、{{name}}様！</p>
-                            </div>
-                            
                             <!-- 환영 메시지 -->
                             <div style="font-size: 13.6px; line-height: 1.8; margin-bottom: 20px; background-color: #ffffff; text-align: center !important;">
                                 <p style="text-align: center !important; margin: 10px auto !important; font-size: 13.6px !important; max-width: 400px !important;">Aetherにご登録いただき、ありがとうございます。</p>
