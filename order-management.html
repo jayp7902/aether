@@ -657,9 +657,12 @@
             // 날짜 네비게이션 표시
             document.querySelector('.date-navigation').style.display = 'block';
             
-            // 날짜 표시 업데이트 및 필터링
+            // 날짜 표시 업데이트
             updateDateDisplay();
-            filterOrders();
+            
+            // 주문 데이터 다시 로드 (새로운 날짜 필터 적용)
+            console.log('🔄 날짜 필터 변경으로 인한 주문 재로드:', dateFilter);
+            loadOrders();
         }
         
         // 주문 관리 시스템 초기화
@@ -783,7 +786,52 @@
             const ordersRef = db.collection('orders');
             console.log('📋 orders 컬렉션 참조 생성 완료');
             
-            ordersRef.orderBy('orderDate', 'desc').get()
+            // 날짜 필터에 따른 쿼리 생성
+            let query = ordersRef;
+            
+            // 현재 날짜 필터 값 가져오기
+            const dateFilter = document.getElementById('date-filter')?.value || 'today';
+            const now = new Date();
+            
+            switch(dateFilter) {
+                case 'today':
+                    // 오늘
+                    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+                    query = ordersRef.where('orderDate', '>=', startOfDay)
+                                   .where('orderDate', '<', endOfDay);
+                    console.log('📅 오늘 날짜 필터 적용:', {
+                        startOfDay: startOfDay.toISOString(),
+                        endOfDay: endOfDay.toISOString()
+                    });
+                    break;
+                    
+                case 'month':
+                    // 이번 달
+                    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+                    query = ordersRef.where('orderDate', '>=', startOfMonth)
+                                   .where('orderDate', '<', endOfMonth);
+                    console.log('📅 이번 달 필터 적용');
+                    break;
+                    
+                case 'year':
+                    // 올해
+                    const startOfYear = new Date(now.getFullYear(), 0, 1);
+                    const endOfYear = new Date(now.getFullYear() + 1, 0, 1);
+                    query = ordersRef.where('orderDate', '>=', startOfYear)
+                                   .where('orderDate', '<', endOfYear);
+                    console.log('📅 올해 필터 적용');
+                    break;
+                    
+                case 'all':
+                default:
+                    // 전체 기간 (필터 없음)
+                    console.log('📅 전체 기간 필터 적용');
+                    break;
+            }
+            
+            query.orderBy('orderDate', 'desc').get()
                 .then((querySnapshot) => {
                     allOrders = [];
                     console.log('📋 Firestore 쿼리 결과:', querySnapshot.size, '개 문서');
@@ -1470,10 +1518,9 @@
         // 필터링 함수들
         function filterOrders() {
             const statusFilter = document.getElementById('status-filter').value;
-            const dateFilter = document.getElementById('date-filter').value;
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
             
-            console.log('🔍 필터링 시작:', { statusFilter, dateFilter, searchTerm });
+            console.log('🔍 필터링 시작 (상태 및 검색어만):', { statusFilter, searchTerm });
             console.log('📊 전체 주문 수:', allOrders.length);
             
             filteredOrders = allOrders.filter(order => {
@@ -1486,37 +1533,6 @@
                         }
                     } else if (order.status !== statusFilter) {
                         return false;
-                    }
-                }
-                
-                // 날짜 필터
-                if (dateFilter !== 'all') {
-                    // 날짜 처리 - 여러 필드에서 날짜 찾기
-                    let orderDate = null;
-                    if (order.orderDate) {
-                        orderDate = new Date(order.orderDate.seconds ? order.orderDate.seconds * 1000 : order.orderDate);
-                    } else if (order.createdAt) {
-                        orderDate = new Date(order.createdAt.seconds ? order.createdAt.seconds * 1000 : order.createdAt);
-                    }
-                    
-                    if (!orderDate || isNaN(orderDate.getTime())) return false;
-                    
-                    const now = new Date();
-                    
-                    switch(dateFilter) {
-                        case 'today':
-                            // 선택된 날짜와 비교
-                            if (orderDate.toDateString() !== currentDate.toDateString()) return false;
-                            break;
-                        case 'month':
-                            // 선택된 월과 비교
-                            if (orderDate.getFullYear() !== currentDate.getFullYear() || 
-                                orderDate.getMonth() !== currentDate.getMonth()) return false;
-                            break;
-                        case 'year':
-                            // 선택된 년과 비교
-                            if (orderDate.getFullYear() !== currentDate.getFullYear()) return false;
-                            break;
                     }
                 }
                 
@@ -1561,7 +1577,9 @@
             
             updateDateDisplay();
             
-            filterOrders();
+            // 주문 데이터 다시 로드 (오늘 날짜 필터 적용)
+            console.log('🔄 리셋으로 인한 주문 재로드 (오늘 날짜)');
+            loadOrders();
         }
         
         function refreshOrders() {
