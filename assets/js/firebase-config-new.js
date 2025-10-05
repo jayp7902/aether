@@ -3086,6 +3086,18 @@ function setGlobalFirebaseObjects(auth, db, storage) {
         console.log('✅ FirebaseService.db 설정 완료');
     }
     
+    // Firebase 초기화 완료 이벤트 발생
+    const firebaseInitializedEvent = new CustomEvent('firebaseInitialized', {
+        detail: {
+            auth: !!auth,
+            db: !!db,
+            storage: !!storage,
+            timestamp: new Date().toISOString()
+        }
+    });
+    window.dispatchEvent(firebaseInitializedEvent);
+    console.log('🎉 Firebase 초기화 완료 이벤트 발생');
+    
     console.log('🔧 전역 Firebase 객체 설정 완료');
 }
 
