@@ -329,10 +329,10 @@ const emailTemplates = {
                         <td style="background-color: #ffffff; padding: 30px; mso-padding-alt: 30px; text-align: center;">
                             <!-- 환영 메시지 -->
                             <div style="font-size: 13.6px; line-height: 1.8; margin-bottom: 20px; background-color: #ffffff; text-align: center !important;">
-                                <p style="text-align: center !important; margin: 10px auto !important; font-size: 16px !important; max-width: 400px !important; font-weight: bold !important;"><strong style="color: #333 !important; background-color: #ffffff !important;">こんにちは、{{name}}様！</strong></p>
-                                <p style="text-align: center !important; margin: 10px auto !important; font-size: 13.6px !important; max-width: 400px !important;">Aetherにご登録いただき、ありがとうございます。</p>
-                                <p style="text-align: center !important; margin: 10px auto !important; font-size: 13.6px !important; max-width: 400px !important;">ご登録特典として<strong style="color: #333 !important; background-color: #ffffff !important;">{{points}}ポイント</strong>をプレゼントいたします。</p>
-                                <p style="text-align: center !important; margin: 10px auto !important; font-size: 13.6px !important; max-width: 400px !important;">ぜひお買い物をお楽しみください！</p>
+                                <p style="text-align: center !important; margin: 10px auto !important; font-size: 16px !important; max-width: 400px !important; font-weight: bold !important; color: #333 !important; background-color: #ffffff !important;">こんにちは、<span style="color: #333 !important; text-decoration: none !important; background-color: #ffffff !important;">{{name}}</span>様！</p>
+                                <p style="text-align: center !important; margin: 10px auto !important; font-size: 13.6px !important; max-width: 400px !important; color: #333 !important; background-color: #ffffff !important;">Aetherにご登録いただき、ありがとうございます。</p>
+                                <p style="text-align: center !important; margin: 10px auto !important; font-size: 13.6px !important; max-width: 400px !important; color: #333 !important; background-color: #ffffff !important;">ご登録特典として<strong style="color: #333 !important; background-color: #ffffff !important;">{{points}}ポイント</strong>をプレゼントいたします。</p>
+                                <p style="text-align: center !important; margin: 10px auto !important; font-size: 13.6px !important; max-width: 400px !important; color: #333 !important; background-color: #ffffff !important;">ぜひお買い物をお楽しみください！</p>
                             </div>
                         </td>
                     </tr>
@@ -340,8 +340,8 @@ const emailTemplates = {
                     <!-- 푸터 -->
                     <tr>
                         <td style="background-color: #ffffff; text-align: center; border-top: 1px solid #ddd; padding: 20px 30px 30px 30px; font-size: 14px; color: #666; mso-padding-alt: 20px 30px 30px 30px;">
-                            <p style="margin: 0 0 10px 0; background-color: #ffffff;">このメールは自動送信されています。</p>
-                            <p style="margin: 0; background-color: #ffffff;">お問い合わせ: info@aether-store.jp</p>
+                            <p style="margin: 0 0 10px 0; background-color: #ffffff; color: #666 !important;">このメールは自動送信されています。</p>
+                            <p style="margin: 0; background-color: #ffffff; color: #666 !important;">お問い合わせ: <a href="mailto:info@aether-store.jp" style="color: #666 !important; text-decoration: underline; background-color: #ffffff !important;">info@aether-store.jp</a></p>
                         </td>
                     </tr>
                 </table>
