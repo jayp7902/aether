@@ -170,11 +170,6 @@ const emailTemplates = {
                             <!-- 이벤트 제목 -->
                             <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 15px; text-align: center; background-color: #ffffff;">{{title}}</div>
                             
-                            <!-- 인사 -->
-                            <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px auto; text-align: center; max-width: 400px;">
-                                <p style="margin: 0; background-color: #f0f0f0; text-align: center;">こんにちは、{{name}}様！</p>
-                            </div>
-                            
                             <!-- 이미지 -->
                             <div style="text-align: center; margin: 20px 0; background-color: #ffffff;">
                                 <img src="{{image}}" alt="{{title}}" style="max-width: 100%; height: auto; display: block; border: 0; margin: 0 auto;">
