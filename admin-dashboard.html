@@ -1784,6 +1784,9 @@
                         <button type="button" class="btn btn-outline-info me-2" onclick="debugCustomerData()">
                             <i class="fas fa-bug me-2"></i>디버깅
                         </button>
+                        <button type="button" class="btn btn-outline-warning me-2" onclick="sendTestEventEmail()">
+                            <i class="fas fa-flask me-2"></i>테스트 발송
+                        </button>
                         <button type="button" class="btn btn-dark" onclick="sendEventEmail()" id="sendEventButton">
                             <i class="fas fa-paper-plane me-2"></i>イベントメール配信
                         </button>
@@ -5170,6 +5173,11 @@
                 ? '<i class="fas fa-clock fa-spin me-2"></i>予約設定中...'
                 : '<i class="fas fa-spinner fa-spin me-2"></i>配信中...';
 
+          // 고객 데이터 디버깅
+          const customerData = getSelectedCustomerData();
+          console.log('📧 발송 전 고객 데이터 확인:', customerData);
+          console.log('📧 수신자 목록:', eventData.recipients);
+
           // Netlify Function 호출
           fetch('/.netlify/functions/send-email', {
               method: 'POST',
@@ -5184,7 +5192,7 @@
                       title: eventData.title,
                       content: eventData.content,
                       image: eventData.image,
-                      customerData: getSelectedCustomerData() // 고객별 데이터
+                      customerData: customerData // 고객별 데이터
                   }
               })
           })
@@ -5671,6 +5679,12 @@
                         snapshot.forEach(doc => {
                             const data = doc.data();
                             console.log(`🐛 사용자 [${doc.id}]:`, data);
+                            console.log(`🐛 사용자 이름 필드:`, {
+                                name: data.name,
+                                displayName: data.displayName,
+                                fullName: data.fullName,
+                                username: data.username
+                            });
                         });
                     })
                     .catch(error => {
@@ -5679,6 +5693,79 @@
             } else {
                 console.log('🐛 Firebase 연결되지 않음');
             }
+            
+            // 4. 테스트용 고객 데이터 생성
+            console.log('🐛 테스트용 고객 데이터 생성');
+            const testCustomerData = {};
+            checkboxes.forEach(checkbox => {
+                const email = checkbox.value;
+                const row = checkbox.closest('tr');
+                const nameElement = row ? row.querySelector('strong') : null;
+                let name = nameElement ? nameElement.textContent.trim() : email.split('@')[0];
+                
+                // 이름이 비어있거나 "名前なし"인 경우 이메일에서 추출
+                if (!name || name === '名前なし') {
+                    name = email.split('@')[0];
+                }
+                
+                testCustomerData[email] = name;
+            });
+            console.log('🐛 테스트용 최종 데이터:', testCustomerData);
+        }
+
+        // 테스트 이벤트 메일 발송 (첫 번째 선택된 고객에게만)
+        function sendTestEventEmail() {
+            const checkboxes = document.querySelectorAll('.customer-checkbox:checked');
+            if (checkboxes.length === 0) {
+                alert('테스트할 고객을 선택해주세요.');
+                return;
+            }
+            
+            const firstCustomer = checkboxes[0];
+            const email = firstCustomer.value;
+            const row = firstCustomer.closest('tr');
+            const nameElement = row ? row.querySelector('strong') : null;
+            let name = nameElement ? nameElement.textContent.trim() : email.split('@')[0];
+            
+            if (!name || name === '名前なし') {
+                name = email.split('@')[0];
+            }
+            
+            console.log('🧪 테스트 발송:', { email, name });
+            
+            // 테스트 데이터
+            const testData = {
+                title: 'テストイベント',
+                content: 'これはテストメールです。',
+                image: '',
+                customerData: { [email]: name }
+            };
+            
+            // Netlify Function 호출
+            fetch('/.netlify/functions/send-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    type: 'event',
+                    to: email,
+                    subject: testData.title,
+                    data: testData
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`✅ 테스트 메일 발송 완료!\n수신자: ${email}\n이름: ${name}`);
+                } else {
+                    alert('❌ 테스트 메일 발송 실패: ' + data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ 테스트 메일 발송 에러');
+            });
         }
 
         // 이벤트 이미지 파일 처리
