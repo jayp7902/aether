@@ -763,8 +763,8 @@
         
         // 이전 showQRCode 함수는 제거됨 - 포인트 페이지와 동일한 방식만 사용
 
-        // 현재 사용자 정보 가져오기 (Firebase + localStorage 지원)
-        function getCurrentUser() {
+        // 현재 사용자 정보 가져오기 (무한 재귀 방지)
+        function getCurrentUserLocal() {
             // auth-utils.js의 getCurrentUser 함수가 있으면 사용
             if (typeof window.getCurrentUser === 'function') {
                 return window.getCurrentUser();
@@ -792,7 +792,7 @@
             
             try {
                 // 현재 로그인된 사용자 확인
-                const currentUser = getCurrentUser();
+                const currentUser = getCurrentUserLocal();
                 if (!currentUser) {
                     console.log('📝 로그인되지 않은 사용자 - 카트 수량 0');
                     updateCartCountDisplay(0);
@@ -1402,6 +1402,29 @@
         // 사용자 정보 관리 (포인트 페이지와 동일)
         let pointsPageUser = null;
 
+        // Bootstrap 드롭다운 초기화 함수
+        function initializeDropdowns() {
+            try {
+                // 모든 드롭다운 토글 요소 찾기
+                const dropdownToggles = document.querySelectorAll('[data-bs-toggle="dropdown"]');
+                console.log('🔧 Bootstrap 드롭다운 초기화 시작:', dropdownToggles.length, '개');
+                
+                dropdownToggles.forEach((toggle, index) => {
+                    // Bootstrap 드롭다운 인스턴스 생성
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Dropdown) {
+                        new bootstrap.Dropdown(toggle);
+                        console.log(`✅ 드롭다운 ${index + 1} 초기화 완료:`, toggle.id || 'unnamed');
+                    } else {
+                        console.warn('Bootstrap이 로드되지 않음');
+                    }
+                });
+                
+                console.log('✅ Bootstrap 드롭다운 초기화 완료');
+            } catch (error) {
+                console.error('❌ Bootstrap 드롭다운 초기화 실패:', error);
+            }
+        }
+
         // 사용자 정보 로드 (Firebase 전용)
         function loadUserInfo() {
             try {
@@ -1471,11 +1494,15 @@
                         if (result && typeof result.then === 'function') {
                             result.then(() => {
                                 console.log('✅ info.html 사용자 메뉴 업데이트 완료');
+                                // Bootstrap 드롭다운 초기화
+                                initializeDropdowns();
                             }).catch(error => {
                                 console.error('❌ info.html 사용자 메뉴 업데이트 실패:', error);
                             });
                         } else {
                             console.log('✅ info.html 사용자 메뉴 업데이트 완료 (동기)');
+                            // Bootstrap 드롭다운 초기화
+                            initializeDropdowns();
                         }
                     } catch (error) {
                         console.error('❌ info.html updateUserMenu 함수 실행 실패:', error);
