@@ -1944,6 +1944,11 @@
                                     <label for="testCustomData" class="form-label">カスタムデータ（JSON形式）</label>
                                     <textarea class="form-control" id="testCustomData" rows="4" placeholder='{"name": "テストユーザー", "points": 100, "orderId": "ORD-001"}'></textarea>
                                     <small class="form-text text-muted">テンプレート内のプレースホルダーを置き換えるデータをJSON形式で入力してください。</small>
+                                    <div class="mt-2">
+                                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="loadDefaultTestData()">
+                                            <i class="fas fa-magic me-1"></i>デフォルトデータをロード
+                                        </button>
+                                    </div>
                                 </div>
                                 
                                 <div class="text-center">
@@ -6171,26 +6176,91 @@
                 },
                 body: JSON.stringify({
                     type: 'test',
+                    to: emailAddress,
+                    subject: `テストメール - ${templateType}`,
                     templateType: templateType,
-                    email: emailAddress,
                     data: data
                 })
             })
             .then(response => response.json())
             .then(result => {
+                console.log('테스트 메일 발송 결과:', result);
                 if (result.success) {
-                    document.getElementById('testEmailResult').style.display = 'block';
+                    // 성공 메시지 표시
+                    const resultDiv = document.getElementById('testEmailResult');
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-success" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            テストメールが正常に送信されました！
+                        </div>
+                    `;
+                    resultDiv.style.display = 'block';
+                    
+                    // 5초 후 숨기기
                     setTimeout(() => {
-                        document.getElementById('testEmailResult').style.display = 'none';
+                        resultDiv.style.display = 'none';
                     }, 5000);
                 } else {
-                    alert('テストメール送信に失敗しました: ' + result.error);
+                    // 실패 메시지 표시
+                    const resultDiv = document.getElementById('testEmailResult');
+                    resultDiv.innerHTML = `
+                        <div class="alert alert-danger" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            テストメール送信に失敗しました: ${result.error || 'Unknown error'}
+                        </div>
+                    `;
+                    resultDiv.style.display = 'block';
+                    
+                    // 10초 후 숨기기
+                    setTimeout(() => {
+                        resultDiv.style.display = 'none';
+                    }, 10000);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
                 alert('テストメール送信エラーが発生しました。');
             });
+        }
+
+        function loadDefaultTestData() {
+            const templateType = document.getElementById('testTemplateSelect').value;
+            let defaultData = {};
+            
+            switch (templateType) {
+                case 'welcome':
+                    defaultData = {
+                        name: 'テストユーザー',
+                        points: 300
+                    };
+                    break;
+                case 'order-complete':
+                    defaultData = {
+                        orderId: 'TEST-001',
+                        items: ['テスト商品1', 'テスト商品2', 'テスト商品3']
+                    };
+                    break;
+                case 'points-earned':
+                    defaultData = {
+                        points: 100,
+                        reason: 'テストポイント獲得'
+                    };
+                    break;
+                case 'event':
+                    defaultData = {
+                        title: 'テストイベント',
+                        content: 'これはテストメールです。',
+                        name: 'テストユーザー'
+                    };
+                    break;
+                default:
+                    defaultData = {
+                        name: 'テストユーザー',
+                        points: 300
+                    };
+            }
+            
+            document.getElementById('testCustomData').value = JSON.stringify(defaultData, null, 2);
         }
 
         function previewTestEmail() {
