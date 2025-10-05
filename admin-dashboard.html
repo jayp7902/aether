@@ -1628,6 +1628,27 @@
                         <div class="card-body">
                             <h5 class="card-title">イベントメール配信</h5>
                             <form id="eventEmailForm">
+                                <!-- 템플릿 선택 섹션 (상단으로 이동) -->
+                                <div class="mb-4">
+                                    <label class="form-label">テンプレート選択</label>
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <select class="form-select" id="templateSelect" onchange="loadTemplate()">
+                                                <option value="">テンプレートを選択してください</option>
+                                                <option value="welcome">ウェルカムメール</option>
+                                                <option value="order-complete">注文完了メール</option>
+                                                <option value="points-earned">ポイント獲得メール</option>
+                                                <option value="event">イベントメール</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <button type="button" class="btn btn-outline-secondary" onclick="clearTemplate()">
+                                                <i class="fas fa-eraser me-2"></i>クリア
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="mb-3">
@@ -1675,26 +1696,6 @@
                                     </div>
                                 </div>
                                 
-                                <!-- 템플릿 선택 섹션 -->
-                                <div class="mb-4">
-                                    <label class="form-label">テンプレート選択</label>
-                                    <div class="row">
-                                        <div class="col-md-8">
-                                            <select class="form-select" id="templateSelect" onchange="loadTemplate()">
-                                                <option value="">テンプレートを選択してください</option>
-                                                <option value="welcome">ウェルカムメール</option>
-                                                <option value="order-complete">注文完了メール</option>
-                                                <option value="points-earned">ポイント獲得メール</option>
-                                                <option value="event">イベントメール</option>
-                                            </select>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <button type="button" class="btn btn-outline-secondary" onclick="clearTemplate()">
-                                                <i class="fas fa-eraser me-2"></i>クリア
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
                                 
                                 <!-- 발송 설정 섹션 -->
                                 <div class="mb-4">
@@ -1729,7 +1730,11 @@
                                 
                                 <!-- 가입자 선택 섹션 -->
                                 <div class="mb-4">
-                                    <label class="form-label">配信対象顧客選択</label>
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <label class="form-label mb-0">配信対象顧客選択</label>
+                                        <span class="badge bg-secondary" id="selectedCustomerCount">0名選択中</span>
+                                    </div>
+                                    
                                     <div class="form-check mb-3">
                                         <input class="form-check-input" type="checkbox" id="selectAllCustomers" onchange="toggleAllCustomers()">
                                         <label class="form-check-label fw-bold" for="selectAllCustomers">
@@ -1737,17 +1742,31 @@
                                         </label>
                                     </div>
                                     
-                                    <!-- 고객 목록 표시 영역 -->
-                                    <div class="border rounded p-3 bg-light">
-                                        <div class="d-flex justify-content-between align-items-center mb-2">
-                                            <h6 class="mb-0"><i class="fas fa-list me-2"></i>登録顧客一覧</h6>
-                                            <span class="badge bg-secondary" id="selectedCustomerCount">0名選択中</span>
-                                        </div>
-                                        <div id="customerList" style="max-height: 300px; overflow-y: auto;">
-                                            <div class="text-center text-muted py-4">
-                                                <i class="fas fa-spinner fa-spin me-2"></i>顧客データを読み込み中...
-                                            </div>
-                                        </div>
+                                    <!-- 고객 목록 테이블 -->
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover">
+                                            <thead class="table-dark">
+                                                <tr>
+                                                    <th width="50px">
+                                                        <input type="checkbox" id="selectAllCustomersHeader" onchange="toggleAllCustomers()">
+                                                    </th>
+                                                    <th>顧客情報</th>
+                                                    <th>顧客等級</th>
+                                                    <th>最終訪問日</th>
+                                                    <th>注文数</th>
+                                                    <th>総購入額</th>
+                                                    <th>ポイント</th>
+                                                    <th>ステータス</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="customerList">
+                                                <tr>
+                                                    <td colspan="8" class="text-center text-muted py-4">
+                                                        <i class="fas fa-spinner fa-spin me-2"></i>顧客データを読み込み中...
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                                 
@@ -5269,26 +5288,72 @@
                             const userData = doc.data();
                             console.log(`👤 고객 데이터 처리:`, userData.name || '이름없음', userData.email);
                             
-                            const customerItem = document.createElement('div');
-                            customerItem.className = 'form-check mb-2 p-2 border-bottom';
-                            customerItem.innerHTML = `
-                                <input class="form-check-input customer-checkbox" type="checkbox" value="${userData.email}" id="customer-${doc.id}" onchange="updateSelectedCount()">
-                                <label class="form-check-label w-100" for="customer-${doc.id}">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <strong>${userData.name || '名前なし'}</strong>
-                                            <br>
-                                            <small class="text-muted">${userData.email}</small>
-                                        </div>
-                                        <div class="text-end">
-                                            <small class="text-muted">
-                                                ${userData.createdAt ? new Date(userData.createdAt.toDate()).toLocaleDateString('ja-JP') : '登録日不明'}
-                                            </small>
-                                        </div>
+                            // 고객 등급 결정
+                            const totalSpent = userData.totalSpent || 0;
+                            let customerRank = '一般';
+                            let rankClass = 'btn-secondary';
+                            
+                            if (totalSpent >= 100000) {
+                                customerRank = 'VIP';
+                                rankClass = 'btn-warning';
+                            } else if (totalSpent >= 50000) {
+                                customerRank = 'プレミアム';
+                                rankClass = 'btn-info';
+                            } else if (totalSpent >= 20000) {
+                                customerRank = 'ゴールド';
+                                rankClass = 'btn-primary';
+                            }
+                            
+                            // 고객 상태 결정
+                            const lastVisit = userData.lastVisit ? userData.lastVisit.toDate() : null;
+                            const now = new Date();
+                            const daysSinceLastVisit = lastVisit ? Math.floor((now - lastVisit) / (1000 * 60 * 60 * 24)) : 999;
+                            
+                            let status = '非アクティブ';
+                            let statusClass = 'btn-secondary';
+                            
+                            if (daysSinceLastVisit <= 30) {
+                                status = 'アクティブ';
+                                statusClass = 'btn-success';
+                            } else if (daysSinceLastVisit <= 90) {
+                                status = '休眠';
+                                statusClass = 'btn-warning';
+                            }
+                            
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>
+                                    <input class="form-check-input customer-checkbox" type="checkbox" value="${userData.email}" id="customer-${doc.id}" onchange="updateSelectedCount()">
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong>${userData.name || '名前なし'}</strong>
+                                        <br>
+                                        <small class="text-muted">${userData.email}</small>
                                     </div>
-                                </label>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm ${rankClass}">
+                                        <i class="fas fa-user me-1"></i>${customerRank}
+                                    </button>
+                                </td>
+                                <td>
+                                    <small>${lastVisit ? lastVisit.toLocaleDateString('ja-JP') : '不明'}</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">${userData.orderCount || 0}</span>
+                                </td>
+                                <td>
+                                    <strong>¥${(userData.totalSpent || 0).toLocaleString()}</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">${userData.points || 0}pt</span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm ${statusClass}">${status}</button>
+                                </td>
                             `;
-                            customerList.appendChild(customerItem);
+                            customerList.appendChild(row);
                             customerCount++;
                         });
                         
@@ -5330,10 +5395,17 @@
 
         function toggleAllCustomers() {
             const selectAllCheckbox = document.getElementById('selectAllCustomers');
+            const selectAllHeaderCheckbox = document.getElementById('selectAllCustomersHeader');
             const customerCheckboxes = document.querySelectorAll('.customer-checkbox');
             
+            // 두 체크박스 동기화
+            const isChecked = selectAllCheckbox.checked;
+            if (selectAllHeaderCheckbox) {
+                selectAllHeaderCheckbox.checked = isChecked;
+            }
+            
             customerCheckboxes.forEach(checkbox => {
-                checkbox.checked = selectAllCheckbox.checked;
+                checkbox.checked = isChecked;
             });
             
             updateSelectedCount();
@@ -5352,6 +5424,7 @@
             
             // 전체 선택 체크박스 상태 업데이트
             const selectAllCheckbox = document.getElementById('selectAllCustomers');
+            const selectAllHeaderCheckbox = document.getElementById('selectAllCustomersHeader');
             const totalCustomers = document.querySelectorAll('.customer-checkbox').length;
             
             if (selectAllCheckbox) {
@@ -5365,6 +5438,13 @@
                     selectAllCheckbox.indeterminate = true;
                     selectAllCheckbox.checked = false;
                 }
+                
+                // 헤더 체크박스도 동기화
+                if (selectAllHeaderCheckbox) {
+                    selectAllHeaderCheckbox.checked = selectAllCheckbox.checked;
+                    selectAllHeaderCheckbox.indeterminate = selectAllCheckbox.indeterminate;
+                }
+                
                 console.log(`📊 전체 선택 체크박스 상태 업데이트: ${selectedCheckboxes.length}/${totalCustomers}`);
             } else {
                 console.warn('⚠️ selectAllCustomers 요소를 찾을 수 없습니다');
