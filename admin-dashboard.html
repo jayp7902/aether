@@ -4404,7 +4404,9 @@
                         // Firebase에서 고객 목록 로드
                         if (typeof FirebaseService !== 'undefined' && FirebaseService.db) {
                             console.log('🔥 Firebase에서 사용자 데이터 조회 시작...');
-                            FirebaseService.db.collection('users').get()
+                            FirebaseService.db.collection('users')
+                                .orderBy('createdAt', 'desc')
+                                .get()
                                 .then(snapshot => {
                                     console.log('📊 Firebase 응답:', snapshot.size, '명의 사용자');
                                     customerList.innerHTML = '';
@@ -4433,7 +4435,7 @@
                                         row.setAttribute('id', `customer-${userData.id}`);
                                         row.innerHTML = `
                                             <td>
-                                                <input class="form-check-input customer-checkbox" type="checkbox" value="${userData.email}" id="customer-${userData.id}" onchange="updateSelectedCount()">
+                                                <input class="form-check-input customer-checkbox" type="checkbox" value="${userData.email}" id="customer-${userData.id}">
                                             </td>
                                             <td>
                                                 <div>
@@ -4447,15 +4449,6 @@
                                                     <i class="fas fa-user me-1"></i>${customerRank}
                                                 </button>
                                             </td>
-                                            <td class="order-count">
-                                                <span class="badge bg-secondary">0</span>
-                                            </td>
-                                            <td class="total-spent">
-                                                <strong>¥0</strong>
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-dark">${userData.points || 0}ポイント</span>
-                                            </td>
                                             <td>
                                                 <small>${(() => {
                                                     try {
@@ -4466,6 +4459,15 @@
                                                     }
                                                 })()}</small>
                                             </td>
+                                            <td class="order-count">
+                                                <span class="badge bg-secondary">0</span>
+                                            </td>
+                                            <td class="total-spent">
+                                                <strong>¥0</strong>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-dark">${userData.points || 0}ポイント</span>
+                                            </td>
                                         `;
                                         customerList.appendChild(row);
                                     });
@@ -4475,6 +4477,9 @@
                                     if (selectAllCheckbox) {
                                         selectAllCheckbox.setAttribute('data-total-customers', customerCount);
                                     }
+                                    
+                                    // 체크박스 이벤트 리스너 추가
+                                    setupCustomerCheckboxListeners();
                                     
                                     // 선택된 고객 수 업데이트
                                     if (typeof updateSelectedCount === 'function') {
@@ -5701,7 +5706,9 @@
                 const customerList = document.getElementById('customerList');
                 if (customerList && typeof FirebaseService !== 'undefined' && FirebaseService.db) {
                     console.log('🔥 showEmailManagement - Firebase에서 고객 데이터 조회');
-                    FirebaseService.db.collection('users').get()
+                    FirebaseService.db.collection('users')
+                        .orderBy('createdAt', 'desc')
+                        .get()
                         .then(snapshot => {
                             console.log('📊 showEmailManagement - Firebase 응답:', snapshot.size, '명의 사용자');
                             customerList.innerHTML = '';
@@ -5730,7 +5737,7 @@
                                 row.setAttribute('id', `customer-${userData.id}`);
                                 row.innerHTML = `
                                     <td>
-                                        <input class="form-check-input customer-checkbox" type="checkbox" value="${userData.email}" id="customer-${userData.id}" onchange="updateSelectedCount()">
+                                        <input class="form-check-input customer-checkbox" type="checkbox" value="${userData.email}" id="customer-${userData.id}">
                                     </td>
                                     <td>
                                         <div>
@@ -5744,15 +5751,6 @@
                                             <i class="fas fa-user me-1"></i>${customerRank}
                                         </button>
                                     </td>
-                                    <td class="order-count">
-                                        <span class="badge bg-secondary">0</span>
-                                    </td>
-                                    <td class="total-spent">
-                                        <strong>¥0</strong>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-dark">${userData.points || 0}ポイント</span>
-                                    </td>
                                     <td>
                                         <small>${(() => {
                                             try {
@@ -5763,9 +5761,21 @@
                                             }
                                         })()}</small>
                                     </td>
+                                    <td class="order-count">
+                                        <span class="badge bg-secondary">0</span>
+                                    </td>
+                                    <td class="total-spent">
+                                        <strong>¥0</strong>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-dark">${userData.points || 0}ポイント</span>
+                                    </td>
                                 `;
                                 customerList.appendChild(row);
                             });
+                            
+                            // 체크박스 이벤트 리스너 추가
+                            setupCustomerCheckboxListeners();
                             
                             console.log(`✅ showEmailManagement - ${customerCount}名の顧客データを読み込み完了`);
                         })
@@ -6712,9 +6722,22 @@
         }
 
         function toggleAllCustomers() {
+            console.log('🔘 toggleAllCustomers 함수 호출');
+            
             const selectAllCheckbox = document.getElementById('selectAllCustomers');
             const selectAllHeaderCheckbox = document.getElementById('selectAllCustomersHeader');
             const customerCheckboxes = document.querySelectorAll('.customer-checkbox');
+            
+            console.log('🔍 체크박스 요소 확인:', {
+                selectAllCheckbox: !!selectAllCheckbox,
+                selectAllHeaderCheckbox: !!selectAllHeaderCheckbox,
+                customerCheckboxesCount: customerCheckboxes.length
+            });
+            
+            if (!selectAllCheckbox) {
+                console.error('❌ selectAllCheckbox 요소를 찾을 수 없습니다');
+                return;
+            }
             
             // 두 체크박스 동기화
             const isChecked = selectAllCheckbox.checked;
@@ -6722,13 +6745,38 @@
                 selectAllHeaderCheckbox.checked = isChecked;
             }
             
-            customerCheckboxes.forEach(checkbox => {
+            console.log(`🔘 전체 선택 상태: ${isChecked}, 개별 체크박스 ${customerCheckboxes.length}개 업데이트 중...`);
+            
+            customerCheckboxes.forEach((checkbox, index) => {
                 checkbox.checked = isChecked;
+                console.log(`  - 체크박스 ${index + 1}: ${checkbox.checked}`);
             });
             
             updateSelectedCount();
+            console.log('✅ toggleAllCustomers 완료');
         }
 
+        function setupCustomerCheckboxListeners() {
+            console.log('🔗 체크박스 이벤트 리스너 설정 시작');
+            
+            // 개별 체크박스들에 이벤트 리스너 추가
+            const customerCheckboxes = document.querySelectorAll('.customer-checkbox');
+            customerCheckboxes.forEach((checkbox, index) => {
+                // 기존 이벤트 리스너 제거 (중복 방지)
+                checkbox.removeEventListener('change', handleCustomerCheckboxChange);
+                // 새로운 이벤트 리스너 추가
+                checkbox.addEventListener('change', handleCustomerCheckboxChange);
+                console.log(`  - 체크박스 ${index + 1} 이벤트 리스너 추가`);
+            });
+            
+            console.log(`✅ ${customerCheckboxes.length}개 체크박스 이벤트 리스너 설정 완료`);
+        }
+        
+        function handleCustomerCheckboxChange(event) {
+            console.log('🔘 개별 체크박스 변경:', event.target.checked);
+            updateSelectedCount();
+        }
+        
         function updateSelectedCount() {
             const selectedCheckboxes = document.querySelectorAll('.customer-checkbox:checked');
             const countElement = document.getElementById('selectedCustomerCount');
