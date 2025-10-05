@@ -708,6 +708,7 @@ exports.handler = async (event, context) => {
                 break;
             case 'event':
                 // 이벤트 메일은 개별 고객별로 처리하므로 여기서는 기본 템플릿만 로드
+                console.log('📧 이벤트 메일 발송 - 받은 데이터:', JSON.stringify(data, null, 2));
                 html = loadEmailTemplate('event', {
                     title: data.title || 'イベントのお知らせ',
                     content: data.content || '',
