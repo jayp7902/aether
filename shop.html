@@ -849,8 +849,31 @@
         let filteredBrands = [];
         let pointsPageUser = null; // 포인트 페이지와 동일한 사용자 관리
 
-        // 현재 사용자 정보 가져오기 함수
-        function getCurrentUser() {
+        // Bootstrap 드롭다운 초기화 함수
+        function initializeDropdowns() {
+            try {
+                // 모든 드롭다운 토글 요소 찾기
+                const dropdownToggles = document.querySelectorAll('[data-bs-toggle="dropdown"]');
+                console.log('🔧 Bootstrap 드롭다운 초기화 시작:', dropdownToggles.length, '개');
+                
+                dropdownToggles.forEach((toggle, index) => {
+                    // Bootstrap 드롭다운 인스턴스 생성
+                    if (typeof bootstrap !== 'undefined' && bootstrap.Dropdown) {
+                        new bootstrap.Dropdown(toggle);
+                        console.log(`✅ 드롭다운 ${index + 1} 초기화 완료:`, toggle.id || 'unnamed');
+                    } else {
+                        console.warn('Bootstrap이 로드되지 않음');
+                    }
+                });
+                
+                console.log('✅ Bootstrap 드롭다운 초기화 완료');
+            } catch (error) {
+                console.error('❌ Bootstrap 드롭다운 초기화 실패:', error);
+            }
+        }
+
+        // 현재 사용자 정보 가져오기 함수 (무한 재귀 방지)
+        function getCurrentUserLocal() {
             // auth-utils.js의 getCurrentUser 함수가 있으면 사용
             if (typeof window.getCurrentUser === 'function') {
                 return window.getCurrentUser();
@@ -878,7 +901,7 @@
             
             try {
                 // 현재 로그인된 사용자 확인
-                const currentUser = getCurrentUser();
+                const currentUser = getCurrentUserLocal();
                 if (!currentUser) {
                     console.log('📝 로그인되지 않은 사용자 - 카트 수량 0');
                     updateCartCountDisplay(0);
@@ -1074,11 +1097,15 @@
                         if (result && typeof result.then === 'function') {
                             result.then(() => {
                                 console.log('✅ 사용자 메뉴 업데이트 완료');
+                                // Bootstrap 드롭다운 초기화
+                                initializeDropdowns();
                             }).catch(error => {
                                 console.error('❌ 사용자 메뉴 업데이트 실패:', error);
                             });
                         } else {
                             console.log('✅ 사용자 메뉴 업데이트 완료 (동기)');
+                            // Bootstrap 드롭다운 초기화
+                            initializeDropdowns();
                         }
                     } catch (error) {
                         console.error('❌ updateUserMenu 함수 실행 실패:', error);
