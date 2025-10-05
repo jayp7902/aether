@@ -33,10 +33,9 @@ const emailTemplates = {
             margin-bottom: 30px;
         }
         .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #333;
-            margin-bottom: 10px;
+            max-width: 150px;
+            height: auto;
+            margin-bottom: 20px;
         }
         .content {
             margin-bottom: 30px;
@@ -60,15 +59,6 @@ const emailTemplates = {
             font-size: 14px;
             color: #666;
         }
-        .button {
-            display: inline-block;
-            background-color: #333;
-            color: white;
-            padding: 12px 30px;
-            text-decoration: none;
-            border-radius: 5px;
-            margin: 20px 0;
-        }
         .highlight {
             background-color: #f0f0f0;
             padding: 15px;
@@ -80,29 +70,23 @@ const emailTemplates = {
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo">AETHER</div>
-            <p>韓国コスメブランド</p>
+            <img src="https://aether-store.jp/assets/img/logo.png" alt="AETHER" class="logo">
         </div>
         
         <div class="content">
             <div class="event-title">{{title}}</div>
             
             <div class="highlight">
-                <p>こんにちは、{{name}}さん！</p>
+                <p>こんにちは、{{name}}様！</p>
             </div>
             
             <div class="event-content">
                 {{content}}
             </div>
-            
-            <div style="text-align: center;">
-                <a href="https://aether-store.jp" class="button">AETHERへアクセス</a>
-            </div>
         </div>
         
         <div class="footer">
             <p>このメールは自動送信されています。</p>
-            <p>AETHER - 韓国コスメブランド</p>
             <p>お問い合わせ: info@aether-store.jp</p>
         </div>
     </div>
@@ -261,17 +245,27 @@ exports.handler = async (event, context) => {
         // 각 수신자에게 개별 메일 발송
         const results = [];
         for (const recipient of recipients) {
+            // 개별 수신자용 HTML 생성 (이름 개별화)
+            let personalizedHtml = html;
+            
+            // 고객별 실제 이름 사용
+            const customerName = data.customerData && data.customerData[recipient] 
+                ? data.customerData[recipient] 
+                : recipient.split('@')[0]; // 백업: 이메일에서 이름 추출
+            
+            personalizedHtml = personalizedHtml.replace(/{{name}}/g, customerName);
+            
             const mailOptions = {
                 from: 'info@aether-store.jp',
                 to: recipient,
                 subject: subject,
-                html: html
+                html: personalizedHtml
             };
 
             try {
                 const result = await transporter.sendMail(mailOptions);
                 results.push({ recipient, success: true, messageId: result.messageId });
-                console.log(`메일 발송 성공: ${recipient}`);
+                console.log(`메일 발송 성공: ${recipient} (${customerName})`);
             } catch (error) {
                 results.push({ recipient, success: false, error: error.message });
                 console.error(`메일 발송 실패: ${recipient}`, error);
