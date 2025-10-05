@@ -215,6 +215,8 @@ exports.handler = async (event, context) => {
         const { to, subject, type, data } = JSON.parse(event.body);
 
         console.log('메일 발송 요청:', { to, subject, type });
+        console.log('📧 받은 데이터:', data);
+        console.log('📧 고객 데이터:', data.customerData);
         
         // 환경 변수 확인
         console.log('환경 변수 확인:', {
@@ -258,10 +260,11 @@ exports.handler = async (event, context) => {
                 });
                 break;
             case 'event':
+                // 이벤트 메일은 개별 고객별로 처리하므로 여기서는 기본 템플릿만 로드
                 html = loadEmailTemplate('event', {
-                    name: data.name || 'お客様',
                     title: data.title || 'イベントのお知らせ',
-                    content: data.content || ''
+                    content: data.content || '',
+                    image: data.image || ''
                 });
                 break;
             case 'bulk':
