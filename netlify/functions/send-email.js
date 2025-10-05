@@ -18,13 +18,23 @@ const emailTemplates = {
             max-width: 600px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #ffffff;
+            background-color: #ffffff !important;
+            background: #ffffff !important;
+            -webkit-background-color: #ffffff !important;
         }
         .container {
-            background-color: #ffffff;
+            background-color: #ffffff !important;
+            background: #ffffff !important;
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        /* 모바일 호환성을 위한 추가 스타일 */
+        table {
+            background-color: #ffffff !important;
+        }
+        td {
+            background-color: #ffffff !important;
         }
         .header {
             text-align: center;
@@ -68,32 +78,50 @@ const emailTemplates = {
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <img src="https://aether-store.jp/assets/img/logo.png" alt="AETHER" class="logo">
-        </div>
-        
-            <div class="content">
-                <div class="event-title">{{title}}</div>
-                
-                <div class="highlight">
-                    <p>こんにちは、{{name}}様！</p>
-                </div>
-                
-                <div class="event-image" style="text-align: center; margin: 20px 0;">
-                    <img src="{{image}}" alt="{{title}}" style="max-width: 100%; height: auto;">
-                </div>
-                
-                <div class="event-content">
-                    {{content}}
-                </div>
-            </div>
-        
-        <div class="footer">
-            <p>このメールは自動送信されています。</p>
-            <p>お問い合わせ: info@aether-store.jp</p>
-        </div>
-    </div>
+    <!-- 모바일 호환성을 위한 테이블 기반 구조 -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; max-width: 600px; margin: 0 auto;">
+        <tr>
+            <td style="background-color: #ffffff; padding: 20px;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    <!-- 헤더 -->
+                    <tr>
+                        <td style="background-color: #ffffff; text-align: center; border-bottom: 2px solid #333; padding: 30px 30px 20px 30px;">
+                            <img src="https://aether-store.jp/assets/img/logo.png" alt="AETHER" style="max-width: 150px; height: auto;">
+                        </td>
+                    </tr>
+                    
+                    <!-- 콘텐츠 -->
+                    <tr>
+                        <td style="background-color: #ffffff; padding: 30px;">
+                            <!-- 이벤트 제목 -->
+                            <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 15px; text-align: center;">{{title}}</div>
+                            
+                            <!-- 인사 -->
+                            <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                                <p style="margin: 0;">こんにちは、{{name}}様！</p>
+                            </div>
+                            
+                            <!-- 이미지 -->
+                            <div style="text-align: center; margin: 20px 0;">
+                                <img src="{{image}}" alt="{{title}}" style="max-width: 100%; height: auto;">
+                            </div>
+                            
+                            <!-- 이벤트 내용 -->
+                            <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px;">{{content}}</div>
+                        </td>
+                    </tr>
+                    
+                    <!-- 푸터 -->
+                    <tr>
+                        <td style="background-color: #ffffff; text-align: center; border-top: 1px solid #ddd; padding: 20px 30px 30px 30px; font-size: 14px; color: #666;">
+                            <p style="margin: 0 0 10px 0;">このメールは自動送信されています。</p>
+                            <p style="margin: 0;">お問い合わせ: info@aether-store.jp</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
 </body>
 </html>`,
     
@@ -290,7 +318,7 @@ exports.handler = async (event, context) => {
                 }
             } else {
                 // 이미지가 없는 경우 이미지 섹션을 숨김
-                personalizedHtml = personalizedHtml.replace(/<div class="event-image"[\s\S]*?<\/div>/g, '');
+                personalizedHtml = personalizedHtml.replace(/<!-- 이미지 -->[\s\S]*?<\/div>/g, '');
             }
             
             const mailOptions = {
