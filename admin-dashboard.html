@@ -5591,7 +5591,13 @@
                 const row = checkbox.closest('tr');
                 if (row) {
                     const nameElement = row.querySelector('strong');
-                    const name = nameElement ? nameElement.textContent.trim() : email.split('@')[0];
+                    let name = nameElement ? nameElement.textContent.trim() : email.split('@')[0];
+                    
+                    // 이름이 비어있거나 "名前なし"인 경우 이메일에서 추출
+                    if (!name || name === '名前なし') {
+                        name = email.split('@')[0];
+                    }
+                    
                     customerData[email] = name;
                 }
             });
