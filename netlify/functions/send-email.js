@@ -360,6 +360,233 @@ const emailTemplates = {
     </table>
     <![endif]-->
 </body>
+</html>`,
+    
+    'order-complete': `<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>注文完了メール</title>
+    <style>
+        /* Reset styles for email clients */
+        body, table, td, p, a, li, blockquote {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        
+        /* Force white background */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff !important;
+            background: #ffffff !important;
+            -webkit-background-color: #ffffff !important;
+            mso-background-color: #ffffff !important;
+        }
+        
+        /* Force white background on all elements */
+        table, td, div, p {
+            background-color: #ffffff !important;
+            background: #ffffff !important;
+            mso-background-color: #ffffff !important;
+        }
+        
+        /* Mobile specific styles */
+        @media only screen and (max-width: 600px) {
+            body {
+                background-color: #ffffff !important;
+                background: #ffffff !important;
+                background-image: none !important;
+            }
+            table {
+                background-color: #ffffff !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            td {
+                background-color: #ffffff !important;
+                padding: 10px !important;
+                border: none !important;
+            }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #ffffff;">
+    <!--[if mso]>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #ffffff;">
+        <tr>
+            <td style="background-color: #ffffff; padding: 20px;">
+    <![endif]-->
+    
+    <!-- 모바일 호환성을 위한 테이블 기반 구조 -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; max-width: 600px; margin: 0 auto; mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
+        <tr>
+            <td style="background-color: #ffffff; padding: 20px; mso-padding-alt: 20px;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
+                    <!-- 헤더 -->
+                    <tr>
+                        <td style="background-color: #ffffff; text-align: center; border-bottom: 2px solid #333; padding: 30px 30px 20px 30px; mso-padding-alt: 30px 30px 20px 30px;">
+                            <img src="https://aether-store.jp/assets/img/logo.png" alt="AETHER" style="max-width: 150px; height: auto; display: block; border: 0;">
+                        </td>
+                    </tr>
+                    
+                    <!-- 콘텐츠 -->
+                    <tr>
+                        <td style="background-color: #ffffff; padding: 30px; mso-padding-alt: 30px;">
+                            <!-- 제목 -->
+                            <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 15px; text-align: center; background-color: #ffffff;">ご注文ありがとうございます！</div>
+                            
+                            <!-- 주문 번호 -->
+                            <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                                <p style="margin: 0; background-color: #f0f0f0;">注文番号: <strong>{{orderId}}</strong></p>
+                            </div>
+                            
+                            <!-- 주문 내용 -->
+                            <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px; background-color: #ffffff;">
+                                <p>ご注文いただき、誠にありがとうございます。</p>
+                                <p>以下の商品をお申し込みいただきました：</p>
+                                <p>{{items}}</p>
+                                <p>商品の準備ができ次第、配送いたします。</p>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <!-- 푸터 -->
+                    <tr>
+                        <td style="background-color: #ffffff; text-align: center; border-top: 1px solid #ddd; padding: 20px 30px 30px 30px; font-size: 14px; color: #666; mso-padding-alt: 20px 30px 30px 30px;">
+                            <p style="margin: 0 0 10px 0; background-color: #ffffff;">このメールは自動送信されています。</p>
+                            <p style="margin: 0; background-color: #ffffff;">お問い合わせ: info@aether-store.jp</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+    
+    <!--[if mso]>
+            </td>
+        </tr>
+    </table>
+    <![endif]-->
+</body>
+</html>`,
+    
+    'points-earned': `<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ポイント獲得メール</title>
+    <style>
+        /* Reset styles for email clients */
+        body, table, td, p, a, li, blockquote {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        
+        /* Force white background */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff !important;
+            background: #ffffff !important;
+            -webkit-background-color: #ffffff !important;
+            mso-background-color: #ffffff !important;
+        }
+        
+        /* Force white background on all elements */
+        table, td, div, p {
+            background-color: #ffffff !important;
+            background: #ffffff !important;
+            mso-background-color: #ffffff !important;
+        }
+        
+        /* Mobile specific styles */
+        @media only screen and (max-width: 600px) {
+            body {
+                background-color: #ffffff !important;
+                background: #ffffff !important;
+                background-image: none !important;
+            }
+            table {
+                background-color: #ffffff !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            td {
+                background-color: #ffffff !important;
+                padding: 10px !important;
+                border: none !important;
+            }
+        }
+    </style>
+</head>
+<body style="margin: 0; padding: 0; background-color: #ffffff;">
+    <!--[if mso]>
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #ffffff;">
+        <tr>
+            <td style="background-color: #ffffff; padding: 20px;">
+    <![endif]-->
+    
+    <!-- 모바일 호환성을 위한 테이블 기반 구조 -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; max-width: 600px; margin: 0 auto; mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
+        <tr>
+            <td style="background-color: #ffffff; padding: 20px; mso-padding-alt: 20px;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
+                    <!-- 헤더 -->
+                    <tr>
+                        <td style="background-color: #ffffff; text-align: center; border-bottom: 2px solid #333; padding: 30px 30px 20px 30px; mso-padding-alt: 30px 30px 20px 30px;">
+                            <img src="https://aether-store.jp/assets/img/logo.png" alt="AETHER" style="max-width: 150px; height: auto; display: block; border: 0;">
+                        </td>
+                    </tr>
+                    
+                    <!-- 콘텐츠 -->
+                    <tr>
+                        <td style="background-color: #ffffff; padding: 30px; mso-padding-alt: 30px;">
+                            <!-- 제목 -->
+                            <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 15px; text-align: center; background-color: #ffffff;">ポイントを獲得しました！</div>
+                            
+                            <!-- 포인트 정보 -->
+                            <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                                <p style="margin: 0; background-color: #f0f0f0;">獲得ポイント: <strong style="color: #333; background-color: #f0f0f0;">{{points}}ポイント</strong></p>
+                            </div>
+                            
+                            <!-- 포인트 내용 -->
+                            <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px; background-color: #ffffff;">
+                                <p>お買い物ありがとうございます！</p>
+                                <p>{{reason}}により、{{points}}ポイントを獲得いたしました。</p>
+                                <p>獲得したポイントは次回のお買い物でご利用いただけます。</p>
+                            </div>
+                        </td>
+                    </tr>
+                    
+                    <!-- 푸터 -->
+                    <tr>
+                        <td style="background-color: #ffffff; text-align: center; border-top: 1px solid #ddd; padding: 20px 30px 30px 30px; font-size: 14px; color: #666; mso-padding-alt: 20px 30px 30px 30px;">
+                            <p style="margin: 0 0 10px 0; background-color: #ffffff;">このメールは自動送信されています。</p>
+                            <p style="margin: 0; background-color: #ffffff;">お問い合わせ: info@aether-store.jp</p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+    
+    <!--[if mso]>
+            </td>
+        </tr>
+    </table>
+    <![endif]-->
+</body>
 </html>`
 };
 
@@ -469,6 +696,45 @@ exports.handler = async (event, context) => {
                     content: data.content || '',
                     image: data.image || ''
                 });
+                break;
+            case 'test':
+                // 테스트 메일 - 선택된 템플릿 타입에 따라 처리
+                const templateType = data.templateType || 'welcome';
+                console.log(`테스트 메일 템플릿 타입: ${templateType}`);
+                
+                switch (templateType) {
+                    case 'welcome':
+                        html = loadEmailTemplate('welcome', {
+                            name: data.name || 'テストユーザー',
+                            points: data.points || 300
+                        });
+                        break;
+                    case 'order-complete':
+                        html = loadEmailTemplate('order-complete', {
+                            orderId: data.orderId || 'TEST-001',
+                            items: Array.isArray(data.items) ? data.items.join(', ') : (data.items || 'テスト商品1, テスト商品2')
+                        });
+                        break;
+                    case 'points-earned':
+                        html = loadEmailTemplate('points-earned', {
+                            points: data.points || 100,
+                            reason: data.reason || 'テストポイント獲得'
+                        });
+                        break;
+                    case 'event':
+                        html = loadEmailTemplate('event', {
+                            title: data.title || 'テストイベント',
+                            content: data.content || 'これはテストメールです。',
+                            image: data.image || '',
+                            name: data.name || 'テストユーザー'
+                        });
+                        break;
+                    default:
+                        html = loadEmailTemplate('welcome', {
+                            name: data.name || 'テストユーザー',
+                            points: data.points || 300
+                        });
+                }
                 break;
             case 'bulk':
                 html = data.html || loadEmailTemplate('welcome', {
