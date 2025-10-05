@@ -73,17 +73,23 @@ const emailTemplates = {
             <img src="https://aether-store.jp/assets/img/logo.png" alt="AETHER" class="logo">
         </div>
         
-        <div class="content">
-            <div class="event-title">{{title}}</div>
-            
-            <div class="highlight">
-                <p>こんにちは、{{name}}様！</p>
+            <div class="content">
+                <div class="event-title">{{title}}</div>
+                
+                <div class="highlight">
+                    <p>こんにちは、{{name}}様！</p>
+                </div>
+                
+                {{#if image}}
+                <div class="event-image" style="text-align: center; margin: 20px 0;">
+                    <img src="{{image}}" alt="{{title}}" style="max-width: 100%; height: auto; border-radius: 8px;">
+                </div>
+                {{/if}}
+                
+                <div class="event-content">
+                    {{content}}
+                </div>
             </div>
-            
-            <div class="event-content">
-                {{content}}
-            </div>
-        </div>
         
         <div class="footer">
             <p>このメールは自動送信されています。</p>
@@ -254,6 +260,19 @@ exports.handler = async (event, context) => {
                 : recipient.split('@')[0]; // 백업: 이메일에서 이름 추출
             
             personalizedHtml = personalizedHtml.replace(/{{name}}/g, customerName);
+            
+            // 이미지 데이터 처리
+            if (data.image) {
+                let imageUrl = data.image;
+                // 상대 경로인 경우 절대 URL로 변환
+                if (!imageUrl.startsWith('http')) {
+                    imageUrl = `https://aether-store.jp/${imageUrl}`;
+                }
+                personalizedHtml = personalizedHtml.replace(/{{image}}/g, imageUrl);
+            } else {
+                // 이미지가 없는 경우 이미지 섹션 제거
+                personalizedHtml = personalizedHtml.replace(/{{#if image}}[\s\S]*?{{\/if}}/g, '');
+            }
             
             const mailOptions = {
                 from: 'info@aether-store.jp',
