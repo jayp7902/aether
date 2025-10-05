@@ -1672,8 +1672,31 @@
                                 
                                 <div class="mb-3">
                                     <label for="eventImage" class="form-label">イベント画像</label>
-                                    <input type="file" class="form-control" id="eventImage" accept="image/*">
+                                    <select class="form-select" id="eventImage" onchange="handleEventImageChange()">
+                                        <option value="">画像を選択してください</option>
+                                        <option value="assets/img/MAIN BANNER/COSCELL_MAIN Banner.jpg">COSCELL メインバナー</option>
+                                        <option value="assets/img/MAIN BANNER/LALARECIPE_MAIN Banner.jpg">LALARECIPE メインバナー</option>
+                                        <option value="assets/img/MAIN BANNER/LUCINDE_MAIN Banner.jpg">LUCINDE メインバナー</option>
+                                        <option value="assets/img/MAIN BANNER/MAKEHEAL BANNER.jpg">Make Heal バナー</option>
+                                        <option value="assets/img/MAIN BANNER/Monday Museum_MAIN Banner.jpg">Monday Museum メインバナー</option>
+                                        <option value="assets/img/brand_01.png">ブランド画像 1</option>
+                                        <option value="assets/img/brand_02.png">ブランド画像 2</option>
+                                        <option value="assets/img/brand_03.png">ブランド画像 3</option>
+                                        <option value="assets/img/brand_04.png">ブランド画像 4</option>
+                                        <option value="assets/img/brand_05.png">ブランド画像 5</option>
+                                        <option value="assets/img/brand_06.png">ブランド画像 6</option>
+                                        <option value="assets/img/brand_07.png">ブランド画像 7</option>
+                                        <option value="assets/img/brand_08.png">ブランド画像 8</option>
+                                        <option value="assets/img/category_img_01.jpg">カテゴリ画像 1</option>
+                                        <option value="assets/img/category_img_02.jpg">カテゴリ画像 2</option>
+                                        <option value="assets/img/category_img_03.jpg">カテゴリ画像 3</option>
+                                        <option value="custom">カスタム画像 (URL入力)</option>
+                                    </select>
                                     <small class="form-text text-muted">推奨サイズ: 600x400px</small>
+                                    <div id="customImageInput" style="display: none; margin-top: 10px;">
+                                        <label for="customImageUrl" class="form-label">カスタム画像URL</label>
+                                        <input type="url" class="form-control" id="customImageUrl" placeholder="https://example.com/image.jpg">
+                                    </div>
                                 </div>
                                 
                                 <div class="mb-3">
@@ -5086,6 +5109,7 @@
                 content: document.getElementById('eventContent').value,
                 startDate: document.getElementById('eventStartDate').value,
                 endDate: document.getElementById('eventEndDate').value,
+                image: getSelectedEventImage(),
                 recipients: getSelectedCustomers()
             };
 
@@ -5160,6 +5184,7 @@
                   data: {
                       title: eventData.title,
                       content: eventData.content,
+                      image: eventData.image,
                       customerData: getSelectedCustomerData() // 고객별 데이터
                   }
               })
@@ -5201,6 +5226,11 @@
             document.getElementById('eventStartDate').value = '';
             document.getElementById('eventEndDate').value = '';
             document.getElementById('eventType').value = 'sale';
+            
+            // 이벤트 이미지 초기화
+            document.getElementById('eventImage').value = '';
+            document.getElementById('customImageUrl').value = '';
+            document.getElementById('customImageInput').style.display = 'none';
             
             // 발송 설정 초기화 (드롭다운 방식)
             document.getElementById('sendTypeSelect').value = 'now';
@@ -5572,6 +5602,34 @@
                 }
             });
             return customerData;
+        }
+
+        // 이벤트 이미지 선택 처리 함수
+        function handleEventImageChange() {
+            const eventImageSelect = document.getElementById('eventImage');
+            const customImageInput = document.getElementById('customImageInput');
+            
+            if (eventImageSelect.value === 'custom') {
+                customImageInput.style.display = 'block';
+            } else {
+                customImageInput.style.display = 'none';
+                document.getElementById('customImageUrl').value = '';
+            }
+        }
+
+        // 선택된 이벤트 이미지 정보 가져오기
+        function getSelectedEventImage() {
+            const eventImageSelect = document.getElementById('eventImage');
+            const selectedValue = eventImageSelect.value;
+            
+            if (selectedValue === 'custom') {
+                const customUrl = document.getElementById('customImageUrl').value;
+                return customUrl || '';
+            } else if (selectedValue) {
+                return selectedValue;
+            }
+            
+            return '';
         }
 
         function toggleAllCustomers() {
