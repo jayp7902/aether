@@ -5518,6 +5518,30 @@
             loadCustomerPointHistory();
         }
 
+        // 고객 데이터 가져오기 함수
+        async function getCustomerDataForEmail() {
+            try {
+                const selectedCustomers = getSelectedCustomers();
+                const customerData = {};
+                
+                for (const email of selectedCustomers) {
+                    // Firebase에서 고객 정보 조회
+                    const userDoc = await firebase.firestore().collection('users').doc(email).get();
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        customerData[email] = userData.name || userData.displayName || email.split('@')[0];
+                    } else {
+                        customerData[email] = email.split('@')[0]; // 이메일에서 이름 추출
+                    }
+                }
+                
+                return customerData;
+            } catch (error) {
+                console.error('고객 데이터 가져오기 실패:', error);
+                return {};
+            }
+        }
+
         // 메일 발송 관련 함수들
         function showEmailManagement() {
             hideAllTabs();
@@ -5535,7 +5559,8 @@
                 endDate: document.getElementById('eventEndDate').value,
                 image: await getSelectedEventImage(),
                 recipients: getSelectedCustomers(),
-                points: '300' // 기본 웰컴 포인트
+                points: '300', // 기본 웰컴 포인트
+                customerData: await getCustomerDataForEmail() // 고객 이름 정보 포함
             };
 
             if (!eventData.title || !eventData.content) {
