@@ -2655,15 +2655,57 @@
                     console.warn('주문 완료 방문 기록 저장 실패:', error);
                 }
                 
+                // 주문 완료 메일 발송
+                try {
+                    await sendOrderCompleteEmail({
+                        id: orderId,
+                        customerEmail: user.email,
+                        customerName: user.displayName || user.email,
+                        items: orderData.items,
+                        totalAmount: finalTotal,
+                        originalAmount: totalAmount,
+                        usedPoints: usedPoints,
+                        earnedPoints: earnedPoints,
+                        shipping: orderData.shipping,
+                        payment: {
+                            method: selectedMethod === 'bank-transfer' ? '銀行振込' : 'クレジットカード',
+                            total: finalTotal
+                        }
+                    });
+                    console.log('✅ 주문 완료 메일 발송 완료');
+                } catch (emailError) {
+                    console.error('❌ 주문 완료 메일 발송 실패:', emailError);
+                    // 메일 발송 실패해도 주문 처리는 계속 진행
+                }
+                
+                // 주문 데이터를 sessionStorage에 저장 (order-complete.html에서 사용)
+                sessionStorage.setItem('lastOrder', JSON.stringify({
+                    id: orderId,
+                    customerEmail: user.email,
+                    customerName: user.displayName || user.email,
+                    items: orderData.items,
+                    totalAmount: finalTotal,
+                    originalAmount: totalAmount,
+                    usedPoints: usedPoints,
+                    earnedPoints: earnedPoints,
+                    shipping: orderData.shipping,
+                    payment: {
+                        method: selectedMethod === 'bank-transfer' ? '銀行振込' : 'クレジットカード',
+                        total: finalTotal
+                    },
+                    orderDate: new Date().toISOString(),
+                    status: 'processing'
+                }));
+                
                 // 결제 방법에 따라 다른 처리
                 if (selectedMethod === 'bank-transfer') {
                     // 계좌이체: 입금 안내 모달 표시 (카트는 모달에서 처리)
                     showBankTransferCompleteModal(orderId, finalTotal);
                 } else {
-                    // 카드 결제: 카트 비우고 홈페이지로 이동
+                    // 카드 결제: 카트 비우고 주문 완료 페이지로 이동
                     await clearCart();
                     setTimeout(() => {
-                        window.location.href = `index.html?newOrder=${orderId}&earnedPoints=${earnedPoints}`;
+                        window.location.href = `order-complete.html`;
                     }, 1000);
                 }
                 
@@ -2757,6 +2799,50 @@
         }
 
         // 이 함수는 메인 DOMContentLoaded 내부로 통합됨
+
+        // 주문 완료 메일 발송 함수
+        async function sendOrderCompleteEmail(orderData) {
+            try {
+                console.log('📧 주문 완료 메일 발송 시작:', orderData);
+                
+                // 상품 목록을 문자열로 변환
+                const itemsList = orderData.items.map(item => 
+                    `${item.brand} ${item.name} (${item.quantity}개)`
+                ).join(', ');
+                
+                const response = await fetch('/.netlify/functions/send-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        to: orderData.customerEmail,
+                        subject: 'ご注文完了のお知らせ - Aether Store',
+                        type: 'order-complete',
+                        data: {
+                            orderId: orderData.id,
+                            items: itemsList,
+                            paymentMethod: orderData.payment.method,
+                            subtotal: `¥${(orderData.originalAmount - (orderData.usedPoints || 0)).toLocaleString()}`,
+                            shipping: orderData.originalAmount >= 3000 ? '¥0' : '¥500',
+                            pointsUsed: orderData.usedPoints ? `${orderData.usedPoints}ポイント` : '0ポイント',
+                            totalAmount: `¥${orderData.totalAmount.toLocaleString()}`,
+                            shippingAddress: `${orderData.shipping.prefecture} ${orderData.shipping.city} ${orderData.shipping.address1} ${orderData.shipping.address2 || ''}`.trim()
+                        }
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    console.log('✅ 주문 완료 메일 발송 완료');
+                } else {
+                    console.error('❌ 주문 완료 메일 발송 실패:', result.error);
+                }
+                
+            } catch (error) {
+                console.error('❌ 주문 완료 메일 발송 오류:', error);
+            }
+        }
 
         // 배송 정보 유효성 검사
         function validateShippingInfo(info) {
@@ -3665,9 +3751,9 @@
             }
         }
         
-        // 계좌이체 완료 모달 닫기 및 메인 페이지로 이동
+        // 계좌이체 완료 모달 닫기 및 주문 완료 페이지로 이동
         async function closeBankTransferModal() {
-            console.log('🗑️ 모달 닫기 및 메인 페이지로 이동');
+            console.log('🗑️ 모달 닫기 및 주문 완료 페이지로 이동');
             
             try {
                 // 모달 먼저 닫기
@@ -3677,9 +3763,12 @@
                     console.log('✅ 모달 닫기 완료');
                 }
                 
-                // 즉시 홈페이지로 이동 (카트 비우기는 백그라운드에서 처리)
-                console.log('🏠 메인 페이지로 이동');
-                window.location.href = 'index.html';
+                // 카트 비우기
+                await clearCart();
+                
+                // 주문 완료 페이지로 이동
+                console.log('📄 주문 완료 페이지로 이동');
+                window.location.href = 'order-complete.html';
                 
                 // 백그라운드에서 카트 비우기
                 setTimeout(async () => {
