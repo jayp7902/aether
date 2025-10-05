@@ -181,7 +181,9 @@ const emailTemplates = {
                             </div>
                             
                             <!-- 이벤트 내용 -->
-                            <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px; background-color: #ffffff; text-align: center;">{{content}}</div>
+                            <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px; background-color: #ffffff; text-align: center !important;">
+                                <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">{{content}}</p>
+                            </div>
                         </td>
                     </tr>
                     
@@ -338,10 +340,10 @@ const emailTemplates = {
                             </div>
                             
                             <!-- 환영 메시지 -->
-                            <div style="font-size: 13.6px; line-height: 1.8; margin-bottom: 20px; background-color: #ffffff; text-align: center;">
-                                <p style="text-align: center; margin: 10px 0; font-size: 13.6px;">Aetherにご登録いただき、ありがとうございます。</p>
-                                <p style="text-align: center; margin: 10px 0; font-size: 13.6px;">ご登録特典として<strong style="color: #333; background-color: #ffffff;">{{points}}ポイント</strong>をプレゼントいたします。</p>
-                                <p style="text-align: center; margin: 10px 0; font-size: 13.6px;">ぜひお買い物をお楽しみください！</p>
+                            <div style="font-size: 13.6px; line-height: 1.8; margin-bottom: 20px; background-color: #ffffff; text-align: center !important;">
+                                <p style="text-align: center !important; margin: 10px auto !important; font-size: 13.6px !important; max-width: 400px !important;">Aetherにご登録いただき、ありがとうございます。</p>
+                                <p style="text-align: center !important; margin: 10px auto !important; font-size: 13.6px !important; max-width: 400px !important;">ご登録特典として<strong style="color: #333 !important; background-color: #ffffff !important;">{{points}}ポイント</strong>をプレゼントいたします。</p>
+                                <p style="text-align: center !important; margin: 10px auto !important; font-size: 13.6px !important; max-width: 400px !important;">ぜひお買い物をお楽しみください！</p>
                             </div>
                         </td>
                     </tr>
@@ -453,11 +455,11 @@ const emailTemplates = {
                             </div>
                             
                             <!-- 주문 내용 -->
-                            <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px; background-color: #ffffff;">
-                                <p>ご注文いただき、誠にありがとうございます。</p>
-                                <p>以下の商品をお申し込みいただきました：</p>
-                                <p>{{items}}</p>
-                                <p>商品の準備ができ次第、配送いたします。</p>
+                            <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px; background-color: #ffffff; text-align: center !important;">
+                                <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">ご注文いただき、誠にありがとうございます。</p>
+                                <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">以下の商品をお申し込みいただきました：</p>
+                                <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">{{items}}</p>
+                                <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">商品の準備ができ次第、配送いたします。</p>
                             </div>
                         </td>
                     </tr>
@@ -569,10 +571,10 @@ const emailTemplates = {
                             </div>
                             
                             <!-- 포인트 내용 -->
-                            <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px; background-color: #ffffff;">
-                                <p>お買い物ありがとうございます！</p>
-                                <p>{{reason}}により、{{points}}ポイントを獲得いたしました。</p>
-                                <p>獲得したポイントは次回のお買い物でご利用いただけます。</p>
+                            <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px; background-color: #ffffff; text-align: center !important;">
+                                <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">お買い物ありがとうございます！</p>
+                                <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">{{reason}}により、{{points}}ポイントを獲得いたしました。</p>
+                                <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">獲得したポイントは次回のお買い物でご利用いただけます。</p>
                             </div>
                         </td>
                     </tr>
