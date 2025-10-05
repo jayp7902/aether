@@ -6735,7 +6735,34 @@
                     showCustomNotification('warning', '入力エラー', 'カスタムデータの形式が正しくありません。', 3000);
                     return;
                 }
+            } else {
+                // Load default data if no custom data is provided
+                data = loadDefaultTestData(templateType);
             }
+
+            // --- 추가된 로직: Firebase에서 고객 이름 가져오기 ---
+            // customData에 name이 명시적으로 설정되지 않았거나, 기본값이 'テストユーザー'인 경우에만 Firebase에서 조회
+            if (!data.name || data.name === 'テストユーザー') {
+                try {
+                    // Firebase에서 해당 이메일 주소의 사용자 정보 조회
+                    const userDoc = await firebase.firestore().collection('users').doc(emailAddress).get();
+                    if (userDoc.exists) {
+                        const userData = userDoc.data();
+                        // userData.name 또는 userData.displayName을 사용하고, 없으면 이메일 앞부분을 사용
+                        data.name = userData.name || userData.displayName || emailAddress.split('@')[0];
+                        console.log(`📧 テストメール - Firebaseから名前を取得: ${data.name}`);
+                    } else {
+                        // Firebase에 사용자 정보가 없으면 이메일 앞부분을 사용
+                        data.name = emailAddress.split('@')[0];
+                        console.log(`📧 テストメール - Firebaseで名前が見つからず、メールから抽出: ${data.name}`);
+                    }
+                } catch (e) {
+                    console.error('📧 テストメール - Firebaseから名前取得中にエラー:', e);
+                    // 에러 발생 시에도 이메일 앞부분을 사용
+                    data.name = emailAddress.split('@')[0];
+                }
+            }
+            // --- 추가된 로직 끝 ---
             
             // 요청 데이터 로그
             const requestData = {
