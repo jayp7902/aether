@@ -1942,7 +1942,7 @@
                                 
                                 <div class="mb-3">
                                     <label for="testCustomData" class="form-label">カスタムデータ（JSON形式）</label>
-                                    <textarea class="form-control" id="testCustomData" rows="4" placeholder='{"name": "テストユーザー", "points": 100, "orderId": "ORD-001"}'></textarea>
+                                    <textarea class="form-control" id="testCustomData" rows="4" placeholder='{"name": "고객님", "points": 100, "orderId": "ORD-001"}'></textarea>
                                     <small class="form-text text-muted">テンプレート内のプレースホルダーを置き換えるデータをJSON形式で入力してください。</small>
                                     <div class="mt-2">
                                         <button type="button" class="btn btn-outline-secondary btn-sm" onclick="loadDefaultTestData()">
@@ -5893,7 +5893,7 @@
                 endDate: document.getElementById('eventEndDate').value,
                 image: await getSelectedEventImage(),
                 recipients: getSelectedCustomers(),
-                points: '300', // 기본 웰컴 포인트
+                points: await getWelcomePoints(), // 동적으로 웰컴 포인트 조회
                 customerData: await getCustomerDataForEmail() // 고객 이름 정보 포함
             };
 
@@ -6497,6 +6497,76 @@
         window.loadCustomerList = loadCustomerList;
         console.log('🔧 loadCustomerList 함수가 window 객체에 할당됨');
 
+        // 웰컴 포인트 조회 함수
+        async function getWelcomePoints() {
+            try {
+                // Firebase에서 웰컴 포인트 설정 조회 (기본값: 300)
+                if (typeof FirebaseService !== 'undefined' && FirebaseService.db) {
+                    const settingsDoc = await FirebaseService.db.collection('settings').doc('welcomePoints').get();
+                    if (settingsDoc.exists) {
+                        const settings = settingsDoc.data();
+                        return settings.value || 300;
+                    }
+                }
+                return 300; // 기본값
+            } catch (error) {
+                console.warn('⚠️ 웰컴 포인트 조회 중 오류, 기본값 사용:', error);
+                return 300; // 기본값
+            }
+        }
+
+        // 기본 고객 이름 조회 함수
+        async function getDefaultCustomerName(emailAddress) {
+            try {
+                if (emailAddress && typeof FirebaseService !== 'undefined' && FirebaseService.db) {
+                    // Firebase에서 해당 이메일의 고객 정보 조회
+                    const userSnapshot = await FirebaseService.db.collection('users')
+                        .where('email', '==', emailAddress)
+                        .limit(1)
+                        .get();
+                    
+                    if (!userSnapshot.empty) {
+                        const userData = userSnapshot.docs[0].data();
+                        return userData.name || userData.displayName || emailAddress.split('@')[0];
+                    }
+                }
+                return '고객님'; // 기본값
+            } catch (error) {
+                console.warn('⚠️ 고객 이름 조회 중 오류, 기본값 사용:', error);
+                return '고객님'; // 기본값
+            }
+        }
+
+        // 테스트 주문 ID 생성 함수
+        async function generateTestOrderId() {
+            const timestamp = new Date().getTime().toString().slice(-6);
+            const randomNum = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            return `ORD-${timestamp}-${randomNum}`;
+        }
+
+        // 테스트 상품 목록 조회 함수
+        async function getTestProducts() {
+            try {
+                // Firebase에서 실제 상품 목록 조회 (최대 3개)
+                if (typeof FirebaseService !== 'undefined' && FirebaseService.db) {
+                    const productsSnapshot = await FirebaseService.db.collection('products')
+                        .limit(3)
+                        .get();
+                    
+                    if (!productsSnapshot.empty) {
+                        return productsSnapshot.docs.map(doc => {
+                            const product = doc.data();
+                            return product.name || product.title || '상품';
+                        });
+                    }
+                }
+                return ['상품 A', '상품 B', '상품 C']; // 기본값
+            } catch (error) {
+                console.warn('⚠️ 상품 목록 조회 중 오류, 기본값 사용:', error);
+                return ['상품 A', '상품 B', '상품 C']; // 기본값
+            }
+        }
+
         // 고객별 주문 데이터 로드 함수
         async function loadCustomerOrderData(customerId, customerEmail) {
             console.log(`📊 고객 ${customerId} 주문 데이터 조회 시작`);
@@ -7099,7 +7169,7 @@
             if (content.trim()) {
                 // 플레이스홀더를 샘플 데이터로 치환
                 const sampleData = {
-                    name: 'テストユーザー',
+                    name: '고객님',
                     email: 'test@example.com',
                     points: '100',
                     orderId: 'ORD-001',
@@ -7270,40 +7340,41 @@
             });
         }
 
-        function loadDefaultTestData() {
+        async function loadDefaultTestData() {
             const templateType = document.getElementById('testTemplateSelect').value;
+            const emailAddress = document.getElementById('testEmailAddress').value;
             let defaultData = {};
             
             switch (templateType) {
                 case 'welcome':
                     defaultData = {
-                        name: 'テストユーザー',
-                        points: 300
+                        name: await getDefaultCustomerName(emailAddress),
+                        points: await getWelcomePoints()
                     };
                     break;
                 case 'order-complete':
                     defaultData = {
-                        orderId: 'TEST-001',
-                        items: ['テスト商品1', 'テスト商品2', 'テスト商品3']
+                        orderId: await generateTestOrderId(),
+                        items: await getTestProducts()
                     };
                     break;
                 case 'points-earned':
                     defaultData = {
-                        points: 100,
-                        reason: 'テストポイント獲得'
+                        points: Math.floor(Math.random() * 500) + 50, // 50-550 랜덤 포인트
+                        reason: '구매 적립'
                     };
                     break;
                 case 'event':
                     defaultData = {
-                        title: 'テストイベント',
-                        content: 'これはテストメールです。',
-                        name: 'テストユーザー'
+                        title: '새로운 이벤트',
+                        content: '새로운 이벤트가 시작되었습니다.',
+                        name: await getDefaultCustomerName(emailAddress)
                     };
                     break;
                 default:
                     defaultData = {
-                        name: 'テストユーザー',
-                        points: 300
+                        name: await getDefaultCustomerName(emailAddress),
+                        points: await getWelcomePoints()
                     };
             }
             
@@ -7366,7 +7437,7 @@
             document.getElementById('previewTemplate').textContent = getTemplateDisplayName(templateType);
             
             // 프리뷰 생성
-            generateEmailPreview(templateType, data);
+            await generateEmailPreview(templateType, data);
             
             // 모달 표시
             const modal = new bootstrap.Modal(document.getElementById('testEmailPreviewModal'));
@@ -7383,7 +7454,7 @@
             return names[templateType] || templateType;
         }
         
-        function generateEmailPreview(templateType, data) {
+        async function generateEmailPreview(templateType, data) {
             const container = document.getElementById('emailPreviewContainer');
             
             // 로딩 표시
@@ -7400,21 +7471,21 @@
             // 템플릿별 기본값 설정
             switch (templateType) {
                 case 'welcome':
-                    previewData.name = previewData.name || 'テストユーザー';
-                    previewData.points = previewData.points || 300;
+                    previewData.name = previewData.name || await getDefaultCustomerName(data.email);
+                    previewData.points = previewData.points || await getWelcomePoints();
                     break;
                 case 'order-complete':
-                    previewData.orderId = previewData.orderId || 'TEST-001';
-                    previewData.items = previewData.items || 'テスト商品1, テスト商品2, テスト商品3';
+                    previewData.orderId = previewData.orderId || await generateTestOrderId();
+                    previewData.items = previewData.items || (await getTestProducts()).join(', ');
                     break;
                 case 'points-earned':
-                    previewData.points = previewData.points || 100;
-                    previewData.reason = previewData.reason || 'テストポイント獲得';
+                    previewData.points = previewData.points || Math.floor(Math.random() * 500) + 50;
+                    previewData.reason = previewData.reason || '구매 적립';
                     break;
                 case 'event':
-                    previewData.title = previewData.title || 'テストイベント';
-                    previewData.content = previewData.content || 'これはテストメールです。';
-                    previewData.name = previewData.name || 'テストユーザー';
+                    previewData.title = previewData.title || '새로운 이벤트';
+                    previewData.content = previewData.content || '새로운 이벤트가 시작되었습니다.';
+                    previewData.name = previewData.name || await getDefaultCustomerName(data.email);
                     previewData.image = previewData.image || '';
                     break;
             }
