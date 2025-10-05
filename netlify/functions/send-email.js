@@ -226,12 +226,13 @@ const emailTemplates = {
             line-height: 1.6;
             color: #333;
             max-width: 600px;
-            margin: 0 auto;
+            margin: 0 auto !important;
             padding: 20px;
             background-color: #ffffff !important;
             background: #ffffff !important;
             -webkit-background-color: #ffffff !important;
             mso-background-color: #ffffff !important;
+            text-align: center !important;
         }
         
         /* Outlook specific styles */
@@ -331,12 +332,9 @@ const emailTemplates = {
                     <!-- 콘텐츠 -->
                     <tr>
                         <td style="background-color: #ffffff; padding: 30px; mso-padding-alt: 30px; text-align: center;">
-                            <!-- 제목 -->
-                            <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 15px; text-align: center; background-color: #ffffff;">ようこそ Aether Storeへ！</div>
-                            
                             <!-- 인사 -->
                             <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px auto; text-align: center; max-width: 400px;">
-                                <p style="margin: 0; background-color: #f0f0f0; text-align: center;">こんにちは、{{name}}様！</p>
+                                <p style="margin: 0; background-color: #f0f0f0; text-align: center; font-size: 18px; font-weight: 600;">こんにちは、{{name}}様！</p>
                             </div>
                             
                             <!-- 환영 메시지 -->
