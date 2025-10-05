@@ -4423,6 +4423,8 @@
                                     }
                                     
                                     let customerCount = 0;
+                                    const customerPromises = [];
+                                    
                                     snapshot.forEach(doc => {
                                         const userData = doc.data();
                                         customerCount++;
@@ -4460,16 +4462,27 @@
                                                 })()}</small>
                                             </td>
                                             <td class="order-count">
-                                                <span class="badge bg-secondary">0</span>
+                                                <span class="badge bg-secondary">조회중...</span>
                                             </td>
                                             <td class="total-spent">
-                                                <strong>¥0</strong>
+                                                <strong>조회중...</strong>
                                             </td>
                                             <td>
                                                 <span class="badge bg-dark">${userData.points || 0}ポイント</span>
                                             </td>
                                         `;
                                         customerList.appendChild(row);
+                                        
+                                        // 각 고객별 주문 데이터 조회 Promise 생성
+                                        const orderPromise = loadCustomerOrderData(userData.id, userData.email);
+                                        customerPromises.push(orderPromise);
+                                    });
+                                    
+                                    // 모든 주문 데이터 로드 완료 후 처리
+                                    Promise.all(customerPromises).then(() => {
+                                        console.log('✅ 모든 고객 주문 데이터 로드 완료');
+                                    }).catch(error => {
+                                        console.error('❌ 고객 주문 데이터 로드 중 오류:', error);
                                     });
                                     
                                     // 전체 선택 체크박스 업데이트
@@ -5748,6 +5761,8 @@
                             }
                             
                             let customerCount = 0;
+                            const customerPromises = [];
+                            
                             snapshot.forEach(doc => {
                                 const userData = doc.data();
                                 customerCount++;
@@ -5785,16 +5800,27 @@
                                         })()}</small>
                                     </td>
                                     <td class="order-count">
-                                        <span class="badge bg-secondary">0</span>
+                                        <span class="badge bg-secondary">조회중...</span>
                                     </td>
                                     <td class="total-spent">
-                                        <strong>¥0</strong>
+                                        <strong>조회중...</strong>
                                     </td>
                                     <td>
                                         <span class="badge bg-dark">${userData.points || 0}ポイント</span>
                                     </td>
                                 `;
                                 customerList.appendChild(row);
+                                
+                                // 각 고객별 주문 데이터 조회 Promise 생성
+                                const orderPromise = loadCustomerOrderData(userData.id, userData.email);
+                                customerPromises.push(orderPromise);
+                            });
+                            
+                            // 모든 주문 데이터 로드 완료 후 처리
+                            Promise.all(customerPromises).then(() => {
+                                console.log('✅ showEmailManagement - 모든 고객 주문 데이터 로드 완료');
+                            }).catch(error => {
+                                console.error('❌ showEmailManagement - 고객 주문 데이터 로드 중 오류:', error);
                             });
                             
                             // 체크박스 이벤트 리스너 직접 설정
@@ -6470,6 +6496,78 @@
         // window 객체에 함수 할당
         window.loadCustomerList = loadCustomerList;
         console.log('🔧 loadCustomerList 함수가 window 객체에 할당됨');
+
+        // 고객별 주문 데이터 로드 함수
+        async function loadCustomerOrderData(customerId, customerEmail) {
+            console.log(`📊 고객 ${customerId} 주문 데이터 조회 시작`);
+            
+            try {
+                if (typeof FirebaseService !== 'undefined' && FirebaseService.db) {
+                    // orders 컬렉션에서 해당 고객의 주문 조회
+                    const ordersSnapshot = await FirebaseService.db.collection('orders')
+                        .where('customerEmail', '==', customerEmail)
+                        .where('status', 'in', ['completed', 'delivered', 'shipped'])
+                        .get();
+                    
+                    let orderCount = 0;
+                    let totalSpent = 0;
+                    
+                    ordersSnapshot.forEach(orderDoc => {
+                        const orderData = orderDoc.data();
+                        orderCount++;
+                        
+                        // 주문 총액 계산 (totalAmount 또는 items의 합계)
+                        if (orderData.totalAmount) {
+                            totalSpent += parseFloat(orderData.totalAmount) || 0;
+                        } else if (orderData.items && Array.isArray(orderData.items)) {
+                            orderData.items.forEach(item => {
+                                const itemTotal = (parseFloat(item.price) || 0) * (parseInt(item.quantity) || 0);
+                                totalSpent += itemTotal;
+                            });
+                        }
+                    });
+                    
+                    // UI 업데이트
+                    const customerRow = document.querySelector(`tr[id="customer-${customerId}"]`);
+                    if (customerRow) {
+                        const orderCountCell = customerRow.querySelector('.order-count');
+                        const totalSpentCell = customerRow.querySelector('.total-spent');
+                        
+                        if (orderCountCell) {
+                            orderCountCell.innerHTML = `<span class="badge bg-secondary">${orderCount}</span>`;
+                        }
+                        if (totalSpentCell) {
+                            totalSpentCell.innerHTML = `<strong>¥${totalSpent.toLocaleString()}</strong>`;
+                        }
+                        
+                        console.log(`✅ 고객 ${customerId} 주문 데이터 업데이트: 주문수 ${orderCount}, 총구매액 ¥${totalSpent.toLocaleString()}`);
+                    }
+                    
+                    return { orderCount, totalSpent };
+                } else {
+                    console.warn('⚠️ FirebaseService가 초기화되지 않음');
+                    return { orderCount: 0, totalSpent: 0 };
+                }
+            } catch (error) {
+                console.error(`❌ 고객 ${customerId} 주문 데이터 조회 오류:`, error);
+                
+                // 오류 시 UI 업데이트
+                const customerRow = document.querySelector(`tr[id="customer-${customerId}"]`);
+                if (customerRow) {
+                    const orderCountCell = customerRow.querySelector('.order-count');
+                    const totalSpentCell = customerRow.querySelector('.total-spent');
+                    
+                    if (orderCountCell) {
+                        orderCountCell.innerHTML = `<span class="badge bg-danger">오류</span>`;
+                    }
+                    if (totalSpentCell) {
+                        totalSpentCell.innerHTML = `<strong class="text-danger">오류</strong>`;
+                    }
+                }
+                
+                return { orderCount: 0, totalSpent: 0 };
+            }
+        }
 
         function getSelectedCustomers() {
             const checkboxes = document.querySelectorAll('.customer-checkbox:checked');
