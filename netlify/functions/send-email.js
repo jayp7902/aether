@@ -185,8 +185,8 @@ const emailTemplates = {
                     <!-- 푸터 -->
                     <tr>
                         <td style="background-color: #ffffff; text-align: center; border-top: 1px solid #ddd; padding: 20px 30px 30px 30px; font-size: 14px; color: #666; mso-padding-alt: 20px 30px 30px 30px;">
-                            <p style="margin: 0 0 10px 0; background-color: #ffffff;">このメールは自動送信されています。</p>
-                            <p style="margin: 0; background-color: #ffffff;">お問い合わせ: info@aether-store.jp</p>
+                            <p style="margin: 0 0 10px 0; background-color: #ffffff; color: #666 !important;">このメールは自動送信されています。</p>
+                            <p style="margin: 0; background-color: #ffffff; color: #666 !important;">お問い合わせ: <a href="mailto:info@aether-store.jp" style="color: #666 !important; text-decoration: underline; background-color: #ffffff !important;">info@aether-store.jp</a></p>
                         </td>
                     </tr>
                 </table>
@@ -508,14 +508,14 @@ const emailTemplates = {
                     <!-- 푸터 -->
                     <tr>
                         <td style="background-color: #ffffff; text-align: center; border-top: 1px solid #ddd; padding: 20px 30px 30px 30px; font-size: 14px; color: #666; mso-padding-alt: 20px 30px 30px 30px;">
-                            <p style="margin: 0 0 10px 0; background-color: #ffffff;">このメールは自動送信されています。</p>
-                            <p style="margin: 0; background-color: #ffffff;">お問い合わせ: info@aether-store.jp</p>
-                            </td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-        </table>
+                            <p style="margin: 0 0 10px 0; background-color: #ffffff; color: #666 !important;">このメールは自動送信されています。</p>
+                            <p style="margin: 0; background-color: #ffffff; color: #666 !important;">お問い合わせ: <a href="mailto:info@aether-store.jp" style="color: #666 !important; text-decoration: underline; background-color: #ffffff !important;">info@aether-store.jp</a></p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
     
     <!-- Gmail 모바일 호환성을 위한 특별한 구조 끝 -->
     <div class="gmail-fix" style="white-space: nowrap; font: 15px courier; line-height: 0;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</div>
@@ -626,8 +626,8 @@ const emailTemplates = {
                     <!-- 푸터 -->
                     <tr>
                         <td style="background-color: #ffffff; text-align: center; border-top: 1px solid #ddd; padding: 20px 30px 30px 30px; font-size: 14px; color: #666; mso-padding-alt: 20px 30px 30px 30px;">
-                            <p style="margin: 0 0 10px 0; background-color: #ffffff;">このメールは自動送信されています。</p>
-                            <p style="margin: 0; background-color: #ffffff;">お問い合わせ: info@aether-store.jp</p>
+                            <p style="margin: 0 0 10px 0; background-color: #ffffff; color: #666 !important;">このメールは自動送信されています。</p>
+                            <p style="margin: 0; background-color: #ffffff; color: #666 !important;">お問い合わせ: <a href="mailto:info@aether-store.jp" style="color: #666 !important; text-decoration: underline; background-color: #ffffff !important;">info@aether-store.jp</a></p>
                         </td>
                     </tr>
                 </table>
@@ -826,8 +826,8 @@ const emailTemplates = {
                     <!-- 푸터 -->
                     <tr>
                         <td style="background-color: #ffffff; text-align: center; border-top: 1px solid #ddd; padding: 20px 30px 30px 30px; font-size: 14px; color: #666; mso-padding-alt: 20px 30px 30px 30px;">
-                            <p style="margin: 0 0 10px 0; background-color: #ffffff;">このメールは自動送信されています。</p>
-                            <p style="margin: 0; background-color: #ffffff;">お問い合わせ: info@aether-store.jp</p>
+                            <p style="margin: 0 0 10px 0; background-color: #ffffff; color: #666 !important;">このメールは自動送信されています。</p>
+                            <p style="margin: 0; background-color: #ffffff; color: #666 !important;">お問い合わせ: <a href="mailto:info@aether-store.jp" style="color: #666 !important; text-decoration: underline; background-color: #ffffff !important;">info@aether-store.jp</a></p>
                         </td>
                     </tr>
                 </table>
