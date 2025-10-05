@@ -3889,6 +3889,13 @@
             setTimeout(() => {
                 console.log('📧 메일 관리 데이터 로드 시작');
                 
+                // 이벤트 메일 탭을 기본으로 활성화
+                const eventEmailTab = document.getElementById('event-email-tab');
+                if (eventEmailTab) {
+                    eventEmailTab.click();
+                    console.log('📧 이벤트 메일 탭 기본 활성화');
+                }
+                
                 // customerList 요소가 존재하는지 확인
                 const customerList = document.getElementById('customerList');
                 if (customerList) {
@@ -5330,7 +5337,7 @@
                         
                         console.log(`📊 정렬된 고객 목록: ${customers.length}명`);
                         
-                        // 즉시 고객 목록 표시 (주문 데이터는 별도로 로딩)
+                        // 고객 목록을 먼저 표시하고 주문 데이터를 백그라운드에서 로딩
                         console.log(`✅ 고객 기본 정보 로딩 완료: ${customers.length}명`);
                         customerList.innerHTML = ''; // 로딩 메시지 제거
                         
@@ -5339,8 +5346,8 @@
                             console.log(`👤 고객 데이터 처리:`, userData.name || '이름없음', userData.email, '가입일:', userData.createdAt ? userData.createdAt.toDate() : '미상');
                             
                             // 사용자 데이터에서 기본 정보 추출
-                            const totalSpent = userData.totalSpent || 0;
-                            const orderCount = userData.orderCount || 0;
+                            let totalSpent = userData.totalSpent || 0;
+                            let orderCount = userData.orderCount || 0;
                             const points = userData.points || 0;
                             
                             console.log(`📊 고객 ${userData.name} 기본 데이터:`, {
@@ -5348,6 +5355,61 @@
                                 orderCount,
                                 points
                             });
+                            
+                            // 실제 주문 데이터 조회 (백그라운드에서)
+                            if (userData.email) {
+                                FirebaseService.db.collection('orders')
+                                    .where('userEmail', '==', userData.email)
+                                    .get()
+                                    .then(ordersSnapshot => {
+                                        try {
+                                            let actualTotalSpent = 0;
+                                            let actualOrderCount = ordersSnapshot.size;
+                                            
+                                            ordersSnapshot.forEach(orderDoc => {
+                                                try {
+                                                    const orderData = orderDoc.data();
+                                                    if (orderData && typeof orderData.totalAmount === 'number') {
+                                                        actualTotalSpent += orderData.totalAmount;
+                                                    } else if (orderData && typeof orderData.totalAmount === 'string') {
+                                                        const amount = parseFloat(orderData.totalAmount);
+                                                        if (!isNaN(amount)) {
+                                                            actualTotalSpent += amount;
+                                                        }
+                                                    }
+                                                } catch (orderError) {
+                                                    console.warn(`⚠️ 주문 ${orderDoc.id} 데이터 처리 오류:`, orderError);
+                                                }
+                                            });
+                                            
+                                            // 실제 데이터로 업데이트
+                                            const customerRow = document.querySelector(`tr[id="customer-${userData.id}"]`);
+                                            if (customerRow) {
+                                                const orderCountCell = customerRow.querySelector('.order-count');
+                                                const totalSpentCell = customerRow.querySelector('.total-spent');
+                                                
+                                                if (orderCountCell) {
+                                                    orderCountCell.innerHTML = `<span class="badge bg-secondary">${actualOrderCount}</span>`;
+                                                }
+                                                if (totalSpentCell) {
+                                                    totalSpentCell.innerHTML = `<strong>¥${actualTotalSpent.toLocaleString()}</strong>`;
+                                                }
+                                                
+                                                console.log(`✅ 고객 ${userData.name} 주문 데이터 업데이트:`, {
+                                                    orderCount: actualOrderCount,
+                                                    totalSpent: actualTotalSpent
+                                                });
+                                            } else {
+                                                console.warn(`⚠️ 고객 행을 찾을 수 없음: customer-${userData.id}`);
+                                            }
+                                        } catch (error) {
+                                            console.warn(`⚠️ 고객 ${userData.email} 주문 데이터 처리 오류:`, error);
+                                        }
+                                    })
+                                    .catch(error => {
+                                        console.warn(`⚠️ 고객 ${userData.email} 주문 데이터 조회 실패:`, error);
+                                    });
+                            }
                             
                             // 고객 등급 결정 (모노톤 색상 사용)
                             let customerRank = '一般';
@@ -5365,6 +5427,7 @@
                             }
                             
                             const row = document.createElement('tr');
+                            row.setAttribute('id', `customer-${userData.id}`);
                             row.innerHTML = `
                                 <td>
                                     <input class="form-check-input customer-checkbox" type="checkbox" value="${userData.email}" id="customer-${userData.id}" onchange="updateSelectedCount()">
@@ -5397,10 +5460,10 @@
                                         }
                                     })()}</small>
                                 </td>
-                                <td>
+                                <td class="order-count">
                                     <span class="badge bg-secondary">${orderCount}</span>
                                 </td>
-                                <td>
+                                <td class="total-spent">
                                     <strong>¥${totalSpent.toLocaleString()}</strong>
                                 </td>
                                 <td>
