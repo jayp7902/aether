@@ -425,29 +425,55 @@ const emailTemplates = {
                 <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
                     <!-- 헤더 -->
                     <tr>
-                        <td style="background-color: #ffffff; text-align: center; border-bottom: 2px solid #333; padding: 30px 30px 20px 30px; mso-padding-alt: 30px 30px 20px 30px;">
-                            <a href="https://aether-store.jp" style="text-decoration: none; display: inline-block;">
-                                <img src="https://aether-store.jp/assets/img/logo.png" alt="AETHER" style="max-width: 150px; height: auto; display: block; border: 0; margin: 0 auto;">
+                        <td style="background-color: #ffffff; text-align: center !important; border-bottom: 2px solid #333; padding: 30px 30px 20px 30px; mso-padding-alt: 30px 30px 20px 30px;">
+                            <a href="https://aether-store.jp" style="text-decoration: none; display: inline-block; text-align: center !important;">
+                                <img src="https://aether-store.jp/assets/img/logo.png" alt="AETHER" style="max-width: 150px; height: auto; display: block; border: 0; margin: 0 auto !important; text-align: center !important;">
                             </a>
                         </td>
                     </tr>
                     
                     <!-- 콘텐츠 -->
                     <tr>
-                        <td style="background-color: #ffffff; padding: 30px; mso-padding-alt: 30px; text-align: center;">
+                        <td style="background-color: #ffffff; padding: 30px; mso-padding-alt: 30px; text-align: center !important;">
                             <!-- 제목 -->
-                            <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 15px; text-align: center; background-color: #ffffff;">ご注文ありがとうございます！</div>
+                            <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 15px; text-align: center !important; background-color: #ffffff;">ご注文ありがとうございます！</div>
                             
                             <!-- 주문 번호 -->
-                            <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0;">
-                                <p style="margin: 0; background-color: #f0f0f0;">注文番号: <strong>{{orderId}}</strong></p>
+                            <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center !important;">
+                                <p style="margin: 0; background-color: #f0f0f0; text-align: center !important;">注文番号: <strong>{{orderId}}</strong></p>
                             </div>
                             
                             <!-- 주문 내용 -->
                             <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px; background-color: #ffffff; text-align: center !important;">
                                 <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">ご注文いただき、誠にありがとうございます。</p>
-                                <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">以下の商品をお申し込みいただきました：</p>
-                                <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">{{items}}</p>
+                                
+                                <!-- 주문 상세 정보 -->
+                                <div style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: left !important; max-width: 500px; margin-left: auto; margin-right: auto;">
+                                    <h3 style="text-align: center !important; margin-bottom: 15px; color: #333;">注文詳細</h3>
+                                    
+                                    <!-- 주문 상품 -->
+                                    <div style="margin-bottom: 15px;">
+                                        <strong>注文商品:</strong><br>
+                                        <div style="margin-top: 5px;">{{items}}</div>
+                                    </div>
+                                    
+                                    <!-- 결제 정보 -->
+                                    <div style="margin-bottom: 15px;">
+                                        <strong>支払い方法:</strong> {{paymentMethod}}<br>
+                                        <strong>商品代金:</strong> {{subtotal}}<br>
+                                        <strong>配送料:</strong> {{shipping}}<br>
+                                        <strong>使用ポイント:</strong> {{pointsUsed}}<br>
+                                        <hr style="border: 1px solid #ddd; margin: 10px 0;">
+                                        <strong style="font-size: 18px; color: #333;">合計金額: {{totalAmount}}</strong>
+                                    </div>
+                                    
+                                    <!-- 배송 정보 -->
+                                    <div>
+                                        <strong>配送先:</strong><br>
+                                        <div style="margin-top: 5px;">{{shippingAddress}}</div>
+                                    </div>
+                                </div>
+                                
                                 <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">商品の準備ができ次第、配送いたします。</p>
                             </div>
                         </td>
@@ -697,7 +723,13 @@ exports.handler = async (event, context) => {
             case 'order-complete':
                 html = loadEmailTemplate('order-complete', {
                     orderId: data.orderId || 'N/A',
-                    items: data.items || []
+                    items: data.items || '상품 정보 없음',
+                    paymentMethod: data.paymentMethod || '銀行振込',
+                    subtotal: data.subtotal || '¥0',
+                    shipping: data.shipping || '¥0',
+                    pointsUsed: data.pointsUsed || '0ポイント',
+                    totalAmount: data.totalAmount || '¥0',
+                    shippingAddress: data.shippingAddress || '配送先情報なし'
                 });
                 break;
             case 'shipping-start':
@@ -730,7 +762,13 @@ exports.handler = async (event, context) => {
                     case 'order-complete':
                         html = loadEmailTemplate('order-complete', {
                             orderId: data.orderId || 'TEST-001',
-                            items: Array.isArray(data.items) ? data.items.join(', ') : (data.items || 'テスト商品1, テスト商品2')
+                            items: Array.isArray(data.items) ? data.items.join(', ') : (data.items || 'LALARECIPE バクチノールアイクリーム, COSCELL レチノールボリュームアイバッグクリーム'),
+                            paymentMethod: data.paymentMethod || '銀行振込',
+                            subtotal: data.subtotal || '¥24,100',
+                            shipping: data.shipping || '¥500',
+                            pointsUsed: data.pointsUsed || '100ポイント',
+                            totalAmount: data.totalAmount || '¥24,500',
+                            shippingAddress: data.shippingAddress || '東京都 練馬区 光が丘2-10-1 3009号'
                         });
                         break;
                     case 'points-earned':
