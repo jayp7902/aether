@@ -418,25 +418,27 @@ const emailTemplates = {
             <td style="background-color: #ffffff; padding: 20px;">
     <![endif]-->
     
-    <!-- 모바일 호환성을 위한 테이블 기반 구조 -->
-    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; max-width: 600px; margin: 0 auto; mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
-        <tr>
-            <td style="background-color: #ffffff; padding: 20px; mso-padding-alt: 20px;">
-                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
-                    <!-- 헤더 -->
-                    <tr>
-                        <td style="background-color: #ffffff; text-align: center !important; border-bottom: 2px solid #333; padding: 30px 30px 20px 30px; mso-padding-alt: 30px 30px 20px 30px;">
-                            <a href="https://aether-store.jp" style="text-decoration: none; display: inline-block; text-align: center !important;">
-                                <img src="https://aether-store.jp/assets/img/logo.png" alt="AETHER" style="max-width: 150px; height: auto; display: block; border: 0; margin: 0 auto !important; text-align: center !important;">
-                            </a>
-                        </td>
-                    </tr>
-                    
-                    <!-- 콘텐츠 -->
-                    <tr>
-                        <td style="background-color: #ffffff; padding: 30px; mso-padding-alt: 30px; text-align: center !important;">
-                            <!-- 제목 -->
-                            <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 15px; text-align: center !important; background-color: #ffffff;">ご注文ありがとうございます！</div>
+    <!-- 메일 전체 중앙 정렬을 위한 컨테이너 -->
+    <div style="display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 0; text-align: center;">
+        <!-- 모바일 호환성을 위한 테이블 기반 구조 -->
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; max-width: 600px; margin: 0 auto; mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
+            <tr>
+                <td style="background-color: #ffffff; padding: 20px; mso-padding-alt: 20px;">
+                    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
+                        <!-- 헤더 -->
+                        <tr>
+                            <td style="background-color: #ffffff; text-align: center !important; border-bottom: 2px solid #333; padding: 30px 30px 20px 30px; mso-padding-alt: 30px 30px 20px 30px;">
+                                <a href="https://aether-store.jp" style="text-decoration: none; display: inline-block; text-align: center !important;">
+                                    <img src="https://aether-store.jp/assets/img/logo.png" alt="AETHER" style="max-width: 150px; height: auto; display: block; border: 0; margin: 0 auto !important; text-align: center !important;">
+                                </a>
+                            </td>
+                        </tr>
+                        
+                        <!-- 콘텐츠 -->
+                        <tr>
+                            <td style="background-color: #ffffff; padding: 30px; mso-padding-alt: 30px; text-align: center !important;">
+                                <!-- 제목 -->
+                                <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 15px; text-align: center !important; background-color: #ffffff;">ご注文ありがとうございます！</div>
                             
                             <!-- 주문 번호 -->
                             <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center !important;">
@@ -484,12 +486,13 @@ const emailTemplates = {
                         <td style="background-color: #ffffff; text-align: center; border-top: 1px solid #ddd; padding: 20px 30px 30px 30px; font-size: 14px; color: #666; mso-padding-alt: 20px 30px 30px 30px;">
                             <p style="margin: 0 0 10px 0; background-color: #ffffff;">このメールは自動送信されています。</p>
                             <p style="margin: 0; background-color: #ffffff;">お問い合わせ: info@aether-store.jp</p>
-                        </td>
-                    </tr>
-                </table>
-            </td>
-        </tr>
-    </table>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
     
     <!--[if mso]>
             </td>
