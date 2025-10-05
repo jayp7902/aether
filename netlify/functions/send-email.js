@@ -80,11 +80,9 @@ const emailTemplates = {
                     <p>こんにちは、{{name}}様！</p>
                 </div>
                 
-                {{#if image}}
                 <div class="event-image" style="text-align: center; margin: 20px 0;">
-                    <img src="{{image}}" alt="{{title}}" style="max-width: 100%; height: auto; border-radius: 8px;">
+                    <img src="{{image}}" alt="{{title}}" style="max-width: 100%; height: auto;">
                 </div>
-                {{/if}}
                 
                 <div class="event-content">
                     {{content}}
@@ -255,9 +253,14 @@ exports.handler = async (event, context) => {
             let personalizedHtml = html;
             
             // 고객별 실제 이름 사용
-            const customerName = data.customerData && data.customerData[recipient] 
+            let customerName = data.customerData && data.customerData[recipient] 
                 ? data.customerData[recipient] 
                 : recipient.split('@')[0]; // 백업: 이메일에서 이름 추출
+            
+            // 이름이 "名前なし"인 경우 이메일에서 추출
+            if (customerName === '名前なし' || !customerName) {
+                customerName = recipient.split('@')[0];
+            }
             
             personalizedHtml = personalizedHtml.replace(/{{name}}/g, customerName);
             
@@ -277,8 +280,8 @@ exports.handler = async (event, context) => {
                     personalizedHtml = personalizedHtml.replace(/{{image}}/g, imageUrl);
                 }
             } else {
-                // 이미지가 없는 경우 이미지 섹션 제거
-                personalizedHtml = personalizedHtml.replace(/{{#if image}}[\s\S]*?{{\/if}}/g, '');
+                // 이미지가 없는 경우 이미지 섹션을 숨김
+                personalizedHtml = personalizedHtml.replace(/<div class="event-image"[\s\S]*?<\/div>/g, '');
             }
             
             const mailOptions = {
