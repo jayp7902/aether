@@ -3391,11 +3391,6 @@
     <script src="assets/js/jquery-1.11.0.min.js"></script>
     <script src="assets/js/bootstrap.bundle.min.js"></script>
     <script src="assets/js/firebase-config-final.js"></script>
-    <script src="create-initial-brands.js"></script>
-    <script src="update-brands-with-badges.js"></script>
-    <script src="cleanup-products.js"></script>
-    <script src="check-product-ids.js"></script>
-    <script src="migrate-to-firebase.js"></script>
     
     <!-- 탭 전환 함수들 -->
     <script>
@@ -3944,11 +3939,44 @@
             showTab('email-section');
             updateTabButtons('email-tab');
             
-            // 메일 관련 데이터 로드
+            // 메일 관리 섹션이 완전히 표시된 후 데이터 로드
             setTimeout(() => {
-                loadCustomerList();
+                console.log('📧 메일 관리 데이터 로드 시작');
+                
+                // customerList 요소가 존재하는지 확인
+                const customerList = document.getElementById('customerList');
+                if (customerList) {
+                    console.log('✅ customerList 요소 발견, 고객 목록 로드 시작');
+                    loadCustomerList();
+                } else {
+                    console.error('❌ customerList 요소를 찾을 수 없음. DOM 구조 확인 필요');
+                }
+                
                 loadEmailHistory();
-            }, 100);
+                
+                // 메일 관리 섹션 내 탭 초기화
+                initializeEmailTabs();
+            }, 200);
+        }
+        
+        function initializeEmailTabs() {
+            console.log('📧 메일 관리 탭 초기화');
+            
+            // Bootstrap 탭 이벤트 리스너 추가
+            const emailTabs = document.querySelectorAll('#emailTabs button[data-bs-toggle="tab"]');
+            emailTabs.forEach(tab => {
+                tab.addEventListener('shown.bs.tab', function(event) {
+                    const targetId = event.target.getAttribute('data-bs-target');
+                    console.log('📧 메일 탭 활성화:', targetId);
+                    
+                    // 일괄 발송 탭이 활성화될 때 고객 목록 로드
+                    if (targetId === '#bulk-email') {
+                        setTimeout(() => {
+                            loadCustomerList();
+                        }, 100);
+                    }
+                });
+            });
         }
         
         function switchToHomepageTab() {
@@ -5084,14 +5112,25 @@
         function loadCustomerList() {
             console.log('📧 고객 목록 로드 시작');
             
+            // DOM 요소 확인
+            const customerList = document.getElementById('customerList');
+            if (!customerList) {
+                console.error('❌ customerList 요소를 찾을 수 없습니다. 메일 관리 탭이 활성화되어 있는지 확인하세요.');
+                return;
+            }
+            
+            console.log('✅ customerList 요소 확인됨:', customerList);
+            
             // Firebase에서 고객 목록 로드
             if (typeof FirebaseService !== 'undefined' && FirebaseService.db) {
+                console.log('🔥 Firebase에서 사용자 데이터 조회 시작...');
                 FirebaseService.db.collection('users').get()
                     .then(snapshot => {
-                        const customerList = document.getElementById('customerList');
+                        console.log('📊 Firebase 응답:', snapshot.size, '명의 사용자');
                         customerList.innerHTML = '';
                         
                         if (snapshot.empty) {
+                            console.log('📝 등록된 고객이 없습니다');
                             customerList.innerHTML = `
                                 <div class="text-center text-muted py-4">
                                     <i class="fas fa-user-slash me-2"></i>登録顧客がありません
@@ -5103,6 +5142,8 @@
                         let customerCount = 0;
                         snapshot.forEach(doc => {
                             const userData = doc.data();
+                            console.log(`👤 고객 데이터 처리:`, userData.name || '이름없음', userData.email);
+                            
                             const customerItem = document.createElement('div');
                             customerItem.className = 'form-check mb-2 p-2 border-bottom';
                             customerItem.innerHTML = `
@@ -5127,12 +5168,19 @@
                         });
                         
                         // 전체 선택 체크박스 업데이트
-                        document.getElementById('selectAllCustomers').setAttribute('data-total-customers', customerCount);
+                        const selectAllCheckbox = document.getElementById('selectAllCustomers');
+                        if (selectAllCheckbox) {
+                            selectAllCheckbox.setAttribute('data-total-customers', customerCount);
+                        }
+                        
+                        // 선택된 고객 수 업데이트
+                        updateSelectedCount();
+                        
                         console.log(`✅ ${customerCount}名の顧客データを読み込み完了`);
+                        console.log('🔍 customerList 최종 상태:', customerList.innerHTML.length, '문자');
                     })
                     .catch(error => {
                         console.error('❌ 고객 목록 로드 오류:', error);
-                        const customerList = document.getElementById('customerList');
                         customerList.innerHTML = `
                             <div class="text-center text-danger py-4">
                                 <i class="fas fa-exclamation-triangle me-2"></i>顧客データの読み込みに失敗しました
@@ -5142,7 +5190,6 @@
                     });
             } else {
                 console.error('❌ FirebaseService가 초기화되지 않음');
-                const customerList = document.getElementById('customerList');
                 customerList.innerHTML = `
                     <div class="text-center text-warning py-4">
                         <i class="fas fa-exclamation-triangle me-2"></i>Firebaseに接続されていません
@@ -5173,21 +5220,29 @@
             
             if (countElement) {
                 countElement.textContent = `${selectedCheckboxes.length}名選択中`;
-                
-                // 전체 선택 체크박스 상태 업데이트
-                const selectAllCheckbox = document.getElementById('selectAllCustomers');
-                const totalCustomers = document.querySelectorAll('.customer-checkbox').length;
-                
+                console.log(`📊 선택된 고객 수 업데이트: ${selectedCheckboxes.length}명`);
+            } else {
+                console.warn('⚠️ selectedCustomerCount 요소를 찾을 수 없습니다');
+            }
+            
+            // 전체 선택 체크박스 상태 업데이트
+            const selectAllCheckbox = document.getElementById('selectAllCustomers');
+            const totalCustomers = document.querySelectorAll('.customer-checkbox').length;
+            
+            if (selectAllCheckbox) {
                 if (selectedCheckboxes.length === 0) {
                     selectAllCheckbox.indeterminate = false;
                     selectAllCheckbox.checked = false;
-                } else if (selectedCheckboxes.length === totalCustomers) {
+                } else if (selectedCheckboxes.length === totalCustomers && totalCustomers > 0) {
                     selectAllCheckbox.indeterminate = false;
                     selectAllCheckbox.checked = true;
                 } else {
                     selectAllCheckbox.indeterminate = true;
                     selectAllCheckbox.checked = false;
                 }
+                console.log(`📊 전체 선택 체크박스 상태 업데이트: ${selectedCheckboxes.length}/${totalCustomers}`);
+            } else {
+                console.warn('⚠️ selectAllCustomers 요소를 찾을 수 없습니다');
             }
         }
 
