@@ -5166,9 +5166,9 @@
                   to: eventData.recipients.join(','), // 여러 수신자를 쉼표로 구분
                   subject: eventData.title,
                   data: {
-                      name: 'お客様', // 개별 고객 이름은 나중에 개선
                       title: eventData.title,
-                      content: eventData.content
+                      content: eventData.content,
+                      customerData: getSelectedCustomerData() // 고객별 데이터
                   }
               })
           })
@@ -5538,6 +5538,36 @@
         function getSelectedCustomers() {
             const checkboxes = document.querySelectorAll('.customer-checkbox:checked');
             return Array.from(checkboxes).map(cb => cb.value);
+        }
+
+        function getSelectedCustomerNames() {
+            const checkboxes = document.querySelectorAll('.customer-checkbox:checked');
+            const names = [];
+            checkboxes.forEach(checkbox => {
+                const row = checkbox.closest('tr');
+                if (row) {
+                    const nameElement = row.querySelector('strong');
+                    if (nameElement) {
+                        names.push(nameElement.textContent.trim());
+                    }
+                }
+            });
+            return names;
+        }
+
+        function getSelectedCustomerData() {
+            const checkboxes = document.querySelectorAll('.customer-checkbox:checked');
+            const customerData = {};
+            checkboxes.forEach(checkbox => {
+                const email = checkbox.value;
+                const row = checkbox.closest('tr');
+                if (row) {
+                    const nameElement = row.querySelector('strong');
+                    const name = nameElement ? nameElement.textContent.trim() : email.split('@')[0];
+                    customerData[email] = name;
+                }
+            });
+            return customerData;
         }
 
         function toggleAllCustomers() {
