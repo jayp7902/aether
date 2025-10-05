@@ -1724,7 +1724,7 @@
                             <select class="form-select" id="sendTypeSelect" onchange="toggleScheduleOptions()">
                                 <option value="now">今すぐ送信</option>
                                 <option value="schedule">予約送信</option>
-                            </select>
+                                    </select>
                         </div>
                         <div class="col-md-6" id="scheduleOptions" style="display: none;">
                             <div class="mb-2">
@@ -1780,7 +1780,7 @@
                                     </div>
                                 </div>
                                 
-                    <div class="text-center">
+                                <div class="text-center">
                         <button type="button" class="btn btn-outline-info me-2" onclick="debugCustomerData()">
                             <i class="fas fa-bug me-2"></i>디버깅
                         </button>
@@ -1788,9 +1788,9 @@
                             <i class="fas fa-flask me-2"></i>테스트 발송
                         </button>
                         <button type="button" class="btn btn-dark" onclick="sendEventEmail()" id="sendEventButton">
-                            <i class="fas fa-paper-plane me-2"></i>イベントメール配信
-                        </button>
-                    </div>
+                                        <i class="fas fa-paper-plane me-2"></i>イベントメール配信
+                                    </button>
+                                </div>
                             </form>
                         </div>
                     </div>
@@ -1921,7 +1921,7 @@
                             <form id="testEmailForm">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <div class="mb-3">
+                                <div class="mb-3">
                                             <label for="testTemplateSelect" class="form-label">テンプレート選択</label>
                                             <select class="form-select" id="testTemplateSelect">
                                                 <option value="">テンプレートを選択してください</option>
@@ -1930,7 +1930,7 @@
                                                 <option value="points-earned">ポイント獲得メール</option>
                                                 <option value="event">イベントメール</option>
                                             </select>
-                                        </div>
+                                    </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
@@ -1990,7 +1990,7 @@
                                             <tr>
                                                 <td><strong>件名:</strong></td>
                                                 <td id="previewSubject">-</td>
-                                            </tr>
+                                        </tr>
                                             <tr>
                                                 <td><strong>送信先:</strong></td>
                                                 <td id="previewTo">-</td>
@@ -1999,8 +1999,8 @@
                                                 <td><strong>テンプレート:</strong></td>
                                                 <td id="previewTemplate">-</td>
                                             </tr>
-                                        </table>
-                                    </div>
+                                </table>
+                            </div>
                                     <div class="col-md-6">
                                         <h6><i class="fas fa-mobile-alt me-2"></i>プレビューオプション</h6>
                                         <div class="btn-group w-100" role="group">
@@ -2077,7 +2077,7 @@
                 </button>
             </div>
         </div>
-        
+
         <!-- 커스텀 알림 시스템 -->
         <div id="customNotification" class="notification-overlay" style="display: none;">
             <div class="notification-container">
@@ -4443,7 +4443,7 @@
             const defaultTemplates = {
                 'welcome': {
                     subject: 'Aetherへようこそ！',
-                    content: 'こんにちは！\n\nAetherにご登録いただき、ありがとうございます。\n\nご登録特典として特別なポイントをプレゼントいたします。\n\nぜひお買い物をお楽しみください！\n\nAetherチーム',
+                    content: 'Aetherにご登録いただき、ありがとうございます。\n\nご登録特典として特別なポイントをプレゼントいたします。\n\nぜひお買い物をお楽しみください！\n\nAetherチーム',
                     type: 'welcome'
                 },
                 'order-complete': {
@@ -5612,14 +5612,14 @@
           console.log('📧 발송 전 고객 데이터 확인:', customerData);
           console.log('📧 수신자 목록:', eventData.recipients);
 
-          // Netlify Function 호출
-          fetch('/.netlify/functions/send-email', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                  type: 'event',
+            // Netlify Function 호출
+            fetch('/.netlify/functions/send-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    type: 'event',
                   to: eventData.recipients.join(','), // 여러 수신자를 쉼표로 구분
                   subject: eventData.title,
                   data: {
@@ -5628,15 +5628,15 @@
                       image: eventData.image,
                       customerData: customerData // 고객별 데이터
                   }
-              })
-          })
+                })
+            })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     if (isScheduled) {
                         showCustomNotification('success', '予約送信設定完了', 
                             `配信時刻: ${new Date(eventData.scheduledAt).toLocaleString('ja-JP')}\n配信先: ${eventData.recipients.length}名`, 6000);
-                    } else {
+                } else {
                         showCustomNotification('success', 'イベントメール配信完了', 
                             `配信先: ${eventData.recipients.length}名\n成功: ${data.successCount}名\n失敗: ${data.failCount}名`, 6000);
                     }
@@ -5912,7 +5912,7 @@
                         const customers = [];
                         snapshot.forEach(doc => {
                             try {
-                                const userData = doc.data();
+                            const userData = doc.data();
                                 
                                 // Firebase 데이터 디버깅
                                 console.log(`🔥 Firebase 고객 데이터 [${doc.id}]:`, userData);
