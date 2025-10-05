@@ -2,11 +2,158 @@ const nodemailer = require('nodemailer');
 const fs = require('fs');
 const path = require('path');
 
+// 이메일 템플릿 (Function 내부에 포함)
+const emailTemplates = {
+    'event': `<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .content {
+            margin-bottom: 30px;
+        }
+        .event-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .event-content {
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+        .footer {
+            text-align: center;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+            font-size: 14px;
+            color: #666;
+        }
+        .button {
+            display: inline-block;
+            background-color: #333;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .highlight {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">AETHER</div>
+            <p>韓国コスメブランド</p>
+        </div>
+        
+        <div class="content">
+            <div class="event-title">{{title}}</div>
+            
+            <div class="highlight">
+                <p>こんにちは、{{name}}さん！</p>
+            </div>
+            
+            <div class="event-content">
+                {{content}}
+            </div>
+            
+            <div style="text-align: center;">
+                <a href="https://aether-store.jp" class="button">AETHERへアクセス</a>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>このメールは自動送信されています。</p>
+            <p>AETHER - 韓国コスメブランド</p>
+            <p>お問い合わせ: info@aether-store.jp</p>
+        </div>
+    </div>
+</body>
+</html>`,
+    
+    'welcome': `<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ウェルカムメール</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f4f4f4; }
+        .container { background-color: #ffffff; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 20px; margin-bottom: 30px; }
+        .logo { font-size: 24px; font-weight: bold; color: #333; margin-bottom: 10px; }
+        .content { margin-bottom: 30px; }
+        .footer { text-align: center; border-top: 1px solid #ddd; padding-top: 20px; font-size: 14px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">AETHER</div>
+            <p>韓国コスメブランド</p>
+        </div>
+        <div class="content">
+            <h2>こんにちは、{{name}}さん！</h2>
+            <p>Aetherにご登録いただき、ありがとうございます。</p>
+            <p>ご登録特典として{{points}}ポイントをプレゼントいたします。</p>
+            <p>ぜひお買い物をお楽しみください！</p>
+        </div>
+        <div class="footer">
+            <p>AETHER - 韓国コスメブランド</p>
+        </div>
+    </div>
+</body>
+</html>`
+};
+
 // 이메일 템플릿 로드 함수
 function loadEmailTemplate(templateName, data = {}) {
     try {
-        const templatePath = path.join(__dirname, '../../assets/email-templates', `${templateName}.html`);
-        let template = fs.readFileSync(templatePath, 'utf8');
+        console.log(`템플릿 로드 시도: ${templateName}`);
+        
+        let template = emailTemplates[templateName];
+        if (!template) {
+            console.error(`템플릿을 찾을 수 없음: ${templateName}`);
+            return `<p>템플릿을 찾을 수 없습니다: ${templateName}</p>`;
+        }
         
         // 데이터 치환
         Object.keys(data).forEach(key => {
@@ -14,10 +161,11 @@ function loadEmailTemplate(templateName, data = {}) {
             template = template.replace(regex, data[key]);
         });
         
+        console.log(`템플릿 로드 성공: ${templateName}`);
         return template;
     } catch (error) {
         console.error(`템플릿 로드 실패: ${templateName}`, error);
-        return '<p>템플릿을 로드할 수 없습니다.</p>';
+        return `<p>템플릿을 로드할 수 없습니다. 오류: ${error.message}</p>`;
     }
 }
 
