@@ -2805,7 +2805,7 @@
                 
                 // 상품 목록을 문자열로 변환
                 const itemsList = orderData.items.map(item => 
-                    `${item.brand} ${item.name} (${item.quantity}개)`
+                    `${item.brand} ${item.name} (${item.quantity})`
                 ).join(', ');
                 
                 const response = await fetch('/.netlify/functions/send-email', {
