@@ -1971,6 +1971,104 @@
                         </div>
                     </div>
                 </div>
+                
+                <!-- 테스트 메일 프리뷰 모달 -->
+                <div class="modal fade" id="testEmailPreviewModal" tabindex="-1" aria-labelledby="testEmailPreviewModalLabel" aria-hidden="true">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="testEmailPreviewModalLabel">
+                                    <i class="fas fa-eye me-2"></i>テストメールプレビュー
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6><i class="fas fa-info-circle me-2"></i>メール情報</h6>
+                                        <table class="table table-sm">
+                                            <tr>
+                                                <td><strong>件名:</strong></td>
+                                                <td id="previewSubject">-</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>送信先:</strong></td>
+                                                <td id="previewTo">-</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>テンプレート:</strong></td>
+                                                <td id="previewTemplate">-</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6><i class="fas fa-mobile-alt me-2"></i>プレビューオプション</h6>
+                                        <div class="btn-group w-100" role="group">
+                                            <input type="radio" class="btn-check" name="previewMode" id="previewDesktop" checked>
+                                            <label class="btn btn-outline-secondary" for="previewDesktop">
+                                                <i class="fas fa-desktop me-1"></i>デスクトップ
+                                            </label>
+                                            
+                                            <input type="radio" class="btn-check" name="previewMode" id="previewMobile">
+                                            <label class="btn btn-outline-secondary" for="previewMobile">
+                                                <i class="fas fa-mobile-alt me-1"></i>モバイル
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <hr>
+                                
+                                <!-- 메일 프리뷰 영역 -->
+                                <div id="emailPreviewContainer" class="border rounded p-3" style="background-color: #f8f9fa; min-height: 400px; overflow: auto;">
+                                    <div class="text-center text-muted py-5">
+                                        <i class="fas fa-envelope fa-3x mb-3"></i>
+                                        <p>プレビューを生成中...</p>
+                                    </div>
+                                </div>
+                                
+                                <style>
+                                    #emailPreviewFrame {
+                                        font-family: Arial, sans-serif;
+                                        line-height: 1.6;
+                                    }
+                                    
+                                    #emailPreviewFrame table {
+                                        border-collapse: collapse;
+                                        width: 100%;
+                                    }
+                                    
+                                    #emailPreviewFrame img {
+                                        max-width: 100%;
+                                        height: auto;
+                                    }
+                                    
+                                    .preview-mobile #emailPreviewFrame {
+                                        max-width: 375px !important;
+                                        font-size: 12px !important;
+                                        margin: 0 auto !important;
+                                    }
+                                    
+                                    .preview-desktop #emailPreviewFrame {
+                                        max-width: 100% !important;
+                                        font-size: 14px !important;
+                                    }
+                                </style>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="fas fa-times me-2"></i>閉じる
+                                </button>
+                                <button type="button" class="btn btn-primary" onclick="sendPreviewAsTest()">
+                                    <i class="fas fa-paper-plane me-2"></i>このメールをテスト送信
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             
             <div class="text-center mt-4">
@@ -6284,6 +6382,7 @@
 
         function previewTestEmail() {
             const templateType = document.getElementById('testTemplateSelect').value;
+            const emailAddress = document.getElementById('testEmailAddress').value;
             const customData = document.getElementById('testCustomData').value;
             
             if (!templateType) {
@@ -6291,11 +6390,286 @@
                 return;
             }
             
-            loadTemplateData(templateType);
-            updatePreview();
+            // 기본 데이터 준비
+            let data = {};
+            if (customData.trim()) {
+                try {
+                    data = JSON.parse(customData);
+                } catch (e) {
+                    alert('カスタムデータの形式が正しくありません。');
+                    return;
+                }
+            }
             
-            const modal = new bootstrap.Modal(document.getElementById('emailTemplateModal'));
+            // 메일 정보 설정
+            document.getElementById('previewSubject').textContent = `テストメール - ${templateType}`;
+            document.getElementById('previewTo').textContent = emailAddress || 'test@example.com';
+            document.getElementById('previewTemplate').textContent = getTemplateDisplayName(templateType);
+            
+            // 프리뷰 생성
+            generateEmailPreview(templateType, data);
+            
+            // 모달 표시
+            const modal = new bootstrap.Modal(document.getElementById('testEmailPreviewModal'));
             modal.show();
+        }
+        
+        function getTemplateDisplayName(templateType) {
+            const names = {
+                'welcome': 'ウェルカムメール',
+                'order-complete': '注文完了メール',
+                'points-earned': 'ポイント獲得メール',
+                'event': 'イベントメール'
+            };
+            return names[templateType] || templateType;
+        }
+        
+        function generateEmailPreview(templateType, data) {
+            const container = document.getElementById('emailPreviewContainer');
+            
+            // 로딩 표시
+            container.innerHTML = `
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+                    <p>プレビューを生成中...</p>
+                </div>
+            `;
+            
+            // 기본 데이터 설정
+            let previewData = { ...data };
+            
+            // 템플릿별 기본값 설정
+            switch (templateType) {
+                case 'welcome':
+                    previewData.name = previewData.name || 'テストユーザー';
+                    previewData.points = previewData.points || 300;
+                    break;
+                case 'order-complete':
+                    previewData.orderId = previewData.orderId || 'TEST-001';
+                    previewData.items = previewData.items || 'テスト商品1, テスト商品2, テスト商品3';
+                    break;
+                case 'points-earned':
+                    previewData.points = previewData.points || 100;
+                    previewData.reason = previewData.reason || 'テストポイント獲得';
+                    break;
+                case 'event':
+                    previewData.title = previewData.title || 'テストイベント';
+                    previewData.content = previewData.content || 'これはテストメールです。';
+                    previewData.name = previewData.name || 'テストユーザー';
+                    previewData.image = previewData.image || '';
+                    break;
+            }
+            
+            // HTML 템플릿 생성
+            const html = generateEmailHTML(templateType, previewData);
+            
+            // 프리뷰 표시
+            setTimeout(() => {
+                container.innerHTML = `
+                    <div id="emailPreviewFrame" style="max-width: 100%; overflow: auto;">
+                        ${html}
+                    </div>
+                `;
+                
+                // 프리뷰 모드 변경 이벤트 리스너 추가
+                setupPreviewModeListeners();
+            }, 500);
+        }
+        
+        function generateEmailHTML(templateType, data) {
+            switch (templateType) {
+                case 'welcome':
+                    return generateWelcomePreview(data);
+                case 'order-complete':
+                    return generateOrderCompletePreview(data);
+                case 'points-earned':
+                    return generatePointsEarnedPreview(data);
+                case 'event':
+                    return generateEventPreview(data);
+                default:
+                    return generateWelcomePreview(data);
+            }
+        }
+        
+        function generateWelcomePreview(data) {
+            return `
+                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; max-width: 600px; margin: 0 auto; border: 1px solid #ddd;">
+                    <tr>
+                        <td style="padding: 20px;">
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                                <tr>
+                                    <td style="background-color: #ffffff; text-align: center; border-bottom: 2px solid #333; padding: 30px 30px 20px 30px;">
+                                        <img src="https://aether-store.jp/assets/img/logo.png" alt="AETHER" style="max-width: 150px; height: auto; display: block; border: 0;">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="background-color: #ffffff; padding: 30px;">
+                                        <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 15px; text-align: center;">ようこそ Aether Storeへ！</div>
+                                        <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                                            <p style="margin: 0;">こんにちは、${data.name}様！</p>
+                                        </div>
+                                        <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px;">
+                                            <p>Aetherにご登録いただき、ありがとうございます。</p>
+                                            <p>ご登録特典として<strong style="color: #333;">${data.points}ポイント</strong>をプレゼントいたします。</p>
+                                            <p>ぜひお買い物をお楽しみください！</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="background-color: #ffffff; text-align: center; border-top: 1px solid #ddd; padding: 20px 30px 30px 30px; font-size: 14px; color: #666;">
+                                        <p style="margin: 0 0 10px 0;">このメールは自動送信されています。</p>
+                                        <p style="margin: 0;">お問い合わせ: info@aether-store.jp</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            `;
+        }
+        
+        function generateOrderCompletePreview(data) {
+            return `
+                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; max-width: 600px; margin: 0 auto; border: 1px solid #ddd;">
+                    <tr>
+                        <td style="padding: 20px;">
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                                <tr>
+                                    <td style="background-color: #ffffff; text-align: center; border-bottom: 2px solid #333; padding: 30px 30px 20px 30px;">
+                                        <img src="https://aether-store.jp/assets/img/logo.png" alt="AETHER" style="max-width: 150px; height: auto; display: block; border: 0;">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="background-color: #ffffff; padding: 30px;">
+                                        <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 15px; text-align: center;">ご注文ありがとうございます！</div>
+                                        <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                                            <p style="margin: 0;">注文番号: <strong>${data.orderId}</strong></p>
+                                        </div>
+                                        <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px;">
+                                            <p>ご注文いただき、誠にありがとうございます。</p>
+                                            <p>以下の商品をお申し込みいただきました：</p>
+                                            <p><strong>${data.items}</strong></p>
+                                            <p>商品の準備ができ次第、配送いたします。</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="background-color: #ffffff; text-align: center; border-top: 1px solid #ddd; padding: 20px 30px 30px 30px; font-size: 14px; color: #666;">
+                                        <p style="margin: 0 0 10px 0;">このメールは自動送信されています。</p>
+                                        <p style="margin: 0;">お問い合わせ: info@aether-store.jp</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            `;
+        }
+        
+        function generatePointsEarnedPreview(data) {
+            return `
+                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; max-width: 600px; margin: 0 auto; border: 1px solid #ddd;">
+                    <tr>
+                        <td style="padding: 20px;">
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                                <tr>
+                                    <td style="background-color: #ffffff; text-align: center; border-bottom: 2px solid #333; padding: 30px 30px 20px 30px;">
+                                        <img src="https://aether-store.jp/assets/img/logo.png" alt="AETHER" style="max-width: 150px; height: auto; display: block; border: 0;">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="background-color: #ffffff; padding: 30px;">
+                                        <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 15px; text-align: center;">ポイントを獲得しました！</div>
+                                        <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                                            <p style="margin: 0;">獲得ポイント: <strong style="color: #333;">${data.points}ポイント</strong></p>
+                                        </div>
+                                        <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px;">
+                                            <p>お買い物ありがとうございます！</p>
+                                            <p>${data.reason}により、${data.points}ポイントを獲得いたしました。</p>
+                                            <p>獲得したポイントは次回のお買い物でご利用いただけます。</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="background-color: #ffffff; text-align: center; border-top: 1px solid #ddd; padding: 20px 30px 30px 30px; font-size: 14px; color: #666;">
+                                        <p style="margin: 0 0 10px 0;">このメールは自動送信されています。</p>
+                                        <p style="margin: 0;">お問い合わせ: info@aether-store.jp</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            `;
+        }
+        
+        function generateEventPreview(data) {
+            return `
+                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; max-width: 600px; margin: 0 auto; border: 1px solid #ddd;">
+                    <tr>
+                        <td style="padding: 20px;">
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                                <tr>
+                                    <td style="background-color: #ffffff; text-align: center; border-bottom: 2px solid #333; padding: 30px 30px 20px 30px;">
+                                        <img src="https://aether-store.jp/assets/img/logo.png" alt="AETHER" style="max-width: 150px; height: auto; display: block; border: 0;">
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="background-color: #ffffff; padding: 30px;">
+                                        <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 15px; text-align: center;">${data.title}</div>
+                                        <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0;">
+                                            <p style="margin: 0;">こんにちは、${data.name}様！</p>
+                                        </div>
+                                        ${data.image ? `<div style="text-align: center; margin: 20px 0;"><img src="${data.image}" alt="${data.title}" style="max-width: 100%; height: auto; display: block; border: 0;"></div>` : ''}
+                                        <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px;">${data.content}</div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="background-color: #ffffff; text-align: center; border-top: 1px solid #ddd; padding: 20px 30px 30px 30px; font-size: 14px; color: #666;">
+                                        <p style="margin: 0 0 10px 0;">このメールは自動送信されています。</p>
+                                        <p style="margin: 0;">お問い合わせ: info@aether-store.jp</p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            `;
+        }
+        
+        function setupPreviewModeListeners() {
+            const previewContainer = document.getElementById('emailPreviewContainer');
+            const desktopMode = document.getElementById('previewDesktop');
+            const mobileMode = document.getElementById('previewMobile');
+            
+            desktopMode.addEventListener('change', () => {
+                if (desktopMode.checked) {
+                    previewContainer.classList.remove('preview-mobile');
+                    previewContainer.classList.add('preview-desktop');
+                }
+            });
+            
+            mobileMode.addEventListener('change', () => {
+                if (mobileMode.checked) {
+                    previewContainer.classList.remove('preview-desktop');
+                    previewContainer.classList.add('preview-mobile');
+                }
+            });
+        }
+        
+        function sendPreviewAsTest() {
+            const emailAddress = document.getElementById('testEmailAddress').value;
+            if (!emailAddress) {
+                alert('テスト送信先のメールアドレスを入力してください。');
+                return;
+            }
+            
+            // 모달 닫기
+            const modal = bootstrap.Modal.getInstance(document.getElementById('testEmailPreviewModal'));
+            modal.hide();
+            
+            // 실제 테스트 메일 발송
+            sendTestEmail();
         }
 
         function viewEmailDetails(emailId) {
