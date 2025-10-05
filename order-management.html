@@ -1354,7 +1354,7 @@
         }
         
         // 주문 상태 업데이트
-        function updateOrderStatus(orderId, newStatus) {
+        async function updateOrderStatus(orderId, newStatus) {
             if (!confirm('注文状態を変更しますか？')) {
                 return;
             }
@@ -1367,12 +1367,27 @@
             
             const orderRef = window.FirebaseService.db.collection('orders').doc(orderId);
             
-            orderRef.update({
-                status: newStatus,
-                updatedAt: new Date().toISOString()
-            })
-            .then(() => {
+            try {
+                await orderRef.update({
+                    status: newStatus,
+                    updatedAt: new Date().toISOString()
+                });
+                
                 console.log('✅ 주문 상태 업데이트 완료:', orderId, newStatus);
+                
+                // 배송 완료 시 포인트 부여
+                if (newStatus === 'delivered' || newStatus === 'completed') {
+                    console.log('📦 배송 완료 - 포인트 부여 시작');
+                    const pointResult = await window.FirebaseService.awardPointsOnDelivery(orderId);
+                    
+                    if (pointResult.success) {
+                        console.log('✅ 배송 완료 포인트 부여 성공:', pointResult.pointsEarned);
+                        showSuccess(`注文完了！${pointResult.pointsEarned}ポイントが付与されました。`);
+                    } else {
+                        console.error('❌ 배송 완료 포인트 부여 실패:', pointResult.error);
+                        showError('포인트 부여에 실패했습니다: ' + pointResult.message);
+                    }
+                }
                 
                 // 로컬 데이터 업데이트
                 const orderIndex = allOrders.findIndex(order => order.id === orderId);
@@ -1390,12 +1405,14 @@
                     sendOrderStatusNotification(orderId, newStatus);
                 }
                 
-                showSuccess('注文状態が更新されました。');
-            })
-            .catch((error) => {
+                if (newStatus !== 'delivered' && newStatus !== 'completed') {
+                    showSuccess('注文状態が更新されました。');
+                }
+                
+            } catch (error) {
                 console.error('❌ 주문 상태 업데이트 실패:', error);
                 showError('注文状態の更新に失敗しました。');
-            });
+            }
         }
 
         // 배송 번호 입력 모달 표시
