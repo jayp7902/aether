@@ -6168,19 +6168,24 @@
                 }
             }
             
+            // 요청 데이터 로그
+            const requestData = {
+                type: 'test',
+                to: emailAddress,
+                subject: `テストメール - ${templateType}`,
+                templateType: templateType,
+                data: data
+            };
+            
+            console.log('📧 테스트 메일 요청 데이터:', requestData);
+            
             // Netlify Function 호출
             fetch('/.netlify/functions/send-email', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    type: 'test',
-                    to: emailAddress,
-                    subject: `テストメール - ${templateType}`,
-                    templateType: templateType,
-                    data: data
-                })
+                body: JSON.stringify(requestData)
             })
             .then(response => response.json())
             .then(result => {
@@ -6219,7 +6224,21 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('テストメール送信エラーが発生しました。');
+                
+                // 상세한 오류 메시지 표시
+                const resultDiv = document.getElementById('testEmailResult');
+                resultDiv.innerHTML = `
+                    <div class="alert alert-danger" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        ネットワークエラーが発生しました: ${error.message || 'Unknown error'}
+                    </div>
+                `;
+                resultDiv.style.display = 'block';
+                
+                // 10초 후 숨기기
+                setTimeout(() => {
+                    resultDiv.style.display = 'none';
+                }, 10000);
             });
         }
 
