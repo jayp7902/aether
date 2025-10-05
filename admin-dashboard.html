@@ -1756,12 +1756,11 @@
                                                     <th>注文数</th>
                                                     <th>総購入額</th>
                                                     <th>ポイント</th>
-                                                    <th>ステータス</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="customerList">
                                                 <tr>
-                                                    <td colspan="8" class="text-center text-muted py-4">
+                                                    <td colspan="7" class="text-center text-muted py-4">
                                                         <i class="fas fa-spinner fa-spin me-2"></i>顧客データを読み込み中...
                                                     </td>
                                                 </tr>
@@ -5302,41 +5301,72 @@
                         
                         console.log(`📊 정렬된 고객 목록: ${customers.length}명`);
                         
-                        let customerCount = 0;
-                        customers.forEach(customer => {
-                            const userData = customer;
-                            console.log(`👤 고객 데이터 처리:`, userData.name || '이름없음', userData.email, '가입일:', userData.createdAt ? userData.createdAt.toDate() : '미상');
+                        // 각 고객의 주문 데이터를 조회하는 Promise 배열 생성
+                        const customerDataPromises = customers.map(customer => {
+                            return FirebaseService.db.collection('orders')
+                                .where('userEmail', '==', customer.email)
+                                .get()
+                                .then(ordersSnapshot => {
+                                    let totalSpent = 0;
+                                    let orderCount = ordersSnapshot.size;
+                                    
+                                    ordersSnapshot.forEach(orderDoc => {
+                                        const orderData = orderDoc.data();
+                                        totalSpent += orderData.totalAmount || 0;
+                                    });
+                                    
+                                    return {
+                                        ...customer,
+                                        totalSpent,
+                                        orderCount,
+                                        points: customer.points || 0
+                                    };
+                                })
+                                .catch(error => {
+                                    console.warn(`⚠️ 고객 ${customer.email} 주문 데이터 조회 실패:`, error);
+                                    return {
+                                        ...customer,
+                                        totalSpent: customer.totalSpent || 0,
+                                        orderCount: customer.orderCount || 0,
+                                        points: customer.points || 0
+                                    };
+                                });
+                        });
+                        
+                        // 모든 고객 데이터 로딩 완료 후 테이블 렌더링
+                        Promise.all(customerDataPromises)
+                            .then(customersWithData => {
+                                console.log(`✅ 모든 고객 데이터 로딩 완료: ${customersWithData.length}명`);
+                                customerList.innerHTML = ''; // 로딩 메시지 제거
+                                
+                                let customerCount = 0;
+                                customersWithData.forEach(userData => {
+                                    console.log(`👤 고객 데이터 처리:`, userData.name || '이름없음', userData.email, '가입일:', userData.createdAt ? userData.createdAt.toDate() : '미상');
+                                    
+                                    // 실제 데이터 사용
+                                    const totalSpent = userData.totalSpent || 0;
+                                    const orderCount = userData.orderCount || 0;
+                                    const points = userData.points || 0;
+                                    
+                                    console.log(`📊 고객 ${userData.name} 최종 데이터:`, {
+                                        totalSpent,
+                                        orderCount,
+                                        points
+                                    });
                             
-                            // 고객 등급 결정
-                            const totalSpent = userData.totalSpent || 0;
+                            // 고객 등급 결정 (모노톤 색상 사용)
                             let customerRank = '一般';
                             let rankClass = 'btn-secondary';
                             
                             if (totalSpent >= 100000) {
                                 customerRank = 'VIP';
-                                rankClass = 'btn-warning';
+                                rankClass = 'btn-dark'; // 모노톤: 검은색
                             } else if (totalSpent >= 50000) {
                                 customerRank = 'プレミアム';
-                                rankClass = 'btn-info';
+                                rankClass = 'btn-secondary'; // 모노톤: 회색
                             } else if (totalSpent >= 20000) {
                                 customerRank = 'ゴールド';
-                                rankClass = 'btn-primary';
-                            }
-                            
-                            // 고객 상태 결정
-                            const lastVisit = userData.lastVisit ? userData.lastVisit.toDate() : null;
-                            const now = new Date();
-                            const daysSinceLastVisit = lastVisit ? Math.floor((now - lastVisit) / (1000 * 60 * 60 * 24)) : 999;
-                            
-                            let status = '非アクティブ';
-                            let statusClass = 'btn-secondary';
-                            
-                            if (daysSinceLastVisit <= 30) {
-                                status = 'アクティブ';
-                                statusClass = 'btn-success';
-                            } else if (daysSinceLastVisit <= 90) {
-                                status = '休眠';
-                                statusClass = 'btn-warning';
+                                rankClass = 'btn-outline-secondary'; // 모노톤: 회색 아웃라인
                             }
                             
                             const row = document.createElement('tr');
@@ -5360,49 +5390,62 @@
                                     <small>${userData.createdAt ? userData.createdAt.toDate().toLocaleDateString('ja-JP') : '不明'}</small>
                                 </td>
                                 <td>
-                                    <span class="badge bg-secondary">${userData.orderCount || 0}</span>
+                                    <span class="badge bg-secondary">${orderCount}</span>
                                 </td>
                                 <td>
-                                    <strong>¥${(userData.totalSpent || 0).toLocaleString()}</strong>
+                                    <strong>¥${totalSpent.toLocaleString()}</strong>
                                 </td>
                                 <td>
-                                    <span class="badge bg-primary">${userData.points || 0}pt</span>
-                                </td>
-                                <td>
-                                    <button class="btn btn-sm ${statusClass}">${status}</button>
+                                    <span class="badge bg-dark">${points}pt</span>
                                 </td>
                             `;
-                            customerList.appendChild(row);
-                            customerCount++;
-                        });
-                        
-                        // 전체 선택 체크박스 업데이트
-                        const selectAllCheckbox = document.getElementById('selectAllCustomers');
-                        if (selectAllCheckbox) {
-                            selectAllCheckbox.setAttribute('data-total-customers', customerCount);
-                        }
-                        
-                        // 선택된 고객 수 업데이트
-                        updateSelectedCount();
-                        
-                        console.log(`✅ ${customerCount}名の顧客データを読み込み完了`);
-                        console.log('🔍 customerList 최종 상태:', customerList.innerHTML.length, '문자');
+                                    customerList.appendChild(row);
+                                    customerCount++;
+                                });
+                                
+                                // 전체 선택 체크박스 업데이트
+                                const selectAllCheckbox = document.getElementById('selectAllCustomers');
+                                if (selectAllCheckbox) {
+                                    selectAllCheckbox.setAttribute('data-total-customers', customerCount);
+                                }
+                                
+                                // 선택된 고객 수 업데이트
+                                updateSelectedCount();
+                                
+                                console.log(`✅ ${customerCount}名の顧客データを読み込み完了`);
+                                console.log('🔍 customerList 최종 상태:', customerList.innerHTML.length, '문자');
+                            })
+                            .catch(error => {
+                                console.error('❌ 고객 데이터 로딩 실패:', error);
+                                customerList.innerHTML = `
+                                    <tr>
+                                        <td colspan="7" class="text-center text-danger py-4">
+                                            <i class="fas fa-exclamation-triangle me-2"></i>顧客データの読み込みに失敗しました
+                                            <br><small>${error.message}</small>
+                                        </td>
+                                    </tr>
+                                `;
+                            });
                     })
                     .catch(error => {
                         console.error('❌ 고객 목록 로드 오류:', error);
                         customerList.innerHTML = `
-                            <div class="text-center text-danger py-4">
-                                <i class="fas fa-exclamation-triangle me-2"></i>顧客データの読み込みに失敗しました
-                                <br><small>${error.message}</small>
-                            </div>
+                            <tr>
+                                <td colspan="7" class="text-center text-danger py-4">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>顧客データの読み込みに失敗しました
+                                    <br><small>${error.message}</small>
+                                </td>
+                            </tr>
                         `;
                     });
             } else {
                 console.error('❌ FirebaseService가 초기화되지 않음');
                 customerList.innerHTML = `
-                    <div class="text-center text-warning py-4">
-                        <i class="fas fa-exclamation-triangle me-2"></i>Firebaseに接続されていません
-                    </div>
+                    <tr>
+                        <td colspan="7" class="text-center text-warning py-4">
+                            <i class="fas fa-exclamation-triangle me-2"></i>Firebaseに接続されていません
+                        </td>
+                    </tr>
                 `;
             }
         }
