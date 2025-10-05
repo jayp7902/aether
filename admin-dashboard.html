@@ -5534,7 +5534,8 @@
                 startDate: document.getElementById('eventStartDate').value,
                 endDate: document.getElementById('eventEndDate').value,
                 image: await getSelectedEventImage(),
-                recipients: getSelectedCustomers()
+                recipients: getSelectedCustomers(),
+                points: '300' // 기본 웰컴 포인트
             };
 
             if (!eventData.title || !eventData.content) {
