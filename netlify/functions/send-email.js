@@ -253,16 +253,25 @@ exports.handler = async (event, context) => {
             let personalizedHtml = html;
             
             // 고객별 실제 이름 사용
+            console.log(`📧 ${recipient} 처리 시작`);
+            console.log(`📧 받은 고객 데이터:`, data.customerData);
+            
             let customerName = data.customerData && data.customerData[recipient] 
                 ? data.customerData[recipient] 
                 : recipient.split('@')[0]; // 백업: 이메일에서 이름 추출
             
+            console.log(`📧 초기 이름:`, customerName);
+            
             // 이름이 "名前なし"인 경우 이메일에서 추출
             if (customerName === '名前なし' || !customerName) {
                 customerName = recipient.split('@')[0];
+                console.log(`📧 이름이 없어서 이메일에서 추출:`, customerName);
             }
             
+            console.log(`📧 최종 사용할 이름:`, customerName);
+            
             personalizedHtml = personalizedHtml.replace(/{{name}}/g, customerName);
+            console.log(`📧 HTML에서 {{name}} 치환 완료`);
             
             // 이미지 데이터 처리
             if (data.image) {
