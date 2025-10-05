@@ -1365,7 +1365,7 @@ class FirebaseService {
                 return sum + (item.price * item.quantity);
             }, 0);
 
-            // 적립 포인트 계산 (3%)
+            // 적립 포인트 계산 (3%) - 배송 완료 시 부여 예정
             const pointsToAdd = Math.floor(totalAmount * 0.03);
 
             // Firestore에 주문 저장 (이메일 기반 문서 ID 사용)
@@ -1379,12 +1379,13 @@ class FirebaseService {
                 ...orderData,
                 totalAmount: totalAmount,
                 pointsEarned: pointsToAdd,
+                pointsEarnedStatus: 'pending', // 배송 완료 시 'earned'로 변경
                 status: 'pending',
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
 
-            // 포인트 적립 (이메일 기반)
-            await this.addPoints(user.email, pointsToAdd, `주문 ${orderDocId} 포인트 적립`);
+            // 포인트 적립은 배송 완료 시 별도 처리 (여기서는 저장만)
+            console.log(`📝 주문 ${orderDocId} 저장 완료 - 포인트 ${pointsToAdd}는 배송 완료 시 부여 예정`);
 
             console.log('주문 저장 성공:', orderDocId);
             return { 
@@ -1399,6 +1400,119 @@ class FirebaseService {
                 error: error.code || 'order-save-failed', 
                 message: '주문 저장에 실패했습니다. 다시 시도해주세요.' 
             };
+        }
+    }
+
+    // 배송 완료 시 포인트 부여 함수
+    static async awardPointsOnDelivery(orderId) {
+        console.log('📦 배송 완료 포인트 부여 시작:', orderId);
+        
+        if (!this.isFirebaseAvailable()) {
+            console.log('Firebase 사용 불가 - 네트워크 연결을 확인해주세요');
+            return { 
+                success: false, 
+                error: 'network-error', 
+                message: 'ネットワークエラーが発生しました。接続を確認してください。' 
+            };
+        }
+
+        try {
+            // 주문 정보 조회
+            const orderDoc = await db.collection('orders').doc(orderId).get();
+            if (!orderDoc.exists) {
+                throw new Error('주문을 찾을 수 없습니다.');
+            }
+
+            const orderData = orderDoc.data();
+            
+            // 이미 포인트가 부여되었는지 확인
+            if (orderData.pointsEarnedStatus === 'earned') {
+                console.log('이미 포인트가 부여된 주문입니다.');
+                return { 
+                    success: true, 
+                    message: '포인트가 이미 부여되었습니다.' 
+                };
+            }
+
+            // 포인트 부여
+            await this.addPoints(orderData.userEmail, orderData.pointsEarned, `배송 완료 - 주문 ${orderId} 포인트 적립`);
+
+            // 주문 상태 업데이트
+            await db.collection('orders').doc(orderId).update({
+                pointsEarnedStatus: 'earned',
+                pointsEarnedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                status: 'delivered'
+            });
+
+            // 배송 완료 메일 발송
+            try {
+                await this.sendShippingCompleteEmail(orderData);
+                console.log('✅ 배송 완료 메일 발송 성공');
+            } catch (emailError) {
+                console.error('❌ 배송 완료 메일 발송 실패:', emailError);
+                // 메일 발송 실패해도 포인트 부여는 계속 진행
+            }
+
+            console.log('✅ 배송 완료 포인트 부여 성공:', {
+                orderId: orderId,
+                userEmail: orderData.userEmail,
+                pointsEarned: orderData.pointsEarned
+            });
+
+            return { 
+                success: true, 
+                message: '배송 완료 포인트가 성공적으로 부여되었습니다.',
+                pointsEarned: orderData.pointsEarned
+            };
+
+        } catch (error) {
+            console.error('배송 완료 포인트 부여 실패:', error);
+            return { 
+                success: false, 
+                error: error.message,
+                message: '배송 완료 포인트 부여에 실패했습니다.' 
+            };
+        }
+    }
+
+    // 배송 완료 메일 발송 함수
+    static async sendShippingCompleteEmail(orderData) {
+        console.log('📧 배송 완료 메일 발송 시작:', orderData);
+        
+        try {
+            const response = await fetch('/.netlify/functions/send-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    type: 'shipping-complete',
+                    to: orderData.userEmail,
+                    subject: '配送完了のお知らせ - Aether Store',
+                    orderId: orderData.id || orderData.orderId,
+                    name: orderData.userEmail.split('@')[0], // 이메일에서 이름 추출
+                    items: Array.isArray(orderData.items) ? 
+                        orderData.items.map(item => `${item.brand} ${item.name} (${item.quantity})`).join(', ') : 
+                        orderData.items || '상품 정보 없음',
+                    shippingAddress: orderData.shippingAddress || '配送先情報なし',
+                    deliveryDate: new Date().toLocaleDateString('ja-JP'),
+                    shippingCompany: orderData.shippingCompany || 'ヤマト運輸',
+                    trackingNumber: orderData.trackingNumber || 'N/A',
+                    pointsEarned: orderData.pointsEarned || 0
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log('✅ 배송 완료 메일 발송 성공:', result);
+            return result;
+
+        } catch (error) {
+            console.error('❌ 배송 완료 메일 발송 실패:', error);
+            throw error;
         }
     }
 
