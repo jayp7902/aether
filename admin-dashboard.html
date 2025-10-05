@@ -6594,10 +6594,19 @@
                         });
                     }
                 }
-                return ['상품 A', '상품 B', '상품 C']; // 기본값
+                // 실제 브랜드 상품명으로 기본값 설정
+                return [
+                    'LALARECIPE バクチノールアイクリーム',
+                    'COSCELL レチノールボリュームアイバッグクリーム',
+                    'LUCINDE PDRNイオナーパーメントアンプルクリーム'
+                ];
             } catch (error) {
                 console.warn('⚠️ 상품 목록 조회 중 오류, 기본값 사용:', error);
-                return ['상품 A', '상품 B', '상품 C']; // 기본값
+                return [
+                    'LALARECIPE バクチノールアイクリーム',
+                    'COSCELL レチノールボリュームアイバッグクリーム',
+                    'LUCINDE PDRNイオナーパーメントアンプルクリーム'
+                ];
             }
         }
 
@@ -7398,9 +7407,16 @@
                     };
                     break;
                 case 'order-complete':
+                    const testProducts = await getTestProducts();
                     defaultData = {
                         orderId: await generateTestOrderId(),
-                        items: await getTestProducts()
+                        items: testProducts.join(', '),
+                        paymentMethod: '銀行振込',
+                        subtotal: '¥24,100',
+                        shipping: '¥500',
+                        pointsUsed: '100ポイント',
+                        totalAmount: '¥24,500',
+                        shippingAddress: '東京都 練馬区 光が丘2-10-1 3009号'
                     };
                     break;
                 case 'points-earned':
@@ -7521,7 +7537,16 @@
                     break;
                 case 'order-complete':
                     previewData.orderId = previewData.orderId || await generateTestOrderId();
-                    previewData.items = previewData.items || (await getTestProducts()).join(', ');
+                    if (!previewData.items) {
+                        const testProducts = await getTestProducts();
+                        previewData.items = testProducts.join(', ');
+                    }
+                    previewData.paymentMethod = previewData.paymentMethod || '銀行振込';
+                    previewData.subtotal = previewData.subtotal || '¥24,100';
+                    previewData.shipping = previewData.shipping || '¥500';
+                    previewData.pointsUsed = previewData.pointsUsed || '100ポイント';
+                    previewData.totalAmount = previewData.totalAmount || '¥24,500';
+                    previewData.shippingAddress = previewData.shippingAddress || '東京都 練馬区 光が丘2-10-1 3009号';
                     break;
                 case 'points-earned':
                     previewData.points = previewData.points || Math.floor(Math.random() * 500) + 50;
@@ -7604,25 +7629,53 @@
         
         function generateOrderCompletePreview(data) {
             return `
-                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; max-width: 600px; margin: 0 auto; border: 1px solid #ddd;">
+                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; text-align: center !important;">
                     <tr>
-                        <td style="padding: 20px;">
-                            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        <td style="padding: 20px; text-align: center !important;">
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin: 0 auto !important;">
                                 <tr>
-                                    <td style="background-color: #ffffff; text-align: center; border-bottom: 2px solid #333; padding: 30px 30px 20px 30px;">
-                                        <img src="https://aether-store.jp/assets/img/logo.png" alt="AETHER" style="max-width: 150px; height: auto; display: block; border: 0;">
+                                    <td style="background-color: #ffffff; text-align: center !important; border-bottom: 2px solid #333; padding: 30px 30px 20px 30px;">
+                                        <a href="https://aether-store.jp" style="text-decoration: none; display: inline-block; text-align: center !important;">
+                                            <img src="https://aether-store.jp/assets/img/logo.png" alt="AETHER" style="max-width: 150px; height: auto; display: block; border: 0; margin: 0 auto !important; text-align: center !important;">
+                                        </a>
                                     </td>
                                 </tr>
                                 <tr>
-                                    <td style="background-color: #ffffff; padding: 30px;">
-                                        <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 15px; text-align: center;">ご注文ありがとうございます！</div>
-                                        <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0;">
-                                            <p style="margin: 0;">注文番号: <strong>${data.orderId}</strong></p>
+                                    <td style="background-color: #ffffff; padding: 30px; text-align: center !important;">
+                                        <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 15px; text-align: center !important;">ご注文ありがとうございます！</div>
+                                        <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center !important;">
+                                            <p style="margin: 0; text-align: center !important;">注文番号: <strong>${data.orderId}</strong></p>
                                         </div>
                                         <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px; text-align: center !important;">
                                             <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">ご注文いただき、誠にありがとうございます。</p>
-                                            <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">以下の商品をお申し込みいただきました：</p>
-                                            <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;"><strong>${data.items}</strong></p>
+                                            
+                                            <!-- 주문 상세 정보 -->
+                                            <div style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: left !important; max-width: 500px; margin-left: auto; margin-right: auto;">
+                                                <h3 style="text-align: center !important; margin-bottom: 15px; color: #333;">注文詳細</h3>
+                                                
+                                                <!-- 주문 상품 -->
+                                                <div style="margin-bottom: 15px;">
+                                                    <strong>注文商品:</strong><br>
+                                                    <div style="margin-top: 5px;">${data.items || '상품 정보 없음'}</div>
+                                                </div>
+                                                
+                                                <!-- 결제 정보 -->
+                                                <div style="margin-bottom: 15px;">
+                                                    <strong>支払い方法:</strong> ${data.paymentMethod || '銀行振込'}<br>
+                                                    <strong>商品代金:</strong> ${data.subtotal || '¥0'}<br>
+                                                    <strong>配送料:</strong> ${data.shipping || '¥0'}<br>
+                                                    <strong>使用ポイント:</strong> ${data.pointsUsed || '0ポイント'}<br>
+                                                    <hr style="border: 1px solid #ddd; margin: 10px 0;">
+                                                    <strong style="font-size: 18px; color: #333;">合計金額: ${data.totalAmount || '¥0'}</strong>
+                                                </div>
+                                                
+                                                <!-- 배송 정보 -->
+                                                <div>
+                                                    <strong>配送先:</strong><br>
+                                                    <div style="margin-top: 5px;">${data.shippingAddress || '配送先情報なし'}</div>
+                                                </div>
+                                            </div>
+                                            
                                             <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">商品の準備ができ次第、配送いたします。</p>
                                         </div>
                                     </td>
