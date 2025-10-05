@@ -642,11 +642,29 @@ exports.handler = async (event, context) => {
     }
 
     try {
-        const { to, subject, type, data } = JSON.parse(event.body);
+        console.log('📧 요청 본문:', event.body);
+        
+        let parsedBody;
+        try {
+            parsedBody = JSON.parse(event.body);
+        } catch (parseError) {
+            console.error('JSON 파싱 오류:', parseError);
+            return {
+                statusCode: 400,
+                headers,
+                body: JSON.stringify({ 
+                    success: false, 
+                    error: 'Invalid JSON in request body',
+                    details: parseError.message 
+                })
+            };
+        }
+        
+        const { to, subject, type, data, templateType } = parsedBody;
 
-        console.log('메일 발송 요청:', { to, subject, type });
+        console.log('메일 발송 요청:', { to, subject, type, templateType });
         console.log('📧 받은 데이터:', data);
-        console.log('📧 고객 데이터:', data.customerData);
+        console.log('📧 고객 데이터:', data?.customerData);
         
         // 환경 변수 확인
         console.log('환경 변수 확인:', {
@@ -699,10 +717,10 @@ exports.handler = async (event, context) => {
                 break;
             case 'test':
                 // 테스트 메일 - 선택된 템플릿 타입에 따라 처리
-                const templateType = data.templateType || 'welcome';
-                console.log(`테스트 메일 템플릿 타입: ${templateType}`);
+                const testTemplateType = templateType || data.templateType || 'welcome';
+                console.log(`테스트 메일 템플릿 타입: ${testTemplateType}`);
                 
-                switch (templateType) {
+                switch (testTemplateType) {
                     case 'welcome':
                         html = loadEmailTemplate('welcome', {
                             name: data.name || 'テストユーザー',
@@ -832,20 +850,38 @@ exports.handler = async (event, context) => {
         console.error('오류 상세:', {
             message: error.message,
             stack: error.stack,
-            code: error.code
+            code: error.code,
+            name: error.name
         });
+        
+        // 오류 타입별 처리
+        let errorMessage = error.message;
+        let errorType = error.name || 'UnknownError';
+        
+        if (error.message.includes('SyntaxError')) {
+            errorMessage = '템플릿 처리 중 구문 오류가 발생했습니다.';
+            errorType = 'TemplateSyntaxError';
+        } else if (error.message.includes('ReferenceError')) {
+            errorMessage = '변수 참조 오류가 발생했습니다.';
+            errorType = 'ReferenceError';
+        } else if (error.message.includes('TypeError')) {
+            errorMessage = '데이터 타입 오류가 발생했습니다.';
+            errorType = 'TypeError';
+        }
+        
         return {
             statusCode: 500,
             headers,
             body: JSON.stringify({ 
                 success: false, 
-                error: error.message,
+                error: errorMessage,
+                errorType: errorType,
                 details: {
                     code: error.code,
+                    originalMessage: error.message,
                     stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
                 }
             })
         };
     }
-};
 };
