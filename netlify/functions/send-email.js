@@ -370,18 +370,41 @@ const emailTemplates = {
             -ms-text-size-adjust: 100%;
         }
         
-        /* Force white background */
+        /* 모바일 메일 클라이언트용 전체 배경 흰색 강제 */
+        html {
+            background-color: #ffffff !important;
+            background: #ffffff !important;
+            -webkit-background-color: #ffffff !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+        
+        /* Force white background - 모바일 호환성 강화 */
         body {
             font-family: Arial, sans-serif;
             line-height: 1.6;
             color: #333;
             max-width: 600px;
-            margin: 0 auto;
-            padding: 20px;
+            margin: 0 auto !important;
+            padding: 20px !important;
             background-color: #ffffff !important;
             background: #ffffff !important;
             -webkit-background-color: #ffffff !important;
             mso-background-color: #ffffff !important;
+            /* 모바일 메일 클라이언트용 추가 속성 */
+            background-image: none !important;
+            background-attachment: scroll !important;
+            background-position: 0% 0% !important;
+            background-repeat: repeat !important;
+        }
+        
+        /* 모바일에서 흰색 배경 강제 적용 */
+        @media only screen and (max-width: 600px) {
+            html, body {
+                background-color: #ffffff !important;
+                background: #ffffff !important;
+                -webkit-background-color: #ffffff !important;
+            }
         }
         
         /* Force white background on all elements */
@@ -418,10 +441,11 @@ const emailTemplates = {
             <td style="background-color: #ffffff; padding: 20px;">
     <![endif]-->
     
-    <!-- 메일 전체 중앙 정렬을 위한 컨테이너 -->
-    <div style="display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 0; text-align: center;">
-        <!-- 모바일 호환성을 위한 테이블 기반 구조 -->
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; max-width: 600px; margin: 0 auto; mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
+    <!-- Gmail 모바일 호환성을 위한 특별한 구조 -->
+    <div class="gmail-fix" style="white-space: nowrap; font: 15px courier; line-height: 0;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</div>
+    
+    <!-- 모바일 호환성을 위한 테이블 기반 구조 -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; max-width: 600px; margin: 0 auto; mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
             <tr>
                 <td style="background-color: #ffffff; padding: 20px; mso-padding-alt: 20px;">
                     <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); mso-table-lspace: 0pt; mso-table-rspace: 0pt;">
@@ -492,7 +516,9 @@ const emailTemplates = {
                 </td>
             </tr>
         </table>
-    </div>
+    
+    <!-- Gmail 모바일 호환성을 위한 특별한 구조 끝 -->
+    <div class="gmail-fix" style="white-space: nowrap; font: 15px courier; line-height: 0;">&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</div>
     
     <!--[if mso]>
             </td>
