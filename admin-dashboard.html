@@ -6730,10 +6730,10 @@
                                         <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px auto; text-align: center; max-width: 400px;">
                                             <p style="margin: 0; text-align: center;">こんにちは、${data.name}様！</p>
                                         </div>
-                                        <div style="font-size: 13.6px; line-height: 1.8; margin-bottom: 20px; text-align: center;">
-                                            <p style="text-align: center; margin: 10px 0; font-size: 13.6px;">Aetherにご登録いただき、ありがとうございます。</p>
-                                            <p style="text-align: center; margin: 10px 0; font-size: 13.6px;">ご登録特典として<strong style="color: #333;">${data.points}ポイント</strong>をプレゼントいたします。</p>
-                                            <p style="text-align: center; margin: 10px 0; font-size: 13.6px;">ぜひお買い物をお楽しみください！</p>
+                                        <div style="font-size: 13.6px; line-height: 1.8; margin-bottom: 20px; text-align: center !important;">
+                                            <p style="text-align: center !important; margin: 10px auto !important; font-size: 13.6px !important; max-width: 400px !important;">Aetherにご登録いただき、ありがとうございます。</p>
+                                            <p style="text-align: center !important; margin: 10px auto !important; font-size: 13.6px !important; max-width: 400px !important;">ご登録特典として<strong style="color: #333;">${data.points}ポイント</strong>をプレゼントいたします。</p>
+                                            <p style="text-align: center !important; margin: 10px auto !important; font-size: 13.6px !important; max-width: 400px !important;">ぜひお買い物をお楽しみください！</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -6767,11 +6767,11 @@
                                         <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0;">
                                             <p style="margin: 0;">注文番号: <strong>${data.orderId}</strong></p>
                                         </div>
-                                        <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px;">
-                                            <p>ご注文いただき、誠にありがとうございます。</p>
-                                            <p>以下の商品をお申し込みいただきました：</p>
-                                            <p><strong>${data.items}</strong></p>
-                                            <p>商品の準備ができ次第、配送いたします。</p>
+                                        <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px; text-align: center !important;">
+                                            <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">ご注文いただき、誠にありがとうございます。</p>
+                                            <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">以下の商品をお申し込みいただきました：</p>
+                                            <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;"><strong>${data.items}</strong></p>
+                                            <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">商品の準備ができ次第、配送いたします。</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -6805,10 +6805,10 @@
                                         <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0;">
                                             <p style="margin: 0;">獲得ポイント: <strong style="color: #333;">${data.points}ポイント</strong></p>
                                         </div>
-                                        <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px;">
-                                            <p>お買い物ありがとうございます！</p>
-                                            <p>${data.reason}により、${data.points}ポイントを獲得いたしました。</p>
-                                            <p>獲得したポイントは次回のお買い物でご利用いただけます。</p>
+                                        <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px; text-align: center !important;">
+                                            <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">お買い物ありがとうございます！</p>
+                                            <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">${data.reason}により、${data.points}ポイントを獲得いたしました。</p>
+                                            <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">獲得したポイントは次回のお買い物でご利用いただけます。</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -6845,7 +6845,9 @@
                                             <p style="margin: 0; text-align: center;">こんにちは、${data.name}様！</p>
                                         </div>
                                         ${data.image ? `<div style="text-align: center; margin: 20px 0;"><img src="${data.image}" alt="${data.title}" style="max-width: 100%; height: auto; display: block; border: 0; margin: 0 auto;"></div>` : ''}
-                                        <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px; text-align: center;">${data.content}</div>
+                                        <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px; text-align: center !important;">
+                                            <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">${data.content}</p>
+                                        </div>
                                     </td>
                                 </tr>
                                 <tr>
