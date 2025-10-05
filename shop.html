@@ -849,6 +849,29 @@
         let filteredBrands = [];
         let pointsPageUser = null; // 포인트 페이지와 동일한 사용자 관리
 
+        // 현재 사용자 정보 가져오기 함수
+        function getCurrentUser() {
+            // auth-utils.js의 getCurrentUser 함수가 있으면 사용
+            if (typeof window.getCurrentUser === 'function') {
+                return window.getCurrentUser();
+            }
+            
+            // 로컬 fallback: localStorage에서 확인
+            try {
+                const loginStatus = JSON.parse(localStorage.getItem('aetherLoginStatus') || '{}');
+                if (loginStatus && loginStatus.email) {
+                    return {
+                        email: loginStatus.email,
+                        displayName: loginStatus.displayName || loginStatus.email.split('@')[0]
+                    };
+                }
+            } catch (e) {
+                console.warn('getCurrentUser localStorage 파싱 오류:', e);
+            }
+            
+            return null;
+        }
+
         // 카트 개수 업데이트 (Firebase 전용)
         async function updateCartCount() {
             console.log('🔢 shop.html updateCartCount 호출');
