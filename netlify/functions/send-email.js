@@ -264,11 +264,18 @@ exports.handler = async (event, context) => {
             // 이미지 데이터 처리
             if (data.image) {
                 let imageUrl = data.image;
-                // 상대 경로인 경우 절대 URL로 변환
-                if (!imageUrl.startsWith('http')) {
+                // Base64 데이터인지 확인
+                if (imageUrl.startsWith('data:image/')) {
+                    // Base64 이미지 데이터를 직접 사용
+                    personalizedHtml = personalizedHtml.replace(/{{image}}/g, imageUrl);
+                } else if (!imageUrl.startsWith('http')) {
+                    // 상대 경로인 경우 절대 URL로 변환
                     imageUrl = `https://aether-store.jp/${imageUrl}`;
+                    personalizedHtml = personalizedHtml.replace(/{{image}}/g, imageUrl);
+                } else {
+                    // 절대 URL인 경우 그대로 사용
+                    personalizedHtml = personalizedHtml.replace(/{{image}}/g, imageUrl);
                 }
-                personalizedHtml = personalizedHtml.replace(/{{image}}/g, imageUrl);
             } else {
                 // 이미지가 없는 경우 이미지 섹션 제거
                 personalizedHtml = personalizedHtml.replace(/{{#if image}}[\s\S]*?{{\/if}}/g, '');
