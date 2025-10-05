@@ -329,6 +329,7 @@ const emailTemplates = {
                         <td style="background-color: #ffffff; padding: 30px; mso-padding-alt: 30px; text-align: center;">
                             <!-- 환영 메시지 -->
                             <div style="font-size: 13.6px; line-height: 1.8; margin-bottom: 20px; background-color: #ffffff; text-align: center !important;">
+                                <p style="text-align: center !important; margin: 10px auto !important; font-size: 16px !important; max-width: 400px !important; font-weight: bold !important;"><strong style="color: #333 !important; background-color: #ffffff !important;">こんにちは、{{name}}様！</strong></p>
                                 <p style="text-align: center !important; margin: 10px auto !important; font-size: 13.6px !important; max-width: 400px !important;">Aetherにご登録いただき、ありがとうございます。</p>
                                 <p style="text-align: center !important; margin: 10px auto !important; font-size: 13.6px !important; max-width: 400px !important;">ご登録特典として<strong style="color: #333 !important; background-color: #ffffff !important;">{{points}}ポイント</strong>をプレゼントいたします。</p>
                                 <p style="text-align: center !important; margin: 10px auto !important; font-size: 13.6px !important; max-width: 400px !important;">ぜひお買い物をお楽しみください！</p>
