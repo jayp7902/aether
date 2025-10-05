@@ -1752,7 +1752,7 @@
                                                     </th>
                                                     <th>顧客情報</th>
                                                     <th>顧客等級</th>
-                                                    <th>最終訪問日</th>
+                                                    <th>登録日</th>
                                                     <th>注文数</th>
                                                     <th>総購入額</th>
                                                     <th>ポイント</th>
@@ -1790,8 +1790,8 @@
                                 <button class="btn btn-primary" onclick="showCreateTemplateModal()">
                                     <i class="fas fa-plus me-2"></i>新規テンプレート作成
                                 </button>
-                            </div>
-                            
+                                </div>
+                                
                             <!-- 템플릿 목록 -->
                             <div class="row" id="emailTemplatesList">
                                 <!-- 환영 메일 템플릿 -->
@@ -1825,7 +1825,7 @@
                                             <div class="d-flex justify-content-between align-items-start mb-3">
                                                 <h6 class="card-title">注文完了メール</h6>
                                                 <span class="badge bg-success">アクティブ</span>
-                                            </div>
+                                    </div>
                                             <p class="card-text text-muted small">注文が完了した際に送信される確認メールです。</p>
                                             <div class="d-flex gap-2 mt-3">
                                                 <button class="btn btn-outline-primary btn-sm" onclick="editTemplate('order-complete')">
@@ -1860,12 +1860,12 @@
                                                 </button>
                                                 <button class="btn btn-outline-success btn-sm" onclick="testTemplate('points-earned')">
                                                     <i class="fas fa-paper-plane me-1"></i>テスト
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    </button>
                                 </div>
-                                
+                        </div>
+                    </div>
+                </div>
+                
                                 <!-- 이벤트 메일 템플릿 -->
                                 <div class="col-md-6 col-lg-4 mb-4">
                                     <div class="card h-100">
@@ -5145,7 +5145,7 @@
                 if (data.success) {
                     if (isScheduled) {
                         alert(`✅ 予約送信が設定されました！\n配信時刻: ${new Date(eventData.scheduledAt).toLocaleString('ja-JP')}\n配信先: ${eventData.recipients.length}名`);
-                    } else {
+                } else {
                         alert(`✅ イベントメール配信が完了しました！\n配信先: ${eventData.recipients.length}名`);
                     }
                     
@@ -5283,10 +5283,29 @@
                             return;
                         }
                         
-                        let customerCount = 0;
+                        // 고객 데이터를 배열로 변환하고 가입일 기준으로 정렬
+                        const customers = [];
                         snapshot.forEach(doc => {
                             const userData = doc.data();
-                            console.log(`👤 고객 데이터 처리:`, userData.name || '이름없음', userData.email);
+                            customers.push({
+                                id: doc.id,
+                                ...userData
+                            });
+                        });
+                        
+                        // 가입일 기준으로 정렬 (최신 가입자가 상단에)
+                        customers.sort((a, b) => {
+                            const dateA = a.createdAt ? a.createdAt.toDate() : new Date(0);
+                            const dateB = b.createdAt ? b.createdAt.toDate() : new Date(0);
+                            return dateB - dateA; // 최신순 (내림차순)
+                        });
+                        
+                        console.log(`📊 정렬된 고객 목록: ${customers.length}명`);
+                        
+                        let customerCount = 0;
+                        customers.forEach(customer => {
+                            const userData = customer;
+                            console.log(`👤 고객 데이터 처리:`, userData.name || '이름없음', userData.email, '가입일:', userData.createdAt ? userData.createdAt.toDate() : '미상');
                             
                             // 고객 등급 결정
                             const totalSpent = userData.totalSpent || 0;
@@ -5323,7 +5342,7 @@
                             const row = document.createElement('tr');
                             row.innerHTML = `
                                 <td>
-                                    <input class="form-check-input customer-checkbox" type="checkbox" value="${userData.email}" id="customer-${doc.id}" onchange="updateSelectedCount()">
+                                    <input class="form-check-input customer-checkbox" type="checkbox" value="${userData.email}" id="customer-${userData.id}" onchange="updateSelectedCount()">
                                 </td>
                                 <td>
                                     <div>
@@ -5338,7 +5357,7 @@
                                     </button>
                                 </td>
                                 <td>
-                                    <small>${lastVisit ? lastVisit.toLocaleDateString('ja-JP') : '不明'}</small>
+                                    <small>${userData.createdAt ? userData.createdAt.toDate().toLocaleDateString('ja-JP') : '不明'}</small>
                                 </td>
                                 <td>
                                     <span class="badge bg-secondary">${userData.orderCount || 0}</span>
