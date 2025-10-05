@@ -763,69 +763,26 @@
         
         // 이전 showQRCode 함수는 제거됨 - 포인트 페이지와 동일한 방식만 사용
 
-        // 헬퍼 함수들 (index.html과 동일한 로직)
-        function getCurrentUser() {
-            // Firebase에서 현재 로그인된 사용자 확인
-            if (typeof firebase !== 'undefined' && 
-                firebase.auth && 
-                firebase.apps && 
-                firebase.apps.length > 0 &&
-                firebase.apps[0].name === '[DEFAULT]') {
-                
-                const user = firebase.auth().currentUser;
-                if (user && user.email) {
-                    return {
-                        email: user.email,
-                        uid: user.uid
-                    };
-                }
-            }
-            return null;
-        }
-
-                // 이전 QR 코드 생성 함수들은 제거됨 - 포인트 페이지와 동일한 방식만 사용
-
-        // info.html에서는 auth-utils.js의 updateCartCount 함수를 사용
-        // 중복된 함수 제거로 충돌 방지
-        
         // 현재 사용자 정보 가져오기 (Firebase + localStorage 지원)
         function getCurrentUser() {
-            console.log('🔍 info.html getCurrentUser 호출');
-            
-            // Firebase 사용자 확인
-            try {
-                if (typeof firebase !== 'undefined' && firebase.auth && firebase.apps && firebase.apps.length > 0) {
-                    const firebaseUser = firebase.auth().currentUser;
-                    console.log('🔍 info.html Firebase currentUser:', firebaseUser ? firebaseUser.email : 'null');
-                    
-                    if (firebaseUser) {
-                        console.log('✅ info.html Firebase 사용자 확인됨:', firebaseUser.email);
-                        return firebaseUser;
-                    } else {
-                        console.log('❌ info.html Firebase 사용자 없음 (로그아웃 상태)');
-                    }
-                } else {
-                    console.log('❌ info.html Firebase 초기화되지 않음');
-                }
-            } catch (error) {
-                console.warn('info.html Firebase 사용자 확인 중 오류:', error);
+            // auth-utils.js의 getCurrentUser 함수가 있으면 사용
+            if (typeof window.getCurrentUser === 'function') {
+                return window.getCurrentUser();
             }
             
-            // localStorage에서 로그인 상태 확인
+            // 로컬 fallback: localStorage에서 확인
             try {
-                const loginStatus = localStorage.getItem('aetherLoginStatus');
-                if (loginStatus) {
-                    const userData = JSON.parse(loginStatus);
-                    if (userData && userData.email) {
-                        console.log('✅ info.html localStorage 사용자 확인됨:', userData.email);
-                        return userData;
-                    }
+                const loginStatus = JSON.parse(localStorage.getItem('aetherLoginStatus') || '{}');
+                if (loginStatus && loginStatus.email) {
+                    return {
+                        email: loginStatus.email,
+                        displayName: loginStatus.displayName || loginStatus.email.split('@')[0]
+                    };
                 }
-            } catch (error) {
-                console.warn('info.html localStorage 사용자 확인 중 오류:', error);
+            } catch (e) {
+                console.warn('getCurrentUser localStorage 파싱 오류:', e);
             }
             
-            console.log('❌ info.html 로그인된 사용자 없음');
             return null;
         }
 
@@ -939,9 +896,26 @@
                             console.log('✅ info.html - pointsPageUser 초기화 (로그아웃)');
                         }
                         
-                        // 사용자 메뉴 직접 업데이트 (auth-utils.js 호출 방지)
-                        updateUserMenuDirectly();
-                        console.log('✅ info.html - 사용자 메뉴 직접 업데이트 완료');
+                        // 사용자 메뉴 업데이트
+                        if (typeof window.updateUserMenu === 'function') {
+                            console.log('info.html updateUserMenu 함수 호출');
+                            try {
+                                const result = window.updateUserMenu();
+                                if (result && typeof result.then === 'function') {
+                                    result.then(() => {
+                                        console.log('✅ info.html 사용자 메뉴 업데이트 완료');
+                                    }).catch(error => {
+                                        console.error('❌ info.html 사용자 메뉴 업데이트 실패:', error);
+                                    });
+                                } else {
+                                    console.log('✅ info.html 사용자 메뉴 업데이트 완료 (동기)');
+                                }
+                            } catch (error) {
+                                console.error('❌ info.html updateUserMenu 함수 실행 실패:', error);
+                            }
+                        } else {
+                            console.warn('info.html updateUserMenu 함수를 찾을 수 없습니다');
+                        }
                         
                         // 카트 수량 업데이트
                         setTimeout(() => {
@@ -954,17 +928,21 @@
                 window.addEventListener('firebaseInitialized', function(event) {
                     console.log('info.html - Firebase 초기화 완료 이벤트 수신');
                     setTimeout(() => {
-                        // 사용자 메뉴 직접 업데이트 (auth-utils.js 호출 방지)
-                        updateUserMenuDirectly();
-                        console.log('info.html - Firebase 초기화 완료 후 사용자 메뉴 직접 업데이트 완료');
+                        // 사용자 메뉴 업데이트
+                        if (typeof window.updateUserMenu === 'function') {
+                            window.updateUserMenu();
+                            console.log('info.html - Firebase 초기화 완료 후 사용자 메뉴 업데이트 완료');
+                        }
                     }, 200);
                 });
                 
                 // 초기 사용자 메뉴 업데이트 (Firebase 초기화 완료 후)
                 setTimeout(() => {
-                    // 사용자 메뉴 직접 업데이트 (auth-utils.js 호출 방지)
-                    updateUserMenuDirectly();
-                    console.log('info.html - 초기 사용자 메뉴 직접 업데이트 완료');
+                    // 사용자 메뉴 업데이트
+                    if (typeof window.updateUserMenu === 'function') {
+                        window.updateUserMenu();
+                        console.log('info.html - 초기 사용자 메뉴 업데이트 완료');
+                    }
                 }, 500);
                 
                 // 사용자 정보 로드 (Firebase 초기화 완료 후)
@@ -1069,9 +1047,11 @@
                     }
                 }
                 
-                // 사용자 메뉴 직접 업데이트 (auth-utils.js의 updateUserMenu 호출 방지)
-                updateUserMenuDirectly();
-                console.log('✅ 사용자 메뉴 직접 업데이트 완료');
+                // 사용자 메뉴 업데이트
+                if (typeof window.updateUserMenu === 'function') {
+                    window.updateUserMenu();
+                    console.log('✅ 사용자 메뉴 업데이트 완료');
+                }
                 
                 // 카트 개수 업데이트 (로그아웃 상태이므로 0으로 표시)
                 updateCartCount();
@@ -1115,8 +1095,10 @@
                     sessionStorage.removeItem(key);
                 });
                 
-                // 사용자 메뉴 직접 업데이트
-                updateUserMenuDirectly();
+                // 사용자 메뉴 업데이트
+                if (typeof window.updateUserMenu === 'function') {
+                    window.updateUserMenu();
+                }
                 
                 updateCartCount();
                 
@@ -1130,108 +1112,6 @@
                 setTimeout(() => {
                     window.location.replace('index.html');
                 }, 1000);
-            }
-        }
-        
-        // 사용자 메뉴 직접 업데이트 함수 (auth-utils.js 호출 방지) - 모바일/웹 호환
-        function updateUserMenuDirectly() {
-            try {
-                console.log('🔧 info.html 사용자 메뉴 직접 업데이트 시작 - 모바일/웹 호환');
-                
-                // 현재 로그인 상태 확인
-                const currentUser = getCurrentUser();
-                const isLoggedIn = currentUser !== null;
-                
-                console.log('🔍 현재 로그인 상태:', isLoggedIn ? '로그인됨' : '로그아웃됨');
-                
-                // 메뉴 요소들 정의
-                const logoutMenus = ['logout-menu', 'logout-menu-item', 'logout-menu-mobile', 'logout-menu-item-mobile'];
-                const profileMenus = ['profile-menu', 'profile-menu-mobile', 'points-menu', 'points-menu-mobile'];
-                const loginMenus = ['login-menu', 'login-menu-mobile', 'register-menu', 'register-menu-mobile'];
-                
-                if (isLoggedIn) {
-                    // 로그인 상태: 로그인 메뉴 숨기기, 로그아웃/프로필 메뉴 표시
-                    console.log('🔧 로그인 상태 - 메뉴 업데이트');
-                    
-                    // 로그인 메뉴 숨기기
-                    loginMenus.forEach(id => {
-                        const element = document.getElementById(id);
-                        if (element) {
-                            element.style.display = 'none';
-                            console.log(`✅ ${id} 숨기기 완료`);
-                        }
-                    });
-                    
-                    // 로그아웃 메뉴 표시
-                    logoutMenus.forEach(id => {
-                        const element = document.getElementById(id);
-                        if (element) {
-                            element.style.display = 'block';
-                            console.log(`✅ ${id} 표시 완료`);
-                        }
-                    });
-                    
-                    // 프로필 메뉴 표시
-                    profileMenus.forEach(id => {
-                        const element = document.getElementById(id);
-                        if (element) {
-                            element.style.display = 'block';
-                            console.log(`✅ ${id} 표시 완료`);
-                        }
-                    });
-                    
-                    // 사용자 이름 표시
-                    const userNameElement = document.getElementById('user-name');
-                    if (userNameElement && currentUser.email) {
-                        userNameElement.textContent = currentUser.displayName || currentUser.email.split('@')[0];
-                        userNameElement.classList.remove('d-none');
-                        console.log('✅ 사용자 이름 표시 완료:', userNameElement.textContent);
-                    }
-                    
-                } else {
-                    // 로그아웃 상태: 로그아웃/프로필 메뉴 숨기기, 로그인 메뉴 표시
-                    console.log('🔧 로그아웃 상태 - 메뉴 업데이트');
-                    
-                    // 로그아웃 메뉴 숨기기
-                    logoutMenus.forEach(id => {
-                        const element = document.getElementById(id);
-                        if (element) {
-                            element.style.display = 'none';
-                            console.log(`✅ ${id} 숨기기 완료`);
-                        }
-                    });
-                    
-                    // 프로필 메뉴 숨기기
-                    profileMenus.forEach(id => {
-                        const element = document.getElementById(id);
-                        if (element) {
-                            element.style.display = 'none';
-                            console.log(`✅ ${id} 숨기기 완료`);
-                        }
-                    });
-                    
-                    // 로그인 메뉴 표시
-                    loginMenus.forEach(id => {
-                        const element = document.getElementById(id);
-                        if (element) {
-                            element.style.display = 'block';
-                            console.log(`✅ ${id} 표시 완료`);
-                        }
-                    });
-                    
-                    // 사용자 이름 요소 초기화
-                    const userNameElement = document.getElementById('user-name');
-                    if (userNameElement) {
-                        userNameElement.textContent = '';
-                        userNameElement.classList.add('d-none');
-                        console.log('✅ 사용자 이름 요소 초기화 완료');
-                    }
-                }
-                
-                console.log('✅ info.html 사용자 메뉴 직접 업데이트 완료 - 모바일/웹 호환');
-                
-            } catch (error) {
-                console.error('❌ info.html 사용자 메뉴 직접 업데이트 실패:', error);
             }
         }
         
@@ -1586,7 +1466,20 @@
                 // 사용자 메뉴 업데이트
                 if (typeof window.updateUserMenu === 'function') {
                     console.log('info.html - 두 번째 초기화에서 updateUserMenu 함수 호출');
-                    window.updateUserMenu();
+                    try {
+                        const result = window.updateUserMenu();
+                        if (result && typeof result.then === 'function') {
+                            result.then(() => {
+                                console.log('✅ info.html 사용자 메뉴 업데이트 완료');
+                            }).catch(error => {
+                                console.error('❌ info.html 사용자 메뉴 업데이트 실패:', error);
+                            });
+                        } else {
+                            console.log('✅ info.html 사용자 메뉴 업데이트 완료 (동기)');
+                        }
+                    } catch (error) {
+                        console.error('❌ info.html updateUserMenu 함수 실행 실패:', error);
+                    }
                     
                     // 사용자 메뉴 업데이트 후 카트 수량도 업데이트
                     setTimeout(() => {
