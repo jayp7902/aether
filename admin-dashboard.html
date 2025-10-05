@@ -1672,31 +1672,27 @@
                                 
                                 <div class="mb-3">
                                     <label for="eventImage" class="form-label">イベント画像</label>
-                                    <select class="form-select" id="eventImage" onchange="handleEventImageChange()">
-                                        <option value="">画像を選択してください</option>
-                                        <option value="assets/img/MAIN BANNER/COSCELL_MAIN Banner.jpg">COSCELL メインバナー</option>
-                                        <option value="assets/img/MAIN BANNER/LALARECIPE_MAIN Banner.jpg">LALARECIPE メインバナー</option>
-                                        <option value="assets/img/MAIN BANNER/LUCINDE_MAIN Banner.jpg">LUCINDE メインバナー</option>
-                                        <option value="assets/img/MAIN BANNER/MAKEHEAL BANNER.jpg">Make Heal バナー</option>
-                                        <option value="assets/img/MAIN BANNER/Monday Museum_MAIN Banner.jpg">Monday Museum メインバナー</option>
-                                        <option value="assets/img/brand_01.png">ブランド画像 1</option>
-                                        <option value="assets/img/brand_02.png">ブランド画像 2</option>
-                                        <option value="assets/img/brand_03.png">ブランド画像 3</option>
-                                        <option value="assets/img/brand_04.png">ブランド画像 4</option>
-                                        <option value="assets/img/brand_05.png">ブランド画像 5</option>
-                                        <option value="assets/img/brand_06.png">ブランド画像 6</option>
-                                        <option value="assets/img/brand_07.png">ブランド画像 7</option>
-                                        <option value="assets/img/brand_08.png">ブランド画像 8</option>
-                                        <option value="assets/img/category_img_01.jpg">カテゴリ画像 1</option>
-                                        <option value="assets/img/category_img_02.jpg">カテゴリ画像 2</option>
-                                        <option value="assets/img/category_img_03.jpg">カテゴリ画像 3</option>
-                                        <option value="custom">カスタム画像 (URL入力)</option>
-                                    </select>
-                                    <small class="form-text text-muted">推奨サイズ: 600x400px</small>
-                                    <div id="customImageInput" style="display: none; margin-top: 10px;">
-                                        <label for="customImageUrl" class="form-label">カスタム画像URL</label>
-                                        <input type="url" class="form-control" id="customImageUrl" placeholder="https://example.com/image.jpg">
+                                    <div class="image-upload-area" 
+                                         id="event-image-drop-zone"
+                                         onclick="document.getElementById('eventImage').click()"
+                                         ondrop="handleEventImageDrop(event)"
+                                         ondragover="handleEventImageDragOver(event)"
+                                         ondragleave="handleEventImageDragLeave(event)">
+                                        <div id="event-image-preview" style="display: none; position: relative;">
+                                            <img id="event-preview-img" src="" alt="プレビュー" style="max-width: 100%; max-height: 200px; border-radius: 8px;">
+                                            <button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1" 
+                                                    onclick="deleteEventImage()" title="画像を削除">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                        <div id="event-upload-placeholder">
+                                            <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
+                                            <p class="text-muted">クリックまたはドラッグ&ドロップで画像をアップロード</p>
+                                            <p class="small text-muted">JPG, PNG, GIF (最大 5MB)</p>
+                                            <p class="small text-muted">推奨サイズ: 600x400px</p>
+                                        </div>
                                     </div>
+                                    <input type="file" id="eventImage" accept="image/*" style="display: none;" onchange="previewEventImage(this)">
                                 </div>
                                 
                                 <div class="mb-3">
@@ -5102,14 +5098,14 @@
             loadEmailHistory();
         }
 
-        function sendEventEmail() {
+        async function sendEventEmail() {
             const eventData = {
                 title: document.getElementById('eventTitle').value,
                 type: document.getElementById('eventType').value,
                 content: document.getElementById('eventContent').value,
                 startDate: document.getElementById('eventStartDate').value,
                 endDate: document.getElementById('eventEndDate').value,
-                image: getSelectedEventImage(),
+                image: await getSelectedEventImage(),
                 recipients: getSelectedCustomers()
             };
 
@@ -5228,9 +5224,7 @@
             document.getElementById('eventType').value = 'sale';
             
             // 이벤트 이미지 초기화
-            document.getElementById('eventImage').value = '';
-            document.getElementById('customImageUrl').value = '';
-            document.getElementById('customImageInput').style.display = 'none';
+            deleteEventImage();
             
             // 발송 설정 초기화 (드롭다운 방식)
             document.getElementById('sendTypeSelect').value = 'now';
@@ -5617,19 +5611,103 @@
             }
         }
 
-        // 선택된 이벤트 이미지 정보 가져오기
-        function getSelectedEventImage() {
-            const eventImageSelect = document.getElementById('eventImage');
-            const selectedValue = eventImageSelect.value;
-            
-            if (selectedValue === 'custom') {
-                const customUrl = document.getElementById('customImageUrl').value;
-                return customUrl || '';
-            } else if (selectedValue) {
-                return selectedValue;
+        // 이벤트 이미지 파일 처리
+        function processEventImageFile(file) {
+            // 파일 크기 체크 (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('ファイルサイズが5MBを超えています。');
+                return;
             }
             
-            return '';
+            // 파일 타입 체크
+            if (!file.type.startsWith('image/')) {
+                alert('画像ファイルのみアップロード可能です。');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('event-image-preview');
+                const placeholder = document.getElementById('event-upload-placeholder');
+                const previewImg = document.getElementById('event-preview-img');
+                
+                previewImg.src = e.target.result;
+                preview.style.display = 'block';
+                placeholder.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+            
+            // 파일 input에 파일 설정
+            const fileInput = document.getElementById('eventImage');
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            fileInput.files = dataTransfer.files;
+        }
+
+        // 이벤트 이미지 드래그 앤 드롭 기능
+        function handleEventImageDrop(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            const dropZone = document.getElementById('event-image-drop-zone');
+            dropZone.classList.remove('drag-over');
+            
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                processEventImageFile(file);
+            }
+        }
+
+        function handleEventImageDragOver(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            const dropZone = document.getElementById('event-image-drop-zone');
+            dropZone.classList.add('drag-over');
+        }
+
+        function handleEventImageDragLeave(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            const dropZone = document.getElementById('event-image-drop-zone');
+            dropZone.classList.remove('drag-over');
+        }
+
+        // 이벤트 이미지 미리보기
+        function previewEventImage(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                processEventImageFile(file);
+            }
+        }
+
+        // 이벤트 이미지 삭제
+        function deleteEventImage() {
+            const preview = document.getElementById('event-image-preview');
+            const placeholder = document.getElementById('event-upload-placeholder');
+            const fileInput = document.getElementById('eventImage');
+            
+            preview.style.display = 'none';
+            placeholder.style.display = 'block';
+            fileInput.value = '';
+        }
+
+        // 선택된 이벤트 이미지 정보 가져오기
+        function getSelectedEventImage() {
+            const fileInput = document.getElementById('eventImage');
+            if (fileInput.files && fileInput.files[0]) {
+                // 파일이 선택된 경우 Base64로 변환하여 반환
+                return new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        resolve(e.target.result);
+                    };
+                    reader.readAsDataURL(fileInput.files[0]);
+                });
+            }
+            return Promise.resolve('');
         }
 
         function toggleAllCustomers() {
