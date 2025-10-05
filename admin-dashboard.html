@@ -1605,23 +1605,13 @@
             <!-- 메일 발송 탭 -->
             <ul class="nav nav-tabs" id="emailTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="event-email-tab" data-bs-toggle="tab" data-bs-target="#event-email" type="button" role="tab">
+                    <button class="nav-link active" id="event-email-tab" data-bs-toggle="tab" data-bs-target="#event-email" type="button" role="tab">
                         <i class="fas fa-bullhorn me-2"></i>イベントメール
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="bulk-email-tab" data-bs-toggle="tab" data-bs-target="#bulk-email" type="button" role="tab">
-                        <i class="fas fa-users me-2"></i>一括配信
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
                     <button class="nav-link" id="email-templates-tab" data-bs-toggle="tab" data-bs-target="#email-templates" type="button" role="tab">
                         <i class="fas fa-file-alt me-2"></i>メールテンプレート
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="email-history-tab" data-bs-toggle="tab" data-bs-target="#email-history" type="button" role="tab">
-                        <i class="fas fa-history me-2"></i>配信履歴
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
@@ -1633,7 +1623,7 @@
             
             <div class="tab-content" id="emailTabContent">
                 <!-- 이벤트 메일 탭 -->
-                <div class="tab-pane fade" id="event-email" role="tabpanel">
+                <div class="tab-pane fade show active" id="event-email" role="tabpanel">
                     <div class="card mt-4">
                         <div class="card-body">
                             <h5 class="card-title">イベントメール配信</h5>
@@ -1685,44 +1675,61 @@
                                     </div>
                                 </div>
                                 
-                                <div class="mb-3">
-                                    <label for="recipientType" class="form-label">配信対象</label>
-                                    <select class="form-select" id="recipientType">
-                                        <option value="all">全顧客</option>
-                                        <option value="active">アクティブ顧客（過去3ヶ月購入）</option>
-                                        <option value="new">新規顧客（過去1ヶ月登録）</option>
-                                        <option value="custom">カスタム選択</option>
-                                    </select>
+                                <!-- 템플릿 선택 섹션 -->
+                                <div class="mb-4">
+                                    <label class="form-label">テンプレート選択</label>
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <select class="form-select" id="templateSelect" onchange="loadTemplate()">
+                                                <option value="">テンプレートを選択してください</option>
+                                                <option value="welcome">ウェルカムメール</option>
+                                                <option value="order-complete">注文完了メール</option>
+                                                <option value="points-earned">ポイント獲得メール</option>
+                                                <option value="event">イベントメール</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <button type="button" class="btn btn-outline-secondary" onclick="clearTemplate()">
+                                                <i class="fas fa-eraser me-2"></i>クリア
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                                 
-                                <div class="text-center">
-                                    <button type="button" class="btn btn-dark" onclick="sendEventEmail()">
-                                        <i class="fas fa-paper-plane me-2"></i>イベントメール配信
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 일괄 발송 탭 -->
-                <div class="tab-pane fade show active" id="bulk-email" role="tabpanel">
-                    <div class="card mt-4">
-                        <div class="card-body">
-                            <h5 class="card-title">一括メール配信</h5>
-                            <form id="bulkEmailForm">
-                                <div class="mb-3">
-                                    <label for="bulkSubject" class="form-label">件名</label>
-                                    <input type="text" class="form-control" id="bulkSubject" placeholder="メールの件名を入力">
+                                <!-- 발송 설정 섹션 -->
+                                <div class="mb-4">
+                                    <label class="form-label">発送設定</label>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-check mb-2">
+                                                <input class="form-check-input" type="radio" name="sendType" id="sendNow" value="now" checked onchange="toggleScheduleOptions()">
+                                                <label class="form-check-label" for="sendNow">
+                                                    今すぐ送信
+                                                </label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="sendType" id="sendSchedule" value="schedule" onchange="toggleScheduleOptions()">
+                                                <label class="form-check-label" for="sendSchedule">
+                                                    予約送信
+                                                </label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6" id="scheduleOptions" style="display: none;">
+                                            <div class="mb-2">
+                                                <label for="scheduleDate" class="form-label">送信日</label>
+                                                <input type="date" class="form-control" id="scheduleDate">
+                                            </div>
+                                            <div>
+                                                <label for="scheduleTime" class="form-label">送信時刻</label>
+                                                <input type="time" class="form-control" id="scheduleTime">
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 
-                                <div class="mb-3">
-                                    <label for="bulkContent" class="form-label">内容</label>
-                                    <textarea class="form-control" id="bulkContent" rows="6" placeholder="メールの内容を入力してください"></textarea>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label for="bulkRecipients" class="form-label">配信対象顧客選択</label>
+                                <!-- 가입자 선택 섹션 -->
+                                <div class="mb-4">
+                                    <label class="form-label">配信対象顧客選択</label>
                                     <div class="form-check mb-3">
                                         <input class="form-check-input" type="checkbox" id="selectAllCustomers" onchange="toggleAllCustomers()">
                                         <label class="form-check-label fw-bold" for="selectAllCustomers">
@@ -1745,14 +1752,15 @@
                                 </div>
                                 
                                 <div class="text-center">
-                                    <button type="button" class="btn btn-dark" onclick="sendBulkEmail()">
-                                        <i class="fas fa-paper-plane me-2"></i>一括配信実行
+                                    <button type="button" class="btn btn-dark" onclick="sendEventEmail()" id="sendEventButton">
+                                        <i class="fas fa-paper-plane me-2"></i>イベントメール配信
                                     </button>
                                 </div>
                             </form>
                         </div>
                     </div>
                 </div>
+                
                 
                 <!-- 메일 템플릿 관리 탭 -->
                 <div class="tab-pane fade" id="email-templates" role="tabpanel">
@@ -1867,86 +1875,6 @@
                     </div>
                 </div>
                 
-                <!-- 발송 이력 탭 -->
-                <div class="tab-pane fade" id="email-history" role="tabpanel">
-                    <div class="card mt-4">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <h5 class="card-title mb-0">配信履歴</h5>
-                                <div class="d-flex gap-2">
-                                    <select class="form-select form-select-sm" id="historyFilter" style="width: auto;">
-                                        <option value="all">全て</option>
-                                        <option value="welcome">ウェルカムメール</option>
-                                        <option value="order-complete">注文完了</option>
-                                        <option value="points-earned">ポイント獲得</option>
-                                        <option value="event">イベント</option>
-                                        <option value="bulk">一括配信</option>
-                                    </select>
-                                    <button class="btn btn-outline-secondary btn-sm" onclick="refreshEmailHistory()">
-                                        <i class="fas fa-sync-alt me-1"></i>更新
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <div class="table-responsive">
-                                <table class="table table-striped">
-                                    <thead>
-                                        <tr>
-                                            <th>配信日時</th>
-                                            <th>件名</th>
-                                            <th>配信種別</th>
-                                            <th>配信数</th>
-                                            <th>開封率</th>
-                                            <th>ステータス</th>
-                                            <th>操作</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="emailHistoryTable">
-                                        <tr>
-                                            <td>2024-01-15 14:30</td>
-                                            <td>ウェルカムメール</td>
-                                            <td><span class="badge bg-primary">ウェルカム</span></td>
-                                            <td>1</td>
-                                            <td>100%</td>
-                                            <td><span class="badge bg-success">配信完了</span></td>
-                                            <td>
-                                                <button class="btn btn-outline-secondary btn-sm" onclick="viewEmailDetails('welcome-001')">
-                                                    <i class="fas fa-eye me-1"></i>詳細
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>2024-01-14 16:45</td>
-                                            <td>注文完了のご案内</td>
-                                            <td><span class="badge bg-success">注文完了</span></td>
-                                            <td>1</td>
-                                            <td>100%</td>
-                                            <td><span class="badge bg-success">配信完了</span></td>
-                                            <td>
-                                                <button class="btn btn-outline-secondary btn-sm" onclick="viewEmailDetails('order-001')">
-                                                    <i class="fas fa-eye me-1"></i>詳細
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>2024-01-13 10:00</td>
-                                            <td>新商品発売記念セール</td>
-                                            <td><span class="badge bg-warning">イベント</span></td>
-                                            <td>156</td>
-                                            <td>78%</td>
-                                            <td><span class="badge bg-success">配信完了</span></td>
-                                            <td>
-                                                <button class="btn btn-outline-secondary btn-sm" onclick="viewEmailDetails('event-001')">
-                                                    <i class="fas fa-eye me-1"></i>詳細
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
                 
                 <!-- 테스트 발송 탭 -->
                 <div class="tab-pane fade" id="email-test" role="tabpanel">
@@ -3969,14 +3897,127 @@
                     const targetId = event.target.getAttribute('data-bs-target');
                     console.log('📧 메일 탭 활성화:', targetId);
                     
-                    // 일괄 발송 탭이 활성화될 때 고객 목록 로드
-                    if (targetId === '#bulk-email') {
+                    // 이벤트 메일 탭이 활성화될 때 고객 목록 로드
+                    if (targetId === '#event-email') {
                         setTimeout(() => {
                             loadCustomerList();
                         }, 100);
                     }
                 });
             });
+        }
+        
+        // 템플릿 선택 함수
+        function loadTemplate() {
+            const templateSelect = document.getElementById('templateSelect');
+            const selectedTemplate = templateSelect.value;
+            
+            if (!selectedTemplate) {
+                console.log('템플릿이 선택되지 않음');
+                return;
+            }
+            
+            console.log('📧 템플릿 로드 시작:', selectedTemplate);
+            
+            // Firebase에서 템플릿 데이터 로드
+            if (typeof FirebaseService !== 'undefined' && FirebaseService.db) {
+                FirebaseService.db.collection('emailTemplates').doc(selectedTemplate).get()
+                    .then(doc => {
+                        if (doc.exists) {
+                            const templateData = doc.data();
+                            console.log('✅ 템플릿 데이터 로드 성공:', templateData);
+                            
+                            // 폼에 템플릿 데이터 채우기
+                            document.getElementById('eventTitle').value = templateData.subject || '';
+                            document.getElementById('eventContent').value = templateData.content || '';
+                            
+                            // 이벤트 타입 설정
+                            if (templateData.type) {
+                                document.getElementById('eventType').value = templateData.type;
+                            }
+                            
+                            console.log('✅ 템플릿 내용이 폼에 적용됨');
+                        } else {
+                            console.warn('⚠️ 템플릿 데이터를 찾을 수 없음:', selectedTemplate);
+                            // 기본 템플릿 데이터 사용
+                            loadDefaultTemplate(selectedTemplate);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('❌ 템플릿 로드 오류:', error);
+                        // 기본 템플릿 데이터 사용
+                        loadDefaultTemplate(selectedTemplate);
+                    });
+            } else {
+                console.warn('⚠️ FirebaseService가 초기화되지 않음, 기본 템플릿 사용');
+                loadDefaultTemplate(selectedTemplate);
+            }
+        }
+        
+        // 기본 템플릿 데이터 로드
+        function loadDefaultTemplate(templateType) {
+            const defaultTemplates = {
+                'welcome': {
+                    subject: 'Aetherへようこそ！',
+                    content: 'こんにちは！\n\nAetherにご登録いただき、ありがとうございます。\n\nご登録特典として特別なポイントをプレゼントいたします。\n\nぜひお買い物をお楽しみください！\n\nAetherチーム',
+                    type: 'welcome'
+                },
+                'order-complete': {
+                    subject: 'ご注文ありがとうございます',
+                    content: 'ご注文いただき、ありがとうございます。\n\n商品の発送準備を開始いたします。\n\n発送完了次第、追跡番号をお知らせいたします。\n\nAetherチーム',
+                    type: 'order'
+                },
+                'points-earned': {
+                    subject: 'ポイントが獲得されました！',
+                    content: 'ポイントが獲得されました！\n\n現在のポイント残高をご確認ください。\n\n次回のお買い物でご利用いただけます。\n\nAetherチーム',
+                    type: 'points'
+                },
+                'event': {
+                    subject: '特別イベントのご案内',
+                    content: '特別イベントのご案内です！\n\n期間限定で特別なオファーをご用意いたしました。\n\nこの機会をお見逃しなく！\n\nAetherチーム',
+                    type: 'event'
+                }
+            };
+            
+            const template = defaultTemplates[templateType];
+            if (template) {
+                document.getElementById('eventTitle').value = template.subject;
+                document.getElementById('eventContent').value = template.content;
+                document.getElementById('eventType').value = template.type;
+                console.log('✅ 기본 템플릿 적용 완료:', templateType);
+            }
+        }
+        
+        // 템플릿 클리어 함수
+        function clearTemplate() {
+            document.getElementById('templateSelect').value = '';
+            document.getElementById('eventTitle').value = '';
+            document.getElementById('eventContent').value = '';
+            document.getElementById('eventType').value = 'sale';
+            console.log('✅ 템플릿 클리어 완료');
+        }
+        
+        // 예약 발송 옵션 토글 함수
+        function toggleScheduleOptions() {
+            const sendType = document.querySelector('input[name="sendType"]:checked').value;
+            const scheduleOptions = document.getElementById('scheduleOptions');
+            const sendButton = document.getElementById('sendEventButton');
+            
+            if (sendType === 'schedule') {
+                scheduleOptions.style.display = 'block';
+                sendButton.innerHTML = '<i class="fas fa-clock me-2"></i>予約送信設定';
+                sendButton.className = 'btn btn-warning';
+                
+                // 기본값 설정 (내일 오전 9시)
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                document.getElementById('scheduleDate').value = tomorrow.toISOString().split('T')[0];
+                document.getElementById('scheduleTime').value = '09:00';
+            } else {
+                scheduleOptions.style.display = 'none';
+                sendButton.innerHTML = '<i class="fas fa-paper-plane me-2"></i>イベントメール配信';
+                sendButton.className = 'btn btn-dark';
+            }
         }
         
         function switchToHomepageTab() {
@@ -5008,14 +5049,66 @@
                 content: document.getElementById('eventContent').value,
                 startDate: document.getElementById('eventStartDate').value,
                 endDate: document.getElementById('eventEndDate').value,
-                recipientType: document.getElementById('recipientType').value,
-                image: document.getElementById('eventImage').files[0]
+                recipients: getSelectedCustomers()
             };
 
             if (!eventData.title || !eventData.content) {
                 alert('イベントタイトルと内容を入力してください。');
                 return;
             }
+
+            if (eventData.recipients.length === 0) {
+                alert('配信対象を選択してください。');
+                return;
+            }
+
+            // 발송 타입 확인
+            const sendType = document.querySelector('input[name="sendType"]:checked').value;
+            const isScheduled = sendType === 'schedule';
+            
+            if (isScheduled) {
+                // 예약 발송 처리
+                const scheduleDate = document.getElementById('scheduleDate').value;
+                const scheduleTime = document.getElementById('scheduleTime').value;
+                
+                if (!scheduleDate || !scheduleTime) {
+                    alert('予約送信の日時を選択してください。');
+                    return;
+                }
+                
+                // 예약 시간이 과거인지 확인
+                const scheduledDateTime = new Date(`${scheduleDate}T${scheduleTime}`);
+                const now = new Date();
+                
+                if (scheduledDateTime <= now) {
+                    alert('予約送信時刻は現在時刻より後に設定してください。');
+                    return;
+                }
+                
+                eventData.scheduledAt = scheduledDateTime.toISOString();
+                eventData.sendType = 'scheduled';
+                
+                console.log('📅 예약 발송 설정:', eventData.scheduledAt);
+            } else {
+                eventData.sendType = 'immediate';
+            }
+
+            // 확인 대화상자
+            const confirmMessage = isScheduled 
+                ? `予約送信を設定しますか？\n配信時刻: ${new Date(eventData.scheduledAt).toLocaleString('ja-JP')}\n配信先: ${eventData.recipients.length}名`
+                : `${eventData.recipients.length}名の顧客にイベントメールを配信しますか？`;
+                
+            if (!confirm(confirmMessage)) {
+                return;
+            }
+
+            // 발송 버튼 비활성화 및 로딩 표시
+            const sendButton = document.getElementById('sendEventButton');
+            const originalText = sendButton.innerHTML;
+            sendButton.disabled = true;
+            sendButton.innerHTML = isScheduled 
+                ? '<i class="fas fa-clock fa-spin me-2"></i>予約設定中...'
+                : '<i class="fas fa-spinner fa-spin me-2"></i>配信中...';
 
             // Netlify Function 호출
             fetch('/.netlify/functions/send-email', {
@@ -5031,16 +5124,48 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('イベントメール配信が完了しました。');
-                    loadEmailHistory();
+                    if (isScheduled) {
+                        alert(`✅ 予約送信が設定されました！\n配信時刻: ${new Date(eventData.scheduledAt).toLocaleString('ja-JP')}\n配信先: ${eventData.recipients.length}名`);
+                    } else {
+                        alert(`✅ イベントメール配信が完了しました！\n配信先: ${eventData.recipients.length}名`);
+                    }
+                    
+                    // 폼 초기화
+                    clearEventForm();
                 } else {
-                    alert('配信に失敗しました: ' + data.error);
+                    alert('❌ 配信に失敗しました: ' + data.error);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('配信エラーが発生しました。');
+                alert('❌ 配信エラーが発生しました。');
+            })
+            .finally(() => {
+                // 버튼 상태 복원
+                sendButton.disabled = false;
+                sendButton.innerHTML = originalText;
             });
+        }
+        
+        // 이벤트 폼 초기화 함수
+        function clearEventForm() {
+            document.getElementById('eventTitle').value = '';
+            document.getElementById('eventContent').value = '';
+            document.getElementById('eventStartDate').value = '';
+            document.getElementById('eventEndDate').value = '';
+            document.getElementById('templateSelect').value = '';
+            document.getElementById('eventType').value = 'sale';
+            
+            // 발송 설정 초기화
+            document.getElementById('sendNow').checked = true;
+            document.getElementById('sendSchedule').checked = false;
+            toggleScheduleOptions();
+            
+            // 고객 선택 초기화
+            document.getElementById('selectAllCustomers').checked = false;
+            updateSelectedCount();
+            
+            console.log('✅ 이벤트 폼 초기화 완료');
         }
 
         function sendBulkEmail() {
