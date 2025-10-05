@@ -4478,12 +4478,35 @@
                                         selectAllCheckbox.setAttribute('data-total-customers', customerCount);
                                     }
                                     
-                                    // 체크박스 이벤트 리스너 추가
-                                    setupCustomerCheckboxListeners();
+                                    // 체크박스 이벤트 리스너 직접 설정
+                                    console.log('🔗 체크박스 이벤트 리스너 직접 설정');
+                                    const customerCheckboxes = document.querySelectorAll('.customer-checkbox');
+                                    customerCheckboxes.forEach((checkbox, index) => {
+                                        checkbox.addEventListener('change', function() {
+                                            console.log(`🔘 체크박스 ${index + 1} 변경:`, this.checked);
+                                            try {
+                                                if (typeof updateSelectedCount === 'function') {
+                                                    updateSelectedCount();
+                                                } else {
+                                                    console.warn('⚠️ updateSelectedCount 함수가 아직 정의되지 않음');
+                                                }
+                                            } catch (error) {
+                                                console.error('❌ updateSelectedCount 호출 중 오류:', error);
+                                            }
+                                        });
+                                        console.log(`  - 체크박스 ${index + 1} 이벤트 리스너 추가`);
+                                    });
+                                    console.log(`✅ ${customerCheckboxes.length}개 체크박스 이벤트 리스너 설정 완료`);
                                     
                                     // 선택된 고객 수 업데이트
-                                    if (typeof updateSelectedCount === 'function') {
-                                        updateSelectedCount();
+                                    try {
+                                        if (typeof updateSelectedCount === 'function') {
+                                            updateSelectedCount();
+                                        } else {
+                                            console.warn('⚠️ updateSelectedCount 함수가 아직 정의되지 않음');
+                                        }
+                                    } catch (error) {
+                                        console.error('❌ updateSelectedCount 호출 중 오류:', error);
                                     }
                                     
                                     console.log(`✅ ${customerCount}名の顧客データを読み込み完了`);
@@ -5774,8 +5797,25 @@
                                 customerList.appendChild(row);
                             });
                             
-                            // 체크박스 이벤트 리스너 추가
-                            setupCustomerCheckboxListeners();
+                            // 체크박스 이벤트 리스너 직접 설정
+                            console.log('🔗 showEmailManagement - 체크박스 이벤트 리스너 직접 설정');
+                            const customerCheckboxes = document.querySelectorAll('.customer-checkbox');
+                            customerCheckboxes.forEach((checkbox, index) => {
+                                checkbox.addEventListener('change', function() {
+                                    console.log(`🔘 showEmailManagement - 체크박스 ${index + 1} 변경:`, this.checked);
+                                    try {
+                                        if (typeof updateSelectedCount === 'function') {
+                                            updateSelectedCount();
+                                        } else {
+                                            console.warn('⚠️ updateSelectedCount 함수가 아직 정의되지 않음');
+                                        }
+                                    } catch (error) {
+                                        console.error('❌ updateSelectedCount 호출 중 오류:', error);
+                                    }
+                                });
+                                console.log(`  - 체크박스 ${index + 1} 이벤트 리스너 추가`);
+                            });
+                            console.log(`✅ showEmailManagement - ${customerCheckboxes.length}개 체크박스 이벤트 리스너 설정 완료`);
                             
                             console.log(`✅ showEmailManagement - ${customerCount}名の顧客データを読み込み完了`);
                         })
