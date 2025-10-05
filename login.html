@@ -709,13 +709,35 @@
                     
                     try {
                         if (typeof firebase !== 'undefined' && firebase.auth) {
-                            await firebase.auth().sendPasswordResetEmail(email);
-                            
-                            // 모달 닫기
-                            bootstrapModal.hide();
-                            
-                            // 성공 메시지 표시
-                            showAlert('パスワードリセットメールを送信しました。メールをご確認ください。', 'success');
+                            // Firebase 기본 리셋 이메일 시도
+                            try {
+                                await firebase.auth().sendPasswordResetEmail(email);
+                                console.log('✅ Firebase 기본 리셋 이메일 발송 성공');
+                                
+                                // 모달 닫기
+                                bootstrapModal.hide();
+                                
+                                // 성공 메시지 표시
+                                showAlert('パスワードリセットメールを送信しました。メールをご確認ください。', 'success');
+                            } catch (firebaseError) {
+                                console.warn('Firebase 기본 리셋 이메일 실패, 커스텀 메일 시도:', firebaseError);
+                                
+                                // 커스텀 리셋 이메일 발송 시도
+                                const resetLink = `https://aether-store.jp/reset-password.html?token=${encodeURIComponent(email)}&t=${Date.now()}`;
+                                const customResult = await window.FirebaseService.sendPasswordResetEmail(email, resetLink);
+                                
+                                if (customResult.success) {
+                                    console.log('✅ 커스텀 리셋 이메일 발송 성공');
+                                    
+                                    // 모달 닫기
+                                    bootstrapModal.hide();
+                                    
+                                    // 성공 메시지 표시
+                                    showAlert('パスワードリセットメールを送信しました。メールをご確認ください。', 'success');
+                                } else {
+                                    throw new Error(customResult.error || '커스텀 리셋 이메일 발송 실패');
+                                }
+                            }
                         } else {
                             showAlert('Firebase가 초기화되지 않았습니다. 페이지를 새로고침해주세요。');
                         }
