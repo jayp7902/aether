@@ -530,26 +530,40 @@
             const dateFilter = document.getElementById('date-filter').value;
             
             switch(dateFilter) {
-                case 'today':
-                    // 일 단위로 이동
-                    currentDate.setDate(currentDate.getDate() + direction);
-                    break;
                 case 'month':
-                    // 월 단위로 이동
+                    // 월 단위로 이동 - 해당 월의 첫째 날로 설정
                     currentDate.setMonth(currentDate.getMonth() + direction);
+                    currentDate.setDate(1); // 월의 첫째 날로 설정
                     break;
                 case 'year':
-                    // 년 단위로 이동
+                    // 년 단위로 이동 - 해당 년의 1월 1일로 설정
                     currentDate.setFullYear(currentDate.getFullYear() + direction);
+                    currentDate.setMonth(0); // 1월
+                    currentDate.setDate(1); // 1일
                     break;
+                case 'today':
                 default:
-                    // 기본적으로 일 단위로 이동
+                    // 일 단위로 이동 (기본값)
                     currentDate.setDate(currentDate.getDate() + direction);
                     break;
             }
             
             updateDateDisplay();
-            filterOrders();
+            
+            // 날짜 이동 후 해당 기간의 주문 표시
+            console.log('🔄 날짜 이동으로 인한 재필터링:', currentDate.toLocaleDateString('ja-JP'));
+            if (allOrders.length > 0) {
+                if (dateFilter === 'today') {
+                    // 일 단위 필터는 특정 날짜만 표시
+                    applySpecificDateFilter(allOrders, currentDate);
+                } else {
+                    // 월/년 단위 필터는 해당 기간 전체 표시
+                    applyDateFilter(allOrders, dateFilter);
+                }
+            } else {
+                // 주문 데이터가 없으면 다시 로드
+                loadOrders();
+            }
         }
         
         // 날짜 표시 업데이트
@@ -663,6 +677,11 @@
             // 기존 주문 데이터에 새로운 날짜 필터 적용
             console.log('🔄 날짜 필터 변경으로 인한 재필터링:', dateFilter);
             if (allOrders.length > 0) {
+                if (dateFilter === 'today') {
+                    // 오늘 필터 선택 시 currentDate를 오늘로 설정
+                    currentDate = new Date();
+                    updateDateDisplay();
+                }
                 applyDateFilter(allOrders, dateFilter);
             } else {
                 // 주문 데이터가 없으면 다시 로드
@@ -928,18 +947,17 @@
                     
                     switch(dateFilter) {
                         case 'today':
-                            // 오늘
-                            const today = new Date();
-                            return orderDate.toDateString() === today.toDateString();
+                            // 오늘 - currentDate 사용 (날짜 네비게이션과 일치)
+                            return orderDate.toDateString() === currentDate.toDateString();
                             
                         case 'month':
-                            // 이번 달
-                            return orderDate.getFullYear() === now.getFullYear() && 
-                                   orderDate.getMonth() === now.getMonth();
+                            // 선택된 달 - currentDate 기준
+                            return orderDate.getFullYear() === currentDate.getFullYear() && 
+                                   orderDate.getMonth() === currentDate.getMonth();
                             
                         case 'year':
-                            // 올해
-                            return orderDate.getFullYear() === now.getFullYear();
+                            // 선택된 년 - currentDate 기준
+                            return orderDate.getFullYear() === currentDate.getFullYear();
                             
                         default:
                             return true;
@@ -948,6 +966,52 @@
                 
                 console.log('📅 날짜 필터링 결과:', dateFilter, '→', filteredOrders.length, '개 주문');
             }
+            
+            updateOrderStatistics();
+            displayOrders();
+        }
+        
+        // 특정 날짜 필터링 함수 (날짜 네비게이션용)
+        function applySpecificDateFilter(orders, targetDate) {
+            console.log('🔍 특정 날짜 필터링 적용:', targetDate.toLocaleDateString('ja-JP'), '주문 수:', orders.length);
+            
+            const startOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+            const endOfDay = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate() + 1);
+            
+            filteredOrders = orders.filter(order => {
+                // 주문 날짜 추출 (여러 필드 시도)
+                let orderDate = null;
+                
+                if (order.orderDate) {
+                    if (order.orderDate.toDate && typeof order.orderDate.toDate === 'function') {
+                        orderDate = order.orderDate.toDate();
+                    } else if (order.orderDate.seconds) {
+                        orderDate = new Date(order.orderDate.seconds * 1000);
+                    } else {
+                        orderDate = new Date(order.orderDate);
+                    }
+                } else if (order.createdAt) {
+                    if (order.createdAt.toDate && typeof order.createdAt.toDate === 'function') {
+                        orderDate = order.createdAt.toDate();
+                    } else if (order.createdAt.seconds) {
+                        orderDate = new Date(order.createdAt.seconds * 1000);
+                    } else {
+                        orderDate = new Date(order.createdAt);
+                    }
+                } else if (order.timestamp) {
+                    orderDate = new Date(order.timestamp);
+                }
+                
+                if (!orderDate || isNaN(orderDate.getTime())) {
+                    console.log('⚠️ 날짜를 찾을 수 없는 주문:', order.id);
+                    return false;
+                }
+                
+                // 해당 날짜 범위 내에 있는지 확인
+                return orderDate >= startOfDay && orderDate < endOfDay;
+            });
+            
+            console.log('📅 특정 날짜 필터링 결과:', targetDate.toLocaleDateString('ja-JP'), '→', filteredOrders.length, '개 주문');
             
             updateOrderStatistics();
             displayOrders();
