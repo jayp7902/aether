@@ -1610,8 +1610,18 @@
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="email-templates-tab" data-bs-toggle="tab" data-bs-target="#email-templates" type="button" role="tab">
+                        <i class="fas fa-file-alt me-2"></i>メールテンプレート
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
                     <button class="nav-link" id="email-history-tab" data-bs-toggle="tab" data-bs-target="#email-history" type="button" role="tab">
                         <i class="fas fa-history me-2"></i>配信履歴
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="email-test-tab" data-bs-toggle="tab" data-bs-target="#email-test" type="button" role="tab">
+                        <i class="fas fa-vial me-2"></i>テスト送信
                     </button>
                 </li>
             </ul>
@@ -1729,11 +1739,140 @@
                     </div>
                 </div>
                 
+                <!-- 메일 템플릿 관리 탭 -->
+                <div class="tab-pane fade" id="email-templates" role="tabpanel">
+                    <div class="card mt-4">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h5 class="card-title mb-0">メールテンプレート管理</h5>
+                                <button class="btn btn-primary" onclick="showCreateTemplateModal()">
+                                    <i class="fas fa-plus me-2"></i>新規テンプレート作成
+                                </button>
+                            </div>
+                            
+                            <!-- 템플릿 목록 -->
+                            <div class="row" id="emailTemplatesList">
+                                <!-- 환영 메일 템플릿 -->
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                                <h6 class="card-title">ウェルカムメール</h6>
+                                                <span class="badge bg-success">アクティブ</span>
+                                            </div>
+                                            <p class="card-text text-muted small">新規会員登録時に自動送信されるウェルカムメールです。</p>
+                                            <div class="d-flex gap-2 mt-3">
+                                                <button class="btn btn-outline-primary btn-sm" onclick="editTemplate('welcome')">
+                                                    <i class="fas fa-edit me-1"></i>編集
+                                                </button>
+                                                <button class="btn btn-outline-secondary btn-sm" onclick="previewTemplate('welcome')">
+                                                    <i class="fas fa-eye me-1"></i>プレビュー
+                                                </button>
+                                                <button class="btn btn-outline-success btn-sm" onclick="testTemplate('welcome')">
+                                                    <i class="fas fa-paper-plane me-1"></i>テスト
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 주문 완료 메일 템플릿 -->
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                                <h6 class="card-title">注文完了メール</h6>
+                                                <span class="badge bg-success">アクティブ</span>
+                                            </div>
+                                            <p class="card-text text-muted small">注文が完了した際に送信される確認メールです。</p>
+                                            <div class="d-flex gap-2 mt-3">
+                                                <button class="btn btn-outline-primary btn-sm" onclick="editTemplate('order-complete')">
+                                                    <i class="fas fa-edit me-1"></i>編集
+                                                </button>
+                                                <button class="btn btn-outline-secondary btn-sm" onclick="previewTemplate('order-complete')">
+                                                    <i class="fas fa-eye me-1"></i>プレビュー
+                                                </button>
+                                                <button class="btn btn-outline-success btn-sm" onclick="testTemplate('order-complete')">
+                                                    <i class="fas fa-paper-plane me-1"></i>テスト
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 포인트 적립 메일 템플릿 -->
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                                <h6 class="card-title">ポイント獲得メール</h6>
+                                                <span class="badge bg-success">アクティブ</span>
+                                            </div>
+                                            <p class="card-text text-muted small">ポイントが獲得された際に送信される通知メールです。</p>
+                                            <div class="d-flex gap-2 mt-3">
+                                                <button class="btn btn-outline-primary btn-sm" onclick="editTemplate('points-earned')">
+                                                    <i class="fas fa-edit me-1"></i>編集
+                                                </button>
+                                                <button class="btn btn-outline-secondary btn-sm" onclick="previewTemplate('points-earned')">
+                                                    <i class="fas fa-eye me-1"></i>プレビュー
+                                                </button>
+                                                <button class="btn btn-outline-success btn-sm" onclick="testTemplate('points-earned')">
+                                                    <i class="fas fa-paper-plane me-1"></i>テスト
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 이벤트 메일 템플릿 -->
+                                <div class="col-md-6 col-lg-4 mb-4">
+                                    <div class="card h-100">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                                <h6 class="card-title">イベントメール</h6>
+                                                <span class="badge bg-warning">ドラフト</span>
+                                            </div>
+                                            <p class="card-text text-muted small">セールやイベント告知用のメールテンプレートです。</p>
+                                            <div class="d-flex gap-2 mt-3">
+                                                <button class="btn btn-outline-primary btn-sm" onclick="editTemplate('event')">
+                                                    <i class="fas fa-edit me-1"></i>編集
+                                                </button>
+                                                <button class="btn btn-outline-secondary btn-sm" onclick="previewTemplate('event')">
+                                                    <i class="fas fa-eye me-1"></i>プレビュー
+                                                </button>
+                                                <button class="btn btn-outline-success btn-sm" onclick="testTemplate('event')">
+                                                    <i class="fas fa-paper-plane me-1"></i>テスト
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- 발송 이력 탭 -->
                 <div class="tab-pane fade" id="email-history" role="tabpanel">
                     <div class="card mt-4">
                         <div class="card-body">
-                            <h5 class="card-title">配信履歴</h5>
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h5 class="card-title mb-0">配信履歴</h5>
+                                <div class="d-flex gap-2">
+                                    <select class="form-select form-select-sm" id="historyFilter" style="width: auto;">
+                                        <option value="all">全て</option>
+                                        <option value="welcome">ウェルカムメール</option>
+                                        <option value="order-complete">注文完了</option>
+                                        <option value="points-earned">ポイント獲得</option>
+                                        <option value="event">イベント</option>
+                                        <option value="bulk">一括配信</option>
+                                    </select>
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="refreshEmailHistory()">
+                                        <i class="fas fa-sync-alt me-1"></i>更新
+                                    </button>
+                                </div>
+                            </div>
+                            
                             <div class="table-responsive">
                                 <table class="table table-striped">
                                     <thead>
@@ -1742,13 +1881,109 @@
                                             <th>件名</th>
                                             <th>配信種別</th>
                                             <th>配信数</th>
+                                            <th>開封率</th>
                                             <th>ステータス</th>
+                                            <th>操作</th>
                                         </tr>
                                     </thead>
                                     <tbody id="emailHistoryTable">
-                                        <!-- 발송 이력이 여기에 동적으로 로드됩니다 -->
+                                        <tr>
+                                            <td>2024-01-15 14:30</td>
+                                            <td>ウェルカムメール</td>
+                                            <td><span class="badge bg-primary">ウェルカム</span></td>
+                                            <td>1</td>
+                                            <td>100%</td>
+                                            <td><span class="badge bg-success">配信完了</span></td>
+                                            <td>
+                                                <button class="btn btn-outline-secondary btn-sm" onclick="viewEmailDetails('welcome-001')">
+                                                    <i class="fas fa-eye me-1"></i>詳細
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>2024-01-14 16:45</td>
+                                            <td>注文完了のご案内</td>
+                                            <td><span class="badge bg-success">注文完了</span></td>
+                                            <td>1</td>
+                                            <td>100%</td>
+                                            <td><span class="badge bg-success">配信完了</span></td>
+                                            <td>
+                                                <button class="btn btn-outline-secondary btn-sm" onclick="viewEmailDetails('order-001')">
+                                                    <i class="fas fa-eye me-1"></i>詳細
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>2024-01-13 10:00</td>
+                                            <td>新商品発売記念セール</td>
+                                            <td><span class="badge bg-warning">イベント</span></td>
+                                            <td>156</td>
+                                            <td>78%</td>
+                                            <td><span class="badge bg-success">配信完了</span></td>
+                                            <td>
+                                                <button class="btn btn-outline-secondary btn-sm" onclick="viewEmailDetails('event-001')">
+                                                    <i class="fas fa-eye me-1"></i>詳細
+                                                </button>
+                                            </td>
+                                        </tr>
                                     </tbody>
                                 </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 테스트 발송 탭 -->
+                <div class="tab-pane fade" id="email-test" role="tabpanel">
+                    <div class="card mt-4">
+                        <div class="card-body">
+                            <h5 class="card-title">テストメール送信</h5>
+                            <p class="text-muted">メールテンプレートのテスト送信を行います。</p>
+                            
+                            <form id="testEmailForm">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="testTemplateSelect" class="form-label">テンプレート選択</label>
+                                            <select class="form-select" id="testTemplateSelect">
+                                                <option value="">テンプレートを選択してください</option>
+                                                <option value="welcome">ウェルカムメール</option>
+                                                <option value="order-complete">注文完了メール</option>
+                                                <option value="points-earned">ポイント獲得メール</option>
+                                                <option value="event">イベントメール</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="testEmailAddress" class="form-label">テスト送信先メールアドレス</label>
+                                            <input type="email" class="form-control" id="testEmailAddress" placeholder="test@example.com">
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="testCustomData" class="form-label">カスタムデータ（JSON形式）</label>
+                                    <textarea class="form-control" id="testCustomData" rows="4" placeholder='{"name": "テストユーザー", "points": 100, "orderId": "ORD-001"}'></textarea>
+                                    <small class="form-text text-muted">テンプレート内のプレースホルダーを置き換えるデータをJSON形式で入力してください。</small>
+                                </div>
+                                
+                                <div class="text-center">
+                                    <button type="button" class="btn btn-primary" onclick="sendTestEmail()">
+                                        <i class="fas fa-paper-plane me-2"></i>テストメール送信
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary ms-2" onclick="previewTestEmail()">
+                                        <i class="fas fa-eye me-2"></i>プレビュー
+                                    </button>
+                                </div>
+                            </form>
+                            
+                            <!-- 테스트 발송 결과 -->
+                            <div id="testEmailResult" class="mt-4" style="display: none;">
+                                <div class="alert alert-success">
+                                    <h6><i class="fas fa-check-circle me-2"></i>テストメール送信完了</h6>
+                                    <p class="mb-0">テストメールが正常に送信されました。</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -2979,6 +3214,101 @@
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">キャンセル</button>
                     <button type="button" class="btn btn-secondary" onclick="sendEmailCampaign()">
                         <i class="fas fa-paper-plane me-2"></i>送信
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 메일 템플릿 편집 모달 -->
+    <div class="modal fade" id="emailTemplateModal" tabindex="-1" aria-labelledby="emailTemplateModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title japanese-heading" id="emailTemplateModalLabel">
+                        <i class="fas fa-file-alt me-2"></i>メールテンプレート編集
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="emailTemplateForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="templateName" class="form-label">テンプレート名</label>
+                                    <input type="text" class="form-control" id="templateName" placeholder="テンプレート名を入力">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="templateType" class="form-label">テンプレートタイプ</label>
+                                    <select class="form-select" id="templateType">
+                                        <option value="welcome">ウェルカムメール</option>
+                                        <option value="order-complete">注文完了メール</option>
+                                        <option value="points-earned">ポイント獲得メール</option>
+                                        <option value="event">イベントメール</option>
+                                        <option value="custom">カスタム</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="templateSubject" class="form-label">件名</label>
+                            <input type="text" class="form-control" id="templateSubject" placeholder="メールの件名を入力">
+                            <small class="form-text text-muted">プレースホルダーを使用できます: {{name}}, {{email}}, {{points}} など</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="templateContent" class="form-label">メール内容（HTML）</label>
+                            <textarea class="form-control" id="templateContent" rows="15" placeholder="HTML形式でメール内容を入力"></textarea>
+                            <small class="form-text text-muted">HTMLタグを使用できます。プレースホルダー: {{name}}, {{email}}, {{points}}, {{orderId}} など</small>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="templateStatus" class="form-label">ステータス</label>
+                                    <select class="form-select" id="templateStatus">
+                                        <option value="active">アクティブ</option>
+                                        <option value="draft">ドラフト</option>
+                                        <option value="inactive">非アクティブ</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="templatePriority" class="form-label">優先度</label>
+                                    <select class="form-select" id="templatePriority">
+                                        <option value="high">高</option>
+                                        <option value="medium" selected>中</option>
+                                        <option value="low">低</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 프리뷰 섹션 -->
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="form-label mb-0">プレビュー</label>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="updatePreview()">
+                                    <i class="fas fa-refresh me-1"></i>更新
+                                </button>
+                            </div>
+                            <div class="border rounded p-3 bg-light" id="emailPreview" style="min-height: 200px;">
+                                <p class="text-muted text-center">プレビューがここに表示されます</p>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    <button type="button" class="btn btn-outline-primary" onclick="saveTemplateAsDraft()">
+                        <i class="fas fa-save me-2"></i>ドラフト保存
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="saveTemplate()">
+                        <i class="fas fa-save me-2"></i>保存
                     </button>
                 </div>
             </div>
@@ -4772,6 +5102,262 @@
         function backToCustomerInfo() {
             document.getElementById('point-management').style.display = 'none';
             document.getElementById('customer-section').style.display = 'block';
+        }
+
+        // 메일 템플릿 관리 함수들
+        function showCreateTemplateModal() {
+            // 새 템플릿 생성 모달 표시
+            document.getElementById('templateName').value = '';
+            document.getElementById('templateSubject').value = '';
+            document.getElementById('templateContent').value = '';
+            document.getElementById('templateStatus').value = 'draft';
+            document.getElementById('templatePriority').value = 'medium';
+            
+            const modal = new bootstrap.Modal(document.getElementById('emailTemplateModal'));
+            modal.show();
+        }
+
+        function editTemplate(templateType) {
+            // 기존 템플릿 편집 모달 표시
+            loadTemplateData(templateType);
+            
+            const modal = new bootstrap.Modal(document.getElementById('emailTemplateModal'));
+            modal.show();
+        }
+
+        function loadTemplateData(templateType) {
+            // 템플릿 데이터 로드 (Firebase에서)
+            if (typeof FirebaseService !== 'undefined' && FirebaseService.db) {
+                FirebaseService.db.collection('emailTemplates').doc(templateType).get()
+                    .then(doc => {
+                        if (doc.exists) {
+                            const data = doc.data();
+                            document.getElementById('templateName').value = data.name || '';
+                            document.getElementById('templateSubject').value = data.subject || '';
+                            document.getElementById('templateContent').value = data.content || '';
+                            document.getElementById('templateStatus').value = data.status || 'draft';
+                            document.getElementById('templatePriority').value = data.priority || 'medium';
+                            document.getElementById('templateType').value = templateType;
+                            
+                            updatePreview();
+                        } else {
+                            // 기본 템플릿 데이터 설정
+                            setDefaultTemplate(templateType);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('템플릿 로드 오류:', error);
+                        setDefaultTemplate(templateType);
+                    });
+            } else {
+                setDefaultTemplate(templateType);
+            }
+        }
+
+        function setDefaultTemplate(templateType) {
+            const templates = {
+                'welcome': {
+                    name: 'ウェルカムメール',
+                    subject: 'Aetherへようこそ！',
+                    content: '<h2>こんにちは、{{name}}さん！</h2><p>Aetherにご登録いただき、ありがとうございます。</p><p>ご登録特典として{{points}}ポイントをプレゼントいたします。</p><p>ぜひお買い物をお楽しみください！</p>'
+                },
+                'order-complete': {
+                    name: '注文完了メール',
+                    subject: 'ご注文ありがとうございます - 注文番号: {{orderId}}',
+                    content: '<h2>ご注文ありがとうございます</h2><p>{{name}}さん、ご注文いただきありがとうございます。</p><p>注文番号: {{orderId}}</p><p>合計金額: ¥{{totalAmount}}</p><p>商品の発送準備を開始いたします。</p>'
+                },
+                'points-earned': {
+                    name: 'ポイント獲得メール',
+                    subject: 'ポイントが獲得されました！',
+                    content: '<h2>ポイント獲得のお知らせ</h2><p>{{name}}さん、{{points}}ポイントが獲得されました。</p><p>現在のポイント残高: {{currentPoints}}ポイント</p><p>次回のお買い物でご利用ください。</p>'
+                },
+                'event': {
+                    name: 'イベントメール',
+                    subject: '{{eventTitle}}のご案内',
+                    content: '<h2>{{eventTitle}}</h2><p>{{name}}さん、特別なイベントのご案内です。</p><p>{{eventContent}}</p><p>期間: {{startDate}} ～ {{endDate}}</p><p>この機会をお見逃しなく！</p>'
+                }
+            };
+            
+            const template = templates[templateType] || templates['welcome'];
+            document.getElementById('templateName').value = template.name;
+            document.getElementById('templateSubject').value = template.subject;
+            document.getElementById('templateContent').value = template.content;
+            document.getElementById('templateType').value = templateType;
+            
+            updatePreview();
+        }
+
+        function updatePreview() {
+            const content = document.getElementById('templateContent').value;
+            const previewDiv = document.getElementById('emailPreview');
+            
+            if (content.trim()) {
+                // 플레이스홀더를 샘플 데이터로 치환
+                const sampleData = {
+                    name: 'テストユーザー',
+                    email: 'test@example.com',
+                    points: '100',
+                    orderId: 'ORD-001',
+                    totalAmount: '5,000',
+                    currentPoints: '250',
+                    eventTitle: '新商品発売記念セール',
+                    eventContent: '新商品が登場！最大50%オフの特別価格でお求めいただけます。',
+                    startDate: '2024-01-20',
+                    endDate: '2024-01-31'
+                };
+                
+                let previewContent = content;
+                Object.keys(sampleData).forEach(key => {
+                    const regex = new RegExp(`{{${key}}}`, 'g');
+                    previewContent = previewContent.replace(regex, sampleData[key]);
+                });
+                
+                previewDiv.innerHTML = previewContent;
+            } else {
+                previewDiv.innerHTML = '<p class="text-muted text-center">プレビューがここに表示されます</p>';
+            }
+        }
+
+        function saveTemplate() {
+            const templateData = {
+                name: document.getElementById('templateName').value,
+                type: document.getElementById('templateType').value,
+                subject: document.getElementById('templateSubject').value,
+                content: document.getElementById('templateContent').value,
+                status: document.getElementById('templateStatus').value,
+                priority: document.getElementById('templatePriority').value,
+                updatedAt: new Date().toISOString(),
+                updatedBy: 'admin'
+            };
+            
+            if (!templateData.name || !templateData.subject || !templateData.content) {
+                alert('テンプレート名、件名、内容を入力してください。');
+                return;
+            }
+            
+            // Firebase에 저장
+            if (typeof FirebaseService !== 'undefined' && FirebaseService.db) {
+                FirebaseService.db.collection('emailTemplates').doc(templateData.type).set(templateData)
+                    .then(() => {
+                        alert('テンプレートが保存されました。');
+                        bootstrap.Modal.getInstance(document.getElementById('emailTemplateModal')).hide();
+                        loadEmailTemplates();
+                    })
+                    .catch(error => {
+                        console.error('템플릿 저장 오류:', error);
+                        alert('保存に失敗しました。');
+                    });
+            } else {
+                alert('Firebase에 연결되지 않았습니다。');
+            }
+        }
+
+        function saveTemplateAsDraft() {
+            document.getElementById('templateStatus').value = 'draft';
+            saveTemplate();
+        }
+
+        function previewTemplate(templateType) {
+            loadTemplateData(templateType);
+            
+            const modal = new bootstrap.Modal(document.getElementById('emailTemplateModal'));
+            modal.show();
+            
+            // 프리뷰 모드로 설정 (읽기 전용)
+            document.getElementById('templateName').readOnly = true;
+            document.getElementById('templateSubject').readOnly = true;
+            document.getElementById('templateContent').readOnly = true;
+            document.getElementById('templateStatus').disabled = true;
+            document.getElementById('templatePriority').disabled = true;
+        }
+
+        function testTemplate(templateType) {
+            // 테스트 발송 탭으로 이동
+            const testTab = document.getElementById('email-test-tab');
+            testTab.click();
+            
+            // 템플릿 선택
+            document.getElementById('testTemplateSelect').value = templateType;
+        }
+
+        function sendTestEmail() {
+            const templateType = document.getElementById('testTemplateSelect').value;
+            const emailAddress = document.getElementById('testEmailAddress').value;
+            const customData = document.getElementById('testCustomData').value;
+            
+            if (!templateType || !emailAddress) {
+                alert('テンプレートとメールアドレスを選択してください。');
+                return;
+            }
+            
+            let data = {};
+            if (customData.trim()) {
+                try {
+                    data = JSON.parse(customData);
+                } catch (e) {
+                    alert('カスタムデータの形式が正しくありません。');
+                    return;
+                }
+            }
+            
+            // Netlify Function 호출
+            fetch('/.netlify/functions/send-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    type: 'test',
+                    templateType: templateType,
+                    email: emailAddress,
+                    data: data
+                })
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    document.getElementById('testEmailResult').style.display = 'block';
+                    setTimeout(() => {
+                        document.getElementById('testEmailResult').style.display = 'none';
+                    }, 5000);
+                } else {
+                    alert('テストメール送信に失敗しました: ' + result.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('テストメール送信エラーが発生しました。');
+            });
+        }
+
+        function previewTestEmail() {
+            const templateType = document.getElementById('testTemplateSelect').value;
+            const customData = document.getElementById('testCustomData').value;
+            
+            if (!templateType) {
+                alert('テンプレートを選択してください。');
+                return;
+            }
+            
+            loadTemplateData(templateType);
+            updatePreview();
+            
+            const modal = new bootstrap.Modal(document.getElementById('emailTemplateModal'));
+            modal.show();
+        }
+
+        function viewEmailDetails(emailId) {
+            // 이메일 상세 정보 모달 표시 (구현 필요)
+            alert('이메일 상세 정보: ' + emailId);
+        }
+
+        function refreshEmailHistory() {
+            loadEmailHistory();
+        }
+
+        function loadEmailTemplates() {
+            // 템플릿 목록 새로고침 (구현 필요)
+            console.log('이메일 템플릿 목록 새로고침');
         }
 
         // 스캐너 초기화
