@@ -789,6 +789,12 @@ exports.handler = async (event, context) => {
             personalizedHtml = personalizedHtml.replace(/{{name}}/g, customerName);
             console.log(`📧 HTML에서 {{name}} 치환 완료`);
             
+            // 포인트 데이터 처리
+            if (data.points) {
+                personalizedHtml = personalizedHtml.replace(/{{points}}/g, data.points);
+                console.log(`📧 HTML에서 {{points}} 치환 완료: ${data.points}`);
+            }
+            
             // 이미지 데이터 처리
             if (data.image) {
                 let imageUrl = data.image;
