@@ -4324,7 +4324,12 @@
                 // 메일 관리 섹션 내 탭 초기화 (이벤트 메일 탭 활성화 포함)
                 initializeEmailTabs();
                 
-                loadEmailHistory();
+                // 함수들이 정의되었는지 확인 후 호출
+                if (typeof loadEmailHistory === 'function') {
+                    loadEmailHistory();
+                } else {
+                    console.warn('⚠️ loadEmailHistory 함수가 아직 정의되지 않음');
+                }
                 
                 console.log('✅ 메일 관리 섹션 초기화 완료');
             }, 200);
@@ -4352,7 +4357,11 @@
                 // 고객 목록 로드
                 setTimeout(() => {
                     console.log('📧 이벤트 메일 탭에서 고객 목록 로드 시작');
-                    loadCustomerList();
+                    if (typeof loadCustomerList === 'function') {
+                        loadCustomerList();
+                    } else {
+                        console.warn('⚠️ loadCustomerList 함수가 아직 정의되지 않음');
+                    }
                 }, 100);
             } else {
                 console.error('❌ 이벤트 메일 탭 요소를 찾을 수 없음');
@@ -5539,8 +5548,19 @@
         function showEmailManagement() {
             hideAllTabs();
             document.getElementById('email-section').style.display = 'block';
+            
+            // 함수들이 정의되었는지 확인 후 호출
+            if (typeof loadCustomerList === 'function') {
             loadCustomerList();
+            } else {
+                console.warn('⚠️ loadCustomerList 함수가 아직 정의되지 않음');
+            }
+            
+            if (typeof loadEmailHistory === 'function') {
             loadEmailHistory();
+            } else {
+                console.warn('⚠️ loadEmailHistory 함수가 아직 정의되지 않음');
+            }
         }
 
         async function sendEventEmail() {
