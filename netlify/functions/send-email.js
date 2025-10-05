@@ -158,28 +158,30 @@ const emailTemplates = {
                     <!-- 헤더 -->
                     <tr>
                         <td style="background-color: #ffffff; text-align: center; border-bottom: 2px solid #333; padding: 30px 30px 20px 30px; mso-padding-alt: 30px 30px 20px 30px;">
-                            <img src="https://aether-store.jp/assets/img/logo.png" alt="AETHER" style="max-width: 150px; height: auto; display: block; border: 0;">
+                            <a href="https://aether-store.jp" style="text-decoration: none; display: inline-block;">
+                                <img src="https://aether-store.jp/assets/img/logo.png" alt="AETHER" style="max-width: 150px; height: auto; display: block; border: 0; margin: 0 auto;">
+                            </a>
                         </td>
                     </tr>
                     
                     <!-- 콘텐츠 -->
                     <tr>
-                        <td style="background-color: #ffffff; padding: 30px; mso-padding-alt: 30px;">
+                        <td style="background-color: #ffffff; padding: 30px; mso-padding-alt: 30px; text-align: center;">
                             <!-- 이벤트 제목 -->
                             <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 15px; text-align: center; background-color: #ffffff;">{{title}}</div>
                             
                             <!-- 인사 -->
-                            <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0;">
-                                <p style="margin: 0; background-color: #f0f0f0;">こんにちは、{{name}}様！</p>
+                            <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px auto; text-align: center; max-width: 400px;">
+                                <p style="margin: 0; background-color: #f0f0f0; text-align: center;">こんにちは、{{name}}様！</p>
                             </div>
                             
                             <!-- 이미지 -->
                             <div style="text-align: center; margin: 20px 0; background-color: #ffffff;">
-                                <img src="{{image}}" alt="{{title}}" style="max-width: 100%; height: auto; display: block; border: 0;">
+                                <img src="{{image}}" alt="{{title}}" style="max-width: 100%; height: auto; display: block; border: 0; margin: 0 auto;">
                             </div>
                             
                             <!-- 이벤트 내용 -->
-                            <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px; background-color: #ffffff;">{{content}}</div>
+                            <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px; background-color: #ffffff; text-align: center;">{{content}}</div>
                         </td>
                     </tr>
                     
@@ -318,26 +320,28 @@ const emailTemplates = {
                     <!-- 헤더 -->
                     <tr>
                         <td style="background-color: #ffffff; text-align: center; border-bottom: 2px solid #333; padding: 30px 30px 20px 30px; mso-padding-alt: 30px 30px 20px 30px;">
-                            <img src="https://aether-store.jp/assets/img/logo.png" alt="AETHER" style="max-width: 150px; height: auto; display: block; border: 0;">
+                            <a href="https://aether-store.jp" style="text-decoration: none; display: inline-block;">
+                                <img src="https://aether-store.jp/assets/img/logo.png" alt="AETHER" style="max-width: 150px; height: auto; display: block; border: 0; margin: 0 auto;">
+                            </a>
                         </td>
                     </tr>
                     
                     <!-- 콘텐츠 -->
                     <tr>
-                        <td style="background-color: #ffffff; padding: 30px; mso-padding-alt: 30px;">
+                        <td style="background-color: #ffffff; padding: 30px; mso-padding-alt: 30px; text-align: center;">
                             <!-- 제목 -->
                             <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 15px; text-align: center; background-color: #ffffff;">ようこそ Aether Storeへ！</div>
                             
                             <!-- 인사 -->
-                            <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0;">
-                                <p style="margin: 0; background-color: #f0f0f0;">こんにちは、{{name}}様！</p>
+                            <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px auto; text-align: center; max-width: 400px;">
+                                <p style="margin: 0; background-color: #f0f0f0; text-align: center;">こんにちは、{{name}}様！</p>
                             </div>
                             
                             <!-- 환영 메시지 -->
-                            <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px; background-color: #ffffff;">
-                                <p>Aetherにご登録いただき、ありがとうございます。</p>
-                                <p>ご登録特典として<strong style="color: #333; background-color: #ffffff;">{{points}}ポイント</strong>をプレゼントいたします。</p>
-                                <p>ぜひお買い物をお楽しみください！</p>
+                            <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px; background-color: #ffffff; text-align: center;">
+                                <p style="text-align: center; margin: 10px 0;">Aetherにご登録いただき、ありがとうございます。</p>
+                                <p style="text-align: center; margin: 10px 0;">ご登録特典として<strong style="color: #333; background-color: #ffffff;">{{points}}ポイント</strong>をプレゼントいたします。</p>
+                                <p style="text-align: center; margin: 10px 0;">ぜひお買い物をお楽しみください！</p>
                             </div>
                         </td>
                     </tr>
@@ -431,13 +435,15 @@ const emailTemplates = {
                     <!-- 헤더 -->
                     <tr>
                         <td style="background-color: #ffffff; text-align: center; border-bottom: 2px solid #333; padding: 30px 30px 20px 30px; mso-padding-alt: 30px 30px 20px 30px;">
-                            <img src="https://aether-store.jp/assets/img/logo.png" alt="AETHER" style="max-width: 150px; height: auto; display: block; border: 0;">
+                            <a href="https://aether-store.jp" style="text-decoration: none; display: inline-block;">
+                                <img src="https://aether-store.jp/assets/img/logo.png" alt="AETHER" style="max-width: 150px; height: auto; display: block; border: 0; margin: 0 auto;">
+                            </a>
                         </td>
                     </tr>
                     
                     <!-- 콘텐츠 -->
                     <tr>
-                        <td style="background-color: #ffffff; padding: 30px; mso-padding-alt: 30px;">
+                        <td style="background-color: #ffffff; padding: 30px; mso-padding-alt: 30px; text-align: center;">
                             <!-- 제목 -->
                             <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 15px; text-align: center; background-color: #ffffff;">ご注文ありがとうございます！</div>
                             
@@ -545,13 +551,15 @@ const emailTemplates = {
                     <!-- 헤더 -->
                     <tr>
                         <td style="background-color: #ffffff; text-align: center; border-bottom: 2px solid #333; padding: 30px 30px 20px 30px; mso-padding-alt: 30px 30px 20px 30px;">
-                            <img src="https://aether-store.jp/assets/img/logo.png" alt="AETHER" style="max-width: 150px; height: auto; display: block; border: 0;">
+                            <a href="https://aether-store.jp" style="text-decoration: none; display: inline-block;">
+                                <img src="https://aether-store.jp/assets/img/logo.png" alt="AETHER" style="max-width: 150px; height: auto; display: block; border: 0; margin: 0 auto;">
+                            </a>
                         </td>
                     </tr>
                     
                     <!-- 콘텐츠 -->
                     <tr>
-                        <td style="background-color: #ffffff; padding: 30px; mso-padding-alt: 30px;">
+                        <td style="background-color: #ffffff; padding: 30px; mso-padding-alt: 30px; text-align: center;">
                             <!-- 제목 -->
                             <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 15px; text-align: center; background-color: #ffffff;">ポイントを獲得しました！</div>
                             
