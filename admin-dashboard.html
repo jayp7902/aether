@@ -4427,6 +4427,7 @@
                                     
                                     snapshot.forEach(doc => {
                                         const userData = doc.data();
+                                        const customerId = doc.id; // Firebase 문서 ID 사용
                                         customerCount++;
                                         
                                         const customerRank = userData.customerRank || 'BRONZE';
@@ -4434,10 +4435,10 @@
                                                         customerRank === 'GOLD' ? 'btn-secondary' : 'btn-outline-secondary';
                                         
                                         const row = document.createElement('tr');
-                                        row.setAttribute('id', `customer-${userData.id}`);
+                                        row.setAttribute('id', `customer-${customerId}`);
                                         row.innerHTML = `
                                             <td>
-                                                <input class="form-check-input customer-checkbox" type="checkbox" value="${userData.email}" id="customer-${userData.id}">
+                                                <input class="form-check-input customer-checkbox" type="checkbox" value="${userData.email}" id="customer-${customerId}">
                                             </td>
                                             <td>
                                                 <div>
@@ -4454,9 +4455,25 @@
                                             <td>
                                                 <small>${(() => {
                                                     try {
-                                                        const date = userData.createdAt?.toDate ? userData.createdAt.toDate() : new Date(userData.createdAt);
+                                                        let date;
+                                                        if (userData.createdAt) {
+                                                            if (userData.createdAt.toDate && typeof userData.createdAt.toDate === 'function') {
+                                                                date = userData.createdAt.toDate();
+                                                            } else if (userData.createdAt instanceof Date) {
+                                                                date = userData.createdAt;
+                                                            } else if (typeof userData.createdAt === 'string') {
+                                                                date = new Date(userData.createdAt);
+                                                            } else if (userData.createdAt.seconds) {
+                                                                date = new Date(userData.createdAt.seconds * 1000);
+                                                            } else {
+                                                                date = new Date(userData.createdAt);
+                                                            }
+                                                        } else {
+                                                            date = new Date();
+                                                        }
                                                         return date.toLocaleDateString('ja-JP');
                                                     } catch (e) {
+                                                        console.warn('날짜 파싱 오류:', e, userData.createdAt);
                                                         return '不明';
                                                     }
                                                 })()}</small>
@@ -4474,7 +4491,7 @@
                                         customerList.appendChild(row);
                                         
                                         // 각 고객별 주문 데이터 조회 Promise 생성
-                                        const orderPromise = loadCustomerOrderData(userData.id, userData.email);
+                                        const orderPromise = loadCustomerOrderData(customerId, userData.email);
                                         customerPromises.push(orderPromise);
                                     });
                                     
@@ -5765,6 +5782,7 @@
                             
                             snapshot.forEach(doc => {
                                 const userData = doc.data();
+                                const customerId = doc.id; // Firebase 문서 ID 사용
                                 customerCount++;
                                 
                                 const customerRank = userData.customerRank || 'BRONZE';
@@ -5772,10 +5790,10 @@
                                                 customerRank === 'GOLD' ? 'btn-secondary' : 'btn-outline-secondary';
                                 
                                 const row = document.createElement('tr');
-                                row.setAttribute('id', `customer-${userData.id}`);
+                                row.setAttribute('id', `customer-${customerId}`);
                                 row.innerHTML = `
                                     <td>
-                                        <input class="form-check-input customer-checkbox" type="checkbox" value="${userData.email}" id="customer-${userData.id}">
+                                        <input class="form-check-input customer-checkbox" type="checkbox" value="${userData.email}" id="customer-${customerId}">
                                     </td>
                                     <td>
                                         <div>
@@ -5792,9 +5810,25 @@
                                     <td>
                                         <small>${(() => {
                                             try {
-                                                const date = userData.createdAt?.toDate ? userData.createdAt.toDate() : new Date(userData.createdAt);
+                                                let date;
+                                                if (userData.createdAt) {
+                                                    if (userData.createdAt.toDate && typeof userData.createdAt.toDate === 'function') {
+                                                        date = userData.createdAt.toDate();
+                                                    } else if (userData.createdAt instanceof Date) {
+                                                        date = userData.createdAt;
+                                                    } else if (typeof userData.createdAt === 'string') {
+                                                        date = new Date(userData.createdAt);
+                                                    } else if (userData.createdAt.seconds) {
+                                                        date = new Date(userData.createdAt.seconds * 1000);
+                                                    } else {
+                                                        date = new Date(userData.createdAt);
+                                                    }
+                                                } else {
+                                                    date = new Date();
+                                                }
                                                 return date.toLocaleDateString('ja-JP');
                                             } catch (e) {
+                                                console.warn('날짜 파싱 오류:', e, userData.createdAt);
                                                 return '不明';
                                             }
                                         })()}</small>
@@ -5812,7 +5846,7 @@
                                 customerList.appendChild(row);
                                 
                                 // 각 고객별 주문 데이터 조회 Promise 생성
-                                const orderPromise = loadCustomerOrderData(userData.id, userData.email);
+                                const orderPromise = loadCustomerOrderData(customerId, userData.email);
                                 customerPromises.push(orderPromise);
                             });
                             
@@ -6569,7 +6603,7 @@
 
         // 고객별 주문 데이터 로드 함수
         async function loadCustomerOrderData(customerId, customerEmail) {
-            console.log(`📊 고객 ${customerId} 주문 데이터 조회 시작`);
+            console.log(`📊 고객 ${customerId} (${customerEmail}) 주문 데이터 조회 시작`);
             
             try {
                 if (typeof FirebaseService !== 'undefined' && FirebaseService.db) {
@@ -6578,6 +6612,8 @@
                         .where('customerEmail', '==', customerEmail)
                         .where('status', 'in', ['completed', 'delivered', 'shipped'])
                         .get();
+                    
+                    console.log(`📊 고객 ${customerId} 주문 조회 결과: ${ordersSnapshot.size}건`);
                     
                     let orderCount = 0;
                     let totalSpent = 0;
@@ -6588,12 +6624,19 @@
                         
                         // 주문 총액 계산 (totalAmount 또는 items의 합계)
                         if (orderData.totalAmount) {
-                            totalSpent += parseFloat(orderData.totalAmount) || 0;
+                            const amount = parseFloat(orderData.totalAmount) || 0;
+                            totalSpent += amount;
+                            console.log(`  - 주문 ${orderDoc.id}: totalAmount = ${amount}`);
                         } else if (orderData.items && Array.isArray(orderData.items)) {
+                            let orderTotal = 0;
                             orderData.items.forEach(item => {
                                 const itemTotal = (parseFloat(item.price) || 0) * (parseInt(item.quantity) || 0);
-                                totalSpent += itemTotal;
+                                orderTotal += itemTotal;
                             });
+                            totalSpent += orderTotal;
+                            console.log(`  - 주문 ${orderDoc.id}: items 계산 = ${orderTotal}`);
+                        } else {
+                            console.log(`  - 주문 ${orderDoc.id}: 금액 정보 없음`);
                         }
                     });
                     
@@ -6611,6 +6654,8 @@
                         }
                         
                         console.log(`✅ 고객 ${customerId} 주문 데이터 업데이트: 주문수 ${orderCount}, 총구매액 ¥${totalSpent.toLocaleString()}`);
+                    } else {
+                        console.warn(`⚠️ 고객 행을 찾을 수 없음: customer-${customerId}`);
                     }
                     
                     return { orderCount, totalSpent };
