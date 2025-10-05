@@ -6796,6 +6796,10 @@
             console.log('✅ toggleAllCustomers 완료');
         }
 
+        // window 객체에 함수 할당
+        window.toggleAllCustomers = toggleAllCustomers;
+        console.log('🔧 toggleAllCustomers 함수가 window 객체에 할당됨');
+
         function setupCustomerCheckboxListeners() {
             console.log('🔗 체크박스 이벤트 리스너 설정 시작');
             
@@ -6856,6 +6860,10 @@
                 console.warn('⚠️ selectAllCustomers 요소를 찾을 수 없습니다');
             }
         }
+
+        // window 객체에 함수 할당
+        window.updateSelectedCount = updateSelectedCount;
+        console.log('🔧 updateSelectedCount 함수가 window 객체에 할당됨');
 
         function loadEmailHistory() {
             // Firebase에서 메일 발송 이력 로드
@@ -7079,7 +7087,7 @@
             document.getElementById('testTemplateSelect').value = templateType;
         }
 
-        function sendTestEmail() {
+        async function sendTestEmail() {
             const templateType = document.getElementById('testTemplateSelect').value;
             const emailAddress = document.getElementById('testEmailAddress').value;
             const customData = document.getElementById('testCustomData').value;
