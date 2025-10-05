@@ -51,6 +51,13 @@ exports.handler = async (event, context) => {
         const { to, subject, type, data } = JSON.parse(event.body);
 
         console.log('메일 발송 요청:', { to, subject, type });
+        
+        // 환경 변수 확인
+        console.log('환경 변수 확인:', {
+            hasPassword: !!process.env.GMAIL_APP_PASSWORD,
+            passwordLength: process.env.GMAIL_APP_PASSWORD ? process.env.GMAIL_APP_PASSWORD.length : 0,
+            passwordStart: process.env.GMAIL_APP_PASSWORD ? process.env.GMAIL_APP_PASSWORD.substring(0, 4) + '...' : 'undefined'
+        });
 
         // Gmail SMTP 설정
         const transporter = nodemailer.createTransport({
