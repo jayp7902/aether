@@ -4324,14 +4324,19 @@
                 // 메일 관리 섹션 내 탭 초기화 (이벤트 메일 탭 활성화 포함)
                 initializeEmailTabs();
                 
-                // 함수들이 정의될 때까지 기다린 후 호출
+                // 함수들이 정의될 때까지 기다린 후 호출 (최대 10회 재시도)
+                let retryCount = 0;
+                const maxRetries = 10;
                 const waitForFunctions = () => {
                     if (typeof loadEmailHistory === 'function') {
                         loadEmailHistory();
                         console.log('✅ loadEmailHistory 함수 호출 완료');
+                    } else if (retryCount < maxRetries) {
+                        retryCount++;
+                        console.log(`⏳ loadEmailHistory 함수 대기 중... (${retryCount}/${maxRetries})`);
+                        setTimeout(waitForFunctions, 200);
                     } else {
-                        console.log('⏳ loadEmailHistory 함수 대기 중...');
-                        setTimeout(waitForFunctions, 100);
+                        console.error('❌ loadEmailHistory 함수를 찾을 수 없습니다. 페이지를 새로고침해주세요.');
                     }
                 };
                 waitForFunctions();
@@ -4363,14 +4368,19 @@
                 setTimeout(() => {
                     console.log('📧 이벤트 메일 탭에서 고객 목록 로드 시작');
                     
-                    // 함수가 정의될 때까지 기다린 후 호출
+                    // 함수가 정의될 때까지 기다린 후 호출 (최대 10회 재시도)
+                    let retryCount = 0;
+                    const maxRetries = 10;
                     const waitForCustomerList = () => {
                         if (typeof loadCustomerList === 'function') {
                             loadCustomerList();
                             console.log('✅ loadCustomerList 함수 호출 완료');
+                        } else if (retryCount < maxRetries) {
+                            retryCount++;
+                            console.log(`⏳ loadCustomerList 함수 대기 중... (${retryCount}/${maxRetries})`);
+                            setTimeout(waitForCustomerList, 200);
                         } else {
-                            console.log('⏳ loadCustomerList 함수 대기 중...');
-                            setTimeout(waitForCustomerList, 100);
+                            console.error('❌ loadCustomerList 함수를 찾을 수 없습니다. 페이지를 새로고침해주세요.');
                         }
                     };
                     waitForCustomerList();
@@ -5561,14 +5571,21 @@
             hideAllTabs();
             document.getElementById('email-section').style.display = 'block';
             
-            // 함수들이 정의될 때까지 기다린 후 호출
+            // 함수들이 정의될 때까지 기다린 후 호출 (최대 10회 재시도)
+            let customerListRetryCount = 0;
+            let emailHistoryRetryCount = 0;
+            const maxRetries = 10;
+            
             const waitForCustomerList = () => {
                 if (typeof loadCustomerList === 'function') {
                     loadCustomerList();
                     console.log('✅ showEmailManagement - loadCustomerList 함수 호출 완료');
+                } else if (customerListRetryCount < maxRetries) {
+                    customerListRetryCount++;
+                    console.log(`⏳ showEmailManagement - loadCustomerList 함수 대기 중... (${customerListRetryCount}/${maxRetries})`);
+                    setTimeout(waitForCustomerList, 200);
                 } else {
-                    console.log('⏳ showEmailManagement - loadCustomerList 함수 대기 중...');
-                    setTimeout(waitForCustomerList, 100);
+                    console.error('❌ showEmailManagement - loadCustomerList 함수를 찾을 수 없습니다.');
                 }
             };
             
@@ -5576,9 +5593,12 @@
                 if (typeof loadEmailHistory === 'function') {
                     loadEmailHistory();
                     console.log('✅ showEmailManagement - loadEmailHistory 함수 호출 완료');
+                } else if (emailHistoryRetryCount < maxRetries) {
+                    emailHistoryRetryCount++;
+                    console.log(`⏳ showEmailManagement - loadEmailHistory 함수 대기 중... (${emailHistoryRetryCount}/${maxRetries})`);
+                    setTimeout(waitForEmailHistory, 200);
                 } else {
-                    console.log('⏳ showEmailManagement - loadEmailHistory 함수 대기 중...');
-                    setTimeout(waitForEmailHistory, 100);
+                    console.error('❌ showEmailManagement - loadEmailHistory 함수를 찾을 수 없습니다.');
                 }
             };
             
