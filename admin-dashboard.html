@@ -1780,11 +1780,14 @@
                                     </div>
                                 </div>
                                 
-                                <div class="text-center">
-                                    <button type="button" class="btn btn-dark" onclick="sendEventEmail()" id="sendEventButton">
-                                        <i class="fas fa-paper-plane me-2"></i>イベントメール配信
-                                    </button>
-                                </div>
+                    <div class="text-center">
+                        <button type="button" class="btn btn-outline-info me-2" onclick="debugCustomerData()">
+                            <i class="fas fa-bug me-2"></i>디버깅
+                        </button>
+                        <button type="button" class="btn btn-dark" onclick="sendEventEmail()" id="sendEventButton">
+                            <i class="fas fa-paper-plane me-2"></i>イベントメール配信
+                        </button>
+                    </div>
                             </form>
                         </div>
                     </div>
@@ -5349,6 +5352,9 @@
                             try {
                                 const userData = doc.data();
                                 
+                                // Firebase 데이터 디버깅
+                                console.log(`🔥 Firebase 고객 데이터 [${doc.id}]:`, userData);
+                                
                                 // 안전한 데이터 검증
                                 if (!userData || typeof userData !== 'object') {
                                     console.warn(`⚠️ 고객 ${doc.id} 데이터가 유효하지 않음`);
@@ -5367,6 +5373,7 @@
                                     lastVisit: userData.lastVisit || null
                                 };
                                 
+                                console.log(`✅ 처리된 고객 데이터 [${doc.id}]:`, safeUserData);
                                 customers.push(safeUserData);
                             } catch (error) {
                                 console.warn(`⚠️ 고객 ${doc.id} 데이터 처리 오류:`, error);
@@ -5586,21 +5593,33 @@
         function getSelectedCustomerData() {
             const checkboxes = document.querySelectorAll('.customer-checkbox:checked');
             const customerData = {};
+            
+            console.log('📧 선택된 고객 체크박스 수:', checkboxes.length);
+            
             checkboxes.forEach(checkbox => {
                 const email = checkbox.value;
                 const row = checkbox.closest('tr');
+                
+                console.log('📧 처리 중인 고객:', email);
+                
                 if (row) {
                     const nameElement = row.querySelector('strong');
                     let name = nameElement ? nameElement.textContent.trim() : email.split('@')[0];
                     
+                    console.log('📧 추출된 이름:', name);
+                    
                     // 이름이 비어있거나 "名前なし"인 경우 이메일에서 추출
                     if (!name || name === '名前なし') {
                         name = email.split('@')[0];
+                        console.log('📧 이름이 없어서 이메일에서 추출:', name);
                     }
                     
                     customerData[email] = name;
+                    console.log('📧 최종 고객 데이터:', email, '→', name);
                 }
             });
+            
+            console.log('📧 전체 고객 데이터:', customerData);
             return customerData;
         }
 
@@ -5614,6 +5633,51 @@
             } else {
                 customImageInput.style.display = 'none';
                 document.getElementById('customImageUrl').value = '';
+            }
+        }
+
+        // 디버깅 함수
+        function debugCustomerData() {
+            console.log('🐛 디버깅 시작');
+            
+            // 1. 선택된 체크박스 확인
+            const checkboxes = document.querySelectorAll('.customer-checkbox:checked');
+            console.log('🐛 선택된 체크박스 수:', checkboxes.length);
+            
+            checkboxes.forEach((checkbox, index) => {
+                const email = checkbox.value;
+                const row = checkbox.closest('tr');
+                const nameElement = row ? row.querySelector('strong') : null;
+                const name = nameElement ? nameElement.textContent.trim() : '없음';
+                
+                console.log(`🐛 체크박스 ${index + 1}:`, {
+                    email: email,
+                    name: name,
+                    row: row ? '존재' : '없음',
+                    nameElement: nameElement ? '존재' : '없음'
+                });
+            });
+            
+            // 2. 고객 데이터 확인
+            const customerData = getSelectedCustomerData();
+            console.log('🐛 최종 고객 데이터:', customerData);
+            
+            // 3. Firebase 데이터 확인
+            if (typeof FirebaseService !== 'undefined' && FirebaseService.db) {
+                console.log('🐛 Firebase 연결 확인됨');
+                FirebaseService.db.collection('users').limit(3).get()
+                    .then(snapshot => {
+                        console.log('🐛 Firebase 샘플 데이터:');
+                        snapshot.forEach(doc => {
+                            const data = doc.data();
+                            console.log(`🐛 사용자 [${doc.id}]:`, data);
+                        });
+                    })
+                    .catch(error => {
+                        console.error('🐛 Firebase 데이터 조회 실패:', error);
+                    });
+            } else {
+                console.log('🐛 Firebase 연결되지 않음');
             }
         }
 
