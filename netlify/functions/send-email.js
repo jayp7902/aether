@@ -18,7 +18,7 @@ const emailTemplates = {
             max-width: 600px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #f4f4f4;
+            background-color: #ffffff;
         }
         .container {
             background-color: #ffffff;
