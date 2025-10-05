@@ -517,8 +517,12 @@
         // 페이지 로드 시 초기화
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 주문 관리 시스템 초기화 시작');
-            initializeOrderManagement();
-            updateDateDisplay();
+            
+            // DOM 로드 후 약간의 지연을 두고 초기화 (Firebase 스크립트 로드 대기)
+            setTimeout(() => {
+                initializeOrderManagement();
+                updateDateDisplay();
+            }, 100);
         });
         
         // 날짜 네비게이션 함수
@@ -669,13 +673,13 @@
                 // 여러 방법으로 Firebase 상태 확인
                 let isFirebaseReady = false;
                 
-                // 방법 1: window.FirebaseService 확인
-                if (window.FirebaseService && window.FirebaseService.db) {
+                // 방법 1: window.FirebaseService 확인 (더 정확한 확인)
+                if (window.FirebaseService && window.FirebaseService.db && window.FirebaseService.db.collection) {
                     console.log('✅ FirebaseService.db 사용 가능');
                     isFirebaseReady = true;
                 }
-                // 방법 2: window.db 확인
-                else if (window.db) {
+                // 방법 2: window.db 확인 (더 정확한 확인)
+                else if (window.db && window.db.collection) {
                     console.log('✅ window.db 사용 가능');
                     isFirebaseReady = true;
                 }
@@ -698,6 +702,14 @@
                     }, 300);
                 } else {
                     console.log('⏳ Firebase 초기화 대기 중...');
+                    console.log('🔍 Firebase 상태 디버깅:', {
+                        FirebaseService: !!window.FirebaseService,
+                        FirebaseServiceDb: !!window.FirebaseService?.db,
+                        FirebaseServiceDbCollection: !!window.FirebaseService?.db?.collection,
+                        windowDb: !!window.db,
+                        windowDbCollection: !!window.db?.collection,
+                        firebaseApps: !!(typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0)
+                    });
                 }
                 
                 return isFirebaseReady;
@@ -711,9 +723,9 @@
                     checkFirebaseAndLoad();
                 });
                 
-                // 백업: 주기적 확인 (최대 10초)
+                // 백업: 주기적 확인 (최대 15초)
                 let attempts = 0;
-                const maxAttempts = 20; // 10초 (500ms * 20)
+                const maxAttempts = 30; // 15초 (500ms * 30)
                 
                 const checkInterval = setInterval(() => {
                     attempts++;
@@ -723,6 +735,20 @@
                         clearInterval(checkInterval);
                         if (attempts >= maxAttempts) {
                             console.error('❌ Firebase 초기화 시간 초과');
+                            showError('Firebase 초기화에 실패했습니다. 페이지를 새로고침해주세요.');
+                            
+                            // 재시도 버튼 추가
+                            const retryButton = document.createElement('button');
+                            retryButton.className = 'btn btn-secondary mt-2';
+                            retryButton.innerHTML = '🔄 재시도';
+                            retryButton.onclick = () => {
+                                window.location.reload();
+                            };
+                            
+                            const errorContainer = document.getElementById('error-container');
+                            if (errorContainer) {
+                                errorContainer.appendChild(retryButton);
+                            }
                         }
                     }
                 }, 500);
@@ -736,10 +762,10 @@
             // 여러 방법으로 Firestore 인스턴스 확인
             let db = null;
             
-            if (window.FirebaseService && window.FirebaseService.db) {
+            if (window.FirebaseService && window.FirebaseService.db && window.FirebaseService.db.collection) {
                 db = window.FirebaseService.db;
                 console.log('✅ FirebaseService.db 사용');
-            } else if (window.db) {
+            } else if (window.db && window.db.collection) {
                 db = window.db;
                 console.log('✅ window.db 사용');
             } else {
@@ -747,7 +773,9 @@
                 console.log('🔍 사용 가능한 객체들:');
                 console.log('- window.FirebaseService:', typeof window.FirebaseService);
                 console.log('- window.FirebaseService.db:', typeof window.FirebaseService?.db);
+                console.log('- window.FirebaseService.db.collection:', typeof window.FirebaseService?.db?.collection);
                 console.log('- window.db:', typeof window.db);
+                console.log('- window.db.collection:', typeof window.db?.collection);
                 showError('Firebase 연결에 문제가 발생했습니다. 잠시 후 다시 시도해주세요.');
                 return;
             }
