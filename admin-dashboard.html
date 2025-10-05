@@ -1961,13 +1961,6 @@
                                 </div>
                             </form>
                             
-                            <!-- 테스트 발송 결과 -->
-                            <div id="testEmailResult" class="mt-4" style="display: none;">
-                                <div class="alert alert-success">
-                                    <h6><i class="fas fa-check-circle me-2"></i>テストメール送信完了</h6>
-                                    <p class="mb-0">テストメールが正常に送信されました。</p>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -6739,7 +6732,7 @@
                 try {
                     data = JSON.parse(customData);
                 } catch (e) {
-                    alert('カスタムデータの形式が正しくありません。');
+                    showCustomNotification('warning', '入力エラー', 'カスタムデータの形式が正しくありません。', 3000);
                     return;
                 }
             }
@@ -6768,53 +6761,17 @@
                 console.log('테스트 메일 발송 결과:', result);
                 if (result.success) {
                     // 성공 메시지 표시
-                    const resultDiv = document.getElementById('testEmailResult');
-                    resultDiv.innerHTML = `
-                        <div class="alert alert-success" role="alert">
-                            <i class="fas fa-check-circle me-2"></i>
-                            テストメールが正常に送信されました！
-                        </div>
-                    `;
-                    resultDiv.style.display = 'block';
-                    
-                    // 5초 후 숨기기
-                    setTimeout(() => {
-                        resultDiv.style.display = 'none';
-                    }, 5000);
+                    showCustomNotification('success', 'テストメール送信完了', 'テストメールが正常に送信されました！', 3000);
                 } else {
                     // 실패 메시지 표시
-                    const resultDiv = document.getElementById('testEmailResult');
-                    resultDiv.innerHTML = `
-                        <div class="alert alert-danger" role="alert">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            テストメール送信に失敗しました: ${result.error || 'Unknown error'}
-                        </div>
-                    `;
-                    resultDiv.style.display = 'block';
-                    
-                    // 10초 후 숨기기
-                    setTimeout(() => {
-                        resultDiv.style.display = 'none';
-                    }, 10000);
+                    showCustomNotification('error', 'テストメール送信失敗', `テストメール送信に失敗しました: ${result.error || 'Unknown error'}`, 5000);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
                 
-                // 상세한 오류 메시지 표시
-                const resultDiv = document.getElementById('testEmailResult');
-                resultDiv.innerHTML = `
-                    <div class="alert alert-danger" role="alert">
-                        <i class="fas fa-exclamation-triangle me-2"></i>
-                        ネットワークエラーが発生しました: ${error.message || 'Unknown error'}
-                    </div>
-                `;
-                resultDiv.style.display = 'block';
-                
-                // 10초 후 숨기기
-                setTimeout(() => {
-                    resultDiv.style.display = 'none';
-                }, 10000);
+                // 네트워크 오류 메시지 표시
+                showCustomNotification('error', 'ネットワークエラー', `ネットワークエラーが発生しました: ${error.message || 'Unknown error'}`, 5000);
             });
         }
 
