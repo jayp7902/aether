@@ -2647,7 +2647,7 @@
                 try {
                     await window.recordUserVisit(currentUser.email, 'purchase', {
                         orderId: orderId,
-                        totalAmount: totalAmount,
+                        totalAmount: orderData.totalAmount,
                         usedPoints: usedPoints,
                         earnedPoints: earnedPoints
                     });
@@ -2663,7 +2663,7 @@
                         customerName: currentUser.displayName || currentUser.email,
                         items: orderData.items,
                         totalAmount: finalTotal,
-                        originalAmount: totalAmount,
+                        originalAmount: orderData.originalAmount,
                         usedPoints: usedPoints,
                         earnedPoints: earnedPoints,
                         shipping: orderData.shipping,
@@ -2685,7 +2685,7 @@
                     customerName: currentUser.displayName || currentUser.email,
                     items: orderData.items,
                     totalAmount: finalTotal,
-                    originalAmount: totalAmount,
+                    originalAmount: orderData.originalAmount,
                     usedPoints: usedPoints,
                     earnedPoints: earnedPoints,
                     shipping: orderData.shipping,
