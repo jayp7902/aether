@@ -624,11 +624,11 @@
             updateCartCount();
             displayOrderInfo();
             
-            // 주문 완료 메일 발송
-            const orderData = JSON.parse(sessionStorage.getItem('lastOrder') || '{}');
-            if (orderData.id) {
-                sendOrderCompleteEmail(orderData);
-            }
+            // 주문 완료 메일 발송 (checkout.html에서 이미 발송되었으므로 중복 발송 방지)
+            // const orderData = JSON.parse(sessionStorage.getItem('lastOrder') || '{}');
+            // if (orderData.id) {
+            //     sendOrderCompleteEmail(orderData);
+            // }
         });
     </script>
 </body>
