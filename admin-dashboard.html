@@ -3928,11 +3928,19 @@
             updateTabButtons('analytics-tab');
         }
         
+        function switchToEmail() {
+            console.log('📧 메일 관리 탭으로 전환');
+            hideAllTabs();
+            showTab('email-section');
+            updateTabButtons('email-tab');
+            loadEmailHistory();
+        }
+        
         function switchToHomepageTab() {
             console.log('🔄 홈페이지 탭 클릭됨');
             
             // 모든 탭 숨기기
-            const allSections = ['points-section', 'orders-section', 'brands-section', 'products-section', 'customers-section', 'analytics-section', 'homepage-section', 'footer-section'];
+            const allSections = ['points-section', 'orders-section', 'brands-section', 'products-section', 'customers-section', 'analytics-section', 'homepage-section', 'footer-section', 'email-section'];
             allSections.forEach(sectionId => {
                 const section = document.getElementById(sectionId);
                 if (section) {
@@ -3970,7 +3978,7 @@
             console.log('🔄 푸터 탭 클릭됨');
             
             // 모든 탭 숨기기
-            const allSections = ['points-section', 'orders-section', 'brands-section', 'products-section', 'customers-section', 'analytics-section', 'homepage-section', 'footer-section'];
+            const allSections = ['points-section', 'orders-section', 'brands-section', 'products-section', 'customers-section', 'analytics-section', 'homepage-section', 'footer-section', 'email-section'];
             allSections.forEach(sectionId => {
                 const section = document.getElementById(sectionId);
                 if (section) {
@@ -4011,7 +4019,7 @@
         
         // 전역 탭 전환 헬퍼 함수들
         function hideAllTabs() {
-            const sections = ['points-section', 'orders-section', 'brands-section', 'products-section', 'customers-section', 'analytics-section', 'homepage-section', 'footer-section'];
+            const sections = ['points-section', 'orders-section', 'brands-section', 'products-section', 'customers-section', 'analytics-section', 'homepage-section', 'footer-section', 'email-section'];
             sections.forEach(sectionId => {
                 const section = document.getElementById(sectionId);
                 if (section) {
@@ -4030,7 +4038,7 @@
         }
         
         function updateTabButtons(activeTabId) {
-            const tabs = ['points-tab', 'orders-tab', 'brands-tab', 'products-tab', 'customers-tab', 'analytics-tab', 'homepage-tab', 'footer-tab'];
+            const tabs = ['points-tab', 'orders-tab', 'brands-tab', 'products-tab', 'customers-tab', 'analytics-tab', 'homepage-tab', 'footer-tab', 'email-tab'];
             tabs.forEach(tabId => {
                 const tab = document.getElementById(tabId);
                 if (tab) {
@@ -4944,7 +4952,7 @@
 
         // 메일 발송 관련 함수들
         function showEmailManagement() {
-            hideAllSections();
+            hideAllTabs();
             document.getElementById('email-section').style.display = 'block';
             loadCustomerList();
             loadEmailHistory();
