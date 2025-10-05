@@ -1697,36 +1697,28 @@
                                 </div>
                                 
                                 
-                                <!-- 발송 설정 섹션 -->
-                                <div class="mb-4">
-                                    <label class="form-label">発送設定</label>
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <div class="form-check mb-2">
-                                                <input class="form-check-input" type="radio" name="sendType" id="sendNow" value="now" checked onchange="toggleScheduleOptions()">
-                                                <label class="form-check-label" for="sendNow">
-                                                    今すぐ送信
-                                                </label>
-                                            </div>
-                                            <div class="form-check">
-                                                <input class="form-check-input" type="radio" name="sendType" id="sendSchedule" value="schedule" onchange="toggleScheduleOptions()">
-                                                <label class="form-check-label" for="sendSchedule">
-                                                    予約送信
-                                                </label>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-6" id="scheduleOptions" style="display: none;">
-                                            <div class="mb-2">
-                                                <label for="scheduleDate" class="form-label">送信日</label>
-                                                <input type="date" class="form-control" id="scheduleDate">
-                                            </div>
-                                            <div>
-                                                <label for="scheduleTime" class="form-label">送信時刻</label>
-                                                <input type="time" class="form-control" id="scheduleTime">
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                <!-- 발송 설정 섹션 -->
+                <div class="mb-4">
+                    <label class="form-label">配信設定</label>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <select class="form-select" id="sendTypeSelect" onchange="toggleScheduleOptions()">
+                                <option value="now">今すぐ送信</option>
+                                <option value="schedule">予約送信</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6" id="scheduleOptions" style="display: none;">
+                            <div class="mb-2">
+                                <label for="scheduleDate" class="form-label">送信日</label>
+                                <input type="date" class="form-control" id="scheduleDate">
+                            </div>
+                            <div>
+                                <label for="scheduleTime" class="form-label">送信時刻</label>
+                                <input type="time" class="form-control" id="scheduleTime">
+                            </div>
+                        </div>
+                    </div>
+                </div>
                                 
                                 <!-- 가입자 선택 섹션 -->
                                 <div class="mb-4">
@@ -4044,7 +4036,7 @@
         
         // 예약 발송 옵션 토글 함수
         function toggleScheduleOptions() {
-            const sendType = document.querySelector('input[name="sendType"]:checked').value;
+            const sendType = document.getElementById('sendTypeSelect').value;
             const scheduleOptions = document.getElementById('scheduleOptions');
             const sendButton = document.getElementById('sendEventButton');
             
@@ -5108,7 +5100,7 @@
             }
 
             // 발송 타입 확인
-            const sendType = document.querySelector('input[name="sendType"]:checked').value;
+            const sendType = document.getElementById('sendTypeSelect').value;
             const isScheduled = sendType === 'schedule';
             
             if (isScheduled) {
@@ -5178,13 +5170,13 @@
                     if (isScheduled) {
                         alert(`✅ 予約送信が設定されました！\n配信時刻: ${new Date(eventData.scheduledAt).toLocaleString('ja-JP')}\n配信先: ${eventData.recipients.length}名`);
                     } else {
-                        alert(`✅ イベントメール配信が完了しました！\n配信先: ${eventData.recipients.length}名\n성공: ${data.successCount}명, 실패: ${data.failCount}명`);
+                        alert(`✅ イベントメール配信が完了しました！\n配信先: ${eventData.recipients.length}名\n成功: ${data.successCount}名, 失敗: ${data.failCount}名`);
                     }
                     
-                    // 폼 초기화
+                    // 폼 완전 초기화
                     clearEventForm();
                 } else {
-                    alert('❌ 配信に失敗しました: ' + (data.error || '알 수 없는 오류'));
+                    alert('❌ 配信に失敗しました: ' + (data.error || '不明なエラー'));
                 }
             })
             .catch(error => {
@@ -5200,23 +5192,35 @@
         
         // 이벤트 폼 초기화 함수
         function clearEventForm() {
+            // 템플릿 선택 초기화
+            document.getElementById('templateSelect').value = '';
+            
+            // 이벤트 정보 초기화
             document.getElementById('eventTitle').value = '';
             document.getElementById('eventContent').value = '';
             document.getElementById('eventStartDate').value = '';
             document.getElementById('eventEndDate').value = '';
-            document.getElementById('templateSelect').value = '';
             document.getElementById('eventType').value = 'sale';
             
-            // 발송 설정 초기화
-            document.getElementById('sendNow').checked = true;
-            document.getElementById('sendSchedule').checked = false;
+            // 발송 설정 초기화 (드롭다운 방식)
+            document.getElementById('sendTypeSelect').value = 'now';
+            document.getElementById('scheduleDate').value = '';
+            document.getElementById('scheduleTime').value = '';
             toggleScheduleOptions();
             
             // 고객 선택 초기화
             document.getElementById('selectAllCustomers').checked = false;
+            document.getElementById('selectAllCustomersHeader').checked = false;
+            
+            // 모든 고객 체크박스 해제
+            const customerCheckboxes = document.querySelectorAll('.customer-checkbox');
+            customerCheckboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            
             updateSelectedCount();
             
-            console.log('✅ 이벤트 폼 초기화 완료');
+            console.log('✅ 이벤트 폼 완전 초기화 완료');
         }
 
         function sendBulkEmail() {
