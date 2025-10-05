@@ -2462,18 +2462,18 @@
                             const currentPoints = userDoc.exists ? (userDoc.data().points || 0) : 0;
                             console.log('📊 현재 포인트:', currentPoints);
                             
-                            // 포인트 사용 및 적립 계산 (finalUsedPoints 사용)
+                            // 포인트 사용만 계산 (적립은 배송 완료 시)
                             const finalUsedPoints = Math.max(usedPoints, pointsToUse || 0);
-                            newPoints = currentPoints - finalUsedPoints + earnedPoints;
-                            console.log(`💰 포인트 변화: ${currentPoints} - ${finalUsedPoints} + ${earnedPoints} = ${newPoints}`);
+                            newPoints = currentPoints - finalUsedPoints;
+                            console.log(`💰 포인트 변화: ${currentPoints} - ${finalUsedPoints} = ${newPoints} (적립은 배송 완료 시)`);
                             
-                            // Firestore에 포인트 업데이트 (이메일을 문서 ID로 사용)
+                            // Firestore에 포인트 업데이트 (사용만, 적립은 나중에)
                             console.log('💾 Firebase 포인트 업데이트 시작...');
                             await firebase.firestore().collection('users').doc(user.email).update({
                                 points: newPoints,
                                 pointsUpdatedAt: new Date()
                             });
-                            console.log('✅ Firebase 포인트 업데이트 완료:', newPoints);
+                            console.log('✅ Firebase 포인트 업데이트 완료 (사용만):', newPoints);
                         } catch (pointError) {
                             console.error('❌ Firebase 포인트 업데이트 실패:', pointError);
                             throw pointError;
@@ -2665,7 +2665,7 @@
                         totalAmount: finalTotal,
                         originalAmount: orderData.originalAmount,
                         usedPoints: usedPoints,
-                        earnedPoints: earnedPoints,
+                        earnedPoints: 0, // 배송 완료 시 부여 예정
                         shipping: orderData.shipping,
                         payment: {
                             method: selectedMethod === 'bank-transfer' ? '銀行振込' : 'クレジットカード',
