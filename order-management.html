@@ -737,6 +737,9 @@
                         windowDbCollection: !!window.db?.collection,
                         firebaseApps: !!(typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0)
                     });
+                    
+                    // 더 긴 대기 시간으로 설정 (Firebase 초기화 완료 대기)
+                    setTimeout(checkFirebaseAndLoad, 2000);
                 }
                 
                 return isFirebaseReady;
@@ -747,12 +750,26 @@
                 // Firebase 초기화 이벤트 리스너 등록
                 window.addEventListener('firebaseInitialized', function(event) {
                     console.log('🎉 Firebase 초기화 이벤트 수신:', event.detail);
-                    checkFirebaseAndLoad();
+                    // 이벤트 수신 후 잠시 대기 후 확인
+                    setTimeout(() => {
+                        checkFirebaseAndLoad();
+                    }, 1000);
                 });
                 
-                // 백업: 주기적 확인 (최대 15초)
+                // 추가: Firebase 객체 직접 감시
+                const watchFirebase = () => {
+                    if (window.FirebaseService && window.FirebaseService.db && window.FirebaseService.db.collection) {
+                        console.log('🎉 Firebase 객체 직접 감지 완료');
+                        checkFirebaseAndLoad();
+                    } else {
+                        setTimeout(watchFirebase, 1000);
+                    }
+                };
+                watchFirebase();
+                
+                // 백업: 주기적 확인 (최대 30초)
                 let attempts = 0;
-                const maxAttempts = 30; // 15초 (500ms * 30)
+                const maxAttempts = 60; // 30초 (500ms * 60)
                 
                 const checkInterval = setInterval(() => {
                     attempts++;
@@ -803,7 +820,13 @@
                 console.log('- window.FirebaseService.db.collection:', typeof window.FirebaseService?.db?.collection);
                 console.log('- window.db:', typeof window.db);
                 console.log('- window.db.collection:', typeof window.db?.collection);
-                showError('Firebase 연결에 문제가 발생했습니다. 잠시 후 다시 시도해주세요.');
+                
+                // Firebase 대기 후 재시도
+                console.log('⏳ Firebase 초기화 대기 후 재시도...');
+                setTimeout(() => {
+                    console.log('🔄 loadOrders 재시도');
+                    loadOrders();
+                }, 3000);
                 return;
             }
             
