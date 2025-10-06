@@ -413,6 +413,59 @@
                                 <a href="#" class="text-decoration-none text-dark japanese-text" id="forgot-password">パスワードをお忘れですか？</a>
                             </div>
 
+                            <!-- 패스워드 리셋 폼 (기본적으로 숨김) -->
+                            <form id="passwordResetForm" style="display: none;">
+                                <div class="mb-4 text-center">
+                                    <i class="fas fa-key text-primary mb-3" style="font-size: 3rem;"></i>
+                                    <h4 class="japanese-heading text-dark mb-2">新しいパスワードを設定</h4>
+                                    <p class="japanese-text text-muted">安全なパスワードを入力してください</p>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="new-password" class="form-label japanese-text">新しいパスワード</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-lock text-muted"></i></span>
+                                        <input type="password" class="form-control" id="new-password" placeholder="新しいパスワードを入力" required minlength="6">
+                                        <button class="btn btn-outline-secondary" type="button" id="toggle-new-password">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                    <div class="form-text japanese-text">
+                                        <small class="text-muted">6文字以上のパスワードを入力してください</small>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="confirm-password" class="form-label japanese-text">パスワード確認</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-lock text-muted"></i></span>
+                                        <input type="password" class="form-control" id="confirm-password" placeholder="パスワードを再入力" required minlength="6">
+                                        <button class="btn btn-outline-secondary" type="button" id="toggle-confirm-password">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <div id="password-match" class="form-text" style="display: none;">
+                                        <small class="text-success"><i class="fas fa-check-circle me-1"></i>パスワードが一致しています</small>
+                                    </div>
+                                    <div id="password-mismatch" class="form-text" style="display: none;">
+                                        <small class="text-danger"><i class="fas fa-exclamation-circle me-1"></i>パスワードが一致しません</small>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary w-100 py-3 japanese-text mb-3" id="reset-password-btn">
+                                    <i class="fas fa-save me-2"></i>パスワードを設定
+                                </button>
+
+                                <div class="text-center">
+                                    <a href="login.html" class="text-decoration-none text-muted japanese-text">
+                                        <i class="fas fa-arrow-left me-1"></i>ログインページに戻る
+                                    </a>
+                                </div>
+                            </form>
+
                             <hr class="my-4">
 
                             <div class="text-center">
@@ -465,6 +518,125 @@
                 icon.className = 'fas fa-eye';
             }
         });
+
+        // 패스워드 리셋 폼 이벤트 리스너 (DOMContentLoaded 내부에서 실행)
+        function initializePasswordResetForm() {
+            // 새 패스워드 표시/숨김 토글
+            const toggleNewPassword = document.getElementById('toggle-new-password');
+            if (toggleNewPassword) {
+                toggleNewPassword.addEventListener('click', function() {
+                    const passwordInput = document.getElementById('new-password');
+                    const icon = this.querySelector('i');
+                    
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        icon.className = 'fas fa-eye-slash';
+                    } else {
+                        passwordInput.type = 'password';
+                        icon.className = 'fas fa-eye';
+                    }
+                });
+            }
+            
+            // 확인 패스워드 표시/숨김 토글
+            const toggleConfirmPassword = document.getElementById('toggle-confirm-password');
+            if (toggleConfirmPassword) {
+                toggleConfirmPassword.addEventListener('click', function() {
+                    const passwordInput = document.getElementById('confirm-password');
+                    const icon = this.querySelector('i');
+                    
+                    if (passwordInput.type === 'password') {
+                        passwordInput.type = 'text';
+                        icon.className = 'fas fa-eye-slash';
+                    } else {
+                        passwordInput.type = 'password';
+                        icon.className = 'fas fa-eye';
+                    }
+                });
+            }
+            
+            // 패스워드 일치 확인
+            function checkPasswordMatch() {
+                const newPasswordInput = document.getElementById('new-password');
+                const confirmPasswordInput = document.getElementById('confirm-password');
+                const passwordMatch = document.getElementById('password-match');
+                const passwordMismatch = document.getElementById('password-mismatch');
+                
+                if (!newPasswordInput || !confirmPasswordInput || !passwordMatch || !passwordMismatch) return;
+                
+                const newPassword = newPasswordInput.value;
+                const confirmPassword = confirmPasswordInput.value;
+                
+                if (confirmPassword.length > 0) {
+                    if (newPassword === confirmPassword) {
+                        passwordMatch.style.display = 'block';
+                        passwordMismatch.style.display = 'none';
+                        return true;
+                    } else {
+                        passwordMatch.style.display = 'none';
+                        passwordMismatch.style.display = 'block';
+                        return false;
+                    }
+                } else {
+                    passwordMatch.style.display = 'none';
+                    passwordMismatch.style.display = 'none';
+                    return false;
+                }
+            }
+            
+            // 패스워드 입력 이벤트
+            const confirmPasswordInput = document.getElementById('confirm-password');
+            const newPasswordInput = document.getElementById('new-password');
+            if (confirmPasswordInput) confirmPasswordInput.addEventListener('input', checkPasswordMatch);
+            if (newPasswordInput) newPasswordInput.addEventListener('input', checkPasswordMatch);
+            
+            // 패스워드 리셋 폼 제출
+            const passwordResetForm = document.getElementById('passwordResetForm');
+            if (passwordResetForm) {
+                passwordResetForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    const newPasswordInput = document.getElementById('new-password');
+                    const confirmPasswordInput = document.getElementById('confirm-password');
+                    
+                    const newPassword = newPasswordInput.value;
+                    const confirmPassword = confirmPasswordInput.value;
+                    
+                    // 입력값 검증
+                    if (!newPassword || !confirmPassword) {
+                        showAlert('すべてのフィールドを入力してください。');
+                        return;
+                    }
+                    
+                    if (newPassword.length < 6) {
+                        showAlert('パスワードは6文字以上で入力してください。');
+                        return;
+                    }
+                    
+                    if (newPassword !== confirmPassword) {
+                        showAlert('パスワードが一致しません。');
+                        return;
+                    }
+                    
+                    // 버튼 로딩 상태
+                    const resetBtn = document.getElementById('reset-password-btn');
+                    const originalText = resetBtn.innerHTML;
+                    resetBtn.disabled = true;
+                    resetBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>設定中...';
+                    
+                    try {
+                        await handlePasswordReset(newPassword);
+                    } catch (error) {
+                        console.error('패스워드 리셋 오류:', error);
+                        showAlert('パスワードリセットでエラーが発生しました。');
+                    } finally {
+                        // 버튼 복원
+                        resetBtn.disabled = false;
+                        resetBtn.innerHTML = originalText;
+                    }
+                });
+            }
+        }
 
         // 이전 페이지로 리다이렉트하는 함수
         function redirectToPreviousPage() {
@@ -781,8 +953,75 @@
             }
         }
         
-        // 패스워드 리셋 처리 함수
-        async function handlePasswordReset(email) {
+        // URL 파라미터 확인하여 패스워드 리셋 모드 활성화
+        function checkPasswordResetMode() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const mode = urlParams.get('mode');
+            const oobCode = urlParams.get('oobCode');
+            const apiKey = urlParams.get('apiKey');
+            
+            console.log('URL 파라미터 확인:', { mode, oobCode, apiKey });
+            
+            if (mode === 'resetPassword' && oobCode && apiKey) {
+                console.log('패스워드 리셋 모드 활성화');
+                showPasswordResetForm(oobCode, apiKey);
+            }
+        }
+        
+        // 패스워드 리셋 폼 표시
+        function showPasswordResetForm(oobCode, apiKey) {
+            const loginForm = document.getElementById('loginForm');
+            const resetForm = document.getElementById('passwordResetForm');
+            
+            if (loginForm) loginForm.style.display = 'none';
+            if (resetForm) resetForm.style.display = 'block';
+            
+            // 페이지 제목 변경
+            const pageTitle = document.querySelector('.japanese-heading');
+            if (pageTitle) {
+                pageTitle.textContent = 'パスワードリセット';
+            }
+        }
+        
+        // 새로운 패스워드 설정 함수
+        async function handlePasswordReset(newPassword) {
+            const urlParams = new URLSearchParams(window.location.search);
+            const oobCode = urlParams.get('oobCode');
+            
+            if (!oobCode) {
+                showAlert('無効なリセットリンクです。');
+                return;
+            }
+            
+            try {
+                if (typeof firebase !== 'undefined' && firebase.auth) {
+                    // Firebase 패스워드 리셋 확인
+                    await firebase.auth().confirmPasswordReset(oobCode, newPassword);
+                    showAlert('パスワードが正常にリセットされました。新しいパスワードでログインしてください。', 'success');
+                    
+                    // 3초 후 로그인 페이지로 리다이렉트
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 3000);
+                } else {
+                    showAlert('Firebase가 초기화되지 않았습니다. 페이지를 새로고침해주세요。');
+                }
+            } catch (error) {
+                console.error('패스워드 리셋 중 오류:', error);
+                if (error.code === 'auth/expired-action-code') {
+                    showAlert('リセットリンクの有効期限が切れています。再度パスワードリセットを申請してください。');
+                } else if (error.code === 'auth/invalid-action-code') {
+                    showAlert('無効なリセットリンクです。');
+                } else if (error.code === 'auth/weak-password') {
+                    showAlert('パスワードが弱すぎます。より強力なパスワードを設定してください。');
+                } else {
+                    showAlert('パスワードリセットでエラーが発生しました。');
+                }
+            }
+        }
+        
+        // 패스워드 리셋 처리 함수 (기존 함수)
+        async function handlePasswordResetEmail(email) {
             try {
                 if (typeof firebase !== 'undefined' && firebase.auth) {
                     await firebase.auth().sendPasswordResetEmail(email);
@@ -804,6 +1043,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('=== login.html DOMContentLoaded 시작 ===');
             
+            // URL 파라미터 확인하여 패스워드 리셋 모드 활성화
+            checkPasswordResetMode();
+            
             // Firebase 초기화 완료 대기
             let firebaseReady = false;
             let attempts = 0;
@@ -824,6 +1066,9 @@
                 if (!firebaseReady) {
                     console.warn('Firebase 초기화 시간 초과, 기본 모드로 진행');
                 }
+                
+                // 패스워드 리셋 폼 초기화
+                initializePasswordResetForm();
                 
                 // login.html에서는 불필요한 기능들 건너뛰기
                 console.log('login.html - 사용자 메뉴, QR코드 제어, 장바구니 카운트 업데이트 건너뛰기');
