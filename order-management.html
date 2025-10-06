@@ -2031,21 +2031,36 @@
                 if (newStatus === 'cancelled') {
                     const cancelReason = '管理者によるキャンセル';
                     
-                    // 전역으로 노출된 함수 사용
-                    let result;
-                    if (typeof window.FirebaseService_sendOrderCancelledEmail === 'function') {
-                        result = await window.FirebaseService_sendOrderCancelledEmail(orderData, cancelReason);
-                    } else if (window.FirebaseService && typeof window.FirebaseService.sendOrderCancelledEmail === 'function') {
-                        result = await window.FirebaseService.sendOrderCancelledEmail(orderData, cancelReason);
-                    } else {
-                        console.error('❌ sendOrderCancelledEmail 함수를 찾을 수 없습니다');
-                        return;
-                    }
-                    
-                    if (result.success) {
-                        console.log('✅ 주문 취소 메일 발송 완료:', orderId);
-                    } else {
-                        console.error('❌ 주문 취소 메일 발송 실패:', result.error);
+                    // 직접 Netlify Function 호출
+                    try {
+                        console.log('📧 주문 취소 메일 직접 발송 시작:', orderId);
+                        
+                        const response = await fetch('/.netlify/functions/send-email', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                to: orderData.userEmail,
+                                subject: '注文キャンセルのお知らせ - Aether Store',
+                                type: 'order-cancelled',
+                                data: {
+                                    customerName: orderData.userName || orderData.customerName || 'お客様',
+                                    orderId: orderData.id,
+                                    cancelDate: new Date().toLocaleDateString('ja-JP'),
+                                    cancelReason: cancelReason
+                                }
+                            })
+                        });
+                        
+                        const result = await response.json();
+                        if (result.success) {
+                            console.log('✅ 주문 취소 메일 발송 완료:', orderId);
+                        } else {
+                            console.error('❌ 주문 취소 메일 발송 실패:', result.error);
+                        }
+                    } catch (error) {
+                        console.error('❌ 주문 취소 메일 발송 중 오류:', error);
                     }
                 }
                 
