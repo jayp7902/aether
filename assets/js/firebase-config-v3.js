@@ -1308,6 +1308,42 @@ class FirebaseService {
     }
 
 
+    // 패스워드 리셋 메일 발송 함수 (커스텀)
+    static async sendPasswordResetEmail(email, resetLink) {
+        try {
+            console.log('패스워드 리셋 메일 발송 시작:', email);
+            
+            const response = await fetch('/.netlify/functions/send-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    to: email,
+                    subject: 'パスワードリセットのお知らせ - Aether Store',
+                    type: 'password-reset',
+                    data: {
+                        email: email,
+                        resetLink: resetLink
+                    }
+                })
+            });
+            
+            const result = await response.json();
+            if (result.success) {
+                console.log('패스워드 리셋 메일 발송 완료:', email);
+                return { success: true };
+            } else {
+                console.error('패스워드 리셋 메일 발송 실패:', result.error);
+                return { success: false, error: result.error };
+            }
+            
+        } catch (error) {
+            console.error('패스워드 리셋 메일 발송 오류:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
     // 사용자 프로필 조회
     static async getUserProfile(uid) {
         try {
