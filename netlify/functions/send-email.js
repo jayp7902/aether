@@ -358,12 +358,12 @@ const emailTemplates = {
 </html>`,
     
     'order-complete': `<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>注文完了メール</title>
-    <style>
+        <style>
         /* Reset styles for email clients */
         body, table, td, p, a, li, blockquote {
             -webkit-text-size-adjust: 100%;
@@ -432,8 +432,8 @@ const emailTemplates = {
                 border: none !important;
             }
         }
-    </style>
-</head>
+        </style>
+    </head>
 <body style="margin: 0; padding: 0; background-color: #ffffff;">
     <!--[if mso]>
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #ffffff;">
@@ -467,7 +467,7 @@ const emailTemplates = {
                             <!-- 주문 번호 -->
                             <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center !important;">
                                 <p style="margin: 0; background-color: #f0f0f0; text-align: center !important;">注文番号: <strong>{{orderId}}</strong></p>
-                            </div>
+            </div>
                             
                             <!-- 주문 내용 -->
                             <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px; background-color: #ffffff; text-align: center !important;">
@@ -481,7 +481,7 @@ const emailTemplates = {
                                     <div style="margin-bottom: 15px;">
                                         <strong>注文商品:</strong><br>
                                         <div style="margin-top: 5px;">{{items}}</div>
-                                    </div>
+                </div>
                                     
                                     <!-- 결제 정보 -->
                                     <div style="margin-bottom: 15px;">
@@ -491,17 +491,17 @@ const emailTemplates = {
                                         <strong>使用ポイント:</strong> {{pointsUsed}}<br>
                                         <hr style="border: 1px solid #ddd; margin: 10px 0;">
                                         <strong style="font-size: 18px; color: #333;">合計金額: {{totalAmount}}</strong>
-                                    </div>
+                </div>
                                     
                                     <!-- 배송 정보 -->
                                     <div>
                                         <strong>配送先:</strong><br>
                                         <div style="margin-top: 5px;">{{shippingAddress}}</div>
-                                    </div>
-                                </div>
+                </div>
+                </div>
                                 
                                 <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">商品の準備ができ次第、配送いたします。</p>
-                            </div>
+            </div>
                         </td>
                     </tr>
                     
@@ -529,12 +529,12 @@ const emailTemplates = {
 </html>`,
     
     'points-earned': `<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ポイント獲得メール</title>
-    <style>
+        <style>
         /* Reset styles for email clients */
         body, table, td, p, a, li, blockquote {
             -webkit-text-size-adjust: 100%;
@@ -580,8 +580,8 @@ const emailTemplates = {
                 border: none !important;
             }
         }
-    </style>
-</head>
+        </style>
+    </head>
 <body style="margin: 0; padding: 0; background-color: #ffffff;">
     <!--[if mso]>
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #ffffff;">
@@ -612,14 +612,14 @@ const emailTemplates = {
                             <!-- 포인트 정보 -->
                             <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0;">
                                 <p style="margin: 0; background-color: #f0f0f0;">獲得ポイント: <strong style="color: #333; background-color: #f0f0f0;">{{points}}ポイント</strong></p>
-                            </div>
+            </div>
                             
                             <!-- 포인트 내용 -->
                             <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px; background-color: #ffffff; text-align: center !important;">
                                 <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">お買い物ありがとうございます！</p>
                                 <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">{{reason}}により、{{points}}ポイントを獲得いたしました。</p>
                                 <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">獲得したポイントは次回のお買い物でご利用いただけます。</p>
-                            </div>
+                </div>
                         </td>
                     </tr>
                     
@@ -640,16 +640,16 @@ const emailTemplates = {
         </tr>
     </table>
     <![endif]-->
-</body>
+    </body>
 </html>`,
 
     'password-reset': `<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>パスワードリセット</title>
-    <style>
+        <style>
         /* Reset styles for email clients */
         body, table, td, p, a, li, blockquote {
             -webkit-text-size-adjust: 100%;
@@ -732,8 +732,8 @@ const emailTemplates = {
                 background-color: #ffffff !important;
             }
         }
-    </style>
-</head>
+        </style>
+    </head>
 <body style="margin: 0; padding: 0; background-color: #ffffff;">
     <!--[if mso]>
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #ffffff;">
@@ -776,20 +776,20 @@ const emailTemplates = {
                                 <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important; color: #333 !important; background-color: #ffffff !important;">{{email}}様</p>
                                 <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important; color: #333 !important; background-color: #ffffff !important;">パスワードリセットのご依頼を承りました。</p>
                                 <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important; color: #333 !important; background-color: #ffffff !important;">以下のボタンをクリックして、新しいパスワードを設定してください。</p>
-                            </div>
+            </div>
                             
                             <!-- 리셋 버튼 -->
                             <div style="text-align: center !important; margin: 30px 0; background-color: #ffffff;">
                                 <a href="{{resetLink}}" style="display: inline-block; background-color: #333; color: #ffffff; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; background-color: #333 !important; color: #ffffff !important;">
                                     パスワードをリセット
                                 </a>
-                            </div>
+                </div>
                             
                             <!-- 안내 메시지 -->
                             <div style="font-size: 14px; line-height: 1.6; margin-top: 20px; background-color: #ffffff; text-align: center !important;">
                                 <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important; color: #666 !important; background-color: #ffffff !important;">※このメールに心当たりがない場合は、無視してください。</p>
                                 <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important; color: #666 !important; background-color: #ffffff !important;">※リンクの有効期限は24時間です。</p>
-                            </div>
+                </div>
                         </td>
                     </tr>
                     
@@ -810,16 +810,16 @@ const emailTemplates = {
         </tr>
     </table>
     <![endif]-->
-</body>
+    </body>
 </html>`,
-    
+
     'order-cancelled': `<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>注文キャンセル</title>
-    <style>
+        <style>
         /* Reset styles for email clients */
         body, table, td, p, a, li, blockquote {
             -webkit-text-size-adjust: 100%;
@@ -902,8 +902,8 @@ const emailTemplates = {
                 background-color: #ffffff !important;
             }
         }
-    </style>
-</head>
+        </style>
+    </head>
 <body style="margin: 0; padding: 0; background-color: #ffffff;">
     <!--[if mso]>
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #ffffff;">
@@ -946,25 +946,25 @@ const emailTemplates = {
                                 <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important; color: #333 !important; background-color: #ffffff !important;">{{customerName}}様</p>
                                 <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important; color: #333 !important; background-color: #ffffff !important;">いつもAether Storeをご利用いただき、ありがとうございます。</p>
                                 <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important; color: #333 !important; background-color: #ffffff !important;">下記のご注文がキャンセルされました。</p>
-                            </div>
+            </div>
                             
                             <!-- 주문 정보 -->
                             <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center !important;">
                                 <div style="font-size: 18px; font-weight: bold; color: #333; margin-bottom: 10px; background-color: #f8f9fa;">注文番号: {{orderId}}</div>
                                 <div style="font-size: 16px; color: #666; background-color: #f8f9fa;">キャンセル日: {{cancelDate}}</div>
                                 <div style="font-size: 16px; color: #666; background-color: #f8f9fa;">キャンセル理由: {{cancelReason}}</div>
-                            </div>
+                </div>
                             
                             <!-- 환불 안내 -->
                             <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px; background-color: #ffffff; text-align: center !important;">
                                 <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important; color: #333 !important; background-color: #ffffff !important;">ご利用いただいたポイントは自動的にアカウントに戻されます。</p>
                                 <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important; color: #333 !important; background-color: #ffffff !important;">お支払い方法によっては、返金処理に数日かかる場合がございます。</p>
-                            </div>
+            </div>
                             
                             <!-- 문의 안내 -->
                             <div style="font-size: 14px; line-height: 1.6; margin-top: 20px; background-color: #ffffff; text-align: center !important;">
                                 <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important; color: #666 !important; background-color: #ffffff !important;">ご不明な点がございましたら、お気軽にお問い合わせください。</p>
-                            </div>
+            </div>
                         </td>
                     </tr>
                     
@@ -985,16 +985,16 @@ const emailTemplates = {
         </tr>
     </table>
     <![endif]-->
-</body>
+    </body>
 </html>`,
-    
+
     'shipping-complete': `<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>配送完了メール</title>
-    <style>
+        <style>
         /* Reset styles for email clients */
         body, table, td, p, a, li, blockquote {
             -webkit-text-size-adjust: 100%;
@@ -1077,8 +1077,8 @@ const emailTemplates = {
                 background-color: #ffffff !important;
             }
         }
-    </style>
-</head>
+        </style>
+    </head>
 <body style="margin: 0; padding: 0; background-color: #ffffff;">
     <!--[if mso]>
     <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color: #ffffff;">
@@ -1119,7 +1119,7 @@ const emailTemplates = {
                             <!-- 주문 번호 -->
                             <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center !important;">
                                 <p style="margin: 0; background-color: #f0f0f0; text-align: center !important;">注文番号: <strong>{{orderId}}</strong></p>
-                            </div>
+            </div>
                             
                             <!-- 배송 완료 내용 -->
                             <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px; background-color: #ffffff; text-align: center !important;">
@@ -1134,20 +1134,20 @@ const emailTemplates = {
                                     <div style="margin-bottom: 15px;">
                                         <strong>配送商品:</strong><br>
                                         <div style="margin-top: 5px;">{{items}}</div>
-                                    </div>
+            </div>
                                     
                                     <!-- 배송 정보 -->
                                     <div style="margin-bottom: 15px;">
                                         <strong>配送先:</strong><br>
                                         <div style="margin-top: 5px;">{{shippingAddress}}</div>
-                                    </div>
+            </div>
                                     
                                     <!-- 배송 완료 일시 -->
                                     <div style="margin-bottom: 15px;">
                                         <strong>配送完了日時:</strong> {{deliveryDate}}<br>
                                         <strong>配送業者:</strong> {{shippingCompany}}<br>
                                         <strong>追跡番号:</strong> {{trackingNumber}}
-                                    </div>
+        </div>
                                     
                                     <!-- 안내 메시지 -->
                                     <div style="background-color: #e8f5e8; padding: 15px; border-radius: 5px; border-left: 4px solid #4caf50;">
@@ -1185,7 +1185,7 @@ const emailTemplates = {
         </tr>
     </table>
     <![endif]-->
-</body>
+    </body>
 </html>`
 };
 
