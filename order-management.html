@@ -1384,32 +1384,32 @@
                     <div class="modal-dialog">
                         <div class="modal-content">
                             <div class="modal-header">
-                                <h5 class="modal-title">주문 취소 사유 선택</h5>
+                                <h5 class="modal-title">注文キャンセル理由の選択</h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
                             <div class="modal-body">
                                 <div class="mb-3">
-                                    <label for="cancelReason" class="form-label">취소 사유를 선택해주세요:</label>
+                                    <label for="cancelReason" class="form-label">キャンセル理由を選択してください:</label>
                                     <select class="form-select" id="cancelReason">
-                                        <option value="">취소 사유를 선택해주세요</option>
-                                        <option value="고객변심">고객변심</option>
-                                        <option value="입금미확인">입금미확인</option>
-                                        <option value="재고부족">재고부족</option>
-                                        <option value="배송불가지역">배송불가지역</option>
-                                        <option value="상품하자">상품하자</option>
-                                        <option value="고객요청">고객요청</option>
-                                        <option value="시스템오류">시스템오류</option>
-                                        <option value="기타">기타</option>
+                                        <option value="">キャンセル理由を選択してください</option>
+                                        <option value="お客様都合">お客様都合</option>
+                                        <option value="入金未確認">入金未確認</option>
+                                        <option value="在庫不足">在庫不足</option>
+                                        <option value="配送不可地域">配送不可地域</option>
+                                        <option value="商品不良">商品不良</option>
+                                        <option value="お客様からの要望">お客様からの要望</option>
+                                        <option value="システムエラー">システムエラー</option>
+                                        <option value="その他">その他</option>
                                     </select>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="cancelMemo" class="form-label">추가 메모 (선택사항):</label>
-                                    <textarea class="form-control" id="cancelMemo" rows="3" placeholder="취소 관련 추가 사유나 메모를 입력해주세요"></textarea>
+                                    <label for="cancelMemo" class="form-label">追加メモ (任意):</label>
+                                    <textarea class="form-control" id="cancelMemo" rows="3" placeholder="キャンセルに関する追加理由やメモを入力してください"></textarea>
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-                                <button type="button" class="btn btn-danger" onclick="confirmCancel('${orderId}')">주문 취소</button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                                <button type="button" class="btn btn-danger" onclick="confirmCancel('${orderId}')">注文キャンセル</button>
                             </div>
                         </div>
                     </div>
@@ -1441,7 +1441,7 @@
             const cancelMemo = document.getElementById('cancelMemo').value;
             
             if (!cancelReason) {
-                alert('취소 사유를 선택해주세요.');
+                alert('キャンセル理由を選択してください。');
                 return;
             }
             
@@ -2110,14 +2110,14 @@
                 if (newStatus === 'cancelled') {
                     const actualCancelReason = cancelReason || '管理者によるキャンセル';
                     
-                    // 포인트 환불 처리
+                    // ポイント返還処理
                     let refundedPoints = 0;
                     if (orderData.pointsUsed && orderData.pointsUsed > 0) {
                         try {
-                            console.log('💰 포인트 환불 시작:', orderData.pointsUsed);
+                            console.log('💰 ポイント返還開始:', orderData.pointsUsed);
                             refundedPoints = orderData.pointsUsed;
                             
-                            // 사용자 포인트 복원
+                            // ユーザーポイント復元
                             const userRef = window.FirebaseService.db.collection('users').doc(orderData.userId);
                             await window.FirebaseService.db.runTransaction(async (transaction) => {
                                 const userDoc = await transaction.get(userRef);
@@ -2126,22 +2126,22 @@
                                     transaction.update(userRef, {
                                         points: currentPoints + refundedPoints
                                     });
-                                    console.log('✅ 포인트 환불 완료:', refundedPoints);
+                                    console.log('✅ ポイント返還完了:', refundedPoints);
                                 }
                             });
                         } catch (error) {
-                            console.error('❌ 포인트 환불 실패:', error);
+                            console.error('❌ ポイント返還失敗:', error);
                         }
                     }
                     
-                    // 취소 메일 발송 (상세 정보 포함)
+                    // キャンセルメール送信 (詳細情報含む)
                     try {
-                        console.log('📧 주문 취소 메일 직접 발송 시작:', orderId);
+                        console.log('📧 注文キャンセルメール送信開始:', orderId);
                         
-                        // 상품 정보 포맷팅
+                        // 商品情報フォーマット
                         const itemsList = orderData.items ? orderData.items.map(item => 
-                            `${item.name} (${item.quantity}개) - ¥${item.price.toLocaleString()}`
-                        ).join('<br>') : '상품 정보 없음';
+                            `${item.name} (${item.quantity}個) - ¥${item.price.toLocaleString()}`
+                        ).join('<br>') : '商品情報なし';
                         
                         const response = await fetch('/.netlify/functions/send-email', {
                             method: 'POST',
@@ -2170,17 +2170,17 @@
                         
                         const result = await response.json();
                         if (result.success) {
-                            console.log('✅ 주문 취소 메일 발송 완료:', orderId);
+                            console.log('✅ 注文キャンセルメール送信完了:', orderId);
                         } else {
-                            console.error('❌ 주문 취소 메일 발송 실패:', result.error);
+                            console.error('❌ 注文キャンセルメール送信失敗:', result.error);
                         }
                     } catch (error) {
-                        console.error('❌ 주문 취소 메일 발송 중 오류:', error);
+                        console.error('❌ 注文キャンセルメール送信中エラー:', error);
                     }
                 }
                 
             } catch (error) {
-                console.error('❌ 이메일 알림 발송 오류:', error);
+                console.error('❌ メール通知送信エラー:', error);
             }
         }
         
