@@ -1329,7 +1329,7 @@ exports.handler = async (event, context) => {
                     cancelDate: data.cancelDate || new Date().toLocaleDateString('ja-JP'),
                     cancelReason: data.cancelReason || 'システムによるキャンセル',
                     paymentMethod: data.paymentMethod || '銀行振込',
-                    items: data.items || '상품 정보 없음',
+                    items: data.items || '商品情報なし',
                     subtotal: data.subtotal || '¥0',
                     shipping: data.shipping || '¥0',
                     pointsUsed: data.pointsUsed || '0ポイント',
@@ -1340,7 +1340,7 @@ exports.handler = async (event, context) => {
             case 'order-complete':
                 html = loadEmailTemplate('order-complete', {
                     orderId: data.orderId || 'N/A',
-                    items: data.items || '상품 정보 없음',
+                    items: data.items || '商品情報なし',
                     paymentMethod: data.paymentMethod || '銀行振込',
                     subtotal: data.subtotal || '¥0',
                     shipping: data.shipping || '¥0',
