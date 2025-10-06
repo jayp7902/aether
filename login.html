@@ -416,8 +416,8 @@
                             <!-- 패스워드 리셋 폼 (기본적으로 숨김) -->
                             <form id="passwordResetForm" style="display: none;">
                                 <div class="mb-4 text-center">
-                                    <i class="fas fa-key text-primary mb-3" style="font-size: 3rem;"></i>
-                                    <h4 class="japanese-heading text-dark mb-2">新しいパスワードを設定</h4>
+                                    <i class="fas fa-key text-dark mb-3" style="font-size: 3rem;"></i>
+                                    <h4 class="japanese-heading text-dark mb-2">新しいパスワード</h4>
                                     <p class="japanese-text text-muted">安全なパスワードを入力してください</p>
                                 </div>
 
@@ -455,8 +455,8 @@
                                     </div>
                                 </div>
 
-                                <button type="submit" class="btn btn-primary w-100 py-3 japanese-text mb-3" id="reset-password-btn">
-                                    <i class="fas fa-save me-2"></i>パスワードを設定
+                                <button type="submit" class="btn btn-dark w-100 py-3 japanese-text mb-3" id="reset-password-btn">
+                                    <i class="fas fa-lock me-2"></i>パスワードを設定
                                 </button>
 
                                 <div class="text-center">
@@ -970,10 +970,33 @@
         
         // 패스워드 리셋 폼 표시
         function showPasswordResetForm(oobCode, apiKey) {
-            const loginForm = document.getElementById('loginForm');
+            const loginForm = document.getElementById('login-form');
             const resetForm = document.getElementById('passwordResetForm');
             
+            // 로그인 관련 모든 요소들 숨기기
             if (loginForm) loginForm.style.display = 'none';
+            
+            // "패스워드를 잊으셨나요?" 링크 숨기기
+            const forgotPasswordLink = document.querySelector('#forgot-password');
+            if (forgotPasswordLink && forgotPasswordLink.parentElement) {
+                forgotPasswordLink.parentElement.style.display = 'none';
+            }
+            
+            // 구분선 숨기기
+            const hrElements = document.querySelectorAll('hr');
+            hrElements.forEach(hr => {
+                if (hr.classList.contains('my-4')) {
+                    hr.style.display = 'none';
+                }
+            });
+            
+            // 회원가입 섹션 숨기기
+            const registerSection = document.querySelector('.text-center');
+            if (registerSection && registerSection.textContent.includes('アカウントをお持ちでない方は')) {
+                registerSection.style.display = 'none';
+            }
+            
+            // 패스워드 리셋 폼 표시
             if (resetForm) resetForm.style.display = 'block';
             
             // 페이지 제목 변경
