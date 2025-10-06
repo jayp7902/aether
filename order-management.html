@@ -1504,7 +1504,7 @@
                     showShippingModal(orderId);
                 } else {
                     // 이메일 알림 발송
-                    sendOrderStatusNotification(orderId, newStatus);
+                    sendOrderStatusNotification(orderId, newStatus, cancelReason);
                 }
                 
                 if (newStatus !== 'delivered' && newStatus !== 'completed') {
@@ -2095,7 +2095,7 @@
         }
         
         // 이메일 알림 발송
-        async function sendOrderStatusNotification(orderId, newStatus) {
+        async function sendOrderStatusNotification(orderId, newStatus, cancelReason = null) {
             try {
                 console.log('📧 이메일 알림 발송 시작:', orderId, newStatus);
                 
