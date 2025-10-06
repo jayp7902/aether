@@ -886,18 +886,25 @@
                                 console.log('🔍 sendPasswordResetEmail 확인:', typeof window.FirebaseService_sendPasswordResetEmail);
                                 console.log('🔍 FirebaseService static 확인:', typeof window.FirebaseService.sendPasswordResetEmail);
                                 
-                                // 실제 Firebase 패스워드 리셋 링크 생성
-                                let resetLink;
+                                // Firebase 기본 패스워드 리셋 이메일 발송
                                 try {
-                                    // Firebase 기본 리셋 이메일로 실제 링크 받기
                                     await firebase.auth().sendPasswordResetEmail(email);
-                                    resetLink = `https://aether-store.jp/login.html?mode=resetPassword&email=${encodeURIComponent(email)}`;
+                                    console.log('✅ Firebase 패스워드 리셋 이메일 발송 성공');
+                                    
+                                    // 모달 닫기
+                                    bootstrapModal.hide();
+                                    
+                                    // 성공 메시지 표시
+                                    showAlert('パスワードリセットメールを送信しました。メールをご確認ください。', 'success');
+                                    return; // 성공 시 여기서 종료
+                                    
                                 } catch (error) {
-                                    console.warn('Firebase 기본 리셋 이메일 실패, 테스트 링크 사용:', error);
-                                    resetLink = `https://aether-store.jp/login.html?mode=resetPassword&email=${encodeURIComponent(email)}`;
+                                    console.warn('Firebase 기본 리셋 이메일 실패, 커스텀 이메일 시도:', error);
                                 }
                                 
-                                // 직접 노출된 함수 사용 (백업: 직접 구현)
+                                // Firebase 기본 리셋 이메일도 실패한 경우, 커스텀 이메일 시도
+                                const resetLink = `https://aether-store.jp/login.html?mode=resetPassword&email=${encodeURIComponent(email)}`;
+                                
                                 let customResult;
                                 if (typeof window.FirebaseService_sendPasswordResetEmail === 'function') {
                                     customResult = await window.FirebaseService_sendPasswordResetEmail(email, resetLink);
@@ -908,7 +915,7 @@
                                 }
                                 
                                 if (customResult.success) {
-                                    console.log('✅ 커스텀 리셋 이메일 발송 성공 (HTML 지원)');
+                                    console.log('✅ 커스텀 리셋 이메일 발송 성공');
                                     
                                     // 모달 닫기
                                     bootstrapModal.hide();
@@ -916,20 +923,8 @@
                                     // 성공 메시지 표시
                                     showAlert('パスワードリセットメールを送信しました。メールをご確認ください。', 'success');
                                 } else {
-                                    // Firebase 기본 리셋 이메일 백업 시도
-                                    try {
-                                        await firebase.auth().sendPasswordResetEmail(email);
-                                        console.log('✅ Firebase 기본 리셋 이메일 발송 성공 (백업)');
-                                        
-                                        // 모달 닫기
-                                        bootstrapModal.hide();
-                                        
-                                        // 성공 메시지 표시
-                                        showAlert('パスワードリセットメールを送信しました。メールをご確認ください。', 'success');
-                                    } catch (firebaseError) {
-                                        console.error('❌ 모든 리셋 이메일 발송 실패:', firebaseError);
-                                        throw new Error('이메일 발송에 실패했습니다. 잠시 후 다시 시도해주세요.');
-                                    }
+                                    console.error('❌ 모든 리셋 이메일 발송 실패');
+                                    throw new Error('이메일 발송에 실패했습니다. 잠시 후 다시 시도해주세요.');
                                 }
                         } else {
                             showAlert('Firebase가 초기화되지 않았습니다. 페이지를 새로고침해주세요。');
@@ -985,9 +980,14 @@
             
             console.log('URL 파라미터 확인:', { mode, oobCode, email, apiKey });
             
-            if (mode === 'resetPassword' && (oobCode || email)) {
-                console.log('패스워드 리셋 모드 활성화');
-                showPasswordResetForm(oobCode || email, apiKey);
+            if (mode === 'resetPassword' && oobCode) {
+                // 실제 Firebase oobCode가 있는 경우만 패스워드 리셋 모드 활성화
+                console.log('Firebase 패스워드 리셋 모드 활성화 (oobCode 있음)');
+                showPasswordResetForm(oobCode, apiKey);
+            } else if (mode === 'resetPassword' && email) {
+                // 이메일만 있는 경우 안내 메시지 표시
+                console.log('이메일 기반 접근 - Firebase 리셋 링크 필요');
+                showAlert('Firebase 리セットリンクを使用してパスワードを変更してください。', 'info');
             }
         }
         
@@ -1039,25 +1039,33 @@
             
             try {
                 if (typeof firebase !== 'undefined' && firebase.auth) {
-                    if (oobCode && oobCode !== 'test') {
-                        // 실제 oobCode가 있는 경우 Firebase 리셋 사용
+                    if (oobCode) {
+                        // 실제 Firebase oobCode가 있는 경우
+                        console.log('Firebase oobCode로 패스워드 리셋:', oobCode);
                         await firebase.auth().confirmPasswordReset(oobCode, newPassword);
                         showAlert('パスワードが正常にリセットされました。新しいパスワードでログインしてください。', 'success');
+                        
+                        // 3초 후 로그인 페이지로 리다이렉트
+                        setTimeout(() => {
+                            window.location.href = 'login.html';
+                        }, 3000);
+                        
                     } else if (email) {
-                        // 이메일만 있는 경우 직접 패스워드 업데이트 시도
-                        console.log('이메일 기반 패스워드 리셋 시도:', email);
-                        showAlert('パスワードが正常にリセットされました。新しいパスワードでログインしてください。', 'success');
+                        // 이메일만 있는 경우 - 로그인 페이지로 안내
+                        console.log('이메일 기반 접근:', email);
+                        showAlert('Firebase 리셋 링크를 사용하여 패스ワード를 변경해주세요。', 'info');
+                        
+                        // 3초 후 로그인 페이지로 리다이렉트
+                        setTimeout(() => {
+                            window.location.href = 'login.html';
+                        }, 3000);
+                        
                     } else {
                         showAlert('無効なリセットリンクです。');
                         return;
                     }
-                    
-                    // 3초 후 로그인 페이지로 리다이렉트
-                    setTimeout(() => {
-                        window.location.href = 'login.html';
-                    }, 3000);
                 } else {
-                    showAlert('Firebase가 초기화되지 않았습니다. 페이지를 새로고침해주세요。');
+                    showAlert('Firebase가 초기화되지 않았습니다. 페이지を 새로고침해주세요。');
                 }
             } catch (error) {
                 console.error('패스워드 리셋 중 오류:', error);
