@@ -3098,6 +3098,11 @@ window.FirebaseService_isFirebaseAvailable = function() {
     return FirebaseService.isFirebaseAvailable();
 };
 
+// 패스워드 리셋 메일 함수도 직접 노출
+window.FirebaseService_sendPasswordResetEmail = function(email, resetLink) {
+    return FirebaseService.sendPasswordResetEmail(email, resetLink);
+};
+
 // Firebase 객체들을 안전하게 전역 변수로 노출 (초기화 완료 후)
 function setGlobalFirebaseObjects(auth, db, storage) {
     console.log('🔧 전역 Firebase 객체 설정 중...');
