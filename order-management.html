@@ -1354,7 +1354,7 @@
                 const cancelClass = status === 'completed' ? 'btn btn-action btn-cancel btn-return' : 'btn btn-action btn-cancel';
                 
                 buttons += `
-                    <button class="${cancelClass}" onclick="updateOrderStatus('${orderId}', 'cancelled')">
+                    <button class="${cancelClass}" onclick="showCancelReasonModal('${orderId}')">
                         <i class="fas ${cancelIcon} me-1"></i>${cancelText}
                     </button>
                 `;
@@ -1376,10 +1376,89 @@
             return statusMap[status] || status;
         }
         
-        // 주문 상태 업데이트
-        async function updateOrderStatus(orderId, newStatus) {
-            if (!confirm('注文状態を変更しますか？')) {
+        // 취소 사유 모달 표시
+        function showCancelReasonModal(orderId) {
+            // 모달 HTML 생성
+            const modalHtml = `
+                <div class="modal fade" id="cancelReasonModal" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">주문 취소 사유 선택</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label for="cancelReason" class="form-label">취소 사유를 선택해주세요:</label>
+                                    <select class="form-select" id="cancelReason">
+                                        <option value="">취소 사유를 선택해주세요</option>
+                                        <option value="고객변심">고객변심</option>
+                                        <option value="입금미확인">입금미확인</option>
+                                        <option value="재고부족">재고부족</option>
+                                        <option value="배송불가지역">배송불가지역</option>
+                                        <option value="상품하자">상품하자</option>
+                                        <option value="고객요청">고객요청</option>
+                                        <option value="시스템오류">시스템오류</option>
+                                        <option value="기타">기타</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="cancelMemo" class="form-label">추가 메모 (선택사항):</label>
+                                    <textarea class="form-control" id="cancelMemo" rows="3" placeholder="취소 관련 추가 사유나 메모를 입력해주세요"></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                                <button type="button" class="btn btn-danger" onclick="confirmCancel('${orderId}')">주문 취소</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 기존 모달 제거
+            const existingModal = document.getElementById('cancelReasonModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // 새 모달 추가
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // 모달 표시
+            const modal = new bootstrap.Modal(document.getElementById('cancelReasonModal'));
+            modal.show();
+            
+            // 모달이 닫힐 때 제거
+            document.getElementById('cancelReasonModal').addEventListener('hidden.bs.modal', function() {
+                this.remove();
+            });
+        }
+        
+        // 취소 확인
+        function confirmCancel(orderId) {
+            const cancelReason = document.getElementById('cancelReason').value;
+            const cancelMemo = document.getElementById('cancelMemo').value;
+            
+            if (!cancelReason) {
+                alert('취소 사유를 선택해주세요.');
                 return;
+            }
+            
+            const fullReason = cancelMemo ? `${cancelReason} - ${cancelMemo}` : cancelReason;
+            updateOrderStatus(orderId, 'cancelled', fullReason);
+            
+            // 모달 닫기
+            const modal = bootstrap.Modal.getInstance(document.getElementById('cancelReasonModal'));
+            modal.hide();
+        }
+        
+        // 주문 상태 업데이트 (취소 사유 포함)
+        async function updateOrderStatus(orderId, newStatus, cancelReason = null) {
+            if (!cancelReason && newStatus !== 'cancelled') {
+                if (!confirm('注文状態を変更しますか？')) {
+                    return;
+                }
             }
             
             if (!window.FirebaseService || !window.FirebaseService.db) {
@@ -2027,13 +2106,42 @@
                     return;
                 }
                 
-                // 취소 상태일 때만 취소 메일 발송
+                // 취소 상태일 때 포인트 환불 및 취소 메일 발송
                 if (newStatus === 'cancelled') {
-                    const cancelReason = '管理者によるキャンセル';
+                    const actualCancelReason = cancelReason || '管理者によるキャンセル';
                     
-                    // 직접 Netlify Function 호출
+                    // 포인트 환불 처리
+                    let refundedPoints = 0;
+                    if (orderData.pointsUsed && orderData.pointsUsed > 0) {
+                        try {
+                            console.log('💰 포인트 환불 시작:', orderData.pointsUsed);
+                            refundedPoints = orderData.pointsUsed;
+                            
+                            // 사용자 포인트 복원
+                            const userRef = window.FirebaseService.db.collection('users').doc(orderData.userId);
+                            await window.FirebaseService.db.runTransaction(async (transaction) => {
+                                const userDoc = await transaction.get(userRef);
+                                if (userDoc.exists) {
+                                    const currentPoints = userDoc.data().points || 0;
+                                    transaction.update(userRef, {
+                                        points: currentPoints + refundedPoints
+                                    });
+                                    console.log('✅ 포인트 환불 완료:', refundedPoints);
+                                }
+                            });
+                        } catch (error) {
+                            console.error('❌ 포인트 환불 실패:', error);
+                        }
+                    }
+                    
+                    // 취소 메일 발송 (상세 정보 포함)
                     try {
                         console.log('📧 주문 취소 메일 직접 발송 시작:', orderId);
+                        
+                        // 상품 정보 포맷팅
+                        const itemsList = orderData.items ? orderData.items.map(item => 
+                            `${item.name} (${item.quantity}개) - ¥${item.price.toLocaleString()}`
+                        ).join('<br>') : '상품 정보 없음';
                         
                         const response = await fetch('/.netlify/functions/send-email', {
                             method: 'POST',
@@ -2048,7 +2156,14 @@
                                     customerName: orderData.userName || orderData.customerName || 'お客様',
                                     orderId: orderData.id,
                                     cancelDate: new Date().toLocaleDateString('ja-JP'),
-                                    cancelReason: cancelReason
+                                    cancelReason: actualCancelReason,
+                                    paymentMethod: orderData.paymentMethod || '銀行振込',
+                                    items: itemsList,
+                                    subtotal: `¥${orderData.subtotal?.toLocaleString() || '0'}`,
+                                    shipping: `¥${orderData.shipping?.toLocaleString() || '0'}`,
+                                    pointsUsed: `${orderData.pointsUsed || 0}ポイント`,
+                                    totalAmount: `¥${orderData.totalAmount?.toLocaleString() || '0'}`,
+                                    refundedPoints: `${refundedPoints}ポイント`
                                 }
                             })
                         });
