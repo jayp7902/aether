@@ -950,15 +950,37 @@ const emailTemplates = {
                             
                             <!-- 주문 정보 -->
                             <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center !important;">
-                                <div style="font-size: 18px; font-weight: bold; color: #333; margin-bottom: 10px; background-color: #f8f9fa;">注文番号: {{orderId}}</div>
-                                <div style="font-size: 16px; color: #666; background-color: #f8f9fa;">キャンセル日: {{cancelDate}}</div>
-                                <div style="font-size: 16px; color: #666; background-color: #f8f9fa;">キャンセル理由: {{cancelReason}}</div>
+                                <div style="font-size: 18px; font-weight: bold; color: #333; margin-bottom: 15px; background-color: #f8f9fa;">注文詳細</div>
+                                <div style="font-size: 16px; color: #333; margin-bottom: 8px; background-color: #f8f9fa;"><strong>注文番号:</strong> {{orderId}}</div>
+                                <div style="font-size: 16px; color: #333; margin-bottom: 8px; background-color: #f8f9fa;"><strong>支払い方法:</strong> {{paymentMethod}}</div>
+                                <div style="font-size: 16px; color: #333; margin-bottom: 8px; background-color: #f8f9fa;"><strong>キャンセル日:</strong> {{cancelDate}}</div>
+                                <div style="font-size: 16px; color: #333; margin-bottom: 15px; background-color: #f8f9fa;"><strong>キャンセル理由:</strong> {{cancelReason}}</div>
+                                
+                                <!-- 상품 목록 -->
+                                <div style="font-size: 16px; color: #333; margin-bottom: 10px; background-color: #f8f9fa;"><strong>注文商品:</strong></div>
+                                <div style="font-size: 14px; color: #666; margin-bottom: 15px; background-color: #f8f9fa; text-align: left;">{{items}}</div>
+                                
+                                <!-- 금액 정보 -->
+                                <div style="border-top: 1px solid #ddd; padding-top: 15px; background-color: #f8f9fa;">
+                                    <div style="font-size: 14px; color: #333; margin-bottom: 5px; background-color: #f8f9fa; text-align: right;"><strong>小計:</strong> {{subtotal}}</div>
+                                    <div style="font-size: 14px; color: #333; margin-bottom: 5px; background-color: #f8f9fa; text-align: right;"><strong>送料:</strong> {{shipping}}</div>
+                                    <div style="font-size: 14px; color: #333; margin-bottom: 5px; background-color: #f8f9fa; text-align: right;"><strong>使用ポイント:</strong> {{pointsUsed}}</div>
+                                    <div style="font-size: 16px; color: #333; margin-bottom: 10px; background-color: #f8f9fa; text-align: right; font-weight: bold; border-top: 1px solid #ddd; padding-top: 5px;"><strong>合計金額:</strong> {{totalAmount}}</div>
+                                </div>
                 </div>
                             
                             <!-- 환불 안내 -->
-                            <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px; background-color: #ffffff; text-align: center !important;">
-                                <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important; color: #333 !important; background-color: #ffffff !important;">ご利用いただいたポイントは自動的にアカウントに戻されます。</p>
-                                <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important; color: #333 !important; background-color: #ffffff !important;">お支払い方法によっては、返金処理に数日かかる場合がございます。</p>
+                            <div style="background-color: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center !important;">
+                                <div style="font-size: 18px; font-weight: bold; color: #2d5a2d; margin-bottom: 15px; background-color: #e8f5e8;">返金・ポイント返却について</div>
+                                <div style="font-size: 16px; color: #333; margin-bottom: 10px; background-color: #e8f5e8;">
+                                    <strong>返却ポイント:</strong> {{refundedPoints}}
+                                </div>
+                                <div style="font-size: 14px; color: #666; margin-bottom: 10px; background-color: #e8f5e8;">
+                                    ご利用いただいたポイントは自動的にアカウントに戻されます。
+                                </div>
+                                <div style="font-size: 14px; color: #666; background-color: #e8f5e8;">
+                                    お支払い方法によっては、返金処理に数日かかる場合がございます。
+                                </div>
             </div>
                             
                             <!-- 문의 안내 -->
@@ -1305,7 +1327,14 @@ exports.handler = async (event, context) => {
                     customerName: data.customerName || 'お客様',
                     orderId: data.orderId || 'N/A',
                     cancelDate: data.cancelDate || new Date().toLocaleDateString('ja-JP'),
-                    cancelReason: data.cancelReason || 'システムによるキャンセル'
+                    cancelReason: data.cancelReason || 'システムによるキャンセル',
+                    paymentMethod: data.paymentMethod || '銀行振込',
+                    items: data.items || '상품 정보 없음',
+                    subtotal: data.subtotal || '¥0',
+                    shipping: data.shipping || '¥0',
+                    pointsUsed: data.pointsUsed || '0ポイント',
+                    totalAmount: data.totalAmount || '¥0',
+                    refundedPoints: data.refundedPoints || '0ポイント'
                 });
                 break;
             case 'order-complete':
