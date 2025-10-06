@@ -3649,4 +3649,9 @@ window.checkFirebaseStatus = function() {
 };
 
 // Firebase 초기화 대기 함수를 글로벌로 노출
-window.waitForFirebaseAndInitialize = waitForFirebaseAndInitialize; 
+window.waitForFirebaseAndInitialize = waitForFirebaseAndInitialize;
+
+// 주문 취소 메일 발송 함수를 글로벌로 노출
+window.FirebaseService_sendOrderCancelledEmail = function(orderData, cancelReason) {
+    return FirebaseService.sendOrderCancelledEmail(orderData, cancelReason);
+}; 
