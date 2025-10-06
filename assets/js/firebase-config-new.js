@@ -767,6 +767,44 @@ class FirebaseService {
         }
     }
 
+    // 주문 취소 메일 발송 함수
+    static async sendOrderCancelledEmail(orderData, cancelReason = 'システムによるキャンセル') {
+        try {
+            console.log('주문 취소 메일 발송 시작:', orderData.id);
+            
+            const response = await fetch('/.netlify/functions/send-email', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    to: orderData.userEmail,
+                    subject: '注文キャンセルのお知らせ - Aether Store',
+                    type: 'order-cancelled',
+                    data: {
+                        customerName: orderData.userName || orderData.customerName || 'お客様',
+                        orderId: orderData.id,
+                        cancelDate: new Date().toLocaleDateString('ja-JP'),
+                        cancelReason: cancelReason
+                    }
+                })
+            });
+            
+            const result = await response.json();
+            if (result.success) {
+                console.log('주문 취소 메일 발송 완료:', orderData.id);
+                return { success: true };
+            } else {
+                console.error('주문 취소 메일 발송 실패:', result.error);
+                return { success: false, error: result.error };
+            }
+            
+        } catch (error) {
+            console.error('주문 취소 메일 발송 오류:', error);
+            return { success: false, error: error.message };
+        }
+    }
+
     // 관리자 권한 확인
     static async isAdmin(userEmail) {
         try {
