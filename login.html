@@ -883,10 +883,20 @@
                         if (typeof firebase !== 'undefined' && firebase.auth) {
                                 // 커스텀 리셋 이메일 발송 (HTML 지원)
                                 console.log('🔍 FirebaseService 확인:', typeof window.FirebaseService);
-                                console.log('🔍 sendPasswordResetEmail 확인:', typeof window.FirebaseService.sendPasswordResetEmail);
+                                console.log('🔍 sendPasswordResetEmail 확인:', typeof window.FirebaseService_sendPasswordResetEmail);
+                                console.log('🔍 FirebaseService static 확인:', typeof window.FirebaseService.sendPasswordResetEmail);
                                 
                                 const resetLink = `https://aether-store.jp/login.html?mode=resetPassword&oobCode=test&apiKey=test`;
-                                const customResult = await window.FirebaseService.sendPasswordResetEmail(email, resetLink);
+                                
+                                // 직접 노출된 함수 사용 (백업: 직접 구현)
+                                let customResult;
+                                if (typeof window.FirebaseService_sendPasswordResetEmail === 'function') {
+                                    customResult = await window.FirebaseService_sendPasswordResetEmail(email, resetLink);
+                                } else {
+                                    // 직접 구현
+                                    console.log('🔄 직접 함수 구현 사용');
+                                    customResult = await sendPasswordResetEmailDirect(email, resetLink);
+                                }
                                 
                                 if (customResult.success) {
                                     console.log('✅ 커스텀 리셋 이메일 발송 성공 (HTML 지원)');
@@ -1046,6 +1056,42 @@
             }
         }
         
+        // 패스워드 리셋 메일 발송 함수 (직접 구현)
+        async function sendPasswordResetEmailDirect(email, resetLink) {
+            try {
+                console.log('패스워드 리셋 메일 발송 시작 (직접 구현):', email);
+                
+                const response = await fetch('/.netlify/functions/send-email', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        to: email,
+                        subject: 'パスワードリセットのお知らせ - Aether Store',
+                        type: 'password-reset',
+                        data: {
+                            email: email,
+                            resetLink: resetLink
+                        }
+                    })
+                });
+                
+                const result = await response.json();
+                if (result.success) {
+                    console.log('패스워드 리셋 메일 발송 완료 (직접 구현):', email);
+                    return { success: true };
+                } else {
+                    console.error('패스워드 리셋 메일 발송 실패 (직접 구현):', result.error);
+                    return { success: false, error: result.error };
+                }
+                
+            } catch (error) {
+                console.error('패스워드 리셋 메일 발송 오류 (직접 구현):', error);
+                return { success: false, error: error.message };
+            }
+        }
+
         // 패스워드 리셋 처리 함수 (기존 함수)
         async function handlePasswordResetEmail(email) {
             try {
