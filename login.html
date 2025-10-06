@@ -882,7 +882,10 @@
                     try {
                         if (typeof firebase !== 'undefined' && firebase.auth) {
                                 // 커스텀 리셋 이메일 발송 (HTML 지원)
-                                const resetLink = `https://aether-store.jp/reset-password.html?token=${encodeURIComponent(email)}&t=${Date.now()}`;
+                                console.log('🔍 FirebaseService 확인:', typeof window.FirebaseService);
+                                console.log('🔍 sendPasswordResetEmail 확인:', typeof window.FirebaseService.sendPasswordResetEmail);
+                                
+                                const resetLink = `https://aether-store.jp/login.html?mode=resetPassword&oobCode=test&apiKey=test`;
                                 const customResult = await window.FirebaseService.sendPasswordResetEmail(email, resetLink);
                                 
                                 if (customResult.success) {
