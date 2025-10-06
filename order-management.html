@@ -1992,10 +1992,33 @@
             window.print();
         }
         
-        // 이메일 알림 발송 (향후 구현)
-        function sendOrderStatusNotification(orderId, newStatus) {
-            console.log('📧 이메일 알림 발송 예정:', orderId, newStatus);
-            // Gmail API 연동 후 구현
+        // 이메일 알림 발송
+        async function sendOrderStatusNotification(orderId, newStatus) {
+            try {
+                console.log('📧 이메일 알림 발송 시작:', orderId, newStatus);
+                
+                // 주문 데이터 가져오기
+                const orderData = allOrders.find(order => order.id === orderId);
+                if (!orderData) {
+                    console.error('주문 데이터를 찾을 수 없습니다:', orderId);
+                    return;
+                }
+                
+                // 취소 상태일 때만 취소 메일 발송
+                if (newStatus === 'cancelled') {
+                    const cancelReason = '管理者によるキャンセル';
+                    const result = await window.FirebaseService.sendOrderCancelledEmail(orderData, cancelReason);
+                    
+                    if (result.success) {
+                        console.log('✅ 주문 취소 메일 발송 완료:', orderId);
+                    } else {
+                        console.error('❌ 주문 취소 메일 발송 실패:', result.error);
+                    }
+                }
+                
+            } catch (error) {
+                console.error('❌ 이메일 알림 발송 오류:', error);
+            }
         }
         
         // 유틸리티 함수들
