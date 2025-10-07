@@ -1326,7 +1326,7 @@
                     break;
                 case 'processing':
                     buttons += `
-                        <button class="btn btn-action btn-ship" onclick="updateOrderStatus('${orderId}', 'shipping')">
+                        <button class="btn btn-action btn-ship" onclick="updateOrderStatus('${orderId}', 'shipped')">
                             <i class="fas fa-truck me-1"></i>配送開始
                         </button>
                     `;
@@ -1484,7 +1484,7 @@
                     
                     if (pointResult.success) {
                         console.log('✅ 배송 완료 포인트 부여 성공:', pointResult.pointsEarned);
-                        showSuccess(`注文完了！${pointResult.pointsEarned}ポイントが付与されました。`);
+                        showSuccess(`注文完了！${pointResult.pointsEarned || '0'}ポイントが付与されました。`);
                     } else {
                         console.error('❌ 배송 완료 포인트 부여 실패:', pointResult.error);
                         showError('포인트 부여에 실패했습니다: ' + pointResult.message);
