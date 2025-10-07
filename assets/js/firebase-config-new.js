@@ -3654,4 +3654,9 @@ window.waitForFirebaseAndInitialize = waitForFirebaseAndInitialize;
 // 주문 취소 메일 발송 함수를 글로벌로 노출
 window.FirebaseService_sendOrderCancelledEmail = function(orderData, cancelReason) {
     return FirebaseService.sendOrderCancelledEmail(orderData, cancelReason);
+};
+
+// 배송 완료 시 포인트 부여 함수를 글로벌로 노출
+window.FirebaseService_awardPointsOnDelivery = function(orderId) {
+    return FirebaseService.awardPointsOnDelivery(orderId);
 }; 
