@@ -212,6 +212,7 @@
         .status-pending_payment { background: #fff3cd; color: #856404; }
         .status-processing { background: #d1ecf1; color: #0c5460; }
         .status-shipping { background: #cce5ff; color: #004085; }
+        .status-shipped { background: #d1ecf1; color: #0c5460; }
         .status-completed { background: #d4edda; color: #155724; }
         .status-cancelled { background: #f8d7da; color: #721c24; }
         
@@ -1150,6 +1151,7 @@
                 pending_payment: 0,
                 processing: 0,
                 shipping: 0,
+                shipped: 0,
                 completed: 0,
                 cancelled: 0
             };
@@ -1326,12 +1328,13 @@
                     break;
                 case 'processing':
                     buttons += `
-                        <button class="btn btn-action btn-ship" onclick="updateOrderStatus('${orderId}', 'shipped')">
+                        <button class="btn btn-action btn-ship" onclick="updateOrderStatus('${orderId}', 'shipping')">
                             <i class="fas fa-truck me-1"></i>配送開始
                         </button>
                     `;
                     break;
                 case 'shipping':
+                case 'shipped':
                     buttons += `
                         <button class="btn btn-action btn-complete" onclick="updateOrderStatus('${orderId}', 'completed')">
                             <i class="fas fa-check-circle me-1"></i>完了
@@ -1370,6 +1373,7 @@
                 'pending_payment': '支払い待ち',
                 'processing': '処理中',
                 'shipping': '配送中',
+                'shipped': '配送完了',
                 'completed': '完了',
                 'cancelled': 'キャンセル'
             };
@@ -1500,14 +1504,14 @@
                 }
                 
                 // 배송 시작시 배송 번호 입력 모달 표시
-                if (newStatus === 'shipped') {
+                if (newStatus === 'shipping') {
                     showShippingModal(orderId);
                 } else {
                     // 이메일 알림 발송
                     sendOrderStatusNotification(orderId, newStatus, cancelReason);
                 }
                 
-                if (newStatus !== 'delivered' && newStatus !== 'completed' && newStatus !== 'shipped') {
+                if (newStatus !== 'delivered' && newStatus !== 'completed' && newStatus !== 'shipping') {
                     showSuccess('注文状態が更新されました。');
                 }
                 
@@ -1625,6 +1629,7 @@
             const orderRef = window.FirebaseService.db.collection('orders').doc(orderId);
             
             orderRef.update({
+                status: 'shipped',
                 trackingNumber: trackingNumber,
                 shippingCompany: shippingCompany,
                 estimatedDelivery: estimatedDelivery,
@@ -1632,6 +1637,20 @@
             })
             .then(() => {
                 console.log('✅ 배송 정보 업데이트 완료:', orderId);
+                
+                // 로컬 주문 데이터 업데이트
+                const orderIndex = allOrders.findIndex(o => o.id === orderId);
+                if (orderIndex !== -1) {
+                    allOrders[orderIndex].status = 'shipped';
+                    allOrders[orderIndex].trackingNumber = trackingNumber;
+                    allOrders[orderIndex].shippingCompany = shippingCompany;
+                    allOrders[orderIndex].estimatedDelivery = estimatedDelivery;
+                    allOrders[orderIndex].shippedAt = new Date().toISOString();
+                    
+                    // 주문 목록 다시 표시
+                    displayOrders();
+                    updateOrderStatistics();
+                }
                 
                 // 배송 시작 메일 발송
                 sendShippingStartEmail(orderId);
