@@ -1570,7 +1570,8 @@ exports.handler = async (event, context) => {
                             shippingAddress: data.shippingAddress || '東京都 練馬区 光が丘2-10-1 3009号',
                             deliveryDate: data.deliveryDate || new Date().toLocaleDateString('ja-JP'),
                             shippingCompany: data.shippingCompany || 'ヤマト運輸',
-                            trackingNumber: data.trackingNumber || '1234567890'
+                            trackingNumber: data.trackingNumber || '1234567890',
+                            pointsEarned: data.pointsEarned || 0
                         });
                         break;
                     case 'event':
