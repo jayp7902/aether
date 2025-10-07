@@ -293,10 +293,12 @@
         }
         
         .points-display {
-            font-size: 5rem;
+            font-size: 6rem;
             font-weight: 900;
-            margin: 10px 0;
-            line-height: 1.2;
+            margin: 15px 0;
+            line-height: 1.1;
+            color: #ffffff !important;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
         
         .amount-input {
@@ -5744,6 +5746,16 @@
             const pointsValue = currentCustomer.points || 0;
             console.log('표시할 포인트 값:', pointsValue);
             document.getElementById('customer-points').textContent = pointsValue.toLocaleString();
+            
+            // 포인트 표시 강제 업데이트 (스타일 확인)
+            const pointsElement = document.getElementById('customer-points');
+            if (pointsElement) {
+                pointsElement.style.fontSize = '6rem';
+                pointsElement.style.fontWeight = '900';
+                pointsElement.style.color = '#ffffff';
+                pointsElement.style.textShadow = '2px 2px 4px rgba(0, 0, 0, 0.3)';
+                console.log('✅ 포인트 표시 스타일 적용 완료');
+            }
             
             // 최종 방문일 (나중에 구현)
             document.getElementById('customer-last-visit').textContent = '最終訪問: 今日';
@@ -17405,9 +17417,9 @@
                             console.log(`포인트 이력 항목: ${item.reason || item.description || item.type} - ${points}pt (타입: ${item.type})`);
                             
                             // 포인트 페이지와 동일한 타입별 계산
-                            if (item.type === 'earn' || item.type === 'admin_add' || item.type === 'welcome_bonus') {
+                            if (item.type === 'earn' || item.type === 'admin_add' || item.type === 'welcome_bonus' || item.type === 'refund') {
                                 earnedPoints += points;
-                                console.log('적립 포인트 추가:', points, '총 적립:', earnedPoints);
+                                console.log('적립/환불 포인트 추가:', item.type, points, '총 적립:', earnedPoints);
                             } else if (item.type === 'use' || item.type === 'admin_subtract') {
                                 usedPoints += points;
                                 console.log('사용 포인트 추가:', points, '총 사용:', usedPoints);
@@ -17434,18 +17446,16 @@
                         console.log('  - 최종 포인트:', calculatedPoints);
                         console.log('  - 기존 userData.points:', currentCustomer.points);
                         
-                        // 포인트 페이지와 동일한 방식: 계산된 포인트가 다르면 업데이트
-                        if (calculatedPoints !== currentCustomer.points && calculatedPoints >= 0) {
-                            console.log('포인트 불일치 감지, 업데이트 중...');
+                        // 포인트 히스토리 기반으로 항상 업데이트 (포인트 페이지와 동일)
+                        if (calculatedPoints >= 0) {
+                            console.log('🔧 관리자 페이지 포인트 히스토리 기반 업데이트:', calculatedPoints);
                             currentCustomer.points = calculatedPoints;
                             
                             // UI에 계산된 포인트 표시
                             document.getElementById('customer-points').textContent = calculatedPoints.toLocaleString();
                             console.log('✅ 관리자 페이지 포인트 표시 업데이트 완료:', calculatedPoints);
-                        } else if (calculatedPoints < 0) {
-                            console.log('⚠️ 계산된 포인트가 음수입니다. 원본 포인트 유지:', currentCustomer.points);
                         } else {
-                            console.log('포인트 일치, 업데이트 불필요:', calculatedPoints);
+                            console.log('❌ 계산된 포인트가 음수:', calculatedPoints);
                         }
                         
                         // 정렬 결과 확인을 위한 로그
