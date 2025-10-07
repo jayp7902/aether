@@ -2126,13 +2126,14 @@
                     let refundedPoints = 0;
                     
                     // 포인트 사용량 확인 (다양한 필드명 지원)
-                    const pointsUsed = orderData.pointsUsed || orderData.usedPoints || orderData.points_used || orderData.points || 0;
+                    const pointsUsed = orderData.usedPoints || orderData.pointsUsed || orderData.points_used || orderData.points || 0;
                     console.log('🔍 포인트 사용량 확인:', {
                         pointsUsed: pointsUsed,
                         orderDataPointsUsed: orderData.pointsUsed,
                         orderDataUsedPoints: orderData.usedPoints,
                         orderDataPoints_used: orderData.points_used,
-                        orderDataPoints: orderData.points
+                        orderDataPoints: orderData.points,
+                        orderDataKeys: Object.keys(orderData)
                     });
                     
                     if (pointsUsed > 0) {
@@ -2141,9 +2142,14 @@
                             refundedPoints = pointsUsed;
                             
                             // ユーザーポイント復元
-                            const userRef = window.FirebaseService.db.collection('users').doc(orderData.userId);
+                            const userRef = window.FirebaseService.db.collection('users').doc(orderData.userEmail);
                             await window.FirebaseService.db.runTransaction(async (transaction) => {
                                 const userDoc = await transaction.get(userRef);
+                                console.log('🔍 사용자 문서 확인:', {
+                                    userEmail: orderData.userEmail,
+                                    userDocExists: userDoc.exists,
+                                    currentPoints: userDoc.exists ? userDoc.data().points : 'N/A'
+                                });
                                 if (userDoc.exists) {
                                     const currentPoints = userDoc.data().points || 0;
                                     const newPoints = currentPoints + refundedPoints;
@@ -2169,6 +2175,9 @@
                                     });
                                     
                                     console.log('✅ ポイント返還 히스토리 추가 완료:', refundedPoints);
+                                } else {
+                                    console.error('❌ 사용자 문서를 찾을 수 없습니다:', orderData.userEmail);
+                                    throw new Error(`사용자 문서가 존재하지 않습니다: ${orderData.userEmail}`);
                                 }
                             });
                         } catch (error) {
