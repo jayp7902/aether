@@ -1929,6 +1929,7 @@
                                                 <option value="">テンプレートを選択してください</option>
                                                 <option value="welcome">ウェルカムメール</option>
                                                 <option value="order-complete">注文完了メール</option>
+                                                <option value="shipping-start">配送開始メール</option>
                                                 <option value="shipping-complete">配送完了メール</option>
                                                 <option value="points-earned">ポイント獲得メール</option>
                                                 <option value="event">イベントメール</option>
@@ -7460,6 +7461,19 @@
                         shippingAddress: '東京都 練馬区 光が丘2-10-1 3009号'
                     };
                     break;
+                case 'shipping-start':
+                    const shippingStartProducts = await getTestProducts();
+                    defaultData = {
+                        orderId: await generateTestOrderId(),
+                        name: await getDefaultCustomerName(emailAddress),
+                        items: shippingStartProducts.join(', '),
+                        totalAmount: '¥24,500',
+                        shippingAddress: '東京都 練馬区 光が丘2-10-1 3009号',
+                        estimatedDelivery: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString('ja-JP'),
+                        shippingMethod: 'ヤマト運輸 (宅急便)',
+                        trackingNumber: '1234567890'
+                    };
+                    break;
                 case 'shipping-complete':
                     const shippingProducts = await getTestProducts();
                     defaultData = {
@@ -7601,6 +7615,19 @@
                     previewData.totalAmount = previewData.totalAmount || '¥24,500';
                     previewData.shippingAddress = previewData.shippingAddress || '東京都 練馬区 光が丘2-10-1 3009号';
                     break;
+                case 'shipping-start':
+                    previewData.orderId = previewData.orderId || await generateTestOrderId();
+                    previewData.name = previewData.name || await getDefaultCustomerName(data.email);
+                    if (!previewData.items) {
+                        const shippingStartProducts = await getTestProducts();
+                        previewData.items = shippingStartProducts.join(', ');
+                    }
+                    previewData.totalAmount = previewData.totalAmount || '¥24,500';
+                    previewData.shippingAddress = previewData.shippingAddress || '東京都 練馬区 光が丘2-10-1 3009号';
+                    previewData.estimatedDelivery = previewData.estimatedDelivery || new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString('ja-JP');
+                    previewData.shippingMethod = previewData.shippingMethod || 'ヤマト運輸 (宅急便)';
+                    previewData.trackingNumber = previewData.trackingNumber || '1234567890';
+                    break;
                 case 'shipping-complete':
                     previewData.orderId = previewData.orderId || await generateTestOrderId();
                     previewData.name = previewData.name || await getDefaultCustomerName(data.email);
@@ -7647,6 +7674,8 @@
                     return generateWelcomePreview(data);
                 case 'order-complete':
                     return generateOrderCompletePreview(data);
+                case 'shipping-start':
+                    return generateShippingStartPreview(data);
                 case 'shipping-complete':
                     return generateShippingCompletePreview(data);
                 case 'points-earned':
@@ -7760,6 +7789,56 @@
             `;
         }
         
+        function generateShippingStartPreview(data) {
+            return `
+                <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; text-align: center !important;">
+                    <tr>
+                        <td style="padding: 20px; text-align: center !important;">
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin: 0 auto !important;">
+                                <tr>
+                                    <td style="background-color: #ffffff; text-align: center !important; border-bottom: 2px solid #333; padding: 30px 30px 20px 30px;">
+                                        <a href="https://aether-store.jp" style="text-decoration: none; display: inline-block; text-align: center !important;">
+                                            <img src="https://aether-store.jp/assets/img/logo.png" alt="AETHER" style="max-width: 150px; height: auto; display: block; border: 0; margin: 0 auto !important; text-align: center !important;">
+                                        </a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="background-color: #ffffff; padding: 30px; text-align: center !important;">
+                                        <div style="font-size: 20px; font-weight: bold; color: #333; margin-bottom: 15px; text-align: center !important;">📦 配送開始のお知らせ</div>
+                                        <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; margin: 20px 0; text-align: center !important;">
+                                            <p style="margin: 0; text-align: center !important;">注文番号: <strong>${data.orderId}</strong></p>
+                                        </div>
+                                        <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px; text-align: center !important;">
+                                            <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">${data.name}様</p>
+                                            <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">ご注文いただいた商品の発送を開始いたしました。</p>
+                                        </div>
+                                        <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: left !important; max-width: 500px; margin-left: auto; margin-right: auto;">
+                                            <h3 style="text-align: center !important; margin-bottom: 15px; color: #333 !important;">📋 注文詳細</h3>
+                                            <p style="margin: 5px 0; color: #555 !important;"><strong>商品:</strong> ${data.items}</p>
+                                            <p style="margin: 5px 0; color: #555 !important;"><strong>合計金額:</strong> ${data.totalAmount}</p>
+                                            <p style="margin: 5px 0; color: #555 !important;"><strong>配送先:</strong> ${data.shippingAddress}</p>
+                                        </div>
+                                        <div style="background-color: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: left !important; max-width: 500px; margin-left: auto; margin-right: auto;">
+                                            <h3 style="text-align: center !important; margin-bottom: 15px; color: #2d5a2d !important;">🚚 配送情報</h3>
+                                            <p style="margin: 5px 0; color: #2d5a2d !important;"><strong>配送方法:</strong> ${data.shippingMethod}</p>
+                                            <p style="margin: 5px 0; color: #2d5a2d !important;"><strong>追跡番号:</strong> ${data.trackingNumber}</p>
+                                            <p style="margin: 5px 0; color: #2d5a2d !important;"><strong>配達予定日:</strong> ${data.estimatedDelivery}</p>
+                                        </div>
+                                        <div style="font-size: 14px; color: #666; margin-top: 30px; text-align: center !important;">
+                                            <p style="text-align: center !important; margin: 5px 0;">Aether Store</p>
+                                            <p style="text-align: center !important; margin: 5px 0;">
+                                                <a href="mailto:info@aether-store.jp" style="color: #666 !important; text-decoration: underline;">info@aether-store.jp</a>
+                                            </p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            `;
+        }
+
         function generateShippingCompletePreview(data) {
             return `
                 <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; text-align: center !important;">
