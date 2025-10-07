@@ -1212,6 +1212,19 @@ const emailTemplates = {
 };
 
 // 이메일 템플릿 로드 함수
+// 지불 방법을 일본어로 변환하는 함수
+function getPaymentMethodInJapanese(paymentMethod) {
+    const paymentMethods = {
+        'card': 'クレジットカード',
+        'bank-transfer': '銀行振込',
+        'bank_transfer': '銀行振込',
+        'cash': '現金',
+        'paypal': 'PayPal',
+        'stripe': 'Stripe決済'
+    };
+    return paymentMethods[paymentMethod] || '銀行振込';
+}
+
 function loadEmailTemplate(templateName, data = {}) {
     try {
         console.log(`템플릿 로드 시도: ${templateName}`);
@@ -1328,7 +1341,7 @@ exports.handler = async (event, context) => {
                     orderId: data.orderId || 'N/A',
                     cancelDate: data.cancelDate || new Date().toLocaleDateString('ja-JP'),
                     cancelReason: data.cancelReason || 'システムによるキャンセル',
-                    paymentMethod: data.paymentMethod || '銀行振込',
+                    paymentMethod: getPaymentMethodInJapanese(data.paymentMethod),
                     items: data.items || '商品情報なし',
                     subtotal: data.subtotal || '¥0',
                     shipping: data.shipping || '¥0',
