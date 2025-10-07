@@ -975,8 +975,8 @@
                     // 포인트 사용/차감인 경우 음수로 표시
                     pointsStr = `-${item.points}`;
                     pointsClass = 'text-danger';
-                } else if (item.type === 'earn' || item.type === 'admin_add') {
-                    // 포인트 적립인 경우 양수로 표시
+                } else if (item.type === 'earn' || item.type === 'admin_add' || item.type === 'refund') {
+                    // 포인트 적립/환불인 경우 양수로 표시
                     pointsStr = `+${item.points}`;
                     pointsClass = 'text-success';
                 } else {
@@ -1014,6 +1014,8 @@
                     description = '管理者差引';
                 } else if (item.type === 'welcome_bonus') {
                     description = '新規登録ウェルカムボーナス';
+                } else if (item.type === 'refund') {
+                    description = '注文キャンセル返還';
                 } else if (item.description) {
                     description = item.description;
                 }
