@@ -2157,10 +2157,10 @@
                                     orderId: orderData.id,
                                     cancelDate: new Date().toLocaleDateString('ja-JP'),
                                     cancelReason: actualCancelReason,
-                                    paymentMethod: orderData.paymentMethod || '銀行振込',
+                                    paymentMethod: getPaymentMethodInJapanese(orderData.paymentMethod),
                                     items: itemsList,
                                     subtotal: `¥${orderData.subtotal?.toLocaleString() || '0'}`,
-                                    shipping: `¥${orderData.shipping?.toLocaleString() || '0'}`,
+                                    shipping: getFormattedShipping(orderData.shipping),
                                     pointsUsed: `${orderData.pointsUsed || 0}ポイント`,
                                     totalAmount: `¥${orderData.totalAmount?.toLocaleString() || '0'}`,
                                     refundedPoints: `${refundedPoints}ポイント`
@@ -2182,6 +2182,59 @@
             } catch (error) {
                 console.error('❌ メール通知送信エラー:', error);
             }
+        }
+        
+        // 지불 방법을 일본어로 변환하는 함수
+        function getPaymentMethodInJapanese(paymentMethod) {
+            const paymentMethods = {
+                'card': 'クレジットカード',
+                'bank-transfer': '銀行振込',
+                'bank_transfer': '銀行振込',
+                'cash': '現金',
+                'paypal': 'PayPal',
+                'stripe': 'Stripe決済'
+            };
+            return paymentMethods[paymentMethod] || '銀行振込';
+        }
+        
+        // 송료를 올바르게 포맷팅하는 함수
+        function getFormattedShipping(shipping) {
+            if (!shipping) return '¥0';
+            
+            // 숫자인 경우
+            if (typeof shipping === 'number') {
+                return `¥${shipping.toLocaleString()}`;
+            }
+            
+            // 문자열인 경우
+            if (typeof shipping === 'string') {
+                // 이미 ¥가 포함되어 있는지 확인
+                if (shipping.includes('¥')) {
+                    return shipping;
+                }
+                // 숫자로 변환 가능한지 확인
+                const numValue = parseFloat(shipping);
+                if (!isNaN(numValue)) {
+                    return `¥${numValue.toLocaleString()}`;
+                }
+                return shipping;
+            }
+            
+            // 객체인 경우 (예: {amount: 500, currency: 'JPY'})
+            if (typeof shipping === 'object' && shipping !== null) {
+                if (shipping.amount !== undefined) {
+                    return `¥${shipping.amount.toLocaleString()}`;
+                }
+                if (shipping.price !== undefined) {
+                    return `¥${shipping.price.toLocaleString()}`;
+                }
+                if (shipping.value !== undefined) {
+                    return `¥${shipping.value.toLocaleString()}`;
+                }
+            }
+            
+            // 기본값
+            return '¥0';
         }
         
         // 유틸리티 함수들
