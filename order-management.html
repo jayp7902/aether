@@ -1672,6 +1672,12 @@
                 if (!order) return;
                 
                 console.log('배송 시작 메일 발송 시작:', orderId);
+                console.log('📦 주문 데이터:', order);
+                console.log('📦 배송 데이터:', {
+                    trackingNumber: document.getElementById('trackingNumber').value,
+                    shippingMethod: getShippingMethodInJapanese(document.getElementById('shippingCompany').value),
+                    estimatedDelivery: document.getElementById('estimatedDelivery').value
+                });
                 
                 const response = await fetch('/.netlify/functions/send-email', {
                     method: 'POST',
@@ -1684,12 +1690,12 @@
                         type: 'shipping-start',
                         data: {
                             orderId: orderId,
+                            name: order.customerName || order.userName || order.customerEmail?.split('@')[0] || 'お客様',
                             trackingNumber: document.getElementById('trackingNumber').value,
                             shippingMethod: getShippingMethodInJapanese(document.getElementById('shippingCompany').value),
-                            customerName: order.customerName || order.userName || 'お客様',
                             estimatedDelivery: document.getElementById('estimatedDelivery').value,
-                            items: order.items ? order.items.map(item => `${item.name} (${item.quantity}個)`).join(', ') : '商品情報なし',
-                            totalAmount: order.totalAmount || 0,
+                            items: order.items ? order.items.map(item => `${item.name || item.productName} (${item.quantity}個)`).join(', ') : '商品情報なし',
+                            totalAmount: order.totalAmount ? `¥${order.totalAmount.toLocaleString()}` : '¥0',
                             shippingAddress: order.shipping ? `${order.shipping.postal} ${order.shipping.prefecture} ${order.shipping.city} ${order.shipping.address1} ${order.shipping.address2 || ''}`.trim() : '配送先情報なし'
                         }
                     })
