@@ -1092,16 +1092,16 @@ const emailTemplates = {
                                 </div>
                                 
                                 <!-- Greeting -->
-                                <p style="text-align: center !important; margin: 0 0 30px 0; font-size: 16px; font-weight: bold !important; color: #333 !important; background-color: #ffffff !important;">こんにちは、{{name}}様！</p>
+                                <p style="text-align: center !important; margin: 0 0 30px 0; font-size: 16px; font-weight: bold !important; color: #333 !important; background-color: #ffffff !important;">こんにちは、<span style="color: #333 !important; text-decoration: none !important; background-color: #ffffff !important;">{{name}}</span>様！</p>
                                 
                                 <!-- Main Content -->
                                 <div style="background-color: #ffffff !important; background: #ffffff !important; -webkit-background-color: #ffffff !important; text-align: center !important; max-width: 500px; margin: 0 auto;">
-                                    <h2 style="text-align: center !important; margin: 0 0 20px 0; color: #333 !important; background-color: #ffffff !important;">📦 配送開始のお知らせ</h2>
+                                    <h2 style="text-align: center !important; margin: 0 0 20px 0; color: #333 !important; background-color: #ffffff !important;">配送開始のお知らせ</h2>
                                     <p style="text-align: center !important; margin: 0 0 20px 0; color: #555 !important; background-color: #ffffff !important;">ご注文いただいた商品の発送を開始いたしました。</p>
                                     
                                     <!-- Order Details -->
                                     <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: left !important; max-width: 500px; margin-left: auto; margin-right: auto;">
-                                        <h3 style="text-align: center !important; margin-bottom: 15px; color: #333 !important; background-color: #f8f9fa !important;">📋 注文詳細</h3>
+                                        <h3 style="text-align: center !important; margin-bottom: 15px; color: #333 !important; background-color: #f8f9fa !important;">注文詳細</h3>
                                         <p style="margin: 5px 0; color: #555 !important; background-color: #f8f9fa !important;"><strong>注文番号:</strong> {{orderId}}</p>
                                         <p style="margin: 5px 0; color: #555 !important; background-color: #f8f9fa !important;"><strong>商品:</strong> {{items}}</p>
                                         <p style="margin: 5px 0; color: #555 !important; background-color: #f8f9fa !important;"><strong>合計金額:</strong> {{totalAmount}}</p>
@@ -1109,11 +1109,11 @@ const emailTemplates = {
                                     </div>
                                     
                                     <!-- Shipping Details -->
-                                    <div style="background-color: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: left !important; max-width: 500px; margin-left: auto; margin-right: auto;">
-                                        <h3 style="text-align: center !important; margin-bottom: 15px; color: #2d5a2d !important; background-color: #e8f5e8 !important;">🚚 配送情報</h3>
-                                        <p style="margin: 5px 0; color: #2d5a2d !important; background-color: #e8f5e8 !important;"><strong>配送方法:</strong> {{shippingMethod}}</p>
-                                        <p style="margin: 5px 0; color: #2d5a2d !important; background-color: #e8f5e8 !important;"><strong>追跡番号:</strong> {{trackingNumber}}</p>
-                                        <p style="margin: 5px 0; color: #2d5a2d !important; background-color: #e8f5e8 !important;"><strong>配達予定日:</strong> {{estimatedDelivery}}</p>
+                                    <div style="background-color: #f0f0f0; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: left !important; max-width: 500px; margin-left: auto; margin-right: auto;">
+                                        <h3 style="text-align: center !important; margin-bottom: 15px; color: #333 !important; background-color: #f0f0f0 !important;">配送情報</h3>
+                                        <p style="margin: 5px 0; color: #555 !important; background-color: #f0f0f0 !important;"><strong>配送方法:</strong> {{shippingMethod}}</p>
+                                        <p style="margin: 5px 0; color: #555 !important; background-color: #f0f0f0 !important;"><strong>追跡番号:</strong> {{trackingNumber}}</p>
+                                        <p style="margin: 5px 0; color: #555 !important; background-color: #f0f0f0 !important;"><strong>配達予定日:</strong> {{estimatedDelivery}}</p>
                                     </div>
                                     
                                     <p style="text-align: center !important; margin: 20px 0 0 0; color: #555 !important; background-color: #ffffff !important;">商品の到着をお楽しみにお待ちください。</p>
