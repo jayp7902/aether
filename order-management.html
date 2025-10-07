@@ -1538,17 +1538,31 @@
                                 <input type="text" class="form-control" id="trackingNumber" placeholder="配送追跡番号を入力してください">
                             </div>
                             <div class="mb-3">
-                                <label for="shippingCompany" class="form-label">配送会社</label>
+                                <label for="shippingCompany" class="form-label">配送方法</label>
                                 <select class="form-select" id="shippingCompany">
-                                    <option value="yamato">ヤマト運輸</option>
-                                    <option value="sagawa">佐川急便</option>
-                                    <option value="japan-post">日本郵便</option>
+                                    <option value="yamato">ヤマト運輸 (宅急便)</option>
+                                    <option value="yamato-cool">ヤマト運輸 (クール宅急便)</option>
+                                    <option value="yamato-takkyubin">ヤマト運輸 (タイム便)</option>
+                                    <option value="sagawa">佐川急便 (飛脚宅配便)</option>
+                                    <option value="sagawa-cool">佐川急便 (飛脚宅配便クール)</option>
+                                    <option value="japan-post-yu-pack">日本郵便 (ゆうパック)</option>
+                                    <option value="japan-post-express">日本郵便 (EMS)</option>
+                                    <option value="japan-post-registered">日本郵便 (レターパック)</option>
+                                    <option value="kuroneko">クロネコヤマト</option>
                                     <option value="other">その他</option>
                                 </select>
                             </div>
                             <div class="mb-3">
                                 <label for="estimatedDelivery" class="form-label">配達予定日</label>
-                                <input type="date" class="form-control" id="estimatedDelivery">
+                                <input type="date" class="form-control" id="estimatedDelivery" value="${new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}">
+                            </div>
+                            <div class="mb-3">
+                                <div class="form-text">
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        配送方法と追跡番号は顧客にメールで通知されます。
+                                    </small>
+                                </div>
                             </div>
                         </div>
                         <div class="modal-footer">
@@ -1571,12 +1585,23 @@
 
         // 배송 시작 확인
         function confirmShipping(orderId) {
-            const trackingNumber = document.getElementById('trackingNumber').value;
+            const trackingNumber = document.getElementById('trackingNumber').value.trim();
             const shippingCompany = document.getElementById('shippingCompany').value;
             const estimatedDelivery = document.getElementById('estimatedDelivery').value;
             
+            // 유효성 검사
             if (!trackingNumber) {
-                alert('配送追跡番号を入力してください。');
+                showError('配送追跡番号を入力してください。');
+                return;
+            }
+            
+            if (!shippingCompany) {
+                showError('配送方法を選択してください。');
+                return;
+            }
+            
+            if (!estimatedDelivery) {
+                showError('配達予定日を選択してください。');
                 return;
             }
             
@@ -1612,6 +1637,23 @@
             });
         }
 
+        // 배송 방법 한국어 변환 함수
+        function getShippingMethodInJapanese(shippingMethod) {
+            const shippingMethods = {
+                'yamato': 'ヤマト運輸 (宅急便)',
+                'yamato-cool': 'ヤマト運輸 (クール宅急便)',
+                'yamato-takkyubin': 'ヤマト運輸 (タイム便)',
+                'sagawa': '佐川急便 (飛脚宅配便)',
+                'sagawa-cool': '佐川急便 (飛脚宅配便クール)',
+                'japan-post-yu-pack': '日本郵便 (ゆうパック)',
+                'japan-post-express': '日本郵便 (EMS)',
+                'japan-post-registered': '日本郵便 (レターパック)',
+                'kuroneko': 'クロネコヤマト',
+                'other': 'その他'
+            };
+            return shippingMethods[shippingMethod] || shippingMethod;
+        }
+
         // 배송 시작 메일 발송
         async function sendShippingStartEmail(orderId) {
             try {
@@ -1632,8 +1674,12 @@
                         data: {
                             orderId: orderId,
                             trackingNumber: document.getElementById('trackingNumber').value,
-                            customerName: order.customerName || order.userName,
-                            estimatedDelivery: document.getElementById('estimatedDelivery').value
+                            shippingMethod: getShippingMethodInJapanese(document.getElementById('shippingCompany').value),
+                            customerName: order.customerName || order.userName || 'お客様',
+                            estimatedDelivery: document.getElementById('estimatedDelivery').value,
+                            items: order.items ? order.items.map(item => `${item.name} (${item.quantity}個)`).join(', ') : '商品情報なし',
+                            totalAmount: order.totalAmount || 0,
+                            shippingAddress: order.shipping ? `${order.shipping.postal} ${order.shipping.prefecture} ${order.shipping.city} ${order.shipping.address1} ${order.shipping.address2 || ''}`.trim() : '配送先情報なし'
                         }
                     })
                 });
