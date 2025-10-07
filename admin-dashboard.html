@@ -1429,7 +1429,7 @@
                         <h5 class="japanese-heading">顧客検索</h5>
                         <div class="input-group mb-3">
                             <input type="email" class="form-control" id="customer-email-search" placeholder="メールアドレスで検索">
-                            <button class="btn btn-outline-secondary" onclick="searchCustomerByEmail()">
+                            <button class="btn btn-outline-secondary" onclick="searchCustomerByEmail()" id="email-search-btn">
                                 <i class="fas fa-search"></i>
                             </button>
                         </div>
@@ -4917,6 +4917,18 @@
             waitForFirebaseAndInitialize();
             initializeTabNavigation();
             
+            // 메일 검색 버튼 이벤트 리스너 추가
+            setTimeout(() => {
+                const emailSearchBtn = document.getElementById('email-search-btn');
+                if (emailSearchBtn) {
+                    emailSearchBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        console.log('🔍 메일 검색 버튼 클릭됨 (이벤트 리스너)');
+                        searchCustomerByEmail();
+                    });
+                }
+            }, 500);
+            
             // 초기 탭 상태 설정
             setTimeout(() => {
                 // 모든 탭 컨텐츠 숨기기
@@ -5615,7 +5627,10 @@
 
         // 이메일로 고객 검색
         async function searchCustomerByEmail() {
+            console.log('🔍 searchCustomerByEmail 함수 호출됨');
+            
             const email = document.getElementById('customer-email-search').value.trim();
+            console.log('입력된 이메일:', email);
             
             if (!email) {
                 showAdminAlert('メールアドレスを入力してください', 'warning');
@@ -5625,12 +5640,25 @@
             try {
                 showAdminAlert('お客様を検索中...', 'info');
                 
+                // Firebase 초기화 대기
+                let attempts = 0;
+                const maxAttempts = 50;
+                
+                while (attempts < maxAttempts) {
+                    if (firebase && typeof firebase.firestore === 'function' && firebase.apps && firebase.apps.length > 0) {
+                        console.log('✅ Firebase 초기화 확인됨');
+                        break;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    attempts++;
+                }
+                
+                if (attempts >= maxAttempts) {
+                    throw new Error('Firebase 초기화 시간 초과');
+                }
+                
                 // Firebase에서 사용자 검색
                 console.log('🔥 Firebase에서 사용자 검색:', email);
-                
-                if (!firebase || !firebase.firestore) {
-                    throw new Error('Firebase가 초기화되지 않았습니다');
-                }
                 
                 const db = firebase.firestore();
                 
