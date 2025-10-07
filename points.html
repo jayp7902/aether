@@ -506,11 +506,17 @@
         // 포인트 표시 업데이트 함수
         function updatePointsDisplay() {
             const pointsElement = document.getElementById('current-points');
+            console.log('🔍 updatePointsDisplay 호출:', {
+                currentPoints: currentPoints,
+                pointsElement: pointsElement,
+                elementExists: !!pointsElement
+            });
+            
             if (pointsElement) {
                 pointsElement.textContent = currentPoints.toLocaleString();
-                console.log('포인트 표시 업데이트 완료:', currentPoints);
+                console.log('✅ 포인트 표시 업데이트 완료:', currentPoints);
             } else {
-                console.error('포인트 표시 요소를 찾을 수 없습니다');
+                console.error('❌ 포인트 표시 요소를 찾을 수 없습니다');
             }
         }
 
@@ -571,6 +577,9 @@
                         console.log('  - userData.points === null:', userData.points === null);
                         console.log('  - userData.points === 0:', userData.points === 0);
                         console.log('  - userData 전체 키:', Object.keys(userData));
+                        
+                        // 포인트 표시 강제 업데이트
+                        updatePointsDisplay();
                         } else {
                         console.log('사용자 문서가 존재하지 않습니다, 새로 생성');
                         // 사용자 문서가 없으면 새로 생성
@@ -589,13 +598,7 @@
 
                 // 포인트 표시 업데이트 (currentPoints가 null이 아닐 때만)
                 if (currentPoints !== null) {
-                    const pointsElement = document.getElementById('current-points');
-                    if (pointsElement) {
-                        pointsElement.textContent = currentPoints.toLocaleString();
-                        console.log('포인트 표시 업데이트 완료:', currentPoints);
-                    } else {
-                        console.error('포인트 표시 요소를 찾을 수 없습니다');
-                    }
+                    updatePointsDisplay();
                 }
                         
                         // 포인트 이력 로드가 완료되면 자동으로 포인트가 계산되고 업데이트됩니다
@@ -736,11 +739,7 @@
                             currentPoints = calculatedPoints;
                             
                             // 포인트 표시 업데이트
-                            const pointsElement = document.getElementById('current-points');
-                            if (pointsElement) {
-                                pointsElement.textContent = calculatedPoints.toLocaleString();
-                                console.log('✅ 포인트 표시 업데이트 완료:', calculatedPoints);
-                            }
+                            updatePointsDisplay();
                             
                             // Firebase에 포인트 업데이트 (이메일을 문서 ID로 사용)
                             if (typeof firebase !== 'undefined' && firebase.firestore) {
@@ -770,6 +769,11 @@
 
                 // 이력 표시 업데이트
                 updatePointHistoryDisplay();
+                
+                // 포인트 표시도 업데이트 (이력 로드 후)
+                if (currentPoints !== null) {
+                    updatePointsDisplay();
+                }
                 
             } catch (error) {
                 console.error('포인트 이력 로드 오류:', error);
