@@ -1509,6 +1509,11 @@ class FirebaseService {
             }
 
             // 포인트 부여
+            console.log('💰 포인트 부여 데이터:', {
+                userEmail: orderData.userEmail,
+                pointsEarned: orderData.pointsEarned,
+                orderId: orderId
+            });
             await this.addPoints(orderData.userEmail, orderData.pointsEarned, `배송 완료 - 주문 ${orderId} 포인트 적립`);
 
             // 주문 상태 업데이트
@@ -1520,6 +1525,7 @@ class FirebaseService {
 
             // 배송 완료 메일 발송
             try {
+                console.log('📧 배송 완료 메일 발송 데이터:', orderData);
                 await this.sendShippingCompleteEmail(orderData);
                 console.log('✅ 배송 완료 메일 발송 성공');
             } catch (emailError) {
