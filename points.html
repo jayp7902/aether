@@ -484,8 +484,8 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
     <!-- 애플리케이션 스크립트 -->
-    <script src="assets/js/firebase-config-new.js?v=2.1"></script>
-    <script src="assets/js/auth-utils-new.js?v=2.1"></script>
+    <script src="assets/js/firebase-config-new.js?v=2.2"></script>
+    <script src="assets/js/auth-utils-new.js?v=2.2"></script>
     <script src="assets/js/common-qr-code.js?v=2.1"></script>
     <script src="assets/js/custom.js"></script>
     
@@ -673,9 +673,9 @@
                                 filteredDocs.push({ id: doc.id, ...data });
                                 
                                 // 포인트 계산
-                                if (data.type === 'earn' || data.type === 'admin_add' || data.type === 'welcome_bonus') {
+                                if (data.type === 'earn' || data.type === 'admin_add' || data.type === 'welcome_bonus' || data.type === 'refund') {
                                     earnedPoints += data.points || 0;
-                                    console.log('적립 포인트 추가:', data.points, '총 적립:', earnedPoints);
+                                    console.log('적립/환불 포인트 추가:', data.type, data.points, '총 적립:', earnedPoints);
                                 } else if (data.type === 'use' || data.type === 'admin_subtract') {
                                     usedPoints += data.points || 0;
                                     console.log('사용 포인트 추가:', data.points, '총 사용:', usedPoints);
@@ -725,16 +725,17 @@
                         
                         // 포인트 계산 및 업데이트
                         const calculatedPoints = earnedPoints - usedPoints;
-                        console.log('포인트 이력 기반 계산:', {
+                        console.log('🔍 포인트 이력 기반 계산:', {
                             earnedPoints,
                             usedPoints,
                             calculatedPoints,
-                            currentDisplayPoints: pointsPageUser.points
+                            currentDisplayPoints: pointsPageUser.points,
+                            pointHistoryCount: pointHistory.length
                         });
                         
-                        // 계산된 포인트가 다르면 업데이트 (단, 0보다 작으면 안됨)
-                        if (calculatedPoints !== pointsPageUser.points && calculatedPoints >= 0) {
-                            console.log('포인트 불일치 감지, 업데이트 중...');
+                        // 계산된 포인트로 항상 업데이트 (포인트 히스토리 기반)
+                        if (calculatedPoints >= 0) {
+                            console.log('🔧 포인트 히스토리 기반 업데이트:', calculatedPoints);
                             pointsPageUser.points = calculatedPoints;
                             currentPoints = calculatedPoints;
                             
@@ -752,8 +753,8 @@
                                     console.error('Firebase 포인트 업데이트 실패:', error);
                                 });
                             }
-                        } else if (calculatedPoints < 0) {
-                            console.log('⚠️ 계산된 포인트가 음수입니다. 원본 포인트 유지:', pointsPageUser.points);
+                        } else {
+                            console.log('❌ 계산된 포인트가 음수:', calculatedPoints);
                         }
                         
                         // pointHistory 배열을 전역 변수에 저장 (정렬은 표시할 때 수행)
