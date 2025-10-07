@@ -484,8 +484,8 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
     <!-- 애플리케이션 스크립트 -->
-    <script src="assets/js/firebase-config-new.js"></script>
-    <script src="assets/js/auth-utils-new.js"></script>
+    <script src="assets/js/firebase-config-new.js?v=2.1"></script>
+    <script src="assets/js/auth-utils-new.js?v=2.1"></script>
     <script src="assets/js/common-qr-code.js?v=2.1"></script>
     <script src="assets/js/custom.js"></script>
     
@@ -535,22 +535,15 @@
                 if (typeof firebase !== 'undefined' && firebase.firestore) {
                     const db = firebase.firestore();
                     
-                    // 먼저 사용자 ID로 검색 (캐시 무시하고 서버에서 직접 가져오기)
-                    let userDoc = await db.collection('users').doc(pointsPageUser.uid).get({ source: 'server' });
-                    console.log('사용자 ID로 검색 결과 (서버에서):', userDoc.exists);
+                    // 이메일을 문서 ID로 직접 검색 (포인트 반환과 동일한 방식)
+                    let userDoc = await db.collection('users').doc(pointsPageUser.email).get({ source: 'server' });
+                    console.log('이메일을 문서 ID로 검색 결과 (서버에서):', userDoc.exists);
                     
                     if (!userDoc.exists) {
-                        // 사용자 ID로 찾지 못한 경우 이메일로 검색
-                        console.log('사용자 ID로 찾지 못함, 이메일로 검색 시도');
-                        const emailQuery = await db.collection('users')
-                            .where('email', '==', pointsPageUser.email)
-                            .limit(1)
-                            .get({ source: 'server' });
-                        
-                        if (!emailQuery.empty) {
-                            userDoc = emailQuery.docs[0];
-                            console.log('이메일로 사용자 찾음:', userDoc.id);
-                        }
+                        // 이메일로 찾지 못한 경우 사용자 ID로 검색 (호환성)
+                        console.log('이메일로 찾지 못함, 사용자 ID로 검색 시도');
+                        userDoc = await db.collection('users').doc(pointsPageUser.uid).get({ source: 'server' });
+                        console.log('사용자 ID로 검색 결과:', userDoc.exists);
                     }
                     
                     if (userDoc.exists) {
