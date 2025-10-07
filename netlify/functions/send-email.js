@@ -966,18 +966,18 @@ const emailTemplates = {
                                     <div style="font-size: 14px; color: #333; margin-bottom: 5px; background-color: #f8f9fa; text-align: right;"><strong>送料:</strong> {{shipping}}</div>
                                     <div style="font-size: 14px; color: #333; margin-bottom: 5px; background-color: #f8f9fa; text-align: right;"><strong>使用ポイント:</strong> {{pointsUsed}}</div>
                                     <div style="font-size: 16px; color: #333; margin-bottom: 10px; background-color: #f8f9fa; text-align: right; font-weight: bold; border-top: 1px solid #ddd; padding-top: 5px;"><strong>合計金額:</strong> {{totalAmount}}</div>
-                                </div>
                 </div>
+            </div>
                             
                             <!-- 환불 안내 -->
                             <div style="background-color: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center !important;">
-                                <div style="font-size: 18px; font-weight: bold; color: #2d5a2d; margin-bottom: 15px; background-color: #e8f5e8;">返金・ポイント返却について</div>
+                                <div style="font-size: 18px; font-weight: bold; color: #333; margin-bottom: 15px; background-color: #e8f5e8;">返金・ポイント返却について</div>
                                 <div style="font-size: 16px; color: #333; margin-bottom: 10px; background-color: #e8f5e8;">
                                     <strong>返却ポイント:</strong> {{refundedPoints}}
-                                </div>
+            </div>
                                 <div style="font-size: 14px; color: #666; margin-bottom: 10px; background-color: #e8f5e8;">
                                     ご利用いただいたポイントは自動的にアカウントに戻されます。
-                                </div>
+        </div>
                                 <div style="font-size: 14px; color: #666; background-color: #e8f5e8;">
                                     お支払い方法によっては、返金処理に数日かかる場合がございます。
                                 </div>
