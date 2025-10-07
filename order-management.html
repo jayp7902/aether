@@ -1480,7 +1480,7 @@
                 // 배송 완료 시 포인트 부여
                 if (newStatus === 'delivered' || newStatus === 'completed') {
                     console.log('📦 배송 완료 - 포인트 부여 시작');
-                    const pointResult = await window.FirebaseService.awardPointsOnDelivery(orderId);
+                    const pointResult = await window.FirebaseService_awardPointsOnDelivery(orderId);
                     
                     if (pointResult.success) {
                         console.log('✅ 배송 완료 포인트 부여 성공:', pointResult.pointsEarned);
@@ -1507,8 +1507,8 @@
                     sendOrderStatusNotification(orderId, newStatus, cancelReason);
                 }
                 
-                if (newStatus !== 'delivered' && newStatus !== 'completed') {
-                showSuccess('注文状態が更新されました。');
+                if (newStatus !== 'delivered' && newStatus !== 'completed' && newStatus !== 'shipped') {
+                    showSuccess('注文状態が更新されました。');
                 }
                 
             } catch (error) {
@@ -1519,8 +1519,13 @@
 
         // 배송 번호 입력 모달 표시
         function showShippingModal(orderId) {
+            console.log('🚚 배송 모달 표시 시작:', orderId);
             const order = allOrders.find(o => o.id === orderId);
-            if (!order) return;
+            if (!order) {
+                console.error('❌ 주문을 찾을 수 없습니다:', orderId);
+                return;
+            }
+            console.log('✅ 주문 정보 확인:', order);
 
             const modal = document.createElement('div');
             modal.className = 'modal fade';
@@ -1574,11 +1579,17 @@
             `;
             
             document.body.appendChild(modal);
-            const bsModal = new bootstrap.Modal(modal);
-            bsModal.show();
+            
+            // Bootstrap 모달 초기화 및 표시
+            setTimeout(() => {
+                const bsModal = new bootstrap.Modal(modal);
+                bsModal.show();
+                console.log('✅ 배송 모달 표시 완료');
+            }, 100);
             
             // 모달이 닫힐 때 제거
             modal.addEventListener('hidden.bs.modal', () => {
+                console.log('🚚 배송 모달 닫힘');
                 document.body.removeChild(modal);
             });
         }
@@ -1629,7 +1640,7 @@
                 const modal = bootstrap.Modal.getInstance(document.getElementById('shippingModal'));
                 modal.hide();
                 
-                showSuccess('配送情報が更新され、配送開始メールが送信されました。');
+                showSuccess('配送情報が更新されました。');
             })
             .catch((error) => {
                 console.error('❌ 배송 정보 업데이트 실패:', error);
@@ -1687,8 +1698,10 @@
                 const result = await response.json();
                 if (result.success) {
                     console.log('배송 시작 메일 발송 완료');
+                    showSuccess('配送開始メールが送信されました。');
                 } else {
                     console.error('배송 시작 메일 발송 실패:', result.error);
+                    showError('配送開始メールの送信に失敗しました。');
                 }
                 
             } catch (error) {
