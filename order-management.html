@@ -2146,10 +2146,29 @@
                                 const userDoc = await transaction.get(userRef);
                                 if (userDoc.exists) {
                                     const currentPoints = userDoc.data().points || 0;
+                                    const newPoints = currentPoints + refundedPoints;
+                                    
+                                    // ポイント復元
                                     transaction.update(userRef, {
-                                        points: currentPoints + refundedPoints
+                                        points: newPoints
                                     });
+                                    
                                     console.log('✅ ポイント返還完了:', refundedPoints);
+                                    
+                                    // ポイント返還 히스토리 추가
+                                    const pointHistoryRef = window.FirebaseService.db.collection('pointHistory').doc();
+                                    transaction.set(pointHistoryRef, {
+                                        userId: orderData.userId,
+                                        userEmail: orderData.userEmail,
+                                        points: refundedPoints,
+                                        type: 'refund',
+                                        reason: `注文キャンセル - ${orderId} ポイント返還`,
+                                        balance: newPoints,
+                                        orderId: orderId,
+                                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                                    });
+                                    
+                                    console.log('✅ ポイント返還 히스토리 추가 완료:', refundedPoints);
                                 }
                             });
                         } catch (error) {
