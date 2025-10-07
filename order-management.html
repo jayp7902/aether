@@ -520,8 +520,8 @@
             
             // DOM 로드 후 약간의 지연을 두고 초기화 (Firebase 스크립트 로드 대기)
             setTimeout(() => {
-                initializeOrderManagement();
-                updateDateDisplay();
+            initializeOrderManagement();
+            updateDateDisplay();
             }, 100);
         });
         
@@ -713,19 +713,19 @@
                 // 방법 3: firebase.apps 확인
                 else if (typeof firebase !== 'undefined' && firebase.apps && firebase.apps.length > 0) {
                     console.log('✅ firebase.apps 사용 가능');
-                    // FirebaseService 인스턴스 생성
+                // FirebaseService 인스턴스 생성
                     if (window.FirebaseService) {
-                        const firebaseService = new window.FirebaseService();
-                        window.FirebaseService.db = firebaseService.db;
-                        console.log('✅ FirebaseService 인스턴스 생성 완료');
+                    const firebaseService = new window.FirebaseService();
+                    window.FirebaseService.db = firebaseService.db;
+                    console.log('✅ FirebaseService 인스턴스 생성 완료');
                         isFirebaseReady = true;
                     }
                 }
                 
                 if (isFirebaseReady) {
                     console.log('🎉 Firebase 준비 완료, 주문 데이터 로드 시작');
-                    setTimeout(() => {
-                        loadOrders();
+                setTimeout(() => {
+                    loadOrders();
                     }, 300);
                 } else {
                     console.log('⏳ Firebase 초기화 대기 중...');
@@ -751,7 +751,7 @@
                 window.addEventListener('firebaseInitialized', function(event) {
                     console.log('🎉 Firebase 초기화 이벤트 수신:', event.detail);
                     // 이벤트 수신 후 잠시 대기 후 확인
-                    setTimeout(() => {
+            setTimeout(() => {
                         checkFirebaseAndLoad();
                     }, 1000);
                 });
@@ -761,7 +761,7 @@
                     if (window.FirebaseService && window.FirebaseService.db && window.FirebaseService.db.collection) {
                         console.log('🎉 Firebase 객체 직접 감지 완료');
                         checkFirebaseAndLoad();
-                    } else {
+                } else {
                         setTimeout(watchFirebase, 1000);
                     }
                 };
@@ -924,7 +924,7 @@
                                 showError('주문 데이터를 불러오는데 실패했습니다: ' + fallbackError.message);
                             });
                     } else {
-                        showError('주문 데이터를 불러오는데 실패했습니다: ' + error.message);
+                    showError('주문 데이터를 불러오는데 실패했습니다: ' + error.message);
                     }
                 });
         }
@@ -1456,8 +1456,8 @@
         // 주문 상태 업데이트 (취소 사유 포함)
         async function updateOrderStatus(orderId, newStatus, cancelReason = null) {
             if (!cancelReason && newStatus !== 'cancelled') {
-                if (!confirm('注文状態を変更しますか？')) {
-                    return;
+            if (!confirm('注文状態を変更しますか？')) {
+                return;
                 }
             }
             
@@ -1471,8 +1471,8 @@
             
             try {
                 await orderRef.update({
-                    status: newStatus,
-                    updatedAt: new Date().toISOString()
+                status: newStatus,
+                updatedAt: new Date().toISOString()
                 });
                 
                 console.log('✅ 주문 상태 업데이트 완료:', orderId, newStatus);
@@ -1508,7 +1508,7 @@
                 }
                 
                 if (newStatus !== 'delivered' && newStatus !== 'completed') {
-                    showSuccess('注文状態が更新されました。');
+                showSuccess('注文状態が更新されました。');
                 }
                 
             } catch (error) {
@@ -2101,6 +2101,18 @@
                 
                 // 주문 데이터 가져오기
                 const orderData = allOrders.find(order => order.id === orderId);
+                
+                // 디버깅: 주문 데이터 확인
+                console.log('🔍 주문 데이터 확인:', {
+                    orderId: orderId,
+                    orderData: orderData,
+                    pointsUsed: orderData?.pointsUsed,
+                    pointsEarned: orderData?.pointsEarned,
+                    totalAmount: orderData?.totalAmount,
+                    subtotal: orderData?.subtotal,
+                    allFields: Object.keys(orderData || {})
+                });
+                
                 if (!orderData) {
                     console.error('주문 데이터를 찾을 수 없습니다:', orderId);
                     return;
@@ -2112,10 +2124,21 @@
                     
                     // ポイント返還処理
                     let refundedPoints = 0;
-                    if (orderData.pointsUsed && orderData.pointsUsed > 0) {
+                    
+                    // 포인트 사용량 확인 (다양한 필드명 지원)
+                    const pointsUsed = orderData.pointsUsed || orderData.usedPoints || orderData.points_used || orderData.points || 0;
+                    console.log('🔍 포인트 사용량 확인:', {
+                        pointsUsed: pointsUsed,
+                        orderDataPointsUsed: orderData.pointsUsed,
+                        orderDataUsedPoints: orderData.usedPoints,
+                        orderDataPoints_used: orderData.points_used,
+                        orderDataPoints: orderData.points
+                    });
+                    
+                    if (pointsUsed > 0) {
                         try {
-                            console.log('💰 ポイント返還開始:', orderData.pointsUsed);
-                            refundedPoints = orderData.pointsUsed;
+                            console.log('💰 ポイント返還開始:', pointsUsed);
+                            refundedPoints = pointsUsed;
                             
                             // ユーザーポイント復元
                             const userRef = window.FirebaseService.db.collection('users').doc(orderData.userId);
@@ -2132,6 +2155,8 @@
                         } catch (error) {
                             console.error('❌ ポイント返還失敗:', error);
                         }
+                    } else {
+                        console.log('ℹ️ 使用ポイントなし、返還不要');
                     }
                     
                     // キャンセルメール送信 (詳細情報含む)
@@ -2161,7 +2186,7 @@
                                     items: itemsList,
                                     subtotal: `¥${orderData.subtotal?.toLocaleString() || '0'}`,
                                     shipping: getFormattedShipping(orderData.shipping),
-                                    pointsUsed: `${orderData.pointsUsed || 0}ポイント`,
+                                    pointsUsed: `${pointsUsed}ポイント`,
                                     totalAmount: `¥${orderData.totalAmount?.toLocaleString() || '0'}`,
                                     refundedPoints: `${refundedPoints}ポイント`
                                 }
