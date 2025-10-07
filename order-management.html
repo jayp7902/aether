@@ -1562,10 +1562,6 @@
                                 </select>
                             </div>
                             <div class="mb-3">
-                                <label for="estimatedDelivery" class="form-label">配達予定日</label>
-                                <input type="date" class="form-control" id="estimatedDelivery" value="${new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]}">
-                            </div>
-                            <div class="mb-3">
                                 <div class="form-text">
                                     <small class="text-muted">
                                         <i class="fas fa-info-circle me-1"></i>
@@ -1602,7 +1598,6 @@
         function confirmShipping(orderId) {
             const trackingNumber = document.getElementById('trackingNumber').value.trim();
             const shippingCompany = document.getElementById('shippingCompany').value;
-            const estimatedDelivery = document.getElementById('estimatedDelivery').value;
             
             // 유효성 검사
             if (!trackingNumber) {
@@ -1615,10 +1610,6 @@
                 return;
             }
             
-            if (!estimatedDelivery) {
-                showError('配達予定日を選択してください。');
-                return;
-            }
             
             if (!window.FirebaseService || !window.FirebaseService.db) {
                 console.error('❌ FirebaseService를 찾을 수 없습니다.');
@@ -1632,7 +1623,6 @@
                 status: 'shipped',
                 trackingNumber: trackingNumber,
                 shippingCompany: shippingCompany,
-                estimatedDelivery: estimatedDelivery,
                 shippedAt: new Date().toISOString()
             })
             .then(() => {
@@ -1644,7 +1634,6 @@
                     allOrders[orderIndex].status = 'shipped';
                     allOrders[orderIndex].trackingNumber = trackingNumber;
                     allOrders[orderIndex].shippingCompany = shippingCompany;
-                    allOrders[orderIndex].estimatedDelivery = estimatedDelivery;
                     allOrders[orderIndex].shippedAt = new Date().toISOString();
                     
                     // 주문 목록 다시 표시
@@ -1694,8 +1683,7 @@
                 console.log('📦 주문 데이터:', order);
                 console.log('📦 배송 데이터:', {
                     trackingNumber: document.getElementById('trackingNumber').value,
-                    shippingMethod: getShippingMethodInJapanese(document.getElementById('shippingCompany').value),
-                    estimatedDelivery: document.getElementById('estimatedDelivery').value
+                    shippingMethod: getShippingMethodInJapanese(document.getElementById('shippingCompany').value)
                 });
                 
                 const response = await fetch('/.netlify/functions/send-email', {
@@ -1712,10 +1700,9 @@
                             name: order.customerName || order.userName || order.customerEmail?.split('@')[0] || 'お客様',
                             trackingNumber: document.getElementById('trackingNumber').value,
                             shippingMethod: getShippingMethodInJapanese(document.getElementById('shippingCompany').value),
-                            estimatedDelivery: document.getElementById('estimatedDelivery').value,
-                            items: order.items ? order.items.map(item => `${item.name || item.productName} (${item.quantity}個)`).join(', ') : '商品情報なし',
-                            totalAmount: order.totalAmount ? `¥${order.totalAmount.toLocaleString()}` : '¥0',
-                            shippingAddress: order.shipping ? `${order.shipping.postal} ${order.shipping.prefecture} ${order.shipping.city} ${order.shipping.address1} ${order.shipping.address2 || ''}`.trim() : '配送先情報なし'
+                            items: order.items ? order.items.map(item => `${item.name || item.productName || item.title || item.brand} ${item.name || item.productName || item.title} (${item.quantity || item.qty || 1}個)`).join(', ') : '商品情報なし',
+                            totalAmount: order.totalAmount || order.total || order.amount ? `¥${(order.totalAmount || order.total || order.amount).toLocaleString()}` : '¥0',
+                            shippingAddress: order.shipping ? `${order.shipping.postal || order.shipping.postalCode} ${order.shipping.prefecture || order.shipping.state} ${order.shipping.city} ${order.shipping.address1 || order.shipping.address} ${order.shipping.address2 || ''}`.trim() : '配送先情報なし'
                         }
                     })
                 });
