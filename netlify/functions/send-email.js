@@ -1315,17 +1315,17 @@ const emailTemplates = {
         </div>
                                     
                                     <!-- 안내 메시지 -->
-                                    <div style="background-color: #e8f5e8; padding: 15px; border-radius: 5px; border-left: 4px solid #4caf50;">
-                                        <p style="margin: 0; color: #2e7d32; font-weight: bold;">✅ 配送完了</p>
-                                        <p style="margin: 5px 0 0 0; color: #2e7d32; font-size: 14px;">商品が正常に配送されました。ご利用いただき、ありがとうございました。</p>
+                                    <div style="background-color: #f0f0f0; padding: 15px; border-radius: 5px; border-left: 4px solid #666;">
+                                        <p style="margin: 0; color: #555; font-weight: bold;">配送完了</p>
+                                        <p style="margin: 5px 0 0 0; color: #555; font-size: 14px;">商品が正常に配送されました。ご利用いただき、ありがとうございました。</p>
                                     </div>
                                 </div>
                                 
                                 <!-- 포인트 적립 정보 -->
-                                <div style="background-color: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center !important; max-width: 500px; margin-left: auto; margin-right: auto;">
-                                    <h3 style="text-align: center !important; margin-bottom: 15px; color: #2d5a2d;">🎉 포인트 적립 완료!</h3>
-                                    <p style="text-align: center !important; margin: 10px 0; font-size: 18px; font-weight: bold; color: #2d5a2d;">{{pointsEarned}}포인트가 적립되었습니다</p>
-                                    <p style="text-align: center !important; margin: 10px 0; color: #555;">배송 완료로 인한 포인트가 계정에 추가되었습니다.</p>
+                                <div style="background-color: #f0f0f0; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center !important; max-width: 500px; margin-left: auto; margin-right: auto;">
+                                    <h3 style="text-align: center !important; margin-bottom: 15px; color: #333;">ポイント獲得完了</h3>
+                                    <p style="text-align: center !important; margin: 10px 0; font-size: 18px; font-weight: bold; color: #555;">{{pointsEarned}}ポイントが獲得されました</p>
+                                    <p style="text-align: center !important; margin: 10px 0; color: #555;">配送完了により、ポイントがアカウントに追加されました。</p>
                                 </div>
                                 
                                 <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">今後ともAetherをご愛顧いただき、ありがとうございます。</p>
