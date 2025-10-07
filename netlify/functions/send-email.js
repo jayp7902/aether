@@ -1010,6 +1010,149 @@ const emailTemplates = {
     </body>
 </html>`,
 
+    'shipping-start': `<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>配送開始メール</title>
+    <style>
+        /* Reset styles for email clients */
+        body, table, td, p, a, li, blockquote {
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+        }
+        
+        /* Force white background */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff !important;
+            background: #ffffff !important;
+            -webkit-background-color: #ffffff !important;
+            mso-background-color: #ffffff !important;
+        }
+        
+        /* Outlook specific styles */
+        .outlook-bg {
+            background-color: #ffffff !important;
+        }
+        
+        /* Force white background on all elements */
+        table, td, div, p {
+            background-color: #ffffff !important;
+            background: #ffffff !important;
+            mso-background-color: #ffffff !important;
+        }
+        
+        /* Mobile specific styles */
+        @media only screen and (max-width: 600px) {
+            body {
+                background-color: #ffffff !important;
+                background: #ffffff !important;
+                background-image: none !important;
+            }
+            table {
+                background-color: #ffffff !important;
+            }
+            td {
+                background-color: #ffffff !important;
+            }
+            div {
+                background-color: #ffffff !important;
+            }
+            p {
+                background-color: #ffffff !important;
+            }
+        }
+        
+        /* Gmail fix */
+        .gmail-fix {
+            background-color: #ffffff !important;
+        }
+    </style>
+</head>
+<body style="background-color: #ffffff !important; background: #ffffff !important; -webkit-background-color: #ffffff !important;">
+    <div style="background-color: #ffffff !important; background: #ffffff !important; -webkit-background-color: #ffffff !important;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff !important; background: #ffffff !important; -webkit-background-color: #ffffff !important;">
+            <tr>
+                <td align="center" style="background-color: #ffffff !important; background: #ffffff !important; -webkit-background-color: #ffffff !important;">
+                    <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff !important; background: #ffffff !important; -webkit-background-color: #ffffff !important;">
+                        <tr>
+                            <td style="background-color: #ffffff !important; background: #ffffff !important; -webkit-background-color: #ffffff !important; padding: 40px 20px; text-align: center;">
+                                <!-- Logo -->
+                                <div style="text-align: center !important; margin-bottom: 30px;">
+                                    <a href="https://aether-store.jp" style="text-decoration: none;">
+                                        <img src="https://aether-store.jp/assets/img/logo.png" alt="Aether Store" style="max-width: 200px; height: auto; display: block; margin: 0 auto;">
+                                    </a>
+                                </div>
+                                
+                                <!-- Greeting -->
+                                <p style="text-align: center !important; margin: 0 0 30px 0; font-size: 16px; font-weight: bold !important; color: #333 !important; background-color: #ffffff !important;">こんにちは、{{name}}様！</p>
+                                
+                                <!-- Main Content -->
+                                <div style="background-color: #ffffff !important; background: #ffffff !important; -webkit-background-color: #ffffff !important; text-align: center !important; max-width: 500px; margin: 0 auto;">
+                                    <h2 style="text-align: center !important; margin: 0 0 20px 0; color: #333 !important; background-color: #ffffff !important;">📦 配送開始のお知らせ</h2>
+                                    <p style="text-align: center !important; margin: 0 0 20px 0; color: #555 !important; background-color: #ffffff !important;">ご注文いただいた商品の発送を開始いたしました。</p>
+                                    
+                                    <!-- Order Details -->
+                                    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: left !important; max-width: 500px; margin-left: auto; margin-right: auto;">
+                                        <h3 style="text-align: center !important; margin-bottom: 15px; color: #333 !important; background-color: #f8f9fa !important;">📋 注文詳細</h3>
+                                        <p style="margin: 5px 0; color: #555 !important; background-color: #f8f9fa !important;"><strong>注文番号:</strong> {{orderId}}</p>
+                                        <p style="margin: 5px 0; color: #555 !important; background-color: #f8f9fa !important;"><strong>商品:</strong> {{items}}</p>
+                                        <p style="margin: 5px 0; color: #555 !important; background-color: #f8f9fa !important;"><strong>合計金額:</strong> {{totalAmount}}</p>
+                                        <p style="margin: 5px 0; color: #555 !important; background-color: #f8f9fa !important;"><strong>配送先:</strong> {{shippingAddress}}</p>
+                                    </div>
+                                    
+                                    <!-- Shipping Details -->
+                                    <div style="background-color: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: left !important; max-width: 500px; margin-left: auto; margin-right: auto;">
+                                        <h3 style="text-align: center !important; margin-bottom: 15px; color: #2d5a2d !important; background-color: #e8f5e8 !important;">🚚 配送情報</h3>
+                                        <p style="margin: 5px 0; color: #2d5a2d !important; background-color: #e8f5e8 !important;"><strong>配送方法:</strong> {{shippingMethod}}</p>
+                                        <p style="margin: 5px 0; color: #2d5a2d !important; background-color: #e8f5e8 !important;"><strong>追跡番号:</strong> {{trackingNumber}}</p>
+                                        <p style="margin: 5px 0; color: #2d5a2d !important; background-color: #e8f5e8 !important;"><strong>配達予定日:</strong> {{estimatedDelivery}}</p>
+                                    </div>
+                                    
+                                    <p style="text-align: center !important; margin: 20px 0 0 0; color: #555 !important; background-color: #ffffff !important;">商品の到着をお楽しみにお待ちください。</p>
+                                    <p style="text-align: center !important; margin: 20px 0 0 0; color: #555 !important; background-color: #ffffff !important;">ご不明な点がございましたら、お気軽にお問い合わせください。</p>
+                                </div>
+                                
+                                <!-- Footer -->
+                                <div style="text-align: center !important; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; background-color: #ffffff !important;">
+                                    <p style="margin: 5px 0; color: #666 !important; background-color: #ffffff !important;">Aether Store</p>
+                                    <p style="margin: 5px 0; color: #666 !important; background-color: #ffffff !important;">
+                                        <a href="mailto:info@aether-store.jp" style="color: #666 !important; text-decoration: underline; background-color: #ffffff !important;">info@aether-store.jp</a>
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+    
+    <!-- Gmail fix -->
+    <div class="gmail-fix" style="background-color: #ffffff !important;"></div>
+    
+    <!-- Outlook conditional comment -->
+    <!--[if mso]>
+    <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff;">
+        <tr>
+            <td style="background-color: #ffffff;">
+                <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:600px;height:400px;">
+                    <v:fill type="tile" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==" color="#ffffff" />
+                </v:rect>
+            </td>
+        </tr>
+    </table>
+    <![endif]-->
+</body>
+</html>`,
+
     'shipping-complete': `<!DOCTYPE html>
     <html lang="ja">
     <head>
@@ -1405,6 +1548,18 @@ exports.handler = async (event, context) => {
                         html = loadEmailTemplate('points-earned', {
                             points: data.points || 100,
                             reason: data.reason || 'テストポイント獲得'
+                        });
+                        break;
+                    case 'shipping-start':
+                        html = loadEmailTemplate('shipping-start', {
+                            orderId: data.orderId || 'TEST-001',
+                            name: data.name || 'テストユーザー',
+                            items: data.items || 'LALARECIPE バクチノールアイクリーム, COSCELL レチノールボリュームアイバッグクリーム',
+                            shippingAddress: data.shippingAddress || '東京都 練馬区 光が丘2-10-1 3009号',
+                            estimatedDelivery: data.estimatedDelivery || new Date().toLocaleDateString('ja-JP'),
+                            shippingMethod: data.shippingMethod || 'ヤマト運輸 (宅急便)',
+                            trackingNumber: data.trackingNumber || '1234567890',
+                            totalAmount: data.totalAmount || '¥24,500'
                         });
                         break;
                     case 'shipping-complete':
