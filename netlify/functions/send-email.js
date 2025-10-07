@@ -1113,7 +1113,6 @@ const emailTemplates = {
                                         <h3 style="text-align: center !important; margin-bottom: 15px; color: #333 !important; background-color: #f0f0f0 !important;">配送情報</h3>
                                         <p style="margin: 5px 0; color: #555 !important; background-color: #f0f0f0 !important;"><strong>配送方法:</strong> {{shippingMethod}}</p>
                                         <p style="margin: 5px 0; color: #555 !important; background-color: #f0f0f0 !important;"><strong>追跡番号:</strong> {{trackingNumber}}</p>
-                                        <p style="margin: 5px 0; color: #555 !important; background-color: #f0f0f0 !important;"><strong>配達予定日:</strong> {{estimatedDelivery}}</p>
                                     </div>
                                     
                                     <p style="text-align: center !important; margin: 20px 0 0 0; color: #555 !important; background-color: #ffffff !important;">商品の到着をお楽しみにお待ちください。</p>
@@ -1556,7 +1555,6 @@ exports.handler = async (event, context) => {
                             name: data.name || 'テストユーザー',
                             items: data.items || 'LALARECIPE バクチノールアイクリーム, COSCELL レチノールボリュームアイバッグクリーム',
                             shippingAddress: data.shippingAddress || '東京都 練馬区 光が丘2-10-1 3009号',
-                            estimatedDelivery: data.estimatedDelivery || new Date().toLocaleDateString('ja-JP'),
                             shippingMethod: data.shippingMethod || 'ヤマト運輸 (宅急便)',
                             trackingNumber: data.trackingNumber || '1234567890',
                             totalAmount: data.totalAmount || '¥24,500'
