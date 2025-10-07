@@ -1563,16 +1563,18 @@ class FirebaseService {
                     type: 'shipping-complete',
                     to: orderData.userEmail,
                     subject: '配送完了のお知らせ - Aether Store',
-                    orderId: orderData.id || orderData.orderId,
-                    name: orderData.userEmail.split('@')[0], // 이메일에서 이름 추출
-                    items: Array.isArray(orderData.items) ? 
-                        orderData.items.map(item => `${item.brand} ${item.name} (${item.quantity})`).join(', ') : 
-                        orderData.items || '상품 정보 없음',
-                    shippingAddress: orderData.shippingAddress || '配送先情報なし',
-                    deliveryDate: new Date().toLocaleDateString('ja-JP'),
-                    shippingCompany: orderData.shippingCompany || 'ヤマト運輸',
-                    trackingNumber: orderData.trackingNumber || 'N/A',
-                    pointsEarned: orderData.pointsEarned || 0
+                    data: {
+                        orderId: orderData.id || orderData.orderId,
+                        name: orderData.userEmail.split('@')[0], // 이메일에서 이름 추출
+                        items: Array.isArray(orderData.items) ? 
+                            orderData.items.map(item => `${item.brand} ${item.name} (${item.quantity})`).join(', ') : 
+                            orderData.items || '상품 정보 없음',
+                        shippingAddress: orderData.shippingAddress || '配送先情報なし',
+                        deliveryDate: new Date().toLocaleDateString('ja-JP'),
+                        shippingCompany: orderData.shippingCompany || 'ヤマト運輸',
+                        trackingNumber: orderData.trackingNumber || 'N/A',
+                        pointsEarned: orderData.pointsEarned || 0
+                    }
                 })
             });
 
