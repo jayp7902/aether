@@ -7469,7 +7469,6 @@
                         items: shippingStartProducts.join(', '),
                         totalAmount: '¥24,500',
                         shippingAddress: '東京都 練馬区 光が丘2-10-1 3009号',
-                        estimatedDelivery: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString('ja-JP'),
                         shippingMethod: 'ヤマト運輸 (宅急便)',
                         trackingNumber: '1234567890'
                     };
@@ -7624,7 +7623,6 @@
                     }
                     previewData.totalAmount = previewData.totalAmount || '¥24,500';
                     previewData.shippingAddress = previewData.shippingAddress || '東京都 練馬区 光が丘2-10-1 3009号';
-                    previewData.estimatedDelivery = previewData.estimatedDelivery || new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toLocaleDateString('ja-JP');
                     previewData.shippingMethod = previewData.shippingMethod || 'ヤマト運輸 (宅急便)';
                     previewData.trackingNumber = previewData.trackingNumber || '1234567890';
                     break;
@@ -7822,7 +7820,6 @@
                                             <h3 style="text-align: center !important; margin-bottom: 15px; color: #333 !important;">配送情報</h3>
                                             <p style="margin: 5px 0; color: #555 !important;"><strong>配送方法:</strong> ${data.shippingMethod}</p>
                                             <p style="margin: 5px 0; color: #555 !important;"><strong>追跡番号:</strong> ${data.trackingNumber}</p>
-                                            <p style="margin: 5px 0; color: #555 !important;"><strong>配達予定日:</strong> ${data.estimatedDelivery}</p>
                                         </div>
                                         <div style="font-size: 14px; color: #666; margin-top: 30px; text-align: center !important;">
                                             <p style="text-align: center !important; margin: 5px 0;">Aether Store</p>
