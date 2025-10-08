@@ -672,13 +672,14 @@
                                 data.userId === pointsPageUser.email) {
                                 filteredDocs.push({ id: doc.id, ...data });
                                 
-                                // 포인트 계산
+                                // 포인트 계산 (undefined 처리)
+                                const points = data.points || 0;
                                 if (data.type === 'earn' || data.type === 'admin_add' || data.type === 'welcome_bonus' || data.type === 'refund') {
-                                    earnedPoints += data.points || 0;
-                                    console.log('적립/환불 포인트 추가:', data.type, data.points, '총 적립:', earnedPoints);
+                                    earnedPoints += points;
+                                    console.log('적립/환불 포인트 추가:', data.type, points, '총 적립:', earnedPoints);
                                 } else if (data.type === 'use' || data.type === 'admin_subtract') {
-                                    usedPoints += data.points || 0;
-                                    console.log('사용 포인트 추가:', data.points, '총 사용:', usedPoints);
+                                    usedPoints += points;
+                                    console.log('사용 포인트 추가:', points, '총 사용:', usedPoints);
                                 }
                             }
                         });
@@ -968,19 +969,20 @@
                 const dateStr = date.toLocaleDateString('ja-JP');
                 
                 // 포인트 표시 로직 개선 (type에 따라 표시)
+                const points = item.points || 0; // undefined 처리
                 let pointsStr, pointsClass;
                 if (item.type === 'use' || item.type === 'admin_subtract') {
                     // 포인트 사용/차감인 경우 음수로 표시
-                    pointsStr = `-${item.points}`;
+                    pointsStr = `-${points}`;
                     pointsClass = 'text-danger';
                 } else if (item.type === 'earn' || item.type === 'admin_add' || item.type === 'refund') {
                     // 포인트 적립/환불인 경우 양수로 표시
-                    pointsStr = `+${item.points}`;
+                    pointsStr = `+${points}`;
                     pointsClass = 'text-success';
                 } else {
                     // 기존 로직 (호환성)
-                    pointsStr = item.points > 0 ? `+${item.points}` : item.points;
-                    pointsClass = item.points > 0 ? 'text-success' : 'text-danger';
+                    pointsStr = points > 0 ? `+${points}` : points;
+                    pointsClass = points > 0 ? 'text-success' : 'text-danger';
                 }
                 
                 // 이력 내용 결정 (주문 정보 포함)
@@ -994,7 +996,7 @@
                     } else if (item.reason.includes('웰컴 보너스')) {
                         description = 'ウェルカムボーナス';
                     } else if (item.reason.includes('포인트 적립')) {
-                        description = 'ポイント還元';
+                        description = '商品購入';
                     } else if (item.reason.includes('포인트 사용')) {
                         description = 'ポイント使用';
                     } else if (item.reason.includes('관리자')) {
