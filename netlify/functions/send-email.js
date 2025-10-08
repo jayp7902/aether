@@ -1103,15 +1103,15 @@ const emailTemplates = {
                                     <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: left !important; max-width: 500px; margin-left: auto; margin-right: auto;">
                                         <h3 style="text-align: center !important; margin-bottom: 15px; color: #333 !important; background-color: #f8f9fa !important;">注文詳細</h3>
                                         <p style="margin: 5px 0; color: #555 !important; background-color: #f8f9fa !important;"><strong>注文番号:</strong> {{orderId}}</p>
-                                        <p style="margin: 5px 0; color: #555 !important; background-color: #f8f9fa !important;"><strong>商品:</strong> {{items}}</p>
-                                        <p style="margin: 5px 0; color: #555 !important; background-color: #f8f9fa !important;"><strong>合計金額:</strong> {{totalAmount}}</p>
-                                        <p style="margin: 5px 0; color: #555 !important; background-color: #f8f9fa !important;"><strong>配送先:</strong> {{shippingAddress}}</p>
+                                        <p style="margin: 5px 0; color: #555 !important; background-color: #f8f9fa !important;"><strong>商品:</strong> {{items}} 🔥</p>
+                                        <p style="margin: 5px 0; color: #555 !important; background-color: #f8f9fa !important;"><strong>合計金額:</strong> {{totalAmount}} 🔥</p>
+                                        <p style="margin: 5px 0; color: #555 !important; background-color: #f8f9fa !important;"><strong>配送先:</strong> {{shippingAddress}} 🔥</p>
                 </div>
                                     
                                     <!-- Shipping Details -->
                                     <div style="background-color: #f0f0f0; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: left !important; max-width: 500px; margin-left: auto; margin-right: auto;">
                                         <h3 style="text-align: center !important; margin-bottom: 15px; color: #333 !important; background-color: #f0f0f0 !important;">配送情報</h3>
-                                        <p style="margin: 5px 0; color: #555 !important; background-color: #f0f0f0 !important;"><strong>配送方法:</strong> {{shippingMethod}}</p>
+                                        <p style="margin: 5px 0; color: #555 !important; background-color: #f0f0f0 !important;"><strong>配送方法:</strong> {{shippingMethod}} 🔥</p>
                                         <p style="margin: 5px 0; color: #555 !important; background-color: #f0f0f0 !important;"><strong>追跡番号:</strong> {{trackingNumber}}</p>
             </div>
                                     
@@ -1369,7 +1369,8 @@ function getPaymentMethodInJapanese(paymentMethod) {
 
 function loadEmailTemplate(templateName, data = {}) {
     try {
-        console.log(`템플릿 로드 시도: ${templateName}`);
+        console.log(`🔥 템플릿 로드 시도: ${templateName}`);
+        console.log(`🔥 전달된 데이터:`, data);
         
         let template = emailTemplates[templateName];
         if (!template) {
@@ -1377,13 +1378,19 @@ function loadEmailTemplate(templateName, data = {}) {
             return `<p>템플릿을 찾을 수 없습니다: ${templateName}</p>`;
         }
         
+        console.log(`🔥 치환 전 템플릿 샘플:`, template.substring(0, 200) + '...');
+        
         // 데이터 치환
         Object.keys(data).forEach(key => {
             const regex = new RegExp(`{{${key}}}`, 'g');
-            template = template.replace(regex, data[key]);
+            const oldValue = `{{${key}}}`;
+            const newValue = data[key] || '';
+            console.log(`🔥 치환: ${oldValue} → ${newValue}`);
+            template = template.replace(regex, newValue);
         });
         
-        console.log(`템플릿 로드 성공: ${templateName}`);
+        console.log(`🔥 치환 후 템플릿 샘플:`, template.substring(0, 200) + '...');
+        console.log(`🔥 템플릿 로드 성공: ${templateName}`);
         return template;
     } catch (error) {
         console.error(`템플릿 로드 실패: ${templateName}`, error);
@@ -1561,15 +1568,19 @@ exports.handler = async (event, context) => {
                             trackingNumber: data.trackingNumber,
                             totalAmount: data.totalAmount
                         });
-                        html = loadEmailTemplate('shipping-start', {
-                            orderId: data.orderId || 'TEST-001',
+                        // 🔥 강제 테스트 데이터로 템플릿 로드 (문제 해결용)
+                        const templateData = {
+                            orderId: data.orderId || 'ORDER-TEST-001',
                             name: data.name || 'テストユーザー',
-                            items: data.items || 'LALARECIPE バクチノールアイクリーム, COSCELL レチノールボリュームアイバッグクリーム',
+                            items: data.items || 'LALARECIPE バクチノールアイクリーム (1個), COSCELL レチノールボリュームアイバッグクリーム (2個)',
                             shippingAddress: data.shippingAddress || '東京都 練馬区 光が丘2-10-1 3009号',
                             shippingMethod: data.shippingMethod || 'ヤマト運輸 (宅急便)',
                             trackingNumber: data.trackingNumber || '1234567890',
-                            totalAmount: data.totalAmount || '¥24,500'
-                        });
+                            totalAmount: data.totalAmount || '¥15,800'
+                        };
+                        
+                        console.log('🔥 강제 템플릿 데이터:', templateData);
+                        html = loadEmailTemplate('shipping-start', templateData);
                         break;
                     case 'shipping-complete':
                         html = loadEmailTemplate('shipping-complete', {
