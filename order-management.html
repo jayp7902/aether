@@ -1197,6 +1197,9 @@
         
         // 주문 목록 표시
         function displayOrders() {
+            console.log('🔄 displayOrders 함수 호출됨');
+            console.log('🔍 표시할 주문 수:', filteredOrders.length);
+            
             const container = document.getElementById('orders-container');
             
             if (filteredOrders.length === 0) {
@@ -1212,10 +1215,12 @@
             
             let html = '';
             filteredOrders.forEach(order => {
+                console.log(`🔍 주문 ${order.id} 상태: ${order.status} → 버튼 생성 중`);
                 html += createOrderItemHTML(order);
             });
             
             container.innerHTML = html;
+            console.log('✅ displayOrders 완료 - DOM 업데이트됨');
         }
         
         // 주문 아이템 HTML 생성
@@ -1573,7 +1578,7 @@
                             </div>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                            <button type="button" class="btn btn-secondary" onclick="cancelShipping('${orderId}')">キャンセル</button>
                             <button type="button" class="btn btn-dark" onclick="confirmShipping('${orderId}')">配送開始</button>
                         </div>
                     </div>
@@ -1594,22 +1599,31 @@
                 console.log('✅ 배송 모달 표시 완료');
             }, 100);
             
-            // 모달이 닫힐 때 제거 및 상태 복원
+            // 모달이 닫힐 때 제거 (상태 복원은 confirmShipping에서만 처리)
             modal.addEventListener('hidden.bs.modal', () => {
                 console.log('🚚 배송 모달 닫힘');
-                
-                // 모달이 닫힐 때 원래 상태로 복원 (shipping 상태를 processing으로 되돌림)
-                const orderIndex = allOrders.findIndex(o => o.id === orderId);
-                if (orderIndex !== -1) {
-                    // 로컬 데이터만 복원 (Firebase는 건드리지 않음)
-                    allOrders[orderIndex].status = 'processing';
-                    updateOrderStatistics();
-                    displayOrders();
-                    console.log('🔄 주문 상태 복원: shipping → processing');
-                }
-                
                 document.body.removeChild(modal);
             });
+        }
+
+        // 배송 시작 캔슬
+        function cancelShipping(orderId) {
+            console.log('🚚 배송 시작 캔슬:', orderId);
+            
+            // 모달 닫기
+            const modal = bootstrap.Modal.getInstance(document.getElementById('shippingModal'));
+            modal.hide();
+            
+            // 상태를 원래대로 복원 (shipping → processing)
+            const orderIndex = allOrders.findIndex(o => o.id === orderId);
+            if (orderIndex !== -1) {
+                allOrders[orderIndex].status = 'processing';
+                updateOrderStatistics();
+                displayOrders();
+                console.log('🔄 주문 상태 복원: shipping → processing');
+            }
+            
+            showInfo('配送開始がキャンセルされました。');
         }
 
         // 배송 시작 확인
@@ -1665,18 +1679,38 @@
                     allOrders[orderIndex].shippedAt = new Date().toISOString();
                     allOrders[orderIndex].updatedAt = new Date().toISOString();
                     
-                    // 주문 목록 다시 표시
-                    displayOrders();
-                    updateOrderStatistics();
+                    console.log('🔄 로컬 데이터 업데이트 완료:', allOrders[orderIndex]);
                 }
-                
-                // 배송 시작 메일 발송 (모달 닫기 전에 실행)
-                console.log('📧 배송 시작 메일 발송 시작:', orderId);
-                sendShippingStartEmail(orderId, trackingNumber, shippingCompany);
                 
                 // 모달 닫기
                 const modal = bootstrap.Modal.getInstance(document.getElementById('shippingModal'));
                 modal.hide();
+                
+                // UI 즉시 업데이트 (완료 버튼 표시를 위해)
+                console.log('🔄 UI 즉시 업데이트 시작');
+                console.log('🔍 업데이트 전 주문 상태:', allOrders.find(o => o.id === orderId)?.status);
+                
+                updateOrderStatistics();
+                displayOrders();
+                
+                console.log('🔍 업데이트 후 주문 상태:', allOrders.find(o => o.id === orderId)?.status);
+                console.log('✅ UI 업데이트 완료 - 완료 버튼 표시됨');
+                
+                // 추가 확인: DOM에 완료 버튼이 있는지 체크
+                setTimeout(() => {
+                    const completeButton = document.querySelector(`button[onclick*="updateOrderStatus('${orderId}', 'completed')"]`);
+                    if (completeButton) {
+                        console.log('✅ 완료 버튼이 DOM에 존재함:', completeButton.textContent.trim());
+                    } else {
+                        console.log('❌ 완료 버튼이 DOM에 없음');
+                    }
+                }, 50);
+                
+                // 배송 시작 메일 발송 (비동기로 처리)
+                setTimeout(() => {
+                    console.log('📧 배송 시작 메일 발송 시작:', orderId);
+                    sendShippingStartEmail(orderId, trackingNumber, shippingCompany);
+                }, 200);
                 
                 showSuccess('配送情報が更新され、配送開始メールが送信されました。');
             })
