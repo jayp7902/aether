@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Order Management - Aether</title>
     
     <!-- Bootstrap CSS -->
@@ -2436,20 +2439,32 @@
                     // 구매 시 지급된 포인트 회수 처리
                     let earnedPointsToDeduct = 0;
                     
-                    // 주문에서 지급된 포인트 확인
-                    const earnedPoints = orderData.earnedPoints || orderData.pointsEarned || orderData.points_earned || 0;
-                    const pointsEarnedStatus = orderData.pointsEarnedStatus || 'not_earned';
+                    // 주문에서 지급된 포인트 확인 (다양한 필드명 지원)
+                    const earnedPoints = orderData.earnedPoints || 
+                                        orderData.pointsEarned || 
+                                        orderData.points_earned || 
+                                        orderData.points || 
+                                        orderData.earned_points ||
+                                        orderData.awardedPoints ||
+                                        0;
+                    const pointsEarnedStatus = orderData.pointsEarnedStatus || 
+                                              orderData.pointsEarnedStatus || 
+                                              orderData.earned_status ||
+                                              'not_earned';
                     
                     console.log('🔍 구매 시 지급된 포인트 확인:', {
                         earnedPoints: earnedPoints,
                         pointsEarnedStatus: pointsEarnedStatus,
                         orderDataEarnedPoints: orderData.earnedPoints,
                         orderDataPointsEarned: orderData.pointsEarned,
-                        orderDataPoints_earned: orderData.points_earned
+                        orderDataPoints_earned: orderData.points_earned,
+                        orderDataKeys: Object.keys(orderData),
+                        orderDataFull: orderData
                     });
                     
                     // 이미 지급된 포인트가 있는 경우 회수
-                    if (earnedPoints > 0 && pointsEarnedStatus === 'earned') {
+                    // earnedPoints가 0보다 크면 회수 시도 (상태와 관계없이)
+                    if (earnedPoints > 0) {
                         try {
                             console.log('💸 구매 시 지급된 포인트 회수 시작:', earnedPoints);
                             earnedPointsToDeduct = earnedPoints;
