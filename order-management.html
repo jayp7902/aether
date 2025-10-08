@@ -2371,7 +2371,7 @@
                 if (newStatus === 'cancelled') {
                     const actualCancelReason = cancelReason || '管理者によるキャンセル';
                     
-                    // ポイント返還処理
+                    // 포인트 처리 순서: 1) 사용 포인트 반환, 2) 지급 포인트 회수
                     let refundedPoints = 0;
                     
                     // 포인트 사용량 확인 (다양한 필드명 지원)
@@ -2435,6 +2435,9 @@
                     } else {
                         console.log('ℹ️ 使用ポイントなし、返還不要');
                     }
+                    
+                    // 포인트 반환과 회수 사이에 시간 간격 추가 (순서 보장)
+                    await new Promise(resolve => setTimeout(resolve, 1000));
                     
                     // 구매 시 지급된 포인트 회수 처리
                     let earnedPointsToDeduct = 0;
@@ -2644,7 +2647,7 @@
                                         userEmail: orderData.userEmail,
                                         points: -earnedPointsToDeduct, // 음수로 기록
                                         type: 'deduction',
-                                        reason: `注文キャンセル - ${orderId} 購入ポイント回収`,
+                                        reason: `注文キャンセル - ${orderId} ポイント返還`,
                                         balance: newPoints,
                                         orderId: orderId,
                                         createdAt: firebase.firestore.FieldValue.serverTimestamp()
