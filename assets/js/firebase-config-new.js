@@ -1499,12 +1499,46 @@ class FirebaseService {
 
             const orderData = orderDoc.data();
             
+            console.log('📦 주문 데이터 확인:', {
+                orderId: orderId,
+                pointsEarnedStatus: orderData.pointsEarnedStatus,
+                totalAmount: orderData.totalAmount,
+                subtotal: orderData.subtotal,
+                earnedPoints: orderData.earnedPoints
+            });
+            
             // 이미 포인트가 부여되었는지 확인
             if (orderData.pointsEarnedStatus === 'earned') {
-                console.log('이미 포인트가 부여된 주문입니다.');
+                console.log('⚠️ 이미 포인트가 부여된 주문입니다.');
+                
+                // 이미 부여된 포인트 정보와 함께 배송 완료 메일만 발송
+                const alreadyEarnedPoints = orderData.earnedPoints || 0;
+                
+                console.log('📧 배송 완료 메일만 발송 (포인트 이미 부여됨):', {
+                    orderId: orderId,
+                    earnedPoints: alreadyEarnedPoints
+                });
+                
+                // 배송 완료 메일 발송
+                try {
+                    await this.sendShippingCompleteEmail(orderData, alreadyEarnedPoints);
+                    console.log('✅ 배송 완료 메일 발송 성공 (포인트 이미 부여됨)');
+                } catch (emailError) {
+                    console.error('❌ 배송 완료 메일 발송 실패:', emailError);
+                }
+                
+                // 주문 상태 업데이트
+                await db.collection('orders').doc(orderId).update({
+                    status: 'delivered',
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                
                 return { 
-                    success: true, 
-                    message: '포인트가 이미 부여되었습니다.' 
+                    success: true,
+                    orderId: orderId,
+                    userEmail: orderData.userEmail,
+                    pointsEarned: alreadyEarnedPoints,
+                    message: '포인트가 이미 부여되었습니다. 배송 완료 메일만 발송되었습니다.' 
                 };
             }
 
