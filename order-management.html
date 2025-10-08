@@ -2568,11 +2568,40 @@
                                 });
                             } else {
                                 console.log('⚠️ 모든 조건에서 지급된 포인트를 찾을 수 없음');
-                                console.log('🔄 폴백: 주문 데이터에서 직접 조회');
-                                earnedPoints = orderData.earnedPoints || orderData.pointsEarned || orderData.points || 0;
-                                console.log('🔄 폴백 결과:', earnedPoints);
-                                console.log('⚠️ 주문 데이터에서 조회한 포인트:', {
-                                    earnedPoints: orderData.earnedPoints,
+                                console.log('🔄 폴백: 배송 완료 시점의 실제 지급 포인트 조회');
+                                
+                                // 배송 완료 시점의 실제 지급 포인트를 조회
+                                try {
+                                    console.log('🔍 배송 완료 시점의 포인트 히스토리 조회 중...');
+                                    const deliveryPointSnapshot = await window.FirebaseService.db
+                                        .collection('pointHistory')
+                                        .where('orderId', '==', orderId)
+                                        .where('reason', '==', '배송 완료 - 주문 ' + orderId + ' 포인트 적립')
+                                        .get();
+                                    
+                                    if (!deliveryPointSnapshot.empty) {
+                                        deliveryPointSnapshot.forEach(doc => {
+                                            const data = doc.data();
+                                            if (data.points > 0) {
+                                                earnedPoints = data.points;
+                                                console.log('✅ 배송 완료 시점의 실제 지급 포인트 발견:', earnedPoints);
+                                            }
+                                        });
+                                    }
+                                } catch (error) {
+                                    console.error('❌ 배송 완료 포인트 조회 실패:', error);
+                                }
+                                
+                                // 여전히 찾지 못한 경우 주문 데이터에서 조회
+                                if (earnedPoints === 0) {
+                                    console.log('🔄 최종 폴백: 주문 데이터에서 직접 조회');
+                                    earnedPoints = orderData.earnedPoints || orderData.pointsEarned || orderData.points || 0;
+                                    console.log('🔄 최종 폴백 결과:', earnedPoints);
+                                }
+                                
+                                console.log('⚠️ 최종 조회된 포인트:', {
+                                    earnedPoints: earnedPoints,
+                                    orderDataEarnedPoints: orderData.earnedPoints,
                                     pointsEarned: orderData.pointsEarned,
                                     points: orderData.points
                                 });
