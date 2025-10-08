@@ -866,36 +866,25 @@
                         }
                     }
                     
-                    // 2. createdAt 필드 확인 (Firestore Timestamp와 일반 Date 모두 처리)
+                    // 2. createdAt 필드 확인
                     if (item && item.createdAt) {
                         try {
-                            // Firestore Timestamp 객체인 경우
                             if (item.createdAt.toDate && typeof item.createdAt.toDate === 'function') {
                                 const date = item.createdAt.toDate();
-                                console.log(`항목 ${index + 1} - createdAt Firestore Timestamp:`, date);
+                                console.log(`항목 ${index + 1} - createdAt Firestore:`, date);
                                 return date.getTime();
                             }
-                            // seconds와 nanoseconds 속성을 가진 Firestore Timestamp인 경우
-                            else if (item.createdAt.seconds && typeof item.createdAt.seconds === 'number') {
-                                const date = new Date(item.createdAt.seconds * 1000);
-                                console.log(`항목 ${index + 1} - createdAt Firestore seconds:`, date);
-                                return date.getTime();
-                            }
-                            // Date 객체인 경우
-                            else if (item.createdAt instanceof Date) {
+                            if (item.createdAt instanceof Date) {
                                 console.log(`항목 ${index + 1} - createdAt Date:`, item.createdAt);
                                 return item.createdAt.getTime();
                             }
-                            // 문자열이나 숫자인 경우
-                            else {
-                                const date = new Date(item.createdAt);
-                                if (!isNaN(date.getTime())) {
-                                    console.log(`항목 ${index + 1} - createdAt 문자열/숫자:`, item.createdAt, '→ Date:', date);
-                                    return date.getTime();
-                                }
+                            const date = new Date(item.createdAt);
+                            if (!isNaN(date.getTime())) {
+                                console.log(`항목 ${index + 1} - createdAt 문자열:`, item.createdAt, '→ Date:', date);
+                                return date.getTime();
                             }
                         } catch (error) {
-                            console.warn(`항목 ${index + 1} - createdAt 파싱 오류:`, error, item.createdAt);
+                            console.warn(`항목 ${index + 1} - createdAt 파싱 오류:`, error);
                         }
                     }
                     

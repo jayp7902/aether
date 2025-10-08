@@ -2477,8 +2477,33 @@
                                 console.log('📊 포인트 히스토리 상세 항목:', entry);
                             });
                             
-                            // 가장 최근의 지급된 포인트 찾기 (여러 조건으로 검증)
+                            // createdAt을 Date로 변환하고 최신순으로 정렬
+                            allPointEntries.forEach(entry => {
+                                if (entry.createdAt && entry.createdAt.seconds) {
+                                    entry.createdAtDate = new Date(entry.createdAt.seconds * 1000);
+                                } else if (entry.createdAt && entry.createdAt.toDate) {
+                                    entry.createdAtDate = entry.createdAt.toDate();
+                                } else if (entry.createdAt) {
+                                    entry.createdAtDate = new Date(entry.createdAt);
+                                } else {
+                                    entry.createdAtDate = new Date(0);
+                                }
+                            });
+                            
+                            // 최신순으로 정렬
+                            allPointEntries.sort((a, b) => b.createdAtDate.getTime() - a.createdAtDate.getTime());
+                            
+                            console.log('📊 정렬된 포인트 히스토리 (최신순):', allPointEntries.length, '건');
+                            
+                            // 가장 최근의 지급된 포인트 찾기 (정렬된 순서대로)
                             for (let entry of allPointEntries) {
+                                console.log('🔍 검사 중인 항목:', {
+                                    points: entry.points,
+                                    reason: entry.reason,
+                                    type: entry.type,
+                                    createdAt: entry.createdAtDate
+                                });
+                                
                                 // 조건 1: type이 'earned'이고 양수
                                 if (entry.type === 'earned' && entry.points > 0) {
                                     earnedPointsFromHistory = entry.points;
