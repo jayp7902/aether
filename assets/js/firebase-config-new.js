@@ -1524,7 +1524,9 @@ class FirebaseService {
                 pointsEarned: pointsEarned,
                 orderId: orderId
             });
-            await this.addPoints(orderData.userEmail, pointsEarned, `배송 완료 - 주문 ${orderId} 포인트 적립`);
+            
+            const addPointsResult = await this.addPoints(orderData.userEmail, pointsEarned, `배송 완료 - 주문 ${orderId} 포인트 적립`);
+            console.log('💰 addPoints 결과:', addPointsResult);
 
             // 주문 상태 업데이트
             await db.collection('orders').doc(orderId).update({
