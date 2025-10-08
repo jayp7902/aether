@@ -1608,7 +1608,46 @@ exports.handler = async (event, context) => {
                 html = data.html || '<p>メールが送信されました。</p>';
         }
 
-        // 각 수신자에게 개별 메일 발송
+        // shipping-start 메일의 경우 단일 수신자에게 발송
+        if (type === 'shipping-start') {
+            try {
+                console.log('📧 shipping-start 단일 메일 발송 시작');
+                console.log('📧 발송할 HTML 내용 (처음 500자):', html.substring(0, 500));
+                
+                const mailOptions = {
+                    from: 'info@aether-store.jp',
+                    to: to,
+                    subject: subject,
+                    html: html
+                };
+
+                const result = await transporter.sendMail(mailOptions);
+                console.log('✅ shipping-start 메일 발송 성공:', result.messageId);
+                
+                return {
+                    statusCode: 200,
+                    headers,
+                    body: JSON.stringify({
+                        success: true,
+                        messageId: result.messageId,
+                        message: 'Shipping start email sent successfully'
+                    })
+                };
+            } catch (error) {
+                console.error('❌ shipping-start 메일 발송 실패:', error);
+                return {
+                    statusCode: 500,
+                    headers,
+                    body: JSON.stringify({
+                        success: false,
+                        error: error.message,
+                        message: 'Failed to send shipping start email'
+                    })
+                };
+            }
+        }
+
+        // 각 수신자에게 개별 메일 발송 (bulk 메일용)
         const results = [];
         for (const recipient of recipients) {
             // 개별 수신자용 HTML 생성 (이름 개별화)
