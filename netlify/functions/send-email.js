@@ -1699,37 +1699,37 @@ exports.handler = async (event, context) => {
                 console.log('📧 shipping-start 단일 메일 발송 시작');
                 console.log('📧 발송할 HTML 내용 (처음 500자):', html.substring(0, 500));
                 
-                const mailOptions = {
-                    from: 'info@aether-store.jp',
-                    to: to,
-                    subject: subject,
-                    html: html
-                };
+        const mailOptions = {
+            from: 'info@aether-store.jp',
+            to: to,
+            subject: subject,
+            html: html
+        };
 
-                const result = await transporter.sendMail(mailOptions);
+        const result = await transporter.sendMail(mailOptions);
                 console.log('✅ shipping-start 메일 발송 성공:', result.messageId);
- 
-                return {
-                    statusCode: 200,
-                    headers,
-                    body: JSON.stringify({ 
-                        success: true, 
-                        messageId: result.messageId,
+
+        return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify({ 
+                success: true, 
+                messageId: result.messageId,
                         message: 'Shipping start email sent successfully'
-                    })
-                };
-            } catch (error) {
+            })
+        };
+    } catch (error) {
                 console.error('❌ shipping-start 메일 발송 실패:', error);
-                return {
-                    statusCode: 500,
-                    headers,
-                    body: JSON.stringify({ 
-                        success: false, 
+        return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({ 
+                success: false, 
                         error: error.message,
                         message: 'Failed to send shipping start email'
-                    })
-                };
-            }
+            })
+        };
+    }
         }
 
         // shipping-complete 메일의 경우 단일 수신자에게 발송

@@ -1518,11 +1518,11 @@
                     displayOrders();
                 }
                 
-                // 이메일 알림 발송
+                    // 이메일 알림 발송
                 sendOrderStatusNotification(orderId, newStatus, cancelReason);
                 
                 if (newStatus !== 'delivered' && newStatus !== 'completed') {
-                    showSuccess('注文状態が更新されました。');
+                showSuccess('注文状態が更新されました。');
                 }
                 
             } catch (error) {
@@ -1594,7 +1594,7 @@
             setTimeout(() => {
             const bsModal = new bootstrap.Modal(modal);
             bsModal.show();
-                
+            
                 // 입력 필드 초기화
                 document.getElementById('trackingNumber').value = '';
                 document.getElementById('shippingCompany').value = 'yamato'; // 기본값 설정
@@ -2446,12 +2446,11 @@
                         console.log('🔍 포인트 히스토리에서 구매 시 지급된 포인트 조회 시작:', orderId);
                         console.log('🔍 주문 데이터 전체:', orderData);
                         
-                        // 포인트 히스토리에서 해당 주문의 모든 포인트 조회 (정확한 필터링)
-                        console.log('🔍 주문 ID로 포인트 히스토리 조회:', orderId);
-                        
+                        // 포인트 히스토리에서 해당 주문의 모든 포인트 조회
                         const pointHistorySnapshot = await window.FirebaseService.db
                             .collection('pointHistory')
                             .where('orderId', '==', orderId)
+                            .orderBy('createdAt', 'desc') // 최신순으로 정렬
                             .get();
                         
                         console.log('📊 포인트 히스토리 총 개수:', pointHistorySnapshot.size);
@@ -2468,7 +2467,6 @@
                                     points: pointData.points || 0,
                                     reason: pointData.reason || '',
                                     type: pointData.type || '',
-                                    orderId: pointData.orderId || '',
                                     createdAt: pointData.createdAt,
                                     userId: pointData.userId,
                                     userEmail: pointData.userEmail,
@@ -2476,7 +2474,7 @@
                                 };
                                 allPointEntries.push(entry);
                                 
-                                console.log('📊 해당 주문의 포인트 히스토리 항목:', entry);
+                                console.log('📊 포인트 히스토리 상세 항목:', entry);
                             });
                             
                             // 가장 최근의 지급된 포인트 찾기 (여러 조건으로 검증)
