@@ -1677,29 +1677,40 @@
                 
                 let quantity = parseInt(quantityInput.value) || 1;
                 console.log('현재 수량:', quantity);
+                
+                // 수량을 정확히 1씩 증가
                 if (quantity < 10) {
-                    quantity++;
+                    quantity = quantity + 1; // 명시적으로 1 증가
                     quantityInput.value = quantity;
                     console.log('수량 증가 후:', quantity);
                     updateTotalPrice();
+                } else {
+                    console.log('최대 수량(10)에 도달했습니다.');
                 }
             }
             
-            // 이벤트 리스너 등록
+            // 이벤트 리스너 등록 (중복 방지)
             const btnMinus = document.getElementById('btn-minus');
             const btnPlus = document.getElementById('btn-plus');
             const quantityInput = document.getElementById('quantity');
             
+            // 기존 이벤트 리스너 제거 (중복 방지)
             if (btnMinus) {
+                btnMinus.removeEventListener('click', decreaseQuantity);
                 btnMinus.addEventListener('click', function(e) {
                     e.preventDefault();
+                    e.stopPropagation();
+                    console.log('수량 감소 버튼 클릭 이벤트 발생');
                     decreaseQuantity();
                 });
             }
             
             if (btnPlus) {
+                btnPlus.removeEventListener('click', increaseQuantity);
                 btnPlus.addEventListener('click', function(e) {
                     e.preventDefault();
+                    e.stopPropagation();
+                    console.log('수량 증가 버튼 클릭 이벤트 발생');
                     increaseQuantity();
                 });
             }
@@ -1707,8 +1718,25 @@
             if (quantityInput) {
                 quantityInput.addEventListener('input', function() {
                     let quantity = parseInt(this.value) || 1;
+                    console.log('수량 직접 입력:', quantity);
+                    
+                    // 수량 범위 검증
                     if (quantity < 1) quantity = 1;
                     if (quantity > 10) quantity = 10;
+                    
+                    this.value = quantity;
+                    console.log('수량 입력 후 최종 값:', quantity);
+                    updateTotalPrice();
+                });
+                
+                // 추가: change 이벤트도 처리
+                quantityInput.addEventListener('change', function() {
+                    let quantity = parseInt(this.value) || 1;
+                    console.log('수량 변경 완료:', quantity);
+                    
+                    if (quantity < 1) quantity = 1;
+                    if (quantity > 10) quantity = 10;
+                    
                     this.value = quantity;
                     updateTotalPrice();
                 });
