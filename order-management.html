@@ -1683,13 +1683,20 @@
                 console.log('📦 주문 데이터 전체:', order);
                 console.log('📦 주문 데이터 키들:', Object.keys(order));
                 console.log('📦 주문 아이템들:', order.items);
+                console.log('📦 주문 아이템 상세:', order.items ? order.items.map((item, index) => ({
+                    index: index,
+                    keys: Object.keys(item),
+                    item: item
+                })) : '아이템 없음');
                 console.log('📦 주문 총액:', {
                     totalAmount: order.totalAmount,
                     total: order.total,
                     amount: order.amount,
-                    subtotal: order.subtotal
+                    subtotal: order.subtotal,
+                    orderTotal: order.orderTotal
                 });
                 console.log('📦 배송 정보:', order.shipping);
+                console.log('📦 배송 정보 키들:', order.shipping ? Object.keys(order.shipping) : '배송 정보 없음');
                 console.log('📦 배송 데이터:', {
                     trackingNumber: document.getElementById('trackingNumber').value,
                     shippingMethod: getShippingMethodInJapanese(document.getElementById('shippingCompany').value)
@@ -1709,24 +1716,64 @@
                             name: order.customerName || order.userName || order.customerEmail?.split('@')[0] || 'お客様',
                             trackingNumber: document.getElementById('trackingNumber').value,
                             shippingMethod: getShippingMethodInJapanese(document.getElementById('shippingCompany').value),
-                            // 상품 정보 매핑 (다양한 구조 지원)
-                            items: order.items ? order.items.map(item => {
-                                const productName = item.name || item.productName || item.title || item.product_name || item.product_title || '商品名不明';
-                                const brand = item.brand || item.productBrand || '';
-                                const quantity = item.quantity || item.qty || item.amount || 1;
-                                return brand ? `${brand} ${productName} (${quantity}個)` : `${productName} (${quantity}個)`;
-                            }).join(', ') : '商品情報なし',
-                            // 총액 정보 매핑 (다양한 필드명 지원)
-                            totalAmount: (() => {
-                                const amount = order.totalAmount || order.total || order.amount || order.subtotal || order.orderTotal || 0;
-                                return `¥${amount.toLocaleString()}`;
+                            // 상품 정보 매핑 (간단하고 직접적)
+                            items: (() => {
+                                console.log('🔍 상품 정보 매핑 시작:', order.items);
+                                if (!order.items || !Array.isArray(order.items)) {
+                                    console.log('❌ 상품 정보 없음');
+                                    return '商品情報なし';
+                                }
+                                
+                                const itemsList = order.items.map((item, index) => {
+                                    console.log(`🔍 상품 ${index + 1}:`, item);
+                                    console.log(`🔍 상품 ${index + 1} 키들:`, Object.keys(item));
+                                    
+                                    // 모든 가능한 필드에서 상품명 찾기
+                                    const productName = item.name || item.productName || item.title || item.product_name || item.product_title || item.product || '商品名不明';
+                                    const brand = item.brand || item.productBrand || item.brandName || '';
+                                    const quantity = item.quantity || item.qty || item.amount || item.count || 1;
+                                    
+                                    const result = brand ? `${brand} ${productName} (${quantity}個)` : `${productName} (${quantity}個)`;
+                                    console.log(`✅ 상품 ${index + 1} 결과:`, result);
+                                    return result;
+                                });
+                                
+                                const finalResult = itemsList.join(', ');
+                                console.log('✅ 최종 상품 정보:', finalResult);
+                                return finalResult;
                             })(),
-                            // 배송 주소 정보 매핑 (다양한 구조 지원)
+                            // 총액 정보 매핑 (간단하고 직접적)
+                            totalAmount: (() => {
+                                console.log('🔍 총액 정보 매핑 시작:', {
+                                    totalAmount: order.totalAmount,
+                                    total: order.total,
+                                    amount: order.amount,
+                                    subtotal: order.subtotal,
+                                    orderTotal: order.orderTotal
+                                });
+                                
+                                const amount = order.totalAmount || order.total || order.amount || order.subtotal || order.orderTotal || 0;
+                                const result = `¥${amount.toLocaleString()}`;
+                                console.log('✅ 최종 총액:', result);
+                                return result;
+                            })(),
+                            // 배송 주소 정보 매핑 (간단하고 직접적)
                             shippingAddress: (() => {
-                                if (!order.shipping && !order.shippingAddress) return '配送先情報なし';
+                                console.log('🔍 배송 주소 매핑 시작:', {
+                                    shipping: order.shipping,
+                                    shippingAddress: order.shippingAddress
+                                });
+                                
+                                if (!order.shipping && !order.shippingAddress) {
+                                    console.log('❌ 배송 정보 없음');
+                                    return '配送先情報なし';
+                                }
                                 
                                 const shipping = order.shipping || {};
                                 const address = order.shippingAddress || {};
+                                
+                                console.log('🔍 배송 정보 키들:', Object.keys(shipping));
+                                console.log('🔍 주소 정보 키들:', Object.keys(address));
                                 
                                 const postal = shipping.postal || shipping.postalCode || address.postal || address.postalCode || '';
                                 const prefecture = shipping.prefecture || shipping.state || address.prefecture || address.state || '';
@@ -1735,39 +1782,19 @@
                                 const address2 = shipping.address2 || address.address2 || '';
                                 
                                 const fullAddress = `${postal} ${prefecture} ${city} ${address1} ${address2}`.trim();
+                                console.log('✅ 최종 배송 주소:', fullAddress);
                                 return fullAddress || '配送先情報なし';
                             })()
                         }
                     })
                 });
                 
-                // 메일 발송 전 데이터 확인 로그
-                console.log('📧 메일 발송 데이터 확인:', {
-                    items: order.items ? order.items.map(item => {
-                        const productName = item.name || item.productName || item.title || item.product_name || item.product_title || '商品名不明';
-                        const brand = item.brand || item.productBrand || '';
-                        const quantity = item.quantity || item.qty || item.amount || 1;
-                        return brand ? `${brand} ${productName} (${quantity}個)` : `${productName} (${quantity}個)`;
-                    }).join(', ') : '商品情報なし',
-                    totalAmount: (() => {
-                        const amount = order.totalAmount || order.total || order.amount || order.subtotal || order.orderTotal || 0;
-                        return `¥${amount.toLocaleString()}`;
-                    })(),
-                    shippingAddress: (() => {
-                        if (!order.shipping && !order.shippingAddress) return '配送先情報なし';
-                        
-                        const shipping = order.shipping || {};
-                        const address = order.shippingAddress || {};
-                        
-                        const postal = shipping.postal || shipping.postalCode || address.postal || address.postalCode || '';
-                        const prefecture = shipping.prefecture || shipping.state || address.prefecture || address.state || '';
-                        const city = shipping.city || address.city || '';
-                        const address1 = shipping.address1 || shipping.address || address.address1 || address.address || '';
-                        const address2 = shipping.address2 || address.address2 || '';
-                        
-                        const fullAddress = `${postal} ${prefecture} ${city} ${address1} ${address2}`.trim();
-                        return fullAddress || '配送先情報なし';
-                    })()
+                // 메일 발송 전 최종 데이터 확인 로그
+                console.log('📧 메일 발송 최종 데이터 확인:', {
+                    orderId: orderId,
+                    name: order.customerName || order.userName || order.customerEmail?.split('@')[0] || 'お客様',
+                    trackingNumber: document.getElementById('trackingNumber').value,
+                    shippingMethod: getShippingMethodInJapanese(document.getElementById('shippingCompany').value)
                 });
                 
                 const result = await response.json();
