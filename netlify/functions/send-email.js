@@ -1658,8 +1658,18 @@ exports.handler = async (event, context) => {
                     shippingCompany: data.shippingCompany,
                     trackingNumber: data.trackingNumber,
                     deliveryDate: data.deliveryDate,
-                    pointsEarned: data.pointsEarned
+                    pointsEarned: data.pointsEarned,
+                    pointsEarnedType: typeof data.pointsEarned
                 });
+                
+                // 데이터 검증
+                if (!data.orderId || !data.name || !data.items) {
+                    console.error('❌ shipping-complete 필수 데이터 누락:', {
+                        hasOrderId: !!data.orderId,
+                        hasName: !!data.name,
+                        hasItems: !!data.items
+                    });
+                }
                 
                 html = loadEmailTemplate('shipping-complete', {
                     orderId: data.orderId || 'N/A',
@@ -1673,6 +1683,7 @@ exports.handler = async (event, context) => {
                 });
                 
                 console.log('📧 shipping-complete 실제 메일 발송용 템플릿 로드 완료');
+                console.log('📧 shipping-complete 템플릿 길이:', html.length);
                 break;
             default:
                 html = data.html || '<p>メールが送信されました。</p>';
