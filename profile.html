@@ -61,6 +61,16 @@
             color: #0c5460;
         }
 
+        .status-shipped {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .status-delivered {
+            background: #d4edda;
+            color: #155724;
+        }
+
         .status-completed {
             background: #d4edda;
             color: #155724;
@@ -1633,7 +1643,7 @@
                                             <span class="order-status ${getStatusClass(order.status)} japanese-text">
                                                 ${getStatusText(order.status)}
                                             </span>
-                                            ${order.status === 'completed' ? `
+                                            ${(order.status === 'completed' || order.status === 'delivered') ? `
                                                 <button class="btn btn-sm btn-outline-dark" onclick="downloadReceiptFromOrder('${order.id || order.orderId}')" title="領収書を表示・ダウンロード">
                                                     <i class="fas fa-receipt me-1"></i>領収書
                                                 </button>
@@ -2849,6 +2859,8 @@
                 'pending_payment': '支払い待ち',
                 'processing': '処理中',
                 'shipping': '配送中',
+                'shipped': '配送開始',
+                'delivered': '完了',
                 'completed': '完了',
                 'cancelled': 'キャンセル'
             };
@@ -2862,6 +2874,8 @@
                 'pending_payment': 'status-pending_payment',
                 'processing': 'status-processing',
                 'shipping': 'status-shipping',
+                'shipped': 'status-shipping',
+                'delivered': 'status-completed',
                 'completed': 'status-completed',
                 'cancelled': 'status-cancelled'
             };
