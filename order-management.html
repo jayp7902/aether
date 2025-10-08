@@ -1473,6 +1473,13 @@
             
             const orderRef = window.FirebaseService.db.collection('orders').doc(orderId);
             
+            // 배송 시작인 경우 모달만 표시하고 상태 업데이트는 하지 않음
+            if (newStatus === 'shipping') {
+                console.log('🚚 배송 시작 모달 표시:', orderId);
+                showShippingModal(orderId);
+                return; // 상태 업데이트 없이 모달만 표시
+            }
+            
             try {
                 await orderRef.update({
                 status: newStatus,
@@ -1503,15 +1510,10 @@
                     displayOrders();
                 }
                 
-                // 배송 시작시 배송 번호 입력 모달 표시
-                if (newStatus === 'shipping') {
-                    showShippingModal(orderId);
-                } else {
-                    // 이메일 알림 발송
-                    sendOrderStatusNotification(orderId, newStatus, cancelReason);
-                }
+                // 이메일 알림 발송
+                sendOrderStatusNotification(orderId, newStatus, cancelReason);
                 
-                if (newStatus !== 'delivered' && newStatus !== 'completed' && newStatus !== 'shipping') {
+                if (newStatus !== 'delivered' && newStatus !== 'completed') {
                     showSuccess('注文状態が更新されました。');
                 }
                 
@@ -1582,8 +1584,8 @@
             
             // Bootstrap 모달 초기화 및 표시
             setTimeout(() => {
-                const bsModal = new bootstrap.Modal(modal);
-                bsModal.show();
+            const bsModal = new bootstrap.Modal(modal);
+            bsModal.show();
                 
                 // 입력 필드 초기화
                 document.getElementById('trackingNumber').value = '';
@@ -1592,9 +1594,20 @@
                 console.log('✅ 배송 모달 표시 완료');
             }, 100);
             
-            // 모달이 닫힐 때 제거
+            // 모달이 닫힐 때 제거 및 상태 복원
             modal.addEventListener('hidden.bs.modal', () => {
                 console.log('🚚 배송 모달 닫힘');
+                
+                // 모달이 닫힐 때 원래 상태로 복원 (shipping 상태를 processing으로 되돌림)
+                const orderIndex = allOrders.findIndex(o => o.id === orderId);
+                if (orderIndex !== -1) {
+                    // 로컬 데이터만 복원 (Firebase는 건드리지 않음)
+                    allOrders[orderIndex].status = 'processing';
+                    updateOrderStatistics();
+                    displayOrders();
+                    console.log('🔄 주문 상태 복원: shipping → processing');
+                }
+                
                 document.body.removeChild(modal);
             });
         }
@@ -1637,7 +1650,8 @@
                 status: 'shipped',
                 trackingNumber: trackingNumber,
                 shippingCompany: shippingCompany,
-                shippedAt: new Date().toISOString()
+                shippedAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
             })
             .then(() => {
                 console.log('✅ 배송 정보 업데이트 완료:', orderId);
@@ -1649,6 +1663,7 @@
                     allOrders[orderIndex].trackingNumber = trackingNumber;
                     allOrders[orderIndex].shippingCompany = shippingCompany;
                     allOrders[orderIndex].shippedAt = new Date().toISOString();
+                    allOrders[orderIndex].updatedAt = new Date().toISOString();
                     
                     // 주문 목록 다시 표시
                     displayOrders();
