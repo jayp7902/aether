@@ -1680,7 +1680,16 @@
                 if (!order) return;
                 
                 console.log('배송 시작 메일 발송 시작:', orderId);
-                console.log('📦 주문 데이터:', order);
+                console.log('📦 주문 데이터 전체:', order);
+                console.log('📦 주문 데이터 키들:', Object.keys(order));
+                console.log('📦 주문 아이템들:', order.items);
+                console.log('📦 주문 총액:', {
+                    totalAmount: order.totalAmount,
+                    total: order.total,
+                    amount: order.amount,
+                    subtotal: order.subtotal
+                });
+                console.log('📦 배송 정보:', order.shipping);
                 console.log('📦 배송 데이터:', {
                     trackingNumber: document.getElementById('trackingNumber').value,
                     shippingMethod: getShippingMethodInJapanese(document.getElementById('shippingCompany').value)
@@ -1700,11 +1709,65 @@
                             name: order.customerName || order.userName || order.customerEmail?.split('@')[0] || 'お客様',
                             trackingNumber: document.getElementById('trackingNumber').value,
                             shippingMethod: getShippingMethodInJapanese(document.getElementById('shippingCompany').value),
-                            items: order.items ? order.items.map(item => `${item.name || item.productName || item.title || item.brand} ${item.name || item.productName || item.title} (${item.quantity || item.qty || 1}個)`).join(', ') : '商品情報なし',
-                            totalAmount: order.totalAmount || order.total || order.amount ? `¥${(order.totalAmount || order.total || order.amount).toLocaleString()}` : '¥0',
-                            shippingAddress: order.shipping ? `${order.shipping.postal || order.shipping.postalCode} ${order.shipping.prefecture || order.shipping.state} ${order.shipping.city} ${order.shipping.address1 || order.shipping.address} ${order.shipping.address2 || ''}`.trim() : '配送先情報なし'
+                            // 상품 정보 매핑 (다양한 구조 지원)
+                            items: order.items ? order.items.map(item => {
+                                const productName = item.name || item.productName || item.title || item.product_name || item.product_title || '商品名不明';
+                                const brand = item.brand || item.productBrand || '';
+                                const quantity = item.quantity || item.qty || item.amount || 1;
+                                return brand ? `${brand} ${productName} (${quantity}個)` : `${productName} (${quantity}個)`;
+                            }).join(', ') : '商品情報なし',
+                            // 총액 정보 매핑 (다양한 필드명 지원)
+                            totalAmount: (() => {
+                                const amount = order.totalAmount || order.total || order.amount || order.subtotal || order.orderTotal || 0;
+                                return `¥${amount.toLocaleString()}`;
+                            })(),
+                            // 배송 주소 정보 매핑 (다양한 구조 지원)
+                            shippingAddress: (() => {
+                                if (!order.shipping && !order.shippingAddress) return '配送先情報なし';
+                                
+                                const shipping = order.shipping || {};
+                                const address = order.shippingAddress || {};
+                                
+                                const postal = shipping.postal || shipping.postalCode || address.postal || address.postalCode || '';
+                                const prefecture = shipping.prefecture || shipping.state || address.prefecture || address.state || '';
+                                const city = shipping.city || address.city || '';
+                                const address1 = shipping.address1 || shipping.address || address.address1 || address.address || '';
+                                const address2 = shipping.address2 || address.address2 || '';
+                                
+                                const fullAddress = `${postal} ${prefecture} ${city} ${address1} ${address2}`.trim();
+                                return fullAddress || '配送先情報なし';
+                            })()
                         }
                     })
+                });
+                
+                // 메일 발송 전 데이터 확인 로그
+                console.log('📧 메일 발송 데이터 확인:', {
+                    items: order.items ? order.items.map(item => {
+                        const productName = item.name || item.productName || item.title || item.product_name || item.product_title || '商品名不明';
+                        const brand = item.brand || item.productBrand || '';
+                        const quantity = item.quantity || item.qty || item.amount || 1;
+                        return brand ? `${brand} ${productName} (${quantity}個)` : `${productName} (${quantity}個)`;
+                    }).join(', ') : '商品情報なし',
+                    totalAmount: (() => {
+                        const amount = order.totalAmount || order.total || order.amount || order.subtotal || order.orderTotal || 0;
+                        return `¥${amount.toLocaleString()}`;
+                    })(),
+                    shippingAddress: (() => {
+                        if (!order.shipping && !order.shippingAddress) return '配送先情報なし';
+                        
+                        const shipping = order.shipping || {};
+                        const address = order.shippingAddress || {};
+                        
+                        const postal = shipping.postal || shipping.postalCode || address.postal || address.postalCode || '';
+                        const prefecture = shipping.prefecture || shipping.state || address.prefecture || address.state || '';
+                        const city = shipping.city || address.city || '';
+                        const address1 = shipping.address1 || shipping.address || address.address1 || address.address || '';
+                        const address2 = shipping.address2 || address.address2 || '';
+                        
+                        const fullAddress = `${postal} ${prefecture} ${city} ${address1} ${address2}`.trim();
+                        return fullAddress || '配送先情報なし';
+                    })()
                 });
                 
                 const result = await response.json();
