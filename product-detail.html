@@ -1640,7 +1640,7 @@
         }
         
         function initializeQuantityControls() {
-            console.log('수량 조절 기능 초기화');
+            console.log('🔧 수량 조절 기능 초기화 시작');
             
             // 총 가격 업데이트 함수
             function updateTotalPrice() {
@@ -1648,91 +1648,110 @@
                 updateTotalPriceWithOptions();
             }
             
-            // 수량 조절 함수들
-            function decreaseQuantity() {
-                console.log('수량 감소 버튼 클릭됨');
-                const quantityInput = document.getElementById('quantity');
-                if (!quantityInput) {
-                    console.error('수량 입력 요소를 찾을 수 없습니다');
-                    return;
-                }
-                
-                let quantity = parseInt(quantityInput.value) || 1;
-                console.log('현재 수량:', quantity);
-                if (quantity > 1) {
-                    quantity--;
-                    quantityInput.value = quantity;
-                    console.log('수량 감소 후:', quantity);
-                    updateTotalPrice();
-                }
-            }
-            
-            function increaseQuantity() {
-                console.log('수량 증가 버튼 클릭됨');
-                const quantityInput = document.getElementById('quantity');
-                if (!quantityInput) {
-                    console.error('수량 입력 요소를 찾을 수 없습니다');
-                    return;
-                }
-                
-                let quantity = parseInt(quantityInput.value) || 1;
-                console.log('현재 수량:', quantity);
-                
-                // 수량을 정확히 1씩 증가
-                if (quantity < 10) {
-                    quantity = quantity + 1; // 명시적으로 1 증가
-                    quantityInput.value = quantity;
-                    console.log('수량 증가 후:', quantity);
-                    updateTotalPrice();
-                } else {
-                    console.log('최대 수량(10)에 도달했습니다.');
-                }
-            }
-            
-            // 이벤트 리스너 등록 (중복 방지)
+            // 기존 이벤트 리스너 완전 제거
             const btnMinus = document.getElementById('btn-minus');
             const btnPlus = document.getElementById('btn-plus');
             const quantityInput = document.getElementById('quantity');
             
-            // 기존 이벤트 리스너 제거 (중복 방지)
+            // 모든 이벤트 리스너 제거
             if (btnMinus) {
-                btnMinus.removeEventListener('click', decreaseQuantity);
-                btnMinus.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('수량 감소 버튼 클릭 이벤트 발생');
-                    decreaseQuantity();
-                });
+                btnMinus.replaceWith(btnMinus.cloneNode(true)); // 요소 자체를 교체
             }
-            
             if (btnPlus) {
-                btnPlus.removeEventListener('click', increaseQuantity);
-                btnPlus.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    console.log('수량 증가 버튼 클릭 이벤트 발생');
-                    increaseQuantity();
-                });
+                btnPlus.replaceWith(btnPlus.cloneNode(true)); // 요소 자체를 교체
             }
             
+            // 새로 요소 가져오기
+            const newBtnMinus = document.getElementById('btn-minus');
+            const newBtnPlus = document.getElementById('btn-plus');
+            
+            // 수량 감소 함수 (완전히 새로운 함수)
+            function handleDecreaseQuantity() {
+                console.log('🔽 수량 감소 버튼 클릭됨');
+                const quantityInput = document.getElementById('quantity');
+                if (!quantityInput) {
+                    console.error('❌ 수량 입력 요소를 찾을 수 없습니다');
+                    return;
+                }
+                
+                const currentValue = quantityInput.value;
+                let quantity = parseInt(currentValue) || 1;
+                console.log('📊 현재 수량 (감소 전):', quantity, '원본 값:', currentValue);
+                
+                if (quantity > 1) {
+                    quantity = quantity - 1; // 명시적으로 1 감소
+                    quantityInput.value = quantity;
+                    console.log('📊 수량 감소 후:', quantity);
+                    updateTotalPrice();
+                } else {
+                    console.log('⚠️ 최소 수량(1)에 도달했습니다.');
+                }
+            }
+            
+            // 수량 증가 함수 (완전히 새로운 함수)
+            function handleIncreaseQuantity() {
+                console.log('🔼 수량 증가 버튼 클릭됨');
+                const quantityInput = document.getElementById('quantity');
+                if (!quantityInput) {
+                    console.error('❌ 수량 입력 요소를 찾을 수 없습니다');
+                    return;
+                }
+                
+                const currentValue = quantityInput.value;
+                let quantity = parseInt(currentValue) || 1;
+                console.log('📊 현재 수량 (증가 전):', quantity, '원본 값:', currentValue);
+                
+                if (quantity < 10) {
+                    quantity = quantity + 1; // 명시적으로 1 증가
+                    quantityInput.value = quantity;
+                    console.log('📊 수량 증가 후:', quantity);
+                    updateTotalPrice();
+                } else {
+                    console.log('⚠️ 최대 수량(10)에 도달했습니다.');
+                }
+            }
+            
+            // 새로운 이벤트 리스너 등록
+            if (newBtnMinus) {
+                newBtnMinus.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    console.log('🔽 감소 버튼 이벤트 발생');
+                    handleDecreaseQuantity();
+                });
+                console.log('✅ 감소 버튼 이벤트 리스너 등록 완료');
+            }
+            
+            if (newBtnPlus) {
+                newBtnPlus.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    console.log('🔼 증가 버튼 이벤트 발생');
+                    handleIncreaseQuantity();
+                });
+                console.log('✅ 증가 버튼 이벤트 리스너 등록 완료');
+            }
+            
+            // 수량 입력 필드 이벤트 리스너
             if (quantityInput) {
                 quantityInput.addEventListener('input', function() {
                     let quantity = parseInt(this.value) || 1;
-                    console.log('수량 직접 입력:', quantity);
+                    console.log('📝 수량 직접 입력:', quantity);
                     
                     // 수량 범위 검증
                     if (quantity < 1) quantity = 1;
                     if (quantity > 10) quantity = 10;
                     
                     this.value = quantity;
-                    console.log('수량 입력 후 최종 값:', quantity);
+                    console.log('📝 수량 입력 후 최종 값:', quantity);
                     updateTotalPrice();
                 });
                 
-                // 추가: change 이벤트도 처리
                 quantityInput.addEventListener('change', function() {
                     let quantity = parseInt(this.value) || 1;
-                    console.log('수량 변경 완료:', quantity);
+                    console.log('📝 수량 변경 완료:', quantity);
                     
                     if (quantity < 1) quantity = 1;
                     if (quantity > 10) quantity = 10;
@@ -1740,10 +1759,13 @@
                     this.value = quantity;
                     updateTotalPrice();
                 });
+                
+                console.log('✅ 수량 입력 필드 이벤트 리스너 등록 완료');
             }
             
             // 초기 가격 업데이트
             updateTotalPrice();
+            console.log('✅ 수량 조절 기능 초기화 완료');
         }
         
         // Firebase 카트에 상품 추가 함수
