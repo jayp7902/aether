@@ -3194,10 +3194,21 @@ class FirebaseService {
             
             // 1. userId로 조회
             try {
-                const userIdSnapshot = await db.collection('orders')
-                    .where('userId', '==', userId)
-                    .limit(20)
-                    .get();
+                let userIdQuery = db.collection('orders').where('userId', '==', userId);
+                
+                // orderBy 시도 (성능 최적화)
+                try {
+                    userIdQuery = userIdQuery.orderBy('orderDate', 'desc');
+                } catch (orderByError) {
+                    console.log('⚠️ userId 조회에서 orderDate 정렬 실패, createdAt 시도');
+                    try {
+                        userIdQuery = userIdQuery.orderBy('createdAt', 'desc');
+                    } catch (createdAtError) {
+                        console.log('⚠️ createdAt 정렬도 실패, 정렬 없이 진행');
+                    }
+                }
+                
+                const userIdSnapshot = await userIdQuery.get();
                 
                 userIdSnapshot.forEach(doc => {
                     const data = doc.data();
@@ -3213,10 +3224,21 @@ class FirebaseService {
             
             // 2. userEmail로 조회
             try {
-                const emailSnapshot = await db.collection('orders')
-                    .where('userEmail', '==', userEmail)
-                    .limit(20)
-                    .get();
+                let emailQuery = db.collection('orders').where('userEmail', '==', userEmail);
+                
+                // orderBy 시도 (성능 최적화)
+                try {
+                    emailQuery = emailQuery.orderBy('orderDate', 'desc');
+                } catch (orderByError) {
+                    console.log('⚠️ userEmail 조회에서 orderDate 정렬 실패, createdAt 시도');
+                    try {
+                        emailQuery = emailQuery.orderBy('createdAt', 'desc');
+                    } catch (createdAtError) {
+                        console.log('⚠️ createdAt 정렬도 실패, 정렬 없이 진행');
+                    }
+                }
+                
+                const emailSnapshot = await emailQuery.get();
                 
                 emailSnapshot.forEach(doc => {
                     const data = doc.data();
@@ -3236,10 +3258,21 @@ class FirebaseService {
             
             // 3. customerEmail로도 조회 시도
             try {
-                const customerEmailSnapshot = await db.collection('orders')
-                    .where('customerEmail', '==', userEmail)
-                    .limit(20)
-                    .get();
+                let customerEmailQuery = db.collection('orders').where('customerEmail', '==', userEmail);
+                
+                // orderBy 시도 (성능 최적화)
+                try {
+                    customerEmailQuery = customerEmailQuery.orderBy('orderDate', 'desc');
+                } catch (orderByError) {
+                    console.log('⚠️ customerEmail 조회에서 orderDate 정렬 실패, createdAt 시도');
+                    try {
+                        customerEmailQuery = customerEmailQuery.orderBy('createdAt', 'desc');
+                    } catch (createdAtError) {
+                        console.log('⚠️ createdAt 정렬도 실패, 정렬 없이 진행');
+                    }
+                }
+                
+                const customerEmailSnapshot = await customerEmailQuery.get();
                 
                 customerEmailSnapshot.forEach(doc => {
                     const data = doc.data();
@@ -3258,6 +3291,35 @@ class FirebaseService {
             }
             
             console.log(`총 조회된 주문: ${allOrders.length}건`);
+            
+            // 조회된 주문들의 날짜 범위 확인 (디버깅용)
+            if (allOrders.length > 0) {
+                const dates = allOrders.map(order => {
+                    let date;
+                    if (order.orderDate && order.orderDate.seconds) {
+                        date = new Date(order.orderDate.seconds * 1000);
+                    } else if (order.orderDate && order.orderDate.toDate) {
+                        date = order.orderDate.toDate();
+                    } else if (order.orderDate) {
+                        date = new Date(order.orderDate);
+                    } else if (order.createdAt && order.createdAt.seconds) {
+                        date = new Date(order.createdAt.seconds * 1000);
+                    } else if (order.createdAt && order.createdAt.toDate) {
+                        date = order.createdAt.toDate();
+                    } else if (order.createdAt) {
+                        date = new Date(order.createdAt);
+                    } else {
+                        date = new Date(0);
+                    }
+                    return date;
+                }).sort((a, b) => b.getTime() - a.getTime());
+                
+                console.log('📅 조회된 주문 날짜 범위:', {
+                    최신: dates[0]?.toLocaleString('ja-JP'),
+                    최고: dates[dates.length - 1]?.toLocaleString('ja-JP'),
+                    총건수: dates.length
+                });
+            }
             
             // 클라이언트 측에서 정렬 (Firestore Timestamp 지원)
             allOrders.sort((a, b) => {
