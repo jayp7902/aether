@@ -2465,10 +2465,14 @@
                                     type: pointData.type
                                 });
                                 
-                                // "商品購入" 이유의 양수 포인트만 선택
-                                if (reason.includes('商品購入') && points > 0) {
+                                // 구매 시 지급된 포인트만 선택 (type이 'earned'이고 양수인 포인트)
+                                if (pointData.type === 'earned' && points > 0) {
                                     earnedPointsFromHistory = points;
-                                    console.log('✅ 구매 시 지급된 포인트 발견:', earnedPointsFromHistory);
+                                    console.log('✅ 구매 시 지급된 포인트 발견 (type: earned):', earnedPointsFromHistory);
+                                } else if (reason === '商品購入' && points > 0) {
+                                    // 폴백: reason이 '商品購入'인 양수 포인트
+                                    earnedPointsFromHistory = points;
+                                    console.log('✅ 구매 시 지급된 포인트 발견 (reason: 商品購入):', earnedPointsFromHistory);
                                 }
                             });
                             
