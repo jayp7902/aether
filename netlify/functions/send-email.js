@@ -1370,6 +1370,7 @@ function getPaymentMethodInJapanese(paymentMethod) {
 function loadEmailTemplate(templateName, data = {}) {
     try {
         console.log(`템플릿 로드: ${templateName}`);
+        console.log(`템플릿 데이터:`, data);
         
         let template = emailTemplates[templateName];
         if (!template) {
@@ -1380,7 +1381,9 @@ function loadEmailTemplate(templateName, data = {}) {
         // 데이터 치환
         Object.keys(data).forEach(key => {
             const regex = new RegExp(`{{${key}}}`, 'g');
-            template = template.replace(regex, data[key] || '');
+            const originalValue = data[key] || '';
+            template = template.replace(regex, originalValue);
+            console.log(`템플릿 치환: {{${key}}} → ${originalValue}`);
         });
         
         console.log(`템플릿 로드 성공: ${templateName}`);
@@ -1546,6 +1549,15 @@ exports.handler = async (event, context) => {
                     case 'shipping-start':
                         console.log('📧 shipping-start 메일 데이터 수신:', data);
                         console.log('📧 shipping-start 데이터 키들:', Object.keys(data));
+                        console.log('📧 shipping-start 데이터 값들:', {
+                            orderId: data.orderId,
+                            name: data.name,
+                            items: data.items,
+                            shippingAddress: data.shippingAddress,
+                            shippingMethod: data.shippingMethod,
+                            trackingNumber: data.trackingNumber,
+                            totalAmount: data.totalAmount
+                        });
                         
                         html = loadEmailTemplate('shipping-start', {
                             orderId: data.orderId || 'N/A',
@@ -1556,6 +1568,8 @@ exports.handler = async (event, context) => {
                             trackingNumber: data.trackingNumber || 'N/A',
                             totalAmount: data.totalAmount || '¥0'
                         });
+                        
+                        console.log('📧 shipping-start 템플릿 로드 완료');
                         break;
                     case 'shipping-complete':
                         html = loadEmailTemplate('shipping-complete', {
