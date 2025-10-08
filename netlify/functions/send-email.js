@@ -975,6 +975,9 @@ const emailTemplates = {
                                 <div style="font-size: 16px; color: #333; margin-bottom: 10px; background-color: #e8f5e8;">
                                     <strong>返却ポイント:</strong> {{refundedPoints}}
                 </div>
+                                <div style="font-size: 16px; color: #d32f2f; margin-bottom: 10px; background-color: #e8f5e8;">
+                                    <strong>回収ポイント:</strong> {{deductedPoints}}
+                </div>
                                 <div style="font-size: 14px; color: #666; margin-bottom: 10px; background-color: #e8f5e8;">
                                     ご利用いただいたポイントは自動的にアカウントに戻されます。
             </div>
@@ -1510,7 +1513,8 @@ exports.handler = async (event, context) => {
                     shipping: data.shipping || '¥0',
                     pointsUsed: data.pointsUsed || '0ポイント',
                     totalAmount: data.totalAmount || '¥0',
-                    refundedPoints: data.refundedPoints || '0ポイント'
+                    refundedPoints: data.refundedPoints || '0ポイント',
+                    deductedPoints: data.deductedPoints || '0ポイント'
                 });
                 break;
             case 'order-complete':

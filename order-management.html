@@ -2433,6 +2433,79 @@
                         console.log('ℹ️ 使用ポイントなし、返還不要');
                     }
                     
+                    // 구매 시 지급된 포인트 회수 처리
+                    let earnedPointsToDeduct = 0;
+                    
+                    // 주문에서 지급된 포인트 확인
+                    const earnedPoints = orderData.earnedPoints || orderData.pointsEarned || orderData.points_earned || 0;
+                    const pointsEarnedStatus = orderData.pointsEarnedStatus || 'not_earned';
+                    
+                    console.log('🔍 구매 시 지급된 포인트 확인:', {
+                        earnedPoints: earnedPoints,
+                        pointsEarnedStatus: pointsEarnedStatus,
+                        orderDataEarnedPoints: orderData.earnedPoints,
+                        orderDataPointsEarned: orderData.pointsEarned,
+                        orderDataPoints_earned: orderData.points_earned
+                    });
+                    
+                    // 이미 지급된 포인트가 있는 경우 회수
+                    if (earnedPoints > 0 && pointsEarnedStatus === 'earned') {
+                        try {
+                            console.log('💸 구매 시 지급된 포인트 회수 시작:', earnedPoints);
+                            earnedPointsToDeduct = earnedPoints;
+                            
+                            // 사용자 포인트에서 차감
+                            const userRef = window.FirebaseService.db.collection('users').doc(orderData.userEmail);
+                            await window.FirebaseService.db.runTransaction(async (transaction) => {
+                                const userDoc = await transaction.get(userRef);
+                                console.log('🔍 포인트 회수 - 사용자 문서 확인:', {
+                                    userEmail: orderData.userEmail,
+                                    userDocExists: userDoc.exists,
+                                    currentPoints: userDoc.exists ? userDoc.data().points : 'N/A',
+                                    pointsToDeduct: earnedPointsToDeduct
+                                });
+                                
+                                if (userDoc.exists) {
+                                    const currentPoints = userDoc.data().points || 0;
+                                    const newPoints = Math.max(0, currentPoints - earnedPointsToDeduct); // 0 이하로 내려가지 않도록
+                                    
+                                    // 포인트 차감
+                                    transaction.update(userRef, {
+                                        points: newPoints
+                                    });
+                                    
+                                    console.log('✅ 구매 시 지급된 포인트 회수 완료:', {
+                                        deducted: earnedPointsToDeduct,
+                                        before: currentPoints,
+                                        after: newPoints
+                                    });
+                                    
+                                    // 포인트 회수 히스토리 추가
+                                    const pointHistoryRef = window.FirebaseService.db.collection('pointHistory').doc();
+                                    transaction.set(pointHistoryRef, {
+                                        userId: orderData.userId,
+                                        userEmail: orderData.userEmail,
+                                        points: -earnedPointsToDeduct, // 음수로 기록
+                                        type: 'deduction',
+                                        reason: `注文キャンセル - ${orderId} 購入ポイント回収`,
+                                        balance: newPoints,
+                                        orderId: orderId,
+                                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                                    });
+                                    
+                                    console.log('✅ 포인트 회수 히스토리 추가 완료:', -earnedPointsToDeduct);
+                                } else {
+                                    console.error('❌ 포인트 회수 - 사용자 문서를 찾을 수 없습니다:', orderData.userEmail);
+                                    throw new Error(`사용자 문서가 존재하지 않습니다: ${orderData.userEmail}`);
+                                }
+                            });
+                        } catch (error) {
+                            console.error('❌ 구매 시 지급된 포인트 회수 실패:', error);
+                        }
+                    } else {
+                        console.log('ℹ️ 구매 시 지급된 포인트 없음 또는 미지급 상태, 회수 불필요');
+                    }
+                    
                     // キャンセルメール送信 (詳細情報含む)
                     try {
                         console.log('📧 注文キャンセルメール送信開始:', orderId);
@@ -2462,7 +2535,8 @@
                                     shipping: getFormattedShipping(orderData.shipping),
                                     pointsUsed: `${pointsUsed}ポイント`,
                                     totalAmount: `¥${orderData.totalAmount?.toLocaleString() || '0'}`,
-                                    refundedPoints: `${refundedPoints}ポイント`
+                                    refundedPoints: `${refundedPoints}ポイント`,
+                                    deductedPoints: `${earnedPointsToDeduct}ポイント`
                                 }
                             })
                         });
