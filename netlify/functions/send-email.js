@@ -1369,27 +1369,45 @@ function getPaymentMethodInJapanese(paymentMethod) {
 
 function loadEmailTemplate(templateName, data = {}) {
     try {
-        console.log(`템플릿 로드: ${templateName}`);
-        console.log(`템플릿 데이터:`, data);
+        console.log(`🔧 템플릿 로드 시작: ${templateName}`);
+        console.log(`🔧 전달받은 데이터:`, JSON.stringify(data, null, 2));
         
         let template = emailTemplates[templateName];
         if (!template) {
-            console.error(`템플릿을 찾을 수 없음: ${templateName}`);
+            console.error(`❌ 템플릿을 찾을 수 없음: ${templateName}`);
+            console.log(`🔧 사용 가능한 템플릿들:`, Object.keys(emailTemplates));
             return `<p>템플릿을 찾을 수 없습니다: ${templateName}</p>`;
         }
+        
+        console.log(`✅ 템플릿 발견: ${templateName} (길이: ${template.length}자)`);
+        console.log(`🔧 템플릿 내용 미리보기 (처음 200자):`, template.substring(0, 200));
+        
+        // 데이터 치환 전후 비교
+        const originalTemplate = template;
         
         // 데이터 치환
         Object.keys(data).forEach(key => {
             const regex = new RegExp(`{{${key}}}`, 'g');
             const originalValue = data[key] || '';
+            const beforeReplace = template;
             template = template.replace(regex, originalValue);
-            console.log(`템플릿 치환: {{${key}}} → ${originalValue}`);
+            console.log(`🔧 템플릿 치환: {{${key}}} → "${originalValue}" (치환 전후 비교: ${beforeReplace !== template ? '변경됨' : '변경없음'})`);
         });
         
-        console.log(`템플릿 로드 성공: ${templateName}`);
+        // 치환 결과 확인
+        const unchangedPlaceholders = template.match(/\{\{[^}]+\}\}/g);
+        if (unchangedPlaceholders) {
+            console.log(`⚠️ 치환되지 않은 플레이스홀더들:`, unchangedPlaceholders);
+        } else {
+            console.log(`✅ 모든 플레이스홀더 치환 완료`);
+        }
+        
+        console.log(`🔧 최종 템플릿 길이: ${template.length}자`);
+        console.log(`🔧 최종 템플릿 미리보기 (처음 300자):`, template.substring(0, 300));
+        
         return template;
     } catch (error) {
-        console.error(`템플릿 로드 실패: ${templateName}`, error);
+        console.error(`❌ 템플릿 로드 실패: ${templateName}`, error);
         return `<p>템플릿을 로드할 수 없습니다. 오류: ${error.message}</p>`;
     }
 }
@@ -1603,6 +1621,31 @@ exports.handler = async (event, context) => {
                     name: 'お客様',
                     content: data.content || ''
                 });
+                break;
+            case 'shipping-start':
+                console.log('📧 shipping-start 실제 메일 발송용 데이터 수신:', data);
+                console.log('📧 shipping-start 실제 메일 발송용 데이터 키들:', Object.keys(data));
+                console.log('📧 shipping-start 실제 메일 발송용 데이터 값들:', {
+                    orderId: data.orderId,
+                    name: data.name,
+                    items: data.items,
+                    shippingAddress: data.shippingAddress,
+                    shippingMethod: data.shippingMethod,
+                    trackingNumber: data.trackingNumber,
+                    totalAmount: data.totalAmount
+                });
+                
+                html = loadEmailTemplate('shipping-start', {
+                    orderId: data.orderId || 'N/A',
+                    name: data.name || 'お客様',
+                    items: data.items || '商品情報なし',
+                    shippingAddress: data.shippingAddress || '配送先情報なし',
+                    shippingMethod: data.shippingMethod || '配送方法不明',
+                    trackingNumber: data.trackingNumber || 'N/A',
+                    totalAmount: data.totalAmount || '¥0'
+                });
+                
+                console.log('📧 shipping-start 실제 메일 발송용 템플릿 로드 완료');
                 break;
             default:
                 html = data.html || '<p>メールが送信されました。</p>';
