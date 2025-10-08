@@ -1287,7 +1287,7 @@ const emailTemplates = {
                             
                             <!-- 배송 완료 내용 -->
                             <div style="font-size: 16px; line-height: 1.8; margin-bottom: 20px; background-color: #ffffff; text-align: center !important;">
-                                <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">{{name}}様</p>
+                                <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important; color: #333 !important; background-color: #ffffff !important;">{{name}}様</p>
                                 <p style="text-align: center !important; margin: 10px auto !important; max-width: 400px !important;">ご注文いただいた商品の配送が完了いたしました。</p>
                                 
                                 <!-- 배송 상세 정보 -->
