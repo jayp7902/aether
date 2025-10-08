@@ -2543,12 +2543,12 @@
                                 }
                             }
                             
-                            // 우선순위 4: reason에 '商品購入'이 포함되고 양수 (마지막 폴백)
+                            // 우선순위 4: reason이 정확히 '商品購入'이고 양수 (마지막 폴백, '商品購入に使用' 제외)
                             if (!foundPoints) {
                                 for (let entry of allPointEntries) {
-                                    if (entry.reason && entry.reason.includes('商品購入') && entry.points > 0) {
+                                    if (entry.reason === '商品購入' && entry.points > 0) {
                                         earnedPointsFromHistory = entry.points;
-                                        console.log('✅ 우선순위4 - reason에 商品購入 포함:', earnedPointsFromHistory);
+                                        console.log('✅ 우선순위4 - reason이 정확히 商品購入:', earnedPointsFromHistory);
                                         foundPoints = true;
                                         break;
                                     }
