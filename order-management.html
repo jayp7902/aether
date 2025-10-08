@@ -1655,9 +1655,9 @@
                     updateOrderStatistics();
                 }
                 
-                // 배송 시작 메일 발송
+                // 배송 시작 메일 발송 (모달 닫기 전에 실행)
                 console.log('📧 배송 시작 메일 발송 시작:', orderId);
-                sendShippingStartEmail(orderId);
+                sendShippingStartEmail(orderId, trackingNumber, shippingCompany);
                 
                 // 모달 닫기
                 const modal = bootstrap.Modal.getInstance(document.getElementById('shippingModal'));
@@ -1689,12 +1689,16 @@
         }
 
         // 배송 시작 메일 발송
-        async function sendShippingStartEmail(orderId) {
+        async function sendShippingStartEmail(orderId, trackingNumber, shippingCompany) {
             try {
                 const order = allOrders.find(o => o.id === orderId);
                 if (!order) return;
                 
                 console.log('배송 시작 메일 발송 시작:', orderId);
+                console.log('📦 전달받은 값들:', {
+                    trackingNumber: trackingNumber,
+                    shippingCompany: shippingCompany
+                });
                 console.log('📦 주문 데이터 전체:', order);
                 console.log('📦 주문 데이터 키들:', Object.keys(order));
                 console.log('📦 주문 아이템들:', order.items);
@@ -1720,8 +1724,8 @@
                         data: {
                             orderId: orderId,
                             name: order.customerName || order.userName || order.customerEmail?.split('@')[0] || 'お客様',
-                            trackingNumber: document.getElementById('trackingNumber').value,
-                            shippingMethod: getShippingMethodInJapanese(document.getElementById('shippingCompany').value),
+                            trackingNumber: trackingNumber,
+                            shippingMethod: getShippingMethodInJapanese(shippingCompany),
                             // 실제 데이터 매핑 (더 포괄적인 구조 지원)
                             items: (() => {
                                 console.log('🔍 아이템 데이터 확인:', {
