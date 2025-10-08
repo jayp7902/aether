@@ -1647,6 +1647,33 @@ exports.handler = async (event, context) => {
                 
                 console.log('📧 shipping-start 실제 메일 발송용 템플릿 로드 완료');
                 break;
+            case 'shipping-complete':
+                console.log('📧 shipping-complete 실제 메일 발송용 데이터 수신:', data);
+                console.log('📧 shipping-complete 실제 메일 발송용 데이터 키들:', Object.keys(data));
+                console.log('📧 shipping-complete 실제 메일 발송용 데이터 값들:', {
+                    orderId: data.orderId,
+                    name: data.name,
+                    items: data.items,
+                    shippingAddress: data.shippingAddress,
+                    shippingCompany: data.shippingCompany,
+                    trackingNumber: data.trackingNumber,
+                    deliveryDate: data.deliveryDate,
+                    pointsEarned: data.pointsEarned
+                });
+                
+                html = loadEmailTemplate('shipping-complete', {
+                    orderId: data.orderId || 'N/A',
+                    name: data.name || 'お客様',
+                    items: data.items || '商品情報なし',
+                    shippingAddress: data.shippingAddress || '配送先情報なし',
+                    shippingCompany: data.shippingCompany || '配送業者不明',
+                    trackingNumber: data.trackingNumber || 'N/A',
+                    deliveryDate: data.deliveryDate || new Date().toLocaleDateString('ja-JP'),
+                    pointsEarned: data.pointsEarned || 0
+                });
+                
+                console.log('📧 shipping-complete 실제 메일 발송용 템플릿 로드 완료');
+                break;
             default:
                 html = data.html || '<p>メールが送信されました。</p>';
         }
@@ -1657,37 +1684,76 @@ exports.handler = async (event, context) => {
                 console.log('📧 shipping-start 단일 메일 발송 시작');
                 console.log('📧 발송할 HTML 내용 (처음 500자):', html.substring(0, 500));
                 
-        const mailOptions = {
-            from: 'info@aether-store.jp',
-            to: to,
-            subject: subject,
-            html: html
-        };
+                const mailOptions = {
+                    from: 'info@aether-store.jp',
+                    to: to,
+                    subject: subject,
+                    html: html
+                };
 
-        const result = await transporter.sendMail(mailOptions);
+                const result = await transporter.sendMail(mailOptions);
                 console.log('✅ shipping-start 메일 발송 성공:', result.messageId);
-
-        return {
-            statusCode: 200,
-            headers,
-            body: JSON.stringify({ 
-                success: true, 
-                messageId: result.messageId,
+ 
+                return {
+                    statusCode: 200,
+                    headers,
+                    body: JSON.stringify({ 
+                        success: true, 
+                        messageId: result.messageId,
                         message: 'Shipping start email sent successfully'
-            })
-        };
-    } catch (error) {
+                    })
+                };
+            } catch (error) {
                 console.error('❌ shipping-start 메일 발송 실패:', error);
-        return {
-            statusCode: 500,
-            headers,
-            body: JSON.stringify({ 
-                success: false, 
+                return {
+                    statusCode: 500,
+                    headers,
+                    body: JSON.stringify({ 
+                        success: false, 
                         error: error.message,
                         message: 'Failed to send shipping start email'
-            })
-        };
-    }
+                    })
+                };
+            }
+        }
+
+        // shipping-complete 메일의 경우 단일 수신자에게 발송
+        if (type === 'shipping-complete') {
+            try {
+                console.log('📧 shipping-complete 단일 메일 발송 시작');
+                console.log('📧 발송할 HTML 내용 (처음 500자):', html.substring(0, 500));
+                
+                const mailOptions = {
+                    from: 'info@aether-store.jp',
+                    to: to,
+                    subject: subject,
+                    html: html
+                };
+
+                const result = await transporter.sendMail(mailOptions);
+                console.log('✅ shipping-complete 메일 발송 성공:', result.messageId);
+ 
+                return {
+                    statusCode: 200,
+                    headers,
+                    body: JSON.stringify({ 
+                        success: true, 
+                        messageId: result.messageId,
+                        message: 'Shipping complete email sent successfully'
+                    })
+                };
+            } catch (error) {
+                console.error('❌ shipping-complete 메일 발송 실패:', error);
+                return {
+                    statusCode: 500,
+                    headers,
+                    body: JSON.stringify({ 
+                        success: false, 
+                        error: error.message,
+                        message: 'Failed to send shipping complete email'
+                    })
+                };
+            }
         }
 
         // 각 수신자에게 개별 메일 발송 (bulk 메일용)
