@@ -3189,105 +3189,93 @@ class FirebaseService {
             const userEmail = currentUser.email;
             console.log('현재 사용자 이메일:', userEmail);
             
-            // userId와 userEmail 모두로 조회 시도
+            // 주문 관리 페이지와 동일한 방식: 모든 주문 조회 후 클라이언트에서 필터링
             let allOrders = [];
             
-            // 1. userId로 조회
             try {
-                let userIdQuery = db.collection('orders').where('userId', '==', userId);
+                console.log('📋 모든 주문 조회 시작 (주문 관리 페이지와 동일한 방식)');
+                const ordersSnapshot = await db.collection('orders').get();
                 
-                // orderBy 시도 (성능 최적화)
-                try {
-                    userIdQuery = userIdQuery.orderBy('orderDate', 'desc');
-                } catch (orderByError) {
-                    console.log('⚠️ userId 조회에서 orderDate 정렬 실패, createdAt 시도');
-                    try {
-                        userIdQuery = userIdQuery.orderBy('createdAt', 'desc');
-                    } catch (createdAtError) {
-                        console.log('⚠️ createdAt 정렬도 실패, 정렬 없이 진행');
-                    }
-                }
-                
-                const userIdSnapshot = await userIdQuery.get();
-                
-                userIdSnapshot.forEach(doc => {
+                ordersSnapshot.forEach(doc => {
                     const data = doc.data();
-                    allOrders.push({
-                        id: doc.id,
-                        ...data
+                    data.id = doc.id;
+                    
+                    // 현재 사용자와 관련된 주문만 필터링
+                    if (data.userId === userId || 
+                        data.userEmail === userEmail || 
+                        data.customerEmail === userEmail) {
+                        allOrders.push(data);
+                    }
+                });
+                
+                console.log(`📋 전체 주문 조회: ${ordersSnapshot.size}건`);
+                console.log(`👤 사용자 관련 주문: ${allOrders.length}건`);
+                
+            } catch (allOrdersError) {
+                console.warn('전체 주문 조회 실패, 개별 쿼리 시도:', allOrdersError);
+                
+                // 폴백: 개별 쿼리 시도
+                // 1. userId로 조회
+                try {
+                    const userIdSnapshot = await db.collection('orders')
+                        .where('userId', '==', userId)
+                        .get();
+                    
+                    userIdSnapshot.forEach(doc => {
+                        const data = doc.data();
+                        allOrders.push({
+                            id: doc.id,
+                            ...data
+                        });
                     });
-                });
-                console.log(`userId로 조회된 주문: ${userIdSnapshot.size}건`);
-            } catch (userIdError) {
-                console.warn('userId로 조회 실패:', userIdError);
-            }
-            
-            // 2. userEmail로 조회
-            try {
-                let emailQuery = db.collection('orders').where('userEmail', '==', userEmail);
-                
-                // orderBy 시도 (성능 최적화)
-                try {
-                    emailQuery = emailQuery.orderBy('orderDate', 'desc');
-                } catch (orderByError) {
-                    console.log('⚠️ userEmail 조회에서 orderDate 정렬 실패, createdAt 시도');
-                    try {
-                        emailQuery = emailQuery.orderBy('createdAt', 'desc');
-                    } catch (createdAtError) {
-                        console.log('⚠️ createdAt 정렬도 실패, 정렬 없이 진행');
-                    }
+                    console.log(`userId로 조회된 주문: ${userIdSnapshot.size}건`);
+                } catch (userIdError) {
+                    console.warn('userId로 조회 실패:', userIdError);
                 }
                 
-                const emailSnapshot = await emailQuery.get();
-                
-                emailSnapshot.forEach(doc => {
-                    const data = doc.data();
-                    // 중복 제거를 위해 이미 있는지 확인
-                    const existingOrder = allOrders.find(order => order.id === doc.id);
-                    if (!existingOrder) {
-                        allOrders.push({
-                            id: doc.id,
-                            ...data
-                        });
-                    }
-                });
-                console.log(`userEmail로 조회된 주문: ${emailSnapshot.size}건`);
-            } catch (emailError) {
-                console.warn('userEmail로 조회 실패:', emailError);
-            }
-            
-            // 3. customerEmail로도 조회 시도
-            try {
-                let customerEmailQuery = db.collection('orders').where('customerEmail', '==', userEmail);
-                
-                // orderBy 시도 (성능 최적화)
+                // 2. userEmail로 조회
                 try {
-                    customerEmailQuery = customerEmailQuery.orderBy('orderDate', 'desc');
-                } catch (orderByError) {
-                    console.log('⚠️ customerEmail 조회에서 orderDate 정렬 실패, createdAt 시도');
-                    try {
-                        customerEmailQuery = customerEmailQuery.orderBy('createdAt', 'desc');
-                    } catch (createdAtError) {
-                        console.log('⚠️ createdAt 정렬도 실패, 정렬 없이 진행');
-                    }
+                    const emailSnapshot = await db.collection('orders')
+                        .where('userEmail', '==', userEmail)
+                        .get();
+                    
+                    emailSnapshot.forEach(doc => {
+                        const data = doc.data();
+                        // 중복 제거를 위해 이미 있는지 확인
+                        const existingOrder = allOrders.find(order => order.id === doc.id);
+                        if (!existingOrder) {
+                            allOrders.push({
+                                id: doc.id,
+                                ...data
+                            });
+                        }
+                    });
+                    console.log(`userEmail로 조회된 주문: ${emailSnapshot.size}건`);
+                } catch (emailError) {
+                    console.warn('userEmail로 조회 실패:', emailError);
                 }
                 
-                const customerEmailSnapshot = await customerEmailQuery.get();
-                
-                customerEmailSnapshot.forEach(doc => {
-                    const data = doc.data();
-                    // 중복 제거를 위해 이미 있는지 확인
-                    const existingOrder = allOrders.find(order => order.id === doc.id);
-                    if (!existingOrder) {
-                        allOrders.push({
-                            id: doc.id,
-                            ...data
-                        });
-                    }
-                });
-                console.log(`customerEmail로 조회된 주문: ${customerEmailSnapshot.size}건`);
-            } catch (customerEmailError) {
-                console.warn('customerEmail로 조회 실패:', customerEmailError);
+                // 3. customerEmail로도 조회 시도
+                try {
+                    const customerEmailSnapshot = await db.collection('orders')
+                        .where('customerEmail', '==', userEmail)
+                        .get();
+                    
+                    customerEmailSnapshot.forEach(doc => {
+                        const data = doc.data();
+                        // 중복 제거를 위해 이미 있는지 확인
+                        const existingOrder = allOrders.find(order => order.id === doc.id);
+                        if (!existingOrder) {
+                            allOrders.push({
+                                id: doc.id,
+                                ...data
+                            });
+                        }
+                    });
+                    console.log(`customerEmail로 조회된 주문: ${customerEmailSnapshot.size}건`);
+                } catch (customerEmailError) {
+                    console.warn('customerEmail로 조회 실패:', customerEmailError);
+                }
             }
             
             console.log(`총 조회된 주문: ${allOrders.length}건`);
