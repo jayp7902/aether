@@ -1563,8 +1563,8 @@ exports.handler = async (event, context) => {
                             points: data.points || 100,
                             reason: data.reason || 'テストポイント獲得'
                         });
-                        break;
-                    case 'shipping-start':
+                break;
+            case 'shipping-start':
                         console.log('📧 shipping-start 메일 데이터 수신:', data);
                         console.log('📧 shipping-start 데이터 키들:', Object.keys(data));
                         console.log('📧 shipping-start 데이터 값들:', {
@@ -1600,8 +1600,8 @@ exports.handler = async (event, context) => {
                             trackingNumber: data.trackingNumber || '1234567890',
                             pointsEarned: data.pointsEarned || 0
                         });
-                        break;
-                    case 'event':
+                break;
+            case 'event':
                         html = loadEmailTemplate('event', {
                             title: data.title || 'テストイベント',
                             content: data.content || 'これはテストメールです。',
@@ -1657,37 +1657,37 @@ exports.handler = async (event, context) => {
                 console.log('📧 shipping-start 단일 메일 발송 시작');
                 console.log('📧 발송할 HTML 내용 (처음 500자):', html.substring(0, 500));
                 
-                const mailOptions = {
-                    from: 'info@aether-store.jp',
-                    to: to,
-                    subject: subject,
-                    html: html
-                };
+        const mailOptions = {
+            from: 'info@aether-store.jp',
+            to: to,
+            subject: subject,
+            html: html
+        };
 
-                const result = await transporter.sendMail(mailOptions);
+        const result = await transporter.sendMail(mailOptions);
                 console.log('✅ shipping-start 메일 발송 성공:', result.messageId);
-                
-                return {
-                    statusCode: 200,
-                    headers,
-                    body: JSON.stringify({
-                        success: true,
-                        messageId: result.messageId,
+
+        return {
+            statusCode: 200,
+            headers,
+            body: JSON.stringify({ 
+                success: true, 
+                messageId: result.messageId,
                         message: 'Shipping start email sent successfully'
-                    })
-                };
-            } catch (error) {
+            })
+        };
+    } catch (error) {
                 console.error('❌ shipping-start 메일 발송 실패:', error);
-                return {
-                    statusCode: 500,
-                    headers,
-                    body: JSON.stringify({
-                        success: false,
+        return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({ 
+                success: false, 
                         error: error.message,
                         message: 'Failed to send shipping start email'
-                    })
-                };
-            }
+            })
+        };
+    }
         }
 
         // 각 수신자에게 개별 메일 발송 (bulk 메일용)
