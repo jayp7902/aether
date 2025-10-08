@@ -1707,22 +1707,64 @@
                             name: order.customerName || order.userName || order.customerEmail?.split('@')[0] || 'お客様',
                             trackingNumber: document.getElementById('trackingNumber').value,
                             shippingMethod: getShippingMethodInJapanese(document.getElementById('shippingCompany').value),
-                            // 실제 데이터 매핑
-                            items: order.items ? order.items.map(item => {
-                                const productName = item.name || item.productName || item.title || item.product_name || item.product_title || item.product || '商品名不明';
-                                const brand = item.brand || item.productBrand || item.brandName || '';
-                                const quantity = item.quantity || item.qty || item.amount || item.count || 1;
-                                return brand ? `${brand} ${productName} (${quantity}個)` : `${productName} (${quantity}個)`;
-                            }).join(', ') : '商品情報なし',
+                            // 실제 데이터 매핑 (더 포괄적인 구조 지원)
+                            items: (() => {
+                                console.log('🔍 아이템 데이터 확인:', {
+                                    hasItems: !!order.items,
+                                    itemsType: typeof order.items,
+                                    itemsIsArray: Array.isArray(order.items),
+                                    itemsLength: order.items?.length,
+                                    items: order.items
+                                });
+                                
+                                if (order.items && Array.isArray(order.items) && order.items.length > 0) {
+                                    return order.items.map(item => {
+                                        console.log('🔍 개별 아이템:', item);
+                                        const productName = item.name || item.productName || item.title || item.product_name || item.product_title || item.product || '商品名不明';
+                                        const brand = item.brand || item.productBrand || item.brandName || '';
+                                        const quantity = item.quantity || item.qty || item.amount || item.count || 1;
+                                        const result = brand ? `${brand} ${productName} (${quantity}個)` : `${productName} (${quantity}個)`;
+                                        console.log('✅ 아이템 매핑 결과:', result);
+                                        return result;
+                                    }).join(', ');
+                                } else {
+                                    console.log('❌ 아이템 데이터 없음, 기본값 사용');
+                                    return '商品情報なし';
+                                }
+                            })(),
                             totalAmount: (() => {
-                                const amount = order.totalAmount || order.total || order.amount || order.subtotal || order.orderTotal || 0;
-                                return `¥${amount.toLocaleString()}`;
+                                console.log('🔍 총액 데이터 확인:', {
+                                    totalAmount: order.totalAmount,
+                                    total: order.total,
+                                    amount: order.amount,
+                                    subtotal: order.subtotal,
+                                    orderTotal: order.orderTotal,
+                                    originalAmount: order.originalAmount
+                                });
+                                
+                                const amount = order.totalAmount || order.total || order.amount || order.subtotal || order.orderTotal || order.originalAmount || 0;
+                                const result = `¥${amount.toLocaleString()}`;
+                                console.log('✅ 총액 매핑 결과:', result);
+                                return result;
                             })(),
                             shippingAddress: (() => {
-                                if (!order.shipping && !order.shippingAddress) return '配送先情報なし';
+                                console.log('🔍 배송 주소 데이터 확인:', {
+                                    hasShipping: !!order.shipping,
+                                    hasShippingAddress: !!order.shippingAddress,
+                                    shipping: order.shipping,
+                                    shippingAddress: order.shippingAddress
+                                });
+                                
+                                if (!order.shipping && !order.shippingAddress) {
+                                    console.log('❌ 배송 정보 없음, 기본값 사용');
+                                    return '配送先情報なし';
+                                }
                                 
                                 const shipping = order.shipping || {};
                                 const address = order.shippingAddress || {};
+                                
+                                console.log('🔍 배송 정보 키들:', Object.keys(shipping));
+                                console.log('🔍 주소 정보 키들:', Object.keys(address));
                                 
                                 const postal = shipping.postal || shipping.postalCode || address.postal || address.postalCode || '';
                                 const prefecture = shipping.prefecture || shipping.state || address.prefecture || address.state || '';
@@ -1731,6 +1773,7 @@
                                 const address2 = shipping.address2 || address.address2 || '';
                                 
                                 const fullAddress = `${postal} ${prefecture} ${city} ${address1} ${address2}`.trim();
+                                console.log('✅ 배송 주소 매핑 결과:', fullAddress);
                                 return fullAddress || '配送先情報なし';
                             })()
                         }
