@@ -2512,46 +2512,74 @@
                             // 가장 정확한 구매 시 지급된 포인트 찾기 (우선순위 기반)
                             let foundPoints = false;
                             
-                            // 우선순위 1: 정확한 reason과 type 매칭
-                            for (let entry of allPointEntries) {
-                                if (entry.reason === '商品購入' && entry.type === 'earned' && entry.points > 0) {
+                            // 모든 포인트 히스토리에서 '商品購入' 관련 항목들을 분류
+                            let purchaseEarnedEntries = [];
+                            let purchaseUsedEntries = [];
+                            let otherEarnedEntries = [];
+                            
+                            allPointEntries.forEach(entry => {
+                                if (entry.reason === '商品購入' && entry.points > 0) {
+                                    purchaseEarnedEntries.push(entry);
+                                    console.log('✅ 구매 시 지급된 포인트 항목 발견:', {
+                                        points: entry.points,
+                                        type: entry.type,
+                                        reason: entry.reason,
+                                        createdAt: entry.createdAtDate?.toLocaleString('ja-JP')
+                                    });
+                                } else if (entry.reason === '商品購入に使用' && entry.points > 0) {
+                                    purchaseUsedEntries.push(entry);
+                                    console.log('❌ 구매 시 사용된 포인트 항목 (제외):', {
+                                        points: entry.points,
+                                        type: entry.type,
+                                        reason: entry.reason,
+                                        createdAt: entry.createdAtDate?.toLocaleString('ja-JP')
+                                    });
+                                } else if (entry.type === 'earn' && entry.points > 0) {
+                                    otherEarnedEntries.push(entry);
+                                    console.log('ℹ️ 기타 지급된 포인트 항목:', {
+                                        points: entry.points,
+                                        type: entry.type,
+                                        reason: entry.reason,
+                                        createdAt: entry.createdAtDate?.toLocaleString('ja-JP')
+                                    });
+                                }
+                            });
+                            
+                            console.log('📊 포인트 히스토리 분류 결과:', {
+                                구매시지급: purchaseEarnedEntries.length,
+                                구매시사용: purchaseUsedEntries.length,
+                                기타지급: otherEarnedEntries.length
+                            });
+                            
+                            // 우선순위 1: 정확한 '商品購入' 항목 (type='earn' 또는 'earned')
+                            for (let entry of purchaseEarnedEntries) {
+                                if (entry.type === 'earn' || entry.type === 'earned') {
                                     earnedPointsFromHistory = entry.points;
-                                    console.log('✅ 우선순위1 - 정확한 매칭 (reason=商品購入, type=earned):', earnedPointsFromHistory);
+                                    console.log('✅ 우선순위1 - 정확한 매칭 (reason=商品購入, type=earn/earned):', earnedPointsFromHistory);
                                     foundPoints = true;
                                     break;
                                 }
                             }
                             
-                            // 우선순위 2: reason이 '商品購入'이고 양수 (type 무관)
-                            if (!foundPoints) {
-                                for (let entry of allPointEntries) {
-                                    if (entry.reason === '商品購入' && entry.points > 0) {
+                            // 우선순위 2: '商品購入' 항목 중 양수 (type 무관하지만 '商品購入に使用' 제외)
+                            if (!foundPoints && purchaseEarnedEntries.length > 0) {
+                                for (let entry of purchaseEarnedEntries) {
+                                    // '商品購入に使用'가 아닌 '商品購入' 항목만 선택
+                                    if (entry.reason === '商品購入' && !entry.reason.includes('使用')) {
                                         earnedPointsFromHistory = entry.points;
-                                        console.log('✅ 우선순위2 - reason=商品購入 (type 무관):', earnedPointsFromHistory);
+                                        console.log('✅ 우선순위2 - reason=商品購入 (사용 제외):', earnedPointsFromHistory);
                                         foundPoints = true;
                                         break;
                                     }
                                 }
                             }
                             
-                            // 우선순위 3: type이 'earned'이고 양수 (reason 무관)
+                            // 우선순위 3: 배송 완료 시점의 포인트 적립 항목
                             if (!foundPoints) {
-                                for (let entry of allPointEntries) {
-                                    if (entry.type === 'earned' && entry.points > 0) {
+                                for (let entry of otherEarnedEntries) {
+                                    if (entry.reason && entry.reason.includes('배송 완료') && entry.reason.includes('포인트 적립')) {
                                         earnedPointsFromHistory = entry.points;
-                                        console.log('✅ 우선순위3 - type=earned (reason 무관):', earnedPointsFromHistory);
-                                        foundPoints = true;
-                                        break;
-                                    }
-                                }
-                            }
-                            
-                            // 우선순위 4: reason이 정확히 '商品購入'이고 양수 (마지막 폴백, '商品購入に使用' 제외)
-                            if (!foundPoints) {
-                                for (let entry of allPointEntries) {
-                                    if (entry.reason === '商品購入' && entry.points > 0) {
-                                        earnedPointsFromHistory = entry.points;
-                                        console.log('✅ 우선순위4 - reason이 정확히 商品購入:', earnedPointsFromHistory);
+                                        console.log('✅ 우선순위3 - 배송 완료 시점 포인트 적립:', earnedPointsFromHistory);
                                         foundPoints = true;
                                         break;
                                     }
@@ -2592,10 +2620,34 @@
                                     console.error('❌ 배송 완료 포인트 조회 실패:', error);
                                 }
                                 
-                                // 여전히 찾지 못한 경우 주문 데이터에서 조회
+                                // 여전히 찾지 못한 경우 주문 데이터에서 조회 (하지만 정확하지 않을 수 있음)
                                 if (earnedPoints === 0) {
                                     console.log('🔄 최종 폴백: 주문 데이터에서 직접 조회');
-                                    earnedPoints = orderData.earnedPoints || orderData.pointsEarned || orderData.points || 0;
+                                    console.log('⚠️ 주문 데이터의 포인트는 정확하지 않을 수 있으므로 신중하게 검토 필요');
+                                    
+                                    // 주문 데이터에서 포인트 관련 필드들을 모두 확인
+                                    const possibleEarnedPoints = orderData.earnedPoints || orderData.pointsEarned || orderData.points || 0;
+                                    const possibleUsedPoints = orderData.pointsUsed || orderData.points_used || 0;
+                                    
+                                    console.log('🔍 주문 데이터 포인트 분석:', {
+                                        earnedPoints: orderData.earnedPoints,
+                                        pointsEarned: orderData.pointsEarned,
+                                        points: orderData.points,
+                                        pointsUsed: orderData.pointsUsed,
+                                        points_used: orderData.points_used,
+                                        possibleEarnedPoints: possibleEarnedPoints,
+                                        possibleUsedPoints: possibleUsedPoints
+                                    });
+                                    
+                                    // 지급된 포인트가 사용된 포인트보다 작거나 같으면 의심스러움
+                                    if (possibleEarnedPoints > 0 && possibleEarnedPoints <= possibleUsedPoints) {
+                                        console.log('⚠️ 의심스러운 포인트 값: 지급된 포인트가 사용된 포인트보다 작거나 같음');
+                                        console.log('⚠️ 포인트 회수를 건너뛰고 관리자 확인 필요');
+                                        earnedPoints = 0; // 회수하지 않음
+                                    } else {
+                                        earnedPoints = possibleEarnedPoints;
+                                    }
+                                    
                                     console.log('🔄 최종 폴백 결과:', earnedPoints);
                                 }
                                 
