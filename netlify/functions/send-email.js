@@ -1551,6 +1551,16 @@ exports.handler = async (event, context) => {
                         break;
                     case 'shipping-start':
                         console.log('📧 shipping-start 메일 데이터 수신:', data);
+                        console.log('📧 shipping-start 데이터 키들:', Object.keys(data));
+                        console.log('📧 shipping-start 상세 데이터:', {
+                            orderId: data.orderId,
+                            name: data.name,
+                            items: data.items,
+                            shippingAddress: data.shippingAddress,
+                            shippingMethod: data.shippingMethod,
+                            trackingNumber: data.trackingNumber,
+                            totalAmount: data.totalAmount
+                        });
                         html = loadEmailTemplate('shipping-start', {
                             orderId: data.orderId || 'TEST-001',
                             name: data.name || 'テストユーザー',
