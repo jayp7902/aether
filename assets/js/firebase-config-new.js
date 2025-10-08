@@ -3179,23 +3179,88 @@ class FirebaseService {
             
             console.log('주문 이력 조회 시작:', userId);
             
-            // orderBy 없이 조회 (인덱스 문제 해결)
-            const snapshot = await db.collection('orders')
-                .where('userId', '==', userId)
-                .limit(20)
-                .get();
+            // 현재 로그인된 사용자 정보 가져오기
+            const currentUser = firebase.auth().currentUser;
+            if (!currentUser) {
+                console.log('로그인된 사용자가 없음');
+                return [];
+            }
             
-            const orders = [];
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                orders.push({
-                    id: doc.id,
-                    ...data
+            const userEmail = currentUser.email;
+            console.log('현재 사용자 이메일:', userEmail);
+            
+            // userId와 userEmail 모두로 조회 시도
+            let allOrders = [];
+            
+            // 1. userId로 조회
+            try {
+                const userIdSnapshot = await db.collection('orders')
+                    .where('userId', '==', userId)
+                    .limit(20)
+                    .get();
+                
+                userIdSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    allOrders.push({
+                        id: doc.id,
+                        ...data
+                    });
                 });
-            });
+                console.log(`userId로 조회된 주문: ${userIdSnapshot.size}건`);
+            } catch (userIdError) {
+                console.warn('userId로 조회 실패:', userIdError);
+            }
+            
+            // 2. userEmail로 조회
+            try {
+                const emailSnapshot = await db.collection('orders')
+                    .where('userEmail', '==', userEmail)
+                    .limit(20)
+                    .get();
+                
+                emailSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    // 중복 제거를 위해 이미 있는지 확인
+                    const existingOrder = allOrders.find(order => order.id === doc.id);
+                    if (!existingOrder) {
+                        allOrders.push({
+                            id: doc.id,
+                            ...data
+                        });
+                    }
+                });
+                console.log(`userEmail로 조회된 주문: ${emailSnapshot.size}건`);
+            } catch (emailError) {
+                console.warn('userEmail로 조회 실패:', emailError);
+            }
+            
+            // 3. customerEmail로도 조회 시도
+            try {
+                const customerEmailSnapshot = await db.collection('orders')
+                    .where('customerEmail', '==', userEmail)
+                    .limit(20)
+                    .get();
+                
+                customerEmailSnapshot.forEach(doc => {
+                    const data = doc.data();
+                    // 중복 제거를 위해 이미 있는지 확인
+                    const existingOrder = allOrders.find(order => order.id === doc.id);
+                    if (!existingOrder) {
+                        allOrders.push({
+                            id: doc.id,
+                            ...data
+                        });
+                    }
+                });
+                console.log(`customerEmail로 조회된 주문: ${customerEmailSnapshot.size}건`);
+            } catch (customerEmailError) {
+                console.warn('customerEmail로 조회 실패:', customerEmailError);
+            }
+            
+            console.log(`총 조회된 주문: ${allOrders.length}건`);
             
             // 클라이언트 측에서 정렬 (Firestore Timestamp 지원)
-            orders.sort((a, b) => {
+            allOrders.sort((a, b) => {
                 let timeA, timeB;
                 
                 // A 주문의 시간 처리
@@ -3235,8 +3300,8 @@ class FirebaseService {
                 return timeB.getTime() - timeA.getTime(); // 최신순
             });
             
-            console.log(`Firebase 주문 이력 조회 성공: ${orders.length}건`);
-            return orders;
+            console.log(`Firebase 주문 이력 조회 성공: ${allOrders.length}건`);
+            return allOrders;
             
         } catch (error) {
             console.error('Firebase 주문 이력 조회 실패:', error);
