@@ -2447,10 +2447,10 @@
                         console.log('🔍 주문 데이터 전체:', orderData);
                         
                         // 포인트 히스토리에서 해당 주문의 모든 포인트 조회
+                        // orderBy 제거 - Firebase 인덱스 없이도 작동하도록 (클라이언트 측 정렬)
                         const pointHistorySnapshot = await window.FirebaseService.db
                             .collection('pointHistory')
                             .where('orderId', '==', orderId)
-                            .orderBy('createdAt', 'desc') // 최신순으로 정렬
                             .get();
                         
                         console.log('📊 포인트 히스토리 총 개수:', pointHistorySnapshot.size);
