@@ -1584,6 +1584,11 @@
             setTimeout(() => {
                 const bsModal = new bootstrap.Modal(modal);
                 bsModal.show();
+                
+                // 입력 필드 초기화
+                document.getElementById('trackingNumber').value = '';
+                document.getElementById('shippingCompany').value = 'yamato'; // 기본값 설정
+                
                 console.log('✅ 배송 모달 표시 완료');
             }, 100);
             
@@ -1596,11 +1601,20 @@
 
         // 배송 시작 확인
         function confirmShipping(orderId) {
+            console.log('🚚 confirmShipping 함수 호출됨:', orderId);
+            
             const trackingNumber = document.getElementById('trackingNumber').value.trim();
             const shippingCompany = document.getElementById('shippingCompany').value;
             
+            console.log('🔍 입력값 확인:', {
+                trackingNumber: trackingNumber,
+                shippingCompany: shippingCompany,
+                trackingNumberLength: trackingNumber.length
+            });
+            
             // 유효성 검사
             if (!trackingNumber) {
+                console.log('❌ 추적번호가 비어있음');
                 showError('配送追跡番号を入力してください。');
                 return;
             }
@@ -1642,13 +1656,14 @@
                 }
                 
                 // 배송 시작 메일 발송
+                console.log('📧 배송 시작 메일 발송 시작:', orderId);
                 sendShippingStartEmail(orderId);
                 
                 // 모달 닫기
                 const modal = bootstrap.Modal.getInstance(document.getElementById('shippingModal'));
                 modal.hide();
                 
-                showSuccess('配送情報が更新されました。');
+                showSuccess('配送情報が更新され、配送開始メールが送信されました。');
             })
             .catch((error) => {
                 console.error('❌ 배송 정보 업데이트 실패:', error);
@@ -1843,15 +1858,15 @@
                 
                 const result = await response.json();
                 if (result.success) {
-                    console.log('배송 시작 메일 발송 완료');
-                    showSuccess('配送開始メールが送信されました。');
+                    console.log('✅ 배송 시작 메일 발송 완료:', result);
                 } else {
-                    console.error('배송 시작 메일 발송 실패:', result.error);
-                    showError('配送開始メールの送信に失敗しました。');
+                    console.error('❌ 배송 시작 메일 발송 실패:', result.error);
+                    showError('配送開始メールの送信に失敗しました: ' + (result.error || 'Unknown error'));
                 }
                 
             } catch (error) {
-                console.error('배송 시작 메일 발송 오류:', error);
+                console.error('❌ 배송 시작 메일 발송 오류:', error);
+                showError('配送開始メールの送信に失敗しました: ' + error.message);
             }
         }
         
