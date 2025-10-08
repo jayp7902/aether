@@ -1799,39 +1799,12 @@
                     })
                 });
                 
-                // 실제 데이터 구조 확인을 위한 상세 로그
-                console.log('🔍 실제 주문 데이터 구조 분석:');
-                if (order.items && Array.isArray(order.items)) {
-                    console.log('📦 아이템 개수:', order.items.length);
-                    order.items.forEach((item, index) => {
-                        console.log(`📦 아이템 ${index + 1}:`, item);
-                        console.log(`📦 아이템 ${index + 1} 키들:`, Object.keys(item));
-                        console.log(`📦 아이템 ${index + 1} 값들:`, {
-                            name: item.name,
-                            productName: item.productName,
-                            title: item.title,
-                            product_name: item.product_name,
-                            product_title: item.product_title,
-                            product: item.product,
-                            brand: item.brand,
-                            productBrand: item.productBrand,
-                            brandName: item.brandName,
-                            quantity: item.quantity,
-                            qty: item.qty,
-                            amount: item.amount,
-                            count: item.count
-                        });
-                    });
-                } else {
-                    console.log('❌ order.items가 없거나 배열이 아님:', order.items);
-                }
-                
-                // 메일 발송 전 매핑된 데이터 확인
+                // 메일 발송 전 매핑된 데이터 확인 (매개변수 사용)
                 console.log('📧 매핑된 메일 데이터:', {
                     orderId: orderId,
                     name: order.customerName || order.userName || order.customerEmail?.split('@')[0] || 'お客様',
-                    trackingNumber: document.getElementById('trackingNumber').value,
-                    shippingMethod: getShippingMethodInJapanese(document.getElementById('shippingCompany').value),
+                    trackingNumber: trackingNumber,
+                    shippingMethod: getShippingMethodInJapanese(shippingCompany),
                     items: order.items ? order.items.map(item => {
                         const productName = item.name || item.productName || item.title || item.product_name || item.product_title || item.product || '商品名不明';
                         const brand = item.brand || item.productBrand || item.brandName || '';
