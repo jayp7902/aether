@@ -731,7 +731,12 @@
                             usedPoints,
                             calculatedPoints,
                             currentDisplayPoints: pointsPageUser.points,
-                            pointHistoryCount: pointHistory.length
+                            pointHistoryCount: pointHistory.length,
+                            pointHistoryDetails: pointHistory.map(item => ({
+                                type: item.type,
+                                points: item.points,
+                                reason: item.reason
+                            }))
                         });
                         
                         // 계산된 포인트로 항상 업데이트 (포인트 히스토리 기반)
