@@ -1502,8 +1502,10 @@
                 // 주문이 있는 경우 계속 진행
 
                 // 주문 이력 HTML 생성
+                console.log('주문 이력 HTML 생성 시작:', orders.length, '건');
                 let ordersHtml = '';
-                orders.forEach(order => {
+                orders.forEach((order, index) => {
+                    console.log(`주문 ${index + 1}/${orders.length} HTML 생성 중:`, order.id || order.orderId);
                     // 주문 데이터를 전역 변수로 저장 (영수증 다운로드용)
                     const orderKey = `orderData_${order.id || order.orderId}`;
                     window[orderKey] = order;
@@ -1537,7 +1539,8 @@
                     });
 
                     // 주문 총액 계산 (상품 가격은 이미 소비세 포함)
-                    const totalWithTax = order.items.reduce((total, item) => total + (item.price * item.quantity), 0);
+                    const items = Array.isArray(order.items) ? order.items : [];
+                    const totalWithTax = items.reduce((total, item) => total + ((item.price || 0) * (item.quantity || 1)), 0);
                     const subtotal = Math.floor(totalWithTax / 1.1); // 세전 가격
                     const tax = totalWithTax - subtotal; // 소비세
                     const shippingFee = totalWithTax >= 3000 ? 0 : 500; // 세포함 가격 기준
@@ -1561,13 +1564,13 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="order-items mb-3">
-                                        ${order.items.map(item => `
+                                        ${items.map(item => `
                                             <div class="d-flex justify-content-between align-items-center mb-2">
                                                 <div>
-                                                    <div class="japanese-heading">${item.name}</div>
-                                                    <small class="text-muted japanese-text">${item.brand} × ${item.quantity}</small>
+                                                    <div class="japanese-heading">${item.name || item.productName || '商品名不明'}</div>
+                                                    <small class="text-muted japanese-text">${item.brand || ''} × ${item.quantity || 1}</small>
                                                 </div>
-                                                <div class="japanese-text">¥${(item.price * item.quantity).toLocaleString()}</div>
+                                                <div class="japanese-text">¥${((item.price || 0) * (item.quantity || 1)).toLocaleString()}</div>
                                             </div>
                                         `).join('')}
                                     </div>
@@ -1629,7 +1632,10 @@
                     `;
                 });
 
+                console.log('주문 이력 HTML 생성 완료, DOM 업데이트 시작');
+                console.log('생성된 HTML 길이:', ordersHtml.length);
                 ordersContainer.innerHTML = ordersHtml;
+                console.log('주문 이력 DOM 업데이트 완료');
 
             } catch (error) {
                 console.error('주문 이력 로드 실패:', error);
