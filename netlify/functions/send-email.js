@@ -525,7 +525,7 @@ const emailTemplates = {
         </tr>
     </table>
     <![endif]-->
-</body>
+    </body>
 </html>`,
     
     'points-earned': `<!DOCTYPE html>
@@ -967,21 +967,21 @@ const emailTemplates = {
                                     <div style="font-size: 14px; color: #333; margin-bottom: 5px; background-color: #f8f9fa; text-align: right;"><strong>使用ポイント:</strong> {{pointsUsed}}</div>
                                     <div style="font-size: 16px; color: #333; margin-bottom: 10px; background-color: #f8f9fa; text-align: right; font-weight: bold; border-top: 1px solid #ddd; padding-top: 5px;"><strong>合計金額:</strong> {{totalAmount}}</div>
                 </div>
-            </div>
+                </div>
                             
                             <!-- 환불 안내 -->
                             <div style="background-color: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center !important;">
                                 <div style="font-size: 18px; font-weight: bold; color: #333; margin-bottom: 15px; background-color: #e8f5e8;">返金・ポイント返却について</div>
                                 <div style="font-size: 16px; color: #333; margin-bottom: 10px; background-color: #e8f5e8;">
                                     <strong>返却ポイント:</strong> {{refundedPoints}}
-            </div>
+                </div>
                                 <div style="font-size: 14px; color: #666; margin-bottom: 10px; background-color: #e8f5e8;">
                                     ご利用いただいたポイントは自動的にアカウントに戻されます。
-        </div>
+            </div>
                                 <div style="font-size: 14px; color: #666; background-color: #e8f5e8;">
                                     お支払い方法によっては、返金処理に数日かかる場合がございます。
-                                </div>
             </div>
+        </div>
                             
                             <!-- 문의 안내 -->
                             <div style="font-size: 14px; line-height: 1.6; margin-top: 20px; background-color: #ffffff; text-align: center !important;">
@@ -1011,12 +1011,12 @@ const emailTemplates = {
 </html>`,
 
     'shipping-start': `<!DOCTYPE html>
-<html lang="ja">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <html lang="ja">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>配送開始メール</title>
-    <style>
+        <style>
         /* Reset styles for email clients */
         body, table, td, p, a, li, blockquote {
             -webkit-text-size-adjust: 100%;
@@ -1074,8 +1074,8 @@ const emailTemplates = {
         .gmail-fix {
             background-color: #ffffff !important;
         }
-    </style>
-</head>
+        </style>
+    </head>
 <body style="background-color: #ffffff !important; background: #ffffff !important; -webkit-background-color: #ffffff !important;">
     <div style="background-color: #ffffff !important; background: #ffffff !important; -webkit-background-color: #ffffff !important;">
         <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #ffffff !important; background: #ffffff !important; -webkit-background-color: #ffffff !important;">
@@ -1089,7 +1089,7 @@ const emailTemplates = {
                                     <a href="https://aether-store.jp" style="text-decoration: none;">
                                         <img src="https://aether-store.jp/assets/img/logo.png" alt="Aether Store" style="max-width: 200px; height: auto; display: block; margin: 0 auto;">
                                     </a>
-                                </div>
+            </div>
                                 
                                 <!-- Greeting -->
                                 <p style="text-align: center !important; margin: 0 0 30px 0; font-size: 16px; font-weight: bold !important; color: #333 !important; background-color: #ffffff !important;">こんにちは、<span style="color: #333 !important; text-decoration: none !important; background-color: #ffffff !important;">{{name}}</span>様！</p>
@@ -1106,18 +1106,18 @@ const emailTemplates = {
                                         <p style="margin: 5px 0; color: #555 !important; background-color: #f8f9fa !important;"><strong>商品:</strong> {{items}}</p>
                                         <p style="margin: 5px 0; color: #555 !important; background-color: #f8f9fa !important;"><strong>合計金額:</strong> {{totalAmount}}</p>
                                         <p style="margin: 5px 0; color: #555 !important; background-color: #f8f9fa !important;"><strong>配送先:</strong> {{shippingAddress}}</p>
-                                    </div>
+                </div>
                                     
                                     <!-- Shipping Details -->
                                     <div style="background-color: #f0f0f0; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: left !important; max-width: 500px; margin-left: auto; margin-right: auto;">
                                         <h3 style="text-align: center !important; margin-bottom: 15px; color: #333 !important; background-color: #f0f0f0 !important;">配送情報</h3>
                                         <p style="margin: 5px 0; color: #555 !important; background-color: #f0f0f0 !important;"><strong>配送方法:</strong> {{shippingMethod}}</p>
                                         <p style="margin: 5px 0; color: #555 !important; background-color: #f0f0f0 !important;"><strong>追跡番号:</strong> {{trackingNumber}}</p>
-                                    </div>
+            </div>
                                     
                                     <p style="text-align: center !important; margin: 20px 0 0 0; color: #555 !important; background-color: #ffffff !important;">商品の到着をお楽しみにお待ちください。</p>
                                     <p style="text-align: center !important; margin: 20px 0 0 0; color: #555 !important; background-color: #ffffff !important;">ご不明な点がございましたら、お気軽にお問い合わせください。</p>
-                                </div>
+            </div>
                                 
                                 <!-- Footer -->
                                 <div style="text-align: center !important; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee; background-color: #ffffff !important;">
@@ -1125,7 +1125,7 @@ const emailTemplates = {
                                     <p style="margin: 5px 0; color: #666 !important; background-color: #ffffff !important;">
                                         <a href="mailto:info@aether-store.jp" style="color: #666 !important; text-decoration: underline; background-color: #ffffff !important;">info@aether-store.jp</a>
                                     </p>
-                                </div>
+        </div>
                             </td>
                         </tr>
                     </table>
@@ -1149,7 +1149,7 @@ const emailTemplates = {
         </tr>
     </table>
     <![endif]-->
-</body>
+    </body>
 </html>`,
 
     'shipping-complete': `<!DOCTYPE html>
@@ -1550,6 +1550,7 @@ exports.handler = async (event, context) => {
                         });
                         break;
                     case 'shipping-start':
+                        console.log('📧 shipping-start 메일 데이터 수신:', data);
                         html = loadEmailTemplate('shipping-start', {
                             orderId: data.orderId || 'TEST-001',
                             name: data.name || 'テストユーザー',
