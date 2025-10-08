@@ -1536,7 +1536,7 @@ class FirebaseService {
             // 배송 완료 메일 발송
             try {
                 console.log('📧 배송 완료 메일 발송 데이터:', orderData);
-                await this.sendShippingCompleteEmail(orderData);
+                await this.sendShippingCompleteEmail(orderData, pointsEarned);
                 console.log('✅ 배송 완료 메일 발송 성공');
             } catch (emailError) {
                 console.error('❌ 배송 완료 메일 발송 실패:', emailError);
@@ -1546,7 +1546,7 @@ class FirebaseService {
             console.log('✅ 배송 완료 포인트 부여 성공:', {
                 orderId: orderId,
                 userEmail: orderData.userEmail,
-                pointsEarned: orderData.pointsEarned
+                pointsEarned: pointsEarned
             });
 
             return { 
@@ -1566,8 +1566,9 @@ class FirebaseService {
     }
 
     // 배송 완료 메일 발송 함수
-    static async sendShippingCompleteEmail(orderData) {
+    static async sendShippingCompleteEmail(orderData, pointsEarned = 0) {
         console.log('📧 배송 완료 메일 발송 시작:', orderData);
+        console.log('💰 배송 완료 메일 포인트:', pointsEarned);
         
         try {
             const response = await fetch('/.netlify/functions/send-email', {
