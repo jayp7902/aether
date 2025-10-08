@@ -1504,12 +1504,6 @@ exports.handler = async (event, context) => {
                     shippingAddress: data.shippingAddress || '配送先情報なし'
                 });
                 break;
-            case 'shipping-start':
-                html = loadEmailTemplate('shipping-start', {
-                    orderId: data.orderId || 'N/A',
-                    trackingNumber: data.trackingNumber || 'N/A'
-                });
-                break;
             case 'event':
                 // 이벤트 메일은 개별 고객별로 처리하므로 여기서는 기본 템플릿만 로드
                 console.log('📧 이벤트 메일 발송 - 받은 데이터:', JSON.stringify(data, null, 2));
@@ -1551,14 +1545,16 @@ exports.handler = async (event, context) => {
                         break;
                     case 'shipping-start':
                         console.log('📧 shipping-start 메일 데이터 수신:', data);
+                        console.log('📧 shipping-start 데이터 키들:', Object.keys(data));
+                        
                         html = loadEmailTemplate('shipping-start', {
-                            orderId: data.orderId || 'TEST-001',
-                            name: data.name || 'テストユーザー',
-                            items: data.items || 'LALARECIPE バクチノールアイクリーム, COSCELL レチノールボリュームアイバッグクリーム',
-                            shippingAddress: data.shippingAddress || '東京都 練馬区 光が丘2-10-1 3009号',
-                            shippingMethod: data.shippingMethod || 'ヤマト運輸 (宅急便)',
-                            trackingNumber: data.trackingNumber || '1234567890',
-                            totalAmount: data.totalAmount || '¥24,500'
+                            orderId: data.orderId || 'N/A',
+                            name: data.name || 'お客様',
+                            items: data.items || '商品情報なし',
+                            shippingAddress: data.shippingAddress || '配送先情報なし',
+                            shippingMethod: data.shippingMethod || '配送方法不明',
+                            trackingNumber: data.trackingNumber || 'N/A',
+                            totalAmount: data.totalAmount || '¥0'
                         });
                         break;
                     case 'shipping-complete':
