@@ -1508,13 +1508,23 @@ class FirebaseService {
                 };
             }
 
+            // 포인트 계산 (주문 금액의 3%)
+            const totalAmount = orderData.totalAmount || orderData.total || orderData.amount || 0;
+            const pointsEarned = Math.floor(totalAmount * 0.03); // 3% 적립
+            
+            console.log('💰 포인트 계산:', {
+                totalAmount: totalAmount,
+                pointsEarned: pointsEarned,
+                calculation: `${totalAmount} * 0.03 = ${pointsEarned}`
+            });
+
             // 포인트 부여
             console.log('💰 포인트 부여 데이터:', {
                 userEmail: orderData.userEmail,
-                pointsEarned: orderData.pointsEarned,
+                pointsEarned: pointsEarned,
                 orderId: orderId
             });
-            await this.addPoints(orderData.userEmail, orderData.pointsEarned, `배송 완료 - 주문 ${orderId} 포인트 적립`);
+            await this.addPoints(orderData.userEmail, pointsEarned, `배송 완료 - 주문 ${orderId} 포인트 적립`);
 
             // 주문 상태 업데이트
             await db.collection('orders').doc(orderId).update({
@@ -1542,7 +1552,7 @@ class FirebaseService {
             return { 
                 success: true, 
                 message: '배송 완료 포인트가 성공적으로 부여되었습니다.',
-                pointsEarned: orderData.pointsEarned
+                pointsEarned: pointsEarned
             };
 
         } catch (error) {
@@ -1579,7 +1589,7 @@ class FirebaseService {
                         deliveryDate: new Date().toLocaleDateString('ja-JP'),
                         shippingCompany: orderData.shippingCompany || 'ヤマト運輸',
                         trackingNumber: orderData.trackingNumber || 'N/A',
-                        pointsEarned: orderData.pointsEarned || 0
+                        pointsEarned: pointsEarned
                     }
                 })
             });
