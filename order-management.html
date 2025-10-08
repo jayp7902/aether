@@ -2445,37 +2445,40 @@
                     try {
                         console.log('🔍 포인트 히스토리에서 구매 시 지급된 포인트 조회 시작:', orderId);
                         
-                        // 포인트 히스토리에서 해당 주문의 지급된 포인트 조회
+                        // 포인트 히스토리에서 "商品購入" 포인트만 정확히 조회
                         const pointHistorySnapshot = await window.FirebaseService.db
                             .collection('pointHistory')
                             .where('orderId', '==', orderId)
-                            .where('points', '>', 0) // 양수인 포인트 (지급된 포인트)
                             .get();
                         
                         if (!pointHistorySnapshot.empty) {
-                            let latestEarnedPoints = 0;
-                            let latestTimestamp = null;
+                            let earnedPointsFromHistory = 0;
                             
                             pointHistorySnapshot.forEach(doc => {
                                 const pointData = doc.data();
                                 const points = pointData.points || 0;
-                                const timestamp = pointData.createdAt || doc.id;
-                                
-                                // 가장 최근의 지급 포인트 선택
-                                if (points > 0 && (!latestTimestamp || timestamp > latestTimestamp)) {
-                                    latestEarnedPoints = points;
-                                    latestTimestamp = timestamp;
-                                }
+                                const reason = pointData.reason || '';
                                 
                                 console.log('📊 포인트 히스토리 항목:', {
                                     points: points,
-                                    reason: pointData.reason,
-                                    timestamp: timestamp
+                                    reason: reason,
+                                    type: pointData.type
                                 });
+                                
+                                // "商品購入" 이유의 양수 포인트만 선택
+                                if (reason.includes('商品購入') && points > 0) {
+                                    earnedPointsFromHistory = points;
+                                    console.log('✅ 구매 시 지급된 포인트 발견:', earnedPointsFromHistory);
+                                }
                             });
                             
-                            earnedPoints = latestEarnedPoints;
-                            console.log('✅ 포인트 히스토리에서 구매 시 지급된 포인트 발견:', earnedPoints);
+                            if (earnedPointsFromHistory > 0) {
+                                earnedPoints = earnedPointsFromHistory;
+                                console.log('✅ 최종 선택된 구매 시 지급된 포인트:', earnedPoints);
+                            } else {
+                                console.log('⚠️ "商品購入" 포인트를 찾을 수 없음, 폴백 사용');
+                                earnedPoints = orderData.earnedPoints || orderData.pointsEarned || 0;
+                            }
                         } else {
                             console.log('⚠️ 포인트 히스토리에서 구매 시 지급된 포인트를 찾을 수 없음');
                             
