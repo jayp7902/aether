@@ -1509,11 +1509,15 @@ class FirebaseService {
             }
 
             // 포인트 계산 (주문 금액의 3%)
-            const totalAmount = orderData.totalAmount || orderData.total || orderData.amount || 0;
+            const totalAmount = orderData.totalAmount || orderData.total || orderData.amount || orderData.subtotal || 0;
             const pointsEarned = Math.floor(totalAmount * 0.03); // 3% 적립
             
-            console.log('💰 포인트 계산:', {
-                totalAmount: totalAmount,
+            console.log('💰 포인트 계산 상세:', {
+                orderDataTotalAmount: orderData.totalAmount,
+                orderDataTotal: orderData.total,
+                orderDataAmount: orderData.amount,
+                orderDataSubtotal: orderData.subtotal,
+                calculatedTotalAmount: totalAmount,
                 pointsEarned: pointsEarned,
                 calculation: `${totalAmount} * 0.03 = ${pointsEarned}`
             });
@@ -1538,6 +1542,7 @@ class FirebaseService {
             // 배송 완료 메일 발송
             try {
                 console.log('📧 배송 완료 메일 발송 데이터:', orderData);
+                console.log('📧 배송 완료 메일 포인트:', pointsEarned);
                 await this.sendShippingCompleteEmail(orderData, pointsEarned);
                 console.log('✅ 배송 완료 메일 발송 성공');
             } catch (emailError) {
@@ -1573,6 +1578,41 @@ class FirebaseService {
         console.log('💰 배송 완료 메일 포인트:', pointsEarned);
         
         try {
+            // 배송 주소 매핑
+            const shippingAddress = (() => {
+                if (!orderData.shipping && !orderData.shippingAddress) return '配送先情報なし';
+                const shipping = orderData.shipping || {};
+                const address = orderData.shippingAddress || {};
+                const postal = shipping.postal || shipping.postalCode || address.postal || address.postalCode || '';
+                const prefecture = shipping.prefecture || shipping.state || address.prefecture || address.state || '';
+                const city = shipping.city || address.city || '';
+                const address1 = shipping.address1 || shipping.address || address.address1 || address.address || '';
+                const address2 = shipping.address2 || address.address2 || '';
+                const fullAddress = `${postal} ${prefecture} ${city} ${address1} ${address2}`.trim();
+                return fullAddress || '配送先情報なし';
+            })();
+            
+            // 아이템 매핑
+            const items = orderData.items ? orderData.items.map(item => {
+                const productName = item.name || item.productName || item.title || '商品名不明';
+                const brand = item.brand || item.productBrand || '';
+                const quantity = item.quantity || item.qty || 1;
+                return brand ? `${brand} ${productName} (${quantity}個)` : `${productName} (${quantity}個)`;
+            }).join(', ') : '商品情報なし';
+            
+            const emailData = {
+                orderId: orderData.id || orderData.orderId || 'N/A',
+                name: orderData.customerName || orderData.userName || orderData.userEmail?.split('@')[0] || 'お客様',
+                items: items,
+                shippingAddress: shippingAddress,
+                deliveryDate: new Date().toLocaleDateString('ja-JP'),
+                shippingCompany: orderData.shippingCompany || '配送業者不明',
+                trackingNumber: orderData.trackingNumber || 'N/A',
+                pointsEarned: pointsEarned || 0
+            };
+            
+            console.log('📧 배송 완료 메일 데이터:', emailData);
+            
             const response = await fetch('/.netlify/functions/send-email', {
                 method: 'POST',
                 headers: {
@@ -1582,18 +1622,7 @@ class FirebaseService {
                     type: 'shipping-complete',
                     to: orderData.userEmail,
                     subject: '配送完了のお知らせ - Aether Store',
-                    data: {
-                        orderId: orderData.id || orderData.orderId,
-                        name: orderData.userEmail.split('@')[0], // 이메일에서 이름 추출
-                        items: Array.isArray(orderData.items) ? 
-                            orderData.items.map(item => `${item.brand} ${item.name} (${item.quantity})`).join(', ') : 
-                            orderData.items || '상품 정보 없음',
-                        shippingAddress: orderData.shippingAddress || '配送先情報なし',
-                        deliveryDate: new Date().toLocaleDateString('ja-JP'),
-                        shippingCompany: orderData.shippingCompany || 'ヤマト運輸',
-                        trackingNumber: orderData.trackingNumber || 'N/A',
-                        pointsEarned: pointsEarned
-                    }
+                    data: emailData
                 })
             });
 
