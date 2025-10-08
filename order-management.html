@@ -1680,27 +1680,7 @@
                 if (!order) return;
                 
                 console.log('배송 시작 메일 발송 시작:', orderId);
-                console.log('📦 주문 데이터 전체:', order);
-                console.log('📦 주문 데이터 키들:', Object.keys(order));
-                console.log('📦 주문 아이템들:', order.items);
-                console.log('📦 주문 아이템 상세:', order.items ? order.items.map((item, index) => ({
-                    index: index,
-                    keys: Object.keys(item),
-                    item: item
-                })) : '아이템 없음');
-                console.log('📦 주문 총액:', {
-                    totalAmount: order.totalAmount,
-                    total: order.total,
-                    amount: order.amount,
-                    subtotal: order.subtotal,
-                    orderTotal: order.orderTotal
-                });
-                console.log('📦 배송 정보:', order.shipping);
-                console.log('📦 배송 정보 키들:', order.shipping ? Object.keys(order.shipping) : '배송 정보 없음');
-                console.log('📦 배송 데이터:', {
-                    trackingNumber: document.getElementById('trackingNumber').value,
-                    shippingMethod: getShippingMethodInJapanese(document.getElementById('shippingCompany').value)
-                });
+                console.log('📦 주문 데이터:', order);
                 
                 const response = await fetch('/.netlify/functions/send-email', {
                     method: 'POST',
@@ -1716,21 +1696,36 @@
                             name: order.customerName || order.userName || order.customerEmail?.split('@')[0] || 'お客様',
                             trackingNumber: document.getElementById('trackingNumber').value,
                             shippingMethod: getShippingMethodInJapanese(document.getElementById('shippingCompany').value),
-                            // 🔥 강제 테스트 데이터 (문제 해결용)
-                            items: 'LALARECIPE バクチノールアイクリーム (1個), COSCELL レチノールボリュームアイバッグクリーム (2個)',
-                            totalAmount: '¥15,800',
-                            shippingAddress: '東京都 練馬区 光が丘2-10-1 3009号'
+                            // 실제 데이터 매핑
+                            items: order.items ? order.items.map(item => {
+                                const productName = item.name || item.productName || item.title || item.product_name || item.product_title || item.product || '商品名不明';
+                                const brand = item.brand || item.productBrand || item.brandName || '';
+                                const quantity = item.quantity || item.qty || item.amount || item.count || 1;
+                                return brand ? `${brand} ${productName} (${quantity}個)` : `${productName} (${quantity}個)`;
+                            }).join(', ') : '商品情報なし',
+                            totalAmount: (() => {
+                                const amount = order.totalAmount || order.total || order.amount || order.subtotal || order.orderTotal || 0;
+                                return `¥${amount.toLocaleString()}`;
+                            })(),
+                            shippingAddress: (() => {
+                                if (!order.shipping && !order.shippingAddress) return '配送先情報なし';
+                                
+                                const shipping = order.shipping || {};
+                                const address = order.shippingAddress || {};
+                                
+                                const postal = shipping.postal || shipping.postalCode || address.postal || address.postalCode || '';
+                                const prefecture = shipping.prefecture || shipping.state || address.prefecture || address.state || '';
+                                const city = shipping.city || address.city || '';
+                                const address1 = shipping.address1 || shipping.address || address.address1 || address.address || '';
+                                const address2 = shipping.address2 || address.address2 || '';
+                                
+                                const fullAddress = `${postal} ${prefecture} ${city} ${address1} ${address2}`.trim();
+                                return fullAddress || '配送先情報なし';
+                            })()
                         }
                     })
                 });
                 
-                // 메일 발송 전 최종 데이터 확인 로그
-                console.log('📧 메일 발송 최종 데이터 확인:', {
-                    orderId: orderId,
-                    name: order.customerName || order.userName || order.customerEmail?.split('@')[0] || 'お客様',
-                    trackingNumber: document.getElementById('trackingNumber').value,
-                    shippingMethod: getShippingMethodInJapanese(document.getElementById('shippingCompany').value)
-                });
                 
                 const result = await response.json();
                 if (result.success) {
