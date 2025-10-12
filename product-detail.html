@@ -807,7 +807,7 @@
             
             if (footerData.companyInfo && Array.isArray(footerData.companyInfo)) {
                 if (footerData.companyInfo.length === 0) {
-                    companyInfoContainer.innerHTML = '<li><span class="text-muted">会社情報が登録されていません。</span></li>';
+                    companyInfoContainer.innerHTML = '';
                     console.log('📝 회사 정보가 없습니다');
                     return;
                 }
@@ -827,7 +827,7 @@
                 companyInfoContainer.innerHTML = html;
                 console.log('✅ 회사 정보 업데이트 완료');
             } else {
-                companyInfoContainer.innerHTML = '<li><span class="text-muted">会社情報が登録されていません。</span></li>';
+                companyInfoContainer.innerHTML = '';
                 console.log('📝 회사 정보 데이터가 없습니다');
             }
         }
@@ -837,7 +837,7 @@
             if (!brandsListContainer) return;
             
             if (brandNames.length === 0) {
-                brandsListContainer.innerHTML = '<li><span class="text-muted">ブランドが登録されていません。</span></li>';
+                brandsListContainer.innerHTML = '';
                 return;
             }
             
@@ -869,7 +869,7 @@
             if (!furtherInfoContainer) return;
             
             if (furtherInfoLinks.length === 0) {
-                furtherInfoContainer.innerHTML = '<li><span class="text-muted">リンクが登録されていません。</span></li>';
+                furtherInfoContainer.innerHTML = '';
                 return;
             }
             

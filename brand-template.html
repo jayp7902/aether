@@ -2261,7 +2261,7 @@
             // companyInfo 배열이 있는 경우
             if (footerData.companyInfo && Array.isArray(footerData.companyInfo)) {
                 if (footerData.companyInfo.length === 0) {
-                    companyInfoContainer.innerHTML = '<li><span class="text-muted">会社情報が登録されていません。</span></li>';
+                    companyInfoContainer.innerHTML = '';
                     console.log('📝 회사 정보가 없습니다');
                     return;
                 }
@@ -2354,7 +2354,7 @@
             if (!brandsListContainer) return;
             
             if (brandNames.length === 0) {
-                brandsListContainer.innerHTML = '<li><span class="text-muted">ブランドが登録されていません。</span></li>';
+                brandsListContainer.innerHTML = '';
                 return;
             }
             
@@ -2389,7 +2389,7 @@
             if (!furtherInfoContainer) return;
             
             if (furtherInfoLinks.length === 0) {
-                furtherInfoContainer.innerHTML = '<li><span class="text-muted">リンクが登録されていません。</span></li>';
+                furtherInfoContainer.innerHTML = '';
                 return;
             }
             
