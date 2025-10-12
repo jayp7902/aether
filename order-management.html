@@ -2561,6 +2561,18 @@
                                 }
                             }
                             
+                            // 우선순위 1.5: '商品購入' 항목 중 양수 (type 무관)
+                            if (!foundPoints && purchaseEarnedEntries.length > 0) {
+                                for (let entry of purchaseEarnedEntries) {
+                                    if (entry.points > 0) {
+                                        earnedPointsFromHistory = entry.points;
+                                        console.log('✅ 우선순위1.5 - reason=商品購入 양수 포인트:', earnedPointsFromHistory);
+                                        foundPoints = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            
                             // 우선순위 2: '商品購入' 항목 중 양수 (type 무관하지만 '商品購入に使用' 제외)
                             if (!foundPoints && purchaseEarnedEntries.length > 0) {
                                 for (let entry of purchaseEarnedEntries) {
@@ -2639,13 +2651,17 @@
                                         possibleUsedPoints: possibleUsedPoints
                                     });
                                     
-                                    // 지급된 포인트가 사용된 포인트보다 작거나 같으면 의심스러움
-                                    if (possibleEarnedPoints > 0 && possibleEarnedPoints <= possibleUsedPoints) {
-                                        console.log('⚠️ 의심스러운 포인트 값: 지급된 포인트가 사용된 포인트보다 작거나 같음');
-                                        console.log('⚠️ 포인트 회수를 건너뛰고 관리자 확인 필요');
-                                        earnedPoints = 0; // 회수하지 않음
-                                    } else {
+                                    // 일반적인 케이스: 구매 시 지급된 포인트가 있는 경우
+                                    if (possibleEarnedPoints > 0) {
                                         earnedPoints = possibleEarnedPoints;
+                                        console.log('✅ 주문 데이터에서 구매 시 지급된 포인트 발견:', earnedPoints);
+                                    } else {
+                                        // 특별한 케이스: 사용된 포인트의 일정 비율을 구매 보너스로 간주
+                                        // 일반적으로 10-15% 정도가 구매 보너스
+                                        if (possibleUsedPoints > 0) {
+                                            earnedPoints = Math.floor(possibleUsedPoints * 0.1); // 10% 계산
+                                            console.log('🔄 폴백: 사용된 포인트의 10%를 구매 보너스로 간주:', earnedPoints);
+                                        }
                                     }
                                     
                                     console.log('🔄 최종 폴백 결과:', earnedPoints);
@@ -2660,8 +2676,19 @@
                             }
                         } else {
                             console.log('⚠️ 포인트 히스토리가 비어있음');
-                            earnedPoints = orderData.earnedPoints || orderData.pointsEarned || orderData.points || 0;
-                            console.log('🔄 주문 데이터에서 포인트 조회:', earnedPoints);
+                            const possibleEarnedPoints = orderData.earnedPoints || orderData.pointsEarned || orderData.points || 0;
+                            const possibleUsedPoints = orderData.pointsUsed || orderData.points_used || 0;
+                            
+                            if (possibleEarnedPoints > 0) {
+                                earnedPoints = possibleEarnedPoints;
+                                console.log('✅ 주문 데이터에서 구매 시 지급된 포인트 발견:', earnedPoints);
+                            } else if (possibleUsedPoints > 0) {
+                                // 사용된 포인트의 10%를 구매 보너스로 간주
+                                earnedPoints = Math.floor(possibleUsedPoints * 0.1);
+                                console.log('🔄 폴백: 사용된 포인트의 10%를 구매 보너스로 간주:', earnedPoints);
+                            }
+                            
+                            console.log('🔄 주문 데이터에서 포인트 조회 완료:', earnedPoints);
                         }
                     } catch (error) {
                         console.error('❌ 포인트 히스토리 조회 실패:', error);
