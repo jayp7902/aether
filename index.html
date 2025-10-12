@@ -1294,22 +1294,26 @@ https://templatemo.com/tm-559-aether
                 if (window.firebase && window.firebase.apps && window.firebase.apps.length > 0) {
                     try {
                         // 관리자 페이지에서 설정한 푸터 설정들 로드
-                        const [companySnapshot, quickLinksSnapshot, legalLinksSnapshot, supportLinksSnapshot, furtherInfoSnapshot, brandSnapshot] = await Promise.all([
-                            window.firebase.firestore().collection('footer_content').doc('companyInfo').get(),
+                        const [footerContentSnapshot, quickLinksSnapshot, legalLinksSnapshot, supportLinksSnapshot] = await Promise.all([
+                            window.firebase.firestore().collection('footer_content').limit(1).get(),
                             window.firebase.firestore().collection('footerSettings').doc('quickLinks').get(),
                             window.firebase.firestore().collection('footerSettings').doc('legalLinks').get(),
-                            window.firebase.firestore().collection('footerSettings').doc('supportLinks').get(),
-                            window.firebase.firestore().collection('footer_content').doc('furtherInfoLinks').get(),
-                            window.firebase.firestore().collection('footer_content').doc('brandNames').get()
+                            window.firebase.firestore().collection('footerSettings').doc('supportLinks').get()
                         ]);
                         
+                        // footer_content에서 회사 정보와 브랜드 정보 로드
+                        let footerContentData = {};
+                        if (!footerContentSnapshot.empty) {
+                            footerContentData = footerContentSnapshot.docs[0].data();
+                        }
+                        
                         footerData = {
-                            companyInfo: companySnapshot.exists ? companySnapshot.data().info || [] : [],
+                            companyInfo: footerContentData.companyInfo || [],
                             quickLinks: quickLinksSnapshot.exists ? quickLinksSnapshot.data().links || [] : [],
                             legalLinks: legalLinksSnapshot.exists ? legalLinksSnapshot.data().links || [] : [],
                             supportLinks: supportLinksSnapshot.exists ? supportLinksSnapshot.data().links || [] : [],
-                            furtherInfoLinks: furtherInfoSnapshot.exists ? furtherInfoSnapshot.data().links || [] : [],
-                            brandNames: brandSnapshot.exists ? brandSnapshot.data().brands || [] : []
+                            furtherInfoLinks: footerContentData.furtherInfoLinks || [],
+                            brandNames: footerContentData.brandNames || []
                         };
                         
                         console.log('📊 Firebase에서 푸터 데이터 로드 완료:', footerData);
