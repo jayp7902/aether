@@ -3872,51 +3872,79 @@
     <div class="modal fade" id="orderCompleteModal" tabindex="-1" aria-labelledby="orderCompleteModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content" style="border-radius: 15px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
-                <div class="modal-header text-center" style="border-bottom: 1px solid #dee2e6; padding: 30px 30px 20px 30px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 15px 15px 0 0;">
+                <!-- 모노톤 헤더 -->
+                <div class="modal-header text-center" style="background-color: #000000; color: white; border-radius: 15px 15px 0 0; padding: 30px;">
                     <div class="w-100">
-                        <div class="mb-3">
-                            <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                        <div class="d-flex align-items-center justify-content-center mb-3">
+                            <i class="fas fa-check-circle me-3" style="font-size: 1.5rem;"></i>
+                            <h4 class="modal-title fw-bold mb-0" id="orderCompleteModalLabel">ご注文ありがとうございます</h4>
                         </div>
-                        <h4 class="modal-title fw-bold text-dark mb-0" id="orderCompleteModalLabel">ご注文完了！</h4>
-                        <p class="text-muted mt-2 mb-0">注文が正常に処理されました</p>
                     </div>
                 </div>
-                <div class="modal-body text-center" style="padding: 30px; background-color: #ffffff;">
-                    <div class="row mb-4">
-                        <div class="col-6">
-                            <div class="p-3 bg-light rounded">
-                                <h6 class="text-muted mb-1">注文番号</h6>
-                                <p class="fw-bold mb-0 text-dark" id="order-complete-modal-order-id">-</p>
+                
+                <div class="modal-body" style="padding: 30px; background-color: #ffffff;">
+                    <!-- 장식 요소 -->
+                    <div class="text-center mb-3">
+                        <div style="width: 30px; height: 3px; background-color: #e0e0e0; margin: 0 auto;"></div>
+                    </div>
+                    
+                    <!-- 메인 메시지 -->
+                    <div class="text-center mb-4">
+                        <h3 class="fw-bold text-dark mb-2">ご注文完了！</h3>
+                        <p class="text-muted mb-0">注文が正常に処理されました</p>
+                    </div>
+                    
+                    <!-- 주문 정보 -->
+                    <div class="mb-4">
+                        <div class="p-3" style="background-color: #f8f9fa; border-radius: 10px;">
+                            <div class="d-flex align-items-start mb-2">
+                                <i class="fas fa-info-circle text-secondary me-2 mt-1"></i>
+                                <h6 class="fw-bold text-dark mb-0">注文情報</h6>
                             </div>
-                        </div>
-                        <div class="col-6">
-                            <div class="p-3 bg-light rounded">
-                                <h6 class="text-muted mb-1">合計金額</h6>
-                                <p class="fw-bold mb-0 text-dark" id="order-complete-modal-total">-</p>
+                            
+                            <div class="row mt-3">
+                                <div class="col-6">
+                                    <div class="p-3" style="background-color: #ffffff; border-radius: 8px; border: 1px solid #e0e0e0;">
+                                        <h6 class="text-muted mb-1 small">注文番号</h6>
+                                        <p class="fw-bold mb-0 text-dark" id="order-complete-modal-order-id">-</p>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="p-3" style="background-color: #ffffff; border-radius: 8px; border: 1px solid #e0e0e0;">
+                                        <h6 class="text-muted mb-1 small">合計金額</h6>
+                                        <p class="fw-bold mb-0 text-dark" id="order-complete-modal-total">-</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                     
-                    <div class="p-3 bg-success bg-opacity-10 rounded mb-4">
-                        <div class="d-flex align-items-center justify-content-center">
-                            <i class="fas fa-gift text-success me-2"></i>
-                            <span class="text-success fw-bold">獲得ポイント: <span id="order-complete-modal-points">-</span></span>
+                    <!-- 포인트 정보 -->
+                    <div class="mb-4">
+                        <div class="p-3" style="background-color: #f8f9fa; border-radius: 10px;">
+                            <div class="d-flex align-items-center justify-content-center">
+                                <i class="fas fa-gift text-secondary me-2"></i>
+                                <span class="fw-bold text-dark">獲得ポイント: <span id="order-complete-modal-points">-</span></span>
+                            </div>
                         </div>
                     </div>
                     
-                    <div class="alert alert-info border-0" style="background-color: #e7f3ff; border-radius: 10px;">
+                    <!-- 안내 메시지 -->
+                    <div class="mb-4">
                         <div class="d-flex align-items-start">
-                            <i class="fas fa-info-circle text-info me-2 mt-1"></i>
-                            <div class="text-start">
-                                <p class="mb-2 fw-bold text-info">注文確認メールを送信しました</p>
+                            <i class="fas fa-info-circle text-secondary me-2 mt-1"></i>
+                            <div>
+                                <p class="mb-2 fw-bold text-dark">注文確認メールを送信しました</p>
                                 <p class="mb-0 small text-muted">商品の準備ができ次第、配送いたします。</p>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer" style="border-top: 1px solid #dee2e6; padding: 20px 30px 30px 30px; background-color: #f8f9fa; border-radius: 0 0 15px 15px;">
-                    <button type="button" class="btn btn-dark btn-lg w-100" onclick="closeOrderCompleteModal()" style="border-radius: 10px; padding: 12px; font-weight: 600;">
-                        <i class="fas fa-home me-2"></i>ホームに戻る
+                
+                <!-- 모노톤 푸터 -->
+                <div class="modal-footer" style="border-top: 1px solid #e0e0e0; padding: 20px 30px 30px 30px; background-color: #f8f9fa; border-radius: 0 0 15px 15px;">
+                    <button type="button" class="btn btn-dark btn-lg w-100" onclick="closeOrderCompleteModal()" style="border-radius: 10px; padding: 12px; font-weight: 600; background-color: #333333; border: none;">
+                        <i class="fas fa-check me-2"></i>確認
                     </button>
                 </div>
             </div>
