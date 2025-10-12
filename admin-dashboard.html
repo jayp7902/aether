@@ -2903,10 +2903,13 @@
             <!-- 푸터 관리 탭 -->
             <div class="tab-pane fade" id="footer-section" role="tabpanel" aria-labelledby="footer-tab">
                 <div class="order-management pt-5">
-                    <div class="mb-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
                         <h3 class="japanese-heading mb-0">
                             <i class="fas fa-shoe-prints me-2"></i>フッター管理
                         </h3>
+                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="window.clearAllFooterData()">
+                            <i class="fas fa-trash me-2"></i>データ初期化
+                        </button>
                     </div>
                     
                     <div class="card">
@@ -15803,6 +15806,46 @@
             }
         }
 
+        // Firebase 푸터 데이터 완전 초기화
+        window.clearAllFooterData = async function() {
+            try {
+                console.log('🗑️ Firebase 푸터 데이터 완전 삭제 시작');
+                
+                if (window.firebase && window.firebase.firestore) {
+                    // footer_content 컬렉션의 모든 문서 삭제
+                    const footerContentSnapshot = await window.firebase.firestore().collection('footer_content').get();
+                    const footerBatch = window.firebase.firestore().batch();
+                    
+                    footerContentSnapshot.docs.forEach(doc => {
+                        footerBatch.delete(doc.ref);
+                        console.log('🗑️ footer_content 문서 삭제:', doc.id);
+                    });
+                    
+                    // footerSettings 컬렉션의 모든 문서 삭제
+                    const footerSettingsSnapshot = await window.firebase.firestore().collection('footerSettings').get();
+                    footerSettingsSnapshot.docs.forEach(doc => {
+                        footerBatch.delete(doc.ref);
+                        console.log('🗑️ footerSettings 문서 삭제:', doc.id);
+                    });
+                    
+                    await footerBatch.commit();
+                    console.log('✅ Firebase 푸터 데이터 완전 삭제 완료');
+                    showAlert('모든 푸터 데이터가 삭제되었습니다. 이제 관리자 페이지에서 새로 입력해주세요.', 'success');
+                    
+                    // 페이지 새로고침하여 빈 상태로 표시
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    console.error('Firebase가 초기화되지 않았습니다.');
+                    showAlert('Firebase 연결을 확인해주세요.', 'error');
+                }
+                
+            } catch (error) {
+                console.error('❌ Firebase 푸터 데이터 삭제 오류:', error);
+                showAlert('데이터 삭제에 실패했습니다.', 'error');
+            }
+        }
 
         // 푸터 폼에 데이터 설정
         window.setFooterFormData = function(data) {

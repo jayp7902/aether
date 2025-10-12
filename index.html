@@ -1284,11 +1284,11 @@ https://templatemo.com/tm-559-aether
                 // Firebase에서 데이터 로드 시도 (안전한 방식)
                 if (window.firebase && window.firebase.apps && window.firebase.apps.length > 0) {
                     try {
-                        // 관리자 페이지에서 설정한 푸터 설정들 로드
+                        // 캐싱 방지를 위해 source: 'server' 옵션 추가
                         const [footerContentSnapshot, quickLinksSnapshot, legalLinksSnapshot] = await Promise.all([
-                            window.firebase.firestore().collection('footer_content').limit(1).get(),
-                            window.firebase.firestore().collection('footerSettings').doc('quickLinks').get(),
-                            window.firebase.firestore().collection('footerSettings').doc('legalLinks').get()
+                            window.firebase.firestore().collection('footer_content').limit(1).get({ source: 'server' }),
+                            window.firebase.firestore().collection('footerSettings').doc('quickLinks').get({ source: 'server' }),
+                            window.firebase.firestore().collection('footerSettings').doc('legalLinks').get({ source: 'server' })
                         ]);
                         
                         // footer_content에서 회사 정보와 브랜드 정보 로드
