@@ -1565,7 +1565,12 @@ class FirebaseService {
                 orderId: orderId
             });
             
-            const addPointsResult = await this.addPoints(orderData.userEmail, pointsEarned, `배송 완료 - 주문 ${orderId} 포인트 적립`);
+            const addPointsResult = await this.addPoints(
+                orderData.userEmail,
+                pointsEarned,
+                '商品購入',
+                { orderId: orderId, orderAmount: totalAmount, source: 'delivery-complete' }
+            );
             console.log('💰 addPoints 결과:', addPointsResult);
 
             // 주문 상태 업데이트
@@ -1717,7 +1722,7 @@ class FirebaseService {
 
 
     // 포인트 적립 (이메일 기반)
-    static async addPoints(userEmail, points, reason = '포인트 적립') {
+    static async addPoints(userEmail, points, reason = '포인트 적립', metadata = {}) {
         console.log('포인트 적립 시작:', { userEmail, points, reason });
 
         if (!this.isFirebaseAvailable()) {
@@ -1756,6 +1761,9 @@ class FirebaseService {
                 points: points,
                 type: 'earn',
                 reason: reason,
+                orderId: metadata.orderId || null,
+                orderAmount: metadata.orderAmount || null,
+                source: metadata.source || 'unknown',
                 balance: currentPoints + points,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
