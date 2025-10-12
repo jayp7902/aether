@@ -15778,10 +15778,21 @@
                 
                 // Firebase에서 데이터 로드 시도
                 if (window.firebase && window.firebase.firestore) {
-                    const snapshot = await window.firebase.firestore().collection('footer_content').limit(1).get();
-                    if (!snapshot.empty) {
-                        footerData = snapshot.docs[0].data();
+                    const [footerSnapshot, companyInfoSnapshot] = await Promise.all([
+                        window.firebase.firestore().collection('footer_content').limit(1).get(),
+                        window.firebase.firestore().collection('footerSettings').doc('companyInfo').get()
+                    ]);
+                    
+                    if (!footerSnapshot.empty) {
+                        footerData = footerSnapshot.docs[0].data();
                         console.log('📊 Firebase에서 푸터 데이터 로드 완료');
+                    }
+                    
+                    // 회사 정보 별도 로드
+                    if (companyInfoSnapshot.exists) {
+                        const companyInfoData = companyInfoSnapshot.data();
+                        footerData.companyInfo = companyInfoData.companyInfo || [];
+                        console.log('📊 Firebase에서 회사 정보 로드 완료:', footerData.companyInfo);
                     }
                 }
                 
@@ -16438,11 +16449,12 @@
         window.saveFooterContent = async function() {
             try {
                 const footerData = {
-                    companyInfo: window.getCompanyInfoFromFields(),
                     brandNames: window.getCurrentBrands(),
                     furtherInfoLinks: window.getCurrentFurtherInfoLinks(),
                     updatedAt: new Date().toISOString()
                 };
+                
+                const companyInfo = window.getCompanyInfoFromFields();
                 
                 if (window.firebase && window.firebase.firestore) {
                     // 기존 데이터 삭제 후 새 데이터 추가
@@ -16456,8 +16468,16 @@
                     const docRef = window.firebase.firestore().collection('footer_content').doc();
                     batch.set(docRef, footerData);
                     
+                    // 회사 정보를 별도 컬렉션에 저장
+                    const companyInfoRef = window.firebase.firestore().collection('footerSettings').doc('companyInfo');
+                    batch.set(companyInfoRef, { 
+                        companyInfo: companyInfo,
+                        updatedAt: new Date().toISOString()
+                    });
+                    
                     await batch.commit();
                     console.log('✅ 푸터 데이터 저장 완료');
+                    console.log('✅ 회사 정보 저장 완료:', companyInfo);
                 }
                 
                 showAlert('フッター内容が保存されました。', 'success');

@@ -1285,10 +1285,11 @@ https://templatemo.com/tm-559-aether
                 if (window.firebase && window.firebase.apps && window.firebase.apps.length > 0) {
                     try {
                         // 캐싱 방지를 위해 source: 'server' 옵션 추가
-                        const [footerContentSnapshot, legalLinksSnapshot, quickLinksSnapshot] = await Promise.all([
+                        const [footerContentSnapshot, legalLinksSnapshot, quickLinksSnapshot, companyInfoSnapshot] = await Promise.all([
                             window.firebase.firestore().collection('footer_content').limit(1).get({ source: 'server' }),
                             window.firebase.firestore().collection('footerSettings').doc('legalLinks').get({ source: 'server' }),
-                            window.firebase.firestore().collection('footerSettings').doc('quickLinks').get({ source: 'server' })
+                            window.firebase.firestore().collection('footerSettings').doc('quickLinks').get({ source: 'server' }),
+                            window.firebase.firestore().collection('footerSettings').doc('companyInfo').get({ source: 'server' })
                         ]);
                         
                         // footer_content에서 모든 데이터 로드
@@ -1306,8 +1307,12 @@ https://templatemo.com/tm-559-aether
                         const quickLinks = quickLinksSnapshot.exists ? quickLinksSnapshot.data().links || [] : [];
                         console.log('📊 Firebase quickLinks 데이터:', quickLinks);
                         
+                        // companyInfo 데이터 로드
+                        const companyInfo = companyInfoSnapshot.exists ? companyInfoSnapshot.data().companyInfo || [] : [];
+                        console.log('📊 Firebase companyInfo 데이터:', companyInfo);
+                        
                         footerData = {
-                            companyInfo: footerContentData.companyInfo || [],
+                            companyInfo: companyInfo.length > 0 ? companyInfo : (footerContentData.companyInfo || []),
                             quickLinks: quickLinks.length > 0 ? quickLinks : (footerContentData.quickLinks || footerContentData.furtherInfoLinks || []),
                             legalLinks: legalLinks,
                             brandNames: footerContentData.brandNames || []
