@@ -2710,6 +2710,14 @@
                     
                     // 이미 지급된 포인트가 있는 경우 회수
                     // earnedPoints가 0보다 크면 회수 시도 (상태와 관계없이)
+                    console.log('🔍 포인트 회수 조건 확인:', {
+                        earnedPoints: earnedPoints,
+                        earnedPointsType: typeof earnedPoints,
+                        earnedPointsGreaterThanZero: earnedPoints > 0,
+                        orderId: orderId,
+                        userEmail: orderData.userEmail
+                    });
+                    
                     if (earnedPoints > 0) {
                         try {
                             console.log('💸 구매 시 지급된 포인트 회수 시작:', {
@@ -2783,11 +2791,20 @@
                             });
                         }
                     } else {
-                        console.log('ℹ️ 구매 시 지급된 포인트 없음 또는 미지급 상태, 회수 불필요:', {
+                        console.log('❌ 포인트 회수 실행되지 않음:', {
+                            earnedPoints: earnedPoints,
+                            earnedPointsType: typeof earnedPoints,
+                            earnedPointsGreaterThanZero: earnedPoints > 0,
                             조회된포인트: earnedPoints,
                             주문ID: orderId,
                             주문상태: orderData.status,
-                            포인트지급상태: orderData.pointsEarnedStatus
+                            포인트지급상태: orderData.pointsEarnedStatus,
+                            주문데이터포인트: {
+                                earnedPoints: orderData.earnedPoints,
+                                pointsEarned: orderData.pointsEarned,
+                                points: orderData.points,
+                                pointsUsed: orderData.pointsUsed
+                            }
                         });
                     }
                     
