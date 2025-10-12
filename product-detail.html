@@ -737,8 +737,14 @@
                 </div>
 
                 <div class="col-md-4 pt-5">
-                    <h2 class="h2 text-white border-bottom pb-3 border-light">Further Info</h2>
-                    <ul class="list-unstyled text-white footer-link-list" id="footer-further-info">
+                    <h2 class="h2 text-white border-bottom pb-3 border-light">Quick Links</h2>
+                    <ul class="list-unstyled text-white footer-link-list" id="footer-quick-links">
+                        <!-- 퀵 링크가 동적으로 로드됩니다 -->
+                    </ul>
+                    
+                    <h2 class="h2 text-white border-bottom pb-3 border-light mt-4">Legal</h2>
+                    <ul class="list-unstyled text-white footer-link-list" id="footer-legal-links">
+                        <!-- 법적 페이지 링크가 동적으로 로드됩니다 -->
                     </ul>
                 </div>
             </div>
@@ -864,29 +870,79 @@
             brandsListContainer.innerHTML = html;
         }
         
-        function updateFooterFurtherInfoLinks(furtherInfoLinks) {
-            const furtherInfoContainer = document.getElementById('footer-further-info');
-            if (!furtherInfoContainer) return;
+        function updateFooterQuickLinks(quickLinks) {
+            const quickLinksContainer = document.getElementById('footer-quick-links');
+            if (!quickLinksContainer) return;
             
-            if (furtherInfoLinks.length === 0) {
-                furtherInfoContainer.innerHTML = '';
+            console.log('🔗 퀵 링크 업데이트 시작:', quickLinks);
+            
+            if (!quickLinks || quickLinks.length === 0) {
+                quickLinksContainer.innerHTML = '';
                 return;
             }
             
-            const sortedLinks = [...furtherInfoLinks].sort((a, b) => a.order - b.order);
-            
             let html = '';
-            sortedLinks.forEach(link => {
-                html += `
-                    <li>
-                        <a class="text-decoration-none text-white" href="${link.link}">
-                            ${link.name}
-                        </a>
-                    </li>
-                `;
+            quickLinks.forEach(link => {
+                // link가 객체인지 문자열인지 확인
+                if (typeof link === 'object' && link.name && link.url) {
+                    html += `
+                        <li class="pb-1">
+                            <a class="text-decoration-none text-white" href="${link.url}">
+                                <i class="fas fa-bolt me-2"></i>${link.name}
+                            </a>
+                        </li>
+                    `;
+                } else if (typeof link === 'string') {
+                    html += `
+                        <li class="pb-1">
+                            <a class="text-decoration-none text-white" href="#">
+                                <i class="fas fa-bolt me-2"></i>${link}
+                            </a>
+                        </li>
+                    `;
+                }
             });
             
-            furtherInfoContainer.innerHTML = html;
+            quickLinksContainer.innerHTML = html;
+            console.log('✅ 퀵 링크 HTML 업데이트 완료');
+        }
+        
+        // 푸터 법적 페이지 링크 업데이트
+        function updateFooterLegalLinks(legalLinks) {
+            const legalLinksContainer = document.getElementById('footer-legal-links');
+            if (!legalLinksContainer) return;
+            
+            console.log('⚖️ 법적 링크 업데이트 시작:', legalLinks);
+            
+            if (!legalLinks || legalLinks.length === 0) {
+                legalLinksContainer.innerHTML = '';
+                return;
+            }
+            
+            let html = '';
+            legalLinks.forEach(link => {
+                // link가 객체인지 문자열인지 확인
+                if (typeof link === 'object' && link.name && link.url) {
+                    html += `
+                        <li class="pb-1">
+                            <a class="text-decoration-none text-white" href="${link.url}">
+                                <i class="fas fa-gavel me-2"></i>${link.name}
+                            </a>
+                        </li>
+                    `;
+                } else if (typeof link === 'string') {
+                    html += `
+                        <li class="pb-1">
+                            <a class="text-decoration-none text-white" href="#">
+                                <i class="fas fa-gavel me-2"></i>${link}
+                            </a>
+                        </li>
+                    `;
+                }
+            });
+            
+            legalLinksContainer.innerHTML = html;
+            console.log('✅ 법적 링크 HTML 업데이트 완료');
         }
         
         function updateFooterHTML(footerData) {
@@ -894,28 +950,65 @@
             
             updateFooterCompanyInfo(footerData);
             updateFooterBrands(footerData.brandNames || []);
-            updateFooterFurtherInfoLinks(footerData.furtherInfoLinks || []);
+            updateFooterQuickLinks(footerData.quickLinks || []);
+            updateFooterLegalLinks(footerData.legalLinks || []);
             
             console.log('✅ 푸터 데이터 업데이트 완료');
         }
         
         async function loadFooterContent() {
             try {
-                console.log('🦶 Firebase에서 푸터 데이터 로드 시작');
+                console.log('🦶 푸터 콘텐츠 로딩 시작');
                 
                 let footerData = {};
                 
-                if (window.firebase && window.firebase.firestore) {
-                    const snapshot = await window.firebase.firestore().collection('footer_content').limit(1).get();
-                    if (!snapshot.empty) {
-                        footerData = snapshot.docs[0].data();
-                        console.log('📊 Firebase에서 푸터 데이터 로드 완료');
+                // Firebase에서 데이터 로드 시도 (안전한 방식)
+                if (window.firebase && window.firebase.apps && window.firebase.apps.length > 0) {
+                    try {
+                        // 캐싱 방지를 위해 source: 'server' 옵션 추가
+                        const [footerContentSnapshot, legalLinksSnapshot, quickLinksSnapshot, companyInfoSnapshot] = await Promise.all([
+                            window.firebase.firestore().collection('footer_content').limit(1).get({ source: 'server' }),
+                            window.firebase.firestore().collection('footerSettings').doc('legalLinks').get({ source: 'server' }),
+                            window.firebase.firestore().collection('footerSettings').doc('quickLinks').get({ source: 'server' }),
+                            window.firebase.firestore().collection('footerSettings').doc('companyInfo').get({ source: 'server' })
+                        ]);
+                        
+                        // footer_content에서 모든 데이터 로드
+                        let footerContentData = {};
+                        if (!footerContentSnapshot.empty) {
+                            footerContentData = footerContentSnapshot.docs[0].data();
+                            console.log('📊 Firebase footer_content 원본 데이터:', footerContentData);
+                        }
+                        
+                        // legalLinks 데이터 로드
+                        const legalLinks = legalLinksSnapshot.exists ? legalLinksSnapshot.data().links || [] : [];
+                        console.log('📊 Firebase legalLinks 데이터:', legalLinks);
+                        
+                        // quickLinks 데이터 로드
+                        const quickLinks = quickLinksSnapshot.exists ? quickLinksSnapshot.data().links || [] : [];
+                        console.log('📊 Firebase quickLinks 데이터:', quickLinks);
+                        
+                        // companyInfo 데이터 로드
+                        const companyInfo = companyInfoSnapshot.exists ? companyInfoSnapshot.data().companyInfo || [] : [];
+                        console.log('📊 Firebase companyInfo 데이터:', companyInfo);
+                        
+                        footerData = {
+                            companyInfo: companyInfo.length > 0 ? companyInfo : (footerContentData.companyInfo || []),
+                            quickLinks: quickLinks.length > 0 ? quickLinks : (footerContentData.quickLinks || footerContentData.furtherInfoLinks || []),
+                            legalLinks: legalLinks,
+                            brandNames: footerContentData.brandNames || []
+                        };
+                        
+                        console.log('📊 처리된 푸터 데이터:', footerData);
+                        
+                        console.log('📊 Firebase에서 푸터 데이터 로드 완료:', footerData);
+                    } catch (error) {
+                        console.warn('⚠️ Firebase 푸터 데이터 로드 실패:', error.message);
+                        footerData = {};
                     }
-                }
-                
-                if (Object.keys(footerData).length === 0) {
-                    footerData = { companyInfo: [], furtherInfoLinks: [], brandNames: [] };
-                    console.log('📝 Firebase에 푸터 데이터 없음');
+                } else {
+                    console.warn('⚠️ Firebase 초기화되지 않음');
+                    footerData = {};
                 }
                 
                 updateFooterHTML(footerData);
