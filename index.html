@@ -489,32 +489,26 @@ https://templatemo.com/tm-559-aether
                 </div>
 
                 <div class="col-md-4 pt-5">
-                    <h2 class="h2 text-white border-bottom pb-3 border-light">Further Info</h2>
+                    <h2 class="h2 text-white border-bottom pb-3 border-light">Quick Links</h2>
+                    <ul class="list-unstyled text-white footer-link-list" id="footer-quick-links">
+                        <!-- 퀵 링크가 동적으로 로드됩니다 -->
+                    </ul>
+                    
+                    <h2 class="h2 text-white border-bottom pb-3 border-light mt-4">Legal</h2>
+                    <ul class="list-unstyled text-white footer-link-list" id="footer-legal-links">
+                        <!-- 법적 페이지 링크가 동적으로 로드됩니다 -->
+                    </ul>
+                    
+                    <h2 class="h2 text-white border-bottom pb-3 border-light mt-4">Support</h2>
+                    <ul class="list-unstyled text-white footer-link-list" id="footer-support-links">
+                        <!-- 고객 지원 링크가 동적으로 로드됩니다 -->
+                    </ul>
+                    
+                    <h2 class="h2 text-white border-bottom pb-3 border-light mt-4">Further Info</h2>
                     <ul class="list-unstyled text-white footer-link-list" id="footer-further-info">
                         <!-- Further Info 링크가 동적으로 로드됩니다 -->
                     </ul>
                     
-                    <!-- 법적 페이지 링크 추가 -->
-                    <div class="mt-4">
-                        <h6 class="text-white border-bottom pb-2 border-light">Legal</h6>
-                        <ul class="list-unstyled text-white footer-link-list">
-                            <li class="pb-1">
-                                <a href="legal-terms.html" class="text-decoration-none text-white">
-                                    <i class="fas fa-gavel me-2"></i>特定商取引法に基づく表記
-                                </a>
-                            </li>
-                            <li class="pb-1">
-                                <a href="privacy-policy.html" class="text-decoration-none text-white">
-                                    <i class="fas fa-user-shield me-2"></i>プライバシーポリシー
-                                </a>
-                            </li>
-                            <li class="pb-1">
-                                <a href="terms-of-service.html" class="text-decoration-none text-white">
-                                    <i class="fas fa-file-contract me-2"></i>利用規約
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
                 </div>
 
             </div>
@@ -1299,11 +1293,26 @@ https://templatemo.com/tm-559-aether
                 // Firebase에서 데이터 로드 시도 (안전한 방식)
                 if (window.firebase && window.firebase.apps && window.firebase.apps.length > 0) {
                     try {
-                        const snapshot = await window.firebase.firestore().collection('footer_content').limit(1).get();
-                        if (!snapshot.empty) {
-                            footerData = snapshot.docs[0].data();
-                            console.log('📊 Firebase에서 푸터 데이터 로드 완료');
-                        }
+                        // 관리자 페이지에서 설정한 푸터 설정들 로드
+                        const [companySnapshot, quickLinksSnapshot, legalLinksSnapshot, supportLinksSnapshot, furtherInfoSnapshot, brandSnapshot] = await Promise.all([
+                            window.firebase.firestore().collection('footer_content').doc('companyInfo').get(),
+                            window.firebase.firestore().collection('footerSettings').doc('quickLinks').get(),
+                            window.firebase.firestore().collection('footerSettings').doc('legalLinks').get(),
+                            window.firebase.firestore().collection('footerSettings').doc('supportLinks').get(),
+                            window.firebase.firestore().collection('footer_content').doc('furtherInfoLinks').get(),
+                            window.firebase.firestore().collection('footer_content').doc('brandNames').get()
+                        ]);
+                        
+                        footerData = {
+                            companyInfo: companySnapshot.exists ? companySnapshot.data().info || [] : [],
+                            quickLinks: quickLinksSnapshot.exists ? quickLinksSnapshot.data().links || [] : [],
+                            legalLinks: legalLinksSnapshot.exists ? legalLinksSnapshot.data().links || [] : [],
+                            supportLinks: supportLinksSnapshot.exists ? supportLinksSnapshot.data().links || [] : [],
+                            furtherInfoLinks: furtherInfoSnapshot.exists ? furtherInfoSnapshot.data().links || [] : [],
+                            brandNames: brandSnapshot.exists ? brandSnapshot.data().brands || [] : []
+                        };
+                        
+                        console.log('📊 Firebase에서 푸터 데이터 로드 완료:', footerData);
                     } catch (error) {
                         console.warn('⚠️ Firebase 푸터 데이터 로드 실패:', error.message);
                         footerData = {};
@@ -1315,7 +1324,14 @@ https://templatemo.com/tm-559-aether
                 
                 // 데이터가 없으면 빈 객체로 설정 (Firebase 전용)
                 if (Object.keys(footerData).length === 0) {
-                    footerData = { companyInfo: [], furtherInfoLinks: [], brandNames: [] };
+                    footerData = { 
+                        companyInfo: [], 
+                        quickLinks: [], 
+                        legalLinks: [], 
+                        supportLinks: [],
+                        furtherInfoLinks: [], 
+                        brandNames: [] 
+                    };
                     console.log('📝 Firebase에 푸터 데이터 없음');
                 }
                 
@@ -1326,7 +1342,14 @@ https://templatemo.com/tm-559-aether
                 
             } catch (error) {
                 console.error('❌ 푸터 콘텐츠 로딩 오류:', error);
-                const emptyFooterData = { companyInfo: [], furtherInfoLinks: [], brandNames: [] };
+                const emptyFooterData = { 
+                    companyInfo: [], 
+                    quickLinks: [], 
+                    legalLinks: [], 
+                    supportLinks: [],
+                    furtherInfoLinks: [], 
+                    brandNames: [] 
+                };
                 updateFooterHTML(emptyFooterData);
             }
         }
@@ -1345,6 +1368,15 @@ https://templatemo.com/tm-559-aether
             
             // Further Info 링크 동적 로드
             updateFooterFurtherInfoLinks(footerData.furtherInfoLinks || []);
+            
+            // 퀵 링크 동적 로드
+            updateFooterQuickLinks(footerData.quickLinks || []);
+            
+            // 법적 페이지 링크 동적 로드
+            updateFooterLegalLinks(footerData.legalLinks || []);
+            
+            // 고객 지원 링크 동적 로드
+            updateFooterSupportLinks(footerData.supportLinks || []);
             
             console.log('✅ 푸터 데이터 업데이트 완료');
         }
@@ -1509,6 +1541,78 @@ https://templatemo.com/tm-559-aether
             });
             
             furtherInfoContainer.innerHTML = html;
+        }
+        
+        // 푸터 퀵 링크 업데이트
+        function updateFooterQuickLinks(quickLinks) {
+            const quickLinksContainer = document.getElementById('footer-quick-links');
+            if (!quickLinksContainer) return;
+            
+            if (quickLinks.length === 0) {
+                quickLinksContainer.innerHTML = '<li><span class="text-muted">リンクが登録されていません。</span></li>';
+                return;
+            }
+            
+            let html = '';
+            quickLinks.forEach(link => {
+                html += `
+                    <li class="pb-1">
+                        <a class="text-decoration-none text-white" href="${link.url}">
+                            <i class="fas fa-bolt me-2"></i>${link.name}
+                        </a>
+                    </li>
+                `;
+            });
+            
+            quickLinksContainer.innerHTML = html;
+        }
+        
+        // 푸터 법적 페이지 링크 업데이트
+        function updateFooterLegalLinks(legalLinks) {
+            const legalLinksContainer = document.getElementById('footer-legal-links');
+            if (!legalLinksContainer) return;
+            
+            if (legalLinks.length === 0) {
+                legalLinksContainer.innerHTML = '<li><span class="text-muted">リンクが登録されていません。</span></li>';
+                return;
+            }
+            
+            let html = '';
+            legalLinks.forEach(link => {
+                html += `
+                    <li class="pb-1">
+                        <a class="text-decoration-none text-white" href="${link.url}">
+                            <i class="fas fa-gavel me-2"></i>${link.name}
+                        </a>
+                    </li>
+                `;
+            });
+            
+            legalLinksContainer.innerHTML = html;
+        }
+        
+        // 푸터 고객 지원 링크 업데이트
+        function updateFooterSupportLinks(supportLinks) {
+            const supportLinksContainer = document.getElementById('footer-support-links');
+            if (!supportLinksContainer) return;
+            
+            if (supportLinks.length === 0) {
+                supportLinksContainer.innerHTML = '<li><span class="text-muted">リンクが登録されていません。</span></li>';
+                return;
+            }
+            
+            let html = '';
+            supportLinks.forEach(link => {
+                html += `
+                    <li class="pb-1">
+                        <a class="text-decoration-none text-white" href="${link.url}">
+                            <i class="fas fa-headset me-2"></i>${link.name}
+                        </a>
+                    </li>
+                `;
+            });
+            
+            supportLinksContainer.innerHTML = html;
         }
 
         // 카트 개수 업데이트 (Firebase 전용)
