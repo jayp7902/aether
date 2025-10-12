@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>特定商取引法に基づく表記 - Aether</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Hiragino Sans', 'ヒラギノ角ゴシック', 'Yu Gothic', 'メイリオ', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+        .legal-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .legal-header {
+            text-align: center;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .legal-section {
+            margin-bottom: 30px;
+        }
+        .legal-section h3 {
+            color: #333;
+            border-left: 4px solid #333;
+            padding-left: 15px;
+            margin-bottom: 15px;
+        }
+        .legal-item {
+            display: flex;
+            margin-bottom: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .legal-label {
+            font-weight: bold;
+            min-width: 200px;
+            color: #555;
+        }
+        .legal-value {
+            flex: 1;
+            color: #333;
+        }
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+        @media (max-width: 768px) {
+            .legal-item {
+                flex-direction: column;
+            }
+            .legal-label {
+                min-width: auto;
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="btn btn-outline-dark back-btn">
+        <i class="fas fa-arrow-left me-2"></i>ホームに戻る
+    </a>
+
+    <div class="legal-container">
+        <div class="legal-header">
+            <h1 class="display-6 fw-bold">特定商取引法に基づく表記</h1>
+            <p class="text-muted">Act on Specified Commercial Transactions</p>
+        </div>
+
+        <div class="legal-section">
+            <h3><i class="fas fa-building me-2"></i>事業者情報</h3>
+            <div class="legal-item">
+                <div class="legal-label">販売業者</div>
+                <div class="legal-value">Aether株式会社</div>
+            </div>
+            <div class="legal-item">
+                <div class="legal-label">代表者</div>
+                <div class="legal-value">[代表者名を入力してください]</div>
+            </div>
+            <div class="legal-item">
+                <div class="legal-label">所在地</div>
+                <div class="legal-value">〒100-0001<br>東京都千代田区千代田1-1-1<br>[実際の住所を入力してください]</div>
+            </div>
+            <div class="legal-item">
+                <div class="legal-label">電話番号</div>
+                <div class="legal-value">03-1234-5678</div>
+            </div>
+            <div class="legal-item">
+                <div class="legal-label">メールアドレス</div>
+                <div class="legal-value">info@aether-store.jp</div>
+            </div>
+            <div class="legal-item">
+                <div class="legal-label">事業者番号</div>
+                <div class="legal-value">[事業者番号を入力してください]</div>
+            </div>
+            <div class="legal-item">
+                <div class="legal-label">古物商許可証</div>
+                <div class="legal-value">[該当する場合のみ記載]</div>
+            </div>
+        </div>
+
+        <div class="legal-section">
+            <h3><i class="fas fa-shopping-cart me-2"></i>商品・サービス</h3>
+            <div class="legal-item">
+                <div class="legal-label">販売商品</div>
+                <div class="legal-value">化粧品・スキンケア商品</div>
+            </div>
+            <div class="legal-item">
+                <div class="legal-label">商品価格</div>
+                <div class="legal-value">各商品ページに表示（税込）</div>
+            </div>
+            <div class="legal-item">
+                <div class="legal-label">支払い方法</div>
+                <div class="legal-value">クレジットカード決済、銀行振込</div>
+            </div>
+            <div class="legal-item">
+                <div class="legal-label">支払い時期</div>
+                <div class="legal-value">クレジットカード：注文時<br>銀行振込：注文後3日以内</div>
+            </div>
+        </div>
+
+        <div class="legal-section">
+            <h3><i class="fas fa-truck me-2"></i>配送・発送</h3>
+            <div class="legal-item">
+                <div class="legal-label">配送方法</div>
+                <div class="legal-value">宅配便（ヤマト運輸、佐川急便）</div>
+            </div>
+            <div class="legal-item">
+                <div class="legal-label">配送料金</div>
+                <div class="legal-value">全国一律 500円<br>（10,000円以上のお買い物で送料無料）</div>
+            </div>
+            <div class="legal-item">
+                <div class="legal-label">発送時期</div>
+                <div class="legal-value">ご注文・ご入金確認後、1-3営業日以内に発送</div>
+            </div>
+            <div class="legal-item">
+                <div class="legal-label">配送地域</div>
+                <div class="legal-value">日本国内のみ</div>
+            </div>
+        </div>
+
+        <div class="legal-section">
+            <h3><i class="fas fa-undo me-2"></i>返品・交換・キャンセル</h3>
+            <div class="legal-item">
+                <div class="legal-label">返品期限</div>
+                <div class="legal-value">商品到着後8日以内</div>
+            </div>
+            <div class="legal-item">
+                <div class="legal-label">返品条件</div>
+                <div class="legal-value">・未開封・未使用の商品<br>・商品の初期不良<br>・お客様都合による返品の場合、送料はお客様負担</div>
+            </div>
+            <div class="legal-item">
+                <div class="legal-label">返品方法</div>
+                <div class="legal-value">事前にinfo@aether-store.jpまでご連絡ください</div>
+            </div>
+            <div class="legal-item">
+                <div class="legal-label">返金方法</div>
+                <div class="legal-value">ご指定の銀行口座への振込（振込手数料は弊社負担）</div>
+            </div>
+            <div class="legal-item">
+                <div class="legal-label">返金時期</div>
+                <div class="legal-value">返品商品到着確認後、3-5営業日以内</div>
+            </div>
+        </div>
+
+        <div class="legal-section">
+            <h3><i class="fas fa-user-shield me-2"></i>個人情報保護</h3>
+            <div class="legal-item">
+                <div class="legal-label">個人情報の取り扱い</div>
+                <div class="legal-value"><a href="privacy-policy.html" target="_blank">プライバシーポリシー</a>をご確認ください</div>
+            </div>
+        </div>
+
+        <div class="legal-section">
+            <h3><i class="fas fa-gavel me-2"></i>その他</h3>
+            <div class="legal-item">
+                <div class="legal-label">利用規約</div>
+                <div class="legal-value"><a href="terms-of-service.html" target="_blank">利用規約</a>をご確認ください</div>
+            </div>
+            <div class="legal-item">
+                <div class="legal-label">免責事項</div>
+                <div class="legal-value">天災地変その他不可抗力による配送遅延等について、弊社は責任を負いません</div>
+            </div>
+            <div class="legal-item">
+                <div class="legal-label">管轄裁判所</div>
+                <div class="legal-value">東京地方裁判所</div>
+            </div>
+        </div>
+
+        <div class="legal-section">
+            <h3><i class="fas fa-headset me-2"></i>お客様サポート</h3>
+            <div class="legal-item">
+                <div class="legal-label">営業時間</div>
+                <div class="legal-value">平日 9:00-18:00（土日祝日を除く）</div>
+            </div>
+            <div class="legal-item">
+                <div class="legal-label">お問い合わせ</div>
+                <div class="legal-value">メール: info@aether-store.jp<br>電話: 03-1234-5678</div>
+            </div>
+        </div>
+
+        <div class="text-center mt-5">
+            <small class="text-muted">
+                最終更新日: 2024年10月12日<br>
+                この表記は特定商取引法に基づくものです
+            </small>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
