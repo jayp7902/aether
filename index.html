@@ -499,15 +499,6 @@ https://templatemo.com/tm-559-aether
                         <!-- 법적 페이지 링크가 동적으로 로드됩니다 -->
                     </ul>
                     
-                    <h2 class="h2 text-white border-bottom pb-3 border-light mt-4">Support</h2>
-                    <ul class="list-unstyled text-white footer-link-list" id="footer-support-links">
-                        <!-- 고객 지원 링크가 동적으로 로드됩니다 -->
-                    </ul>
-                    
-                    <h2 class="h2 text-white border-bottom pb-3 border-light mt-4">Further Info</h2>
-                    <ul class="list-unstyled text-white footer-link-list" id="footer-further-info">
-                        <!-- Further Info 링크가 동적으로 로드됩니다 -->
-                    </ul>
                     
                 </div>
 
@@ -1294,11 +1285,10 @@ https://templatemo.com/tm-559-aether
                 if (window.firebase && window.firebase.apps && window.firebase.apps.length > 0) {
                     try {
                         // 관리자 페이지에서 설정한 푸터 설정들 로드
-                        const [footerContentSnapshot, quickLinksSnapshot, legalLinksSnapshot, supportLinksSnapshot] = await Promise.all([
+                        const [footerContentSnapshot, quickLinksSnapshot, legalLinksSnapshot] = await Promise.all([
                             window.firebase.firestore().collection('footer_content').limit(1).get(),
                             window.firebase.firestore().collection('footerSettings').doc('quickLinks').get(),
-                            window.firebase.firestore().collection('footerSettings').doc('legalLinks').get(),
-                            window.firebase.firestore().collection('footerSettings').doc('supportLinks').get()
+                            window.firebase.firestore().collection('footerSettings').doc('legalLinks').get()
                         ]);
                         
                         // footer_content에서 회사 정보와 브랜드 정보 로드
@@ -1311,8 +1301,6 @@ https://templatemo.com/tm-559-aether
                             companyInfo: footerContentData.companyInfo || [],
                             quickLinks: quickLinksSnapshot.exists ? quickLinksSnapshot.data().links || [] : [],
                             legalLinks: legalLinksSnapshot.exists ? legalLinksSnapshot.data().links || [] : [],
-                            supportLinks: supportLinksSnapshot.exists ? supportLinksSnapshot.data().links || [] : [],
-                            furtherInfoLinks: footerContentData.furtherInfoLinks || [],
                             brandNames: footerContentData.brandNames || []
                         };
                         
@@ -1331,9 +1319,7 @@ https://templatemo.com/tm-559-aether
                     footerData = { 
                         companyInfo: [], 
                         quickLinks: [], 
-                        legalLinks: [], 
-                        supportLinks: [],
-                        furtherInfoLinks: [], 
+                        legalLinks: [],
                         brandNames: [] 
                     };
                     console.log('📝 Firebase에 푸터 데이터 없음');
@@ -1349,9 +1335,7 @@ https://templatemo.com/tm-559-aether
                 const emptyFooterData = { 
                     companyInfo: [], 
                     quickLinks: [], 
-                    legalLinks: [], 
-                    supportLinks: [],
-                    furtherInfoLinks: [], 
+                    legalLinks: [],
                     brandNames: [] 
                 };
                 updateFooterHTML(emptyFooterData);
@@ -1370,17 +1354,11 @@ https://templatemo.com/tm-559-aether
             // 브랜드명 동적 로드
             updateFooterBrands(footerData.brandNames || []);
             
-            // Further Info 링크 동적 로드
-            updateFooterFurtherInfoLinks(footerData.furtherInfoLinks || []);
-            
             // 퀵 링크 동적 로드
             updateFooterQuickLinks(footerData.quickLinks || []);
             
             // 법적 페이지 링크 동적 로드
             updateFooterLegalLinks(footerData.legalLinks || []);
-            
-            // 고객 지원 링크 동적 로드
-            updateFooterSupportLinks(footerData.supportLinks || []);
             
             console.log('✅ 푸터 데이터 업데이트 완료');
         }
@@ -1520,32 +1498,6 @@ https://templatemo.com/tm-559-aether
             brandsListContainer.innerHTML = html;
         }
         
-        // 푸터 Further Info 링크 업데이트
-        function updateFooterFurtherInfoLinks(furtherInfoLinks) {
-            const furtherInfoContainer = document.getElementById('footer-further-info');
-            if (!furtherInfoContainer) return;
-            
-            if (furtherInfoLinks.length === 0) {
-                furtherInfoContainer.innerHTML = '<li><span class="text-muted">リンクが登録されていません。</span></li>';
-                return;
-            }
-            
-            // 순서대로 정렬
-            const sortedLinks = [...furtherInfoLinks].sort((a, b) => a.order - b.order);
-            
-            let html = '';
-            sortedLinks.forEach(link => {
-                html += `
-                    <li>
-                        <a class="text-decoration-none text-white" href="${link.link}">
-                            ${link.name}
-                        </a>
-                    </li>
-                `;
-            });
-            
-            furtherInfoContainer.innerHTML = html;
-        }
         
         // 푸터 퀵 링크 업데이트
         function updateFooterQuickLinks(quickLinks) {
@@ -1595,29 +1547,6 @@ https://templatemo.com/tm-559-aether
             legalLinksContainer.innerHTML = html;
         }
         
-        // 푸터 고객 지원 링크 업데이트
-        function updateFooterSupportLinks(supportLinks) {
-            const supportLinksContainer = document.getElementById('footer-support-links');
-            if (!supportLinksContainer) return;
-            
-            if (supportLinks.length === 0) {
-                supportLinksContainer.innerHTML = '<li><span class="text-muted">リンクが登録されていません。</span></li>';
-                return;
-            }
-            
-            let html = '';
-            supportLinks.forEach(link => {
-                html += `
-                    <li class="pb-1">
-                        <a class="text-decoration-none text-white" href="${link.url}">
-                            <i class="fas fa-headset me-2"></i>${link.name}
-                        </a>
-                    </li>
-                `;
-            });
-            
-            supportLinksContainer.innerHTML = html;
-        }
 
         // 카트 개수 업데이트 (Firebase 전용)
         async function updateCartCount() {
