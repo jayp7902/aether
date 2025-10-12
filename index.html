@@ -1285,24 +1285,23 @@ https://templatemo.com/tm-559-aether
                 if (window.firebase && window.firebase.apps && window.firebase.apps.length > 0) {
                     try {
                         // 캐싱 방지를 위해 source: 'server' 옵션 추가
-                        const [footerContentSnapshot, quickLinksSnapshot, legalLinksSnapshot] = await Promise.all([
-                            window.firebase.firestore().collection('footer_content').limit(1).get({ source: 'server' }),
-                            window.firebase.firestore().collection('footerSettings').doc('quickLinks').get({ source: 'server' }),
-                            window.firebase.firestore().collection('footerSettings').doc('legalLinks').get({ source: 'server' })
-                        ]);
+                        const footerContentSnapshot = await window.firebase.firestore().collection('footer_content').limit(1).get({ source: 'server' });
                         
-                        // footer_content에서 회사 정보와 브랜드 정보 로드
-                        let footerContentData = {};
+                        // footer_content에서 모든 데이터 로드
                         if (!footerContentSnapshot.empty) {
-                            footerContentData = footerContentSnapshot.docs[0].data();
+                            const footerContentData = footerContentSnapshot.docs[0].data();
+                            console.log('📊 Firebase footer_content 원본 데이터:', footerContentData);
+                            
+                            footerData = {
+                                companyInfo: footerContentData.companyInfo || [],
+                                quickLinks: footerContentData.quickLinks || [],
+                                legalLinks: footerContentData.legalLinks || [],
+                                brandNames: footerContentData.brandNames || []
+                            };
+                        } else {
+                            console.log('📝 Firebase에 footer_content 데이터 없음');
+                            footerData = {};
                         }
-                        
-                        footerData = {
-                            companyInfo: footerContentData.companyInfo || [],
-                            quickLinks: quickLinksSnapshot.exists ? quickLinksSnapshot.data().links || [] : [],
-                            legalLinks: legalLinksSnapshot.exists ? legalLinksSnapshot.data().links || [] : [],
-                            brandNames: footerContentData.brandNames || []
-                        };
                         
                         console.log('📊 Firebase에서 푸터 데이터 로드 완료:', footerData);
                     } catch (error) {
@@ -1475,23 +1474,37 @@ https://templatemo.com/tm-559-aether
             const quickLinksContainer = document.getElementById('footer-quick-links');
             if (!quickLinksContainer) return;
             
-            if (quickLinks.length === 0) {
+            console.log('🔗 퀵 링크 업데이트 시작:', quickLinks);
+            
+            if (!quickLinks || quickLinks.length === 0) {
                 quickLinksContainer.innerHTML = '<li><span class="text-muted">リンクが登録されていません。</span></li>';
                 return;
             }
             
             let html = '';
             quickLinks.forEach(link => {
-                html += `
-                    <li class="pb-1">
-                        <a class="text-decoration-none text-white" href="${link.url}">
-                            <i class="fas fa-bolt me-2"></i>${link.name}
-                        </a>
-                    </li>
-                `;
+                // link가 객체인지 문자열인지 확인
+                if (typeof link === 'object' && link.name && link.url) {
+                    html += `
+                        <li class="pb-1">
+                            <a class="text-decoration-none text-white" href="${link.url}">
+                                <i class="fas fa-bolt me-2"></i>${link.name}
+                            </a>
+                        </li>
+                    `;
+                } else if (typeof link === 'string') {
+                    html += `
+                        <li class="pb-1">
+                            <a class="text-decoration-none text-white" href="#">
+                                <i class="fas fa-bolt me-2"></i>${link}
+                            </a>
+                        </li>
+                    `;
+                }
             });
             
             quickLinksContainer.innerHTML = html;
+            console.log('✅ 퀵 링크 HTML 업데이트 완료');
         }
         
         // 푸터 법적 페이지 링크 업데이트
@@ -1499,23 +1512,37 @@ https://templatemo.com/tm-559-aether
             const legalLinksContainer = document.getElementById('footer-legal-links');
             if (!legalLinksContainer) return;
             
-            if (legalLinks.length === 0) {
+            console.log('⚖️ 법적 링크 업데이트 시작:', legalLinks);
+            
+            if (!legalLinks || legalLinks.length === 0) {
                 legalLinksContainer.innerHTML = '<li><span class="text-muted">リンクが登録されていません。</span></li>';
                 return;
             }
             
             let html = '';
             legalLinks.forEach(link => {
-                html += `
-                    <li class="pb-1">
-                        <a class="text-decoration-none text-white" href="${link.url}">
-                            <i class="fas fa-gavel me-2"></i>${link.name}
-                        </a>
-                    </li>
-                `;
+                // link가 객체인지 문자열인지 확인
+                if (typeof link === 'object' && link.name && link.url) {
+                    html += `
+                        <li class="pb-1">
+                            <a class="text-decoration-none text-white" href="${link.url}">
+                                <i class="fas fa-gavel me-2"></i>${link.name}
+                            </a>
+                        </li>
+                    `;
+                } else if (typeof link === 'string') {
+                    html += `
+                        <li class="pb-1">
+                            <a class="text-decoration-none text-white" href="#">
+                                <i class="fas fa-gavel me-2"></i>${link}
+                            </a>
+                        </li>
+                    `;
+                }
             });
             
             legalLinksContainer.innerHTML = html;
+            console.log('✅ 법적 링크 HTML 업데이트 완료');
         }
         
 
