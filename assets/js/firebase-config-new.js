@@ -1480,7 +1480,7 @@ class FirebaseService {
     // 배송 완료 시 포인트 부여 함수
     static async awardPointsOnDelivery(orderId) {
         console.log('📦 배송 완료 포인트 부여 시작:', orderId);
-        
+
         if (!this.isFirebaseAvailable()) {
             console.log('Firebase 사용 불가 - 네트워크 연결을 확인해주세요');
             return { 
@@ -1956,10 +1956,10 @@ class FirebaseService {
             
             console.log('QR 토큰 생성 성공:', qrToken);
             return { success: true, qrToken: qrToken };
-        } catch (error) {
+            } catch (error) {
             console.error('Firebase QR 토큰 생성 실패, localStorage로 폴백:', error);
-            return { 
-                success: false, 
+        return { 
+            success: false, 
                 error: error.code || 'qr-token-failed', 
                 message: 'QR 토큰 생성에 실패했습니다. 다시 시도해주세요.' 
             };
@@ -2588,7 +2588,7 @@ class FirebaseService {
      */
     static async getPointExpiryInfo(userId) {
         try {
-            if (!this.isFirebaseAvailable()) {
+        if (!this.isFirebaseAvailable()) {
                 return this.getPointExpiryInfoOffline(userId);
             }
             
@@ -2603,7 +2603,7 @@ class FirebaseService {
                 .where('type', '==', 'earn')
                 .where('expired', '!=', true)
                 .get();
-            
+
             let soonExpirePoints = 0;
             let totalActivePoints = 0;
             
@@ -2700,8 +2700,8 @@ class FirebaseService {
                 const adminCheck = await this.checkAdminPermission(user.email);
                 
                 if (adminCheck.success) {
-                    return {
-                        success: true,
+                    return { 
+                        success: true, 
                         admin: {
                             uid: user.uid || 'local_' + Date.now(),
                             email: user.email,
@@ -2889,12 +2889,12 @@ class FirebaseService {
                     // 계산된 포인트로 사용자 결과 업데이트
                     userResult.points = calculatedPoints;
                     
-                    return { 
-                        success: true, 
+            return { 
+                success: true, 
                         user: userResult
-                    };
+            };
                 }
-            } catch (error) {
+        } catch (error) {
                 console.error('Firebase QR 토큰 조회 실패, localStorage로 폴백:', error);
             }
         }
@@ -2906,7 +2906,7 @@ class FirebaseService {
             
             if (user) {
                 console.log('localStorage에서 QR 토큰 사용자 조회 성공');
-                return {
+            return { 
                     success: true,
                     user: {
                         uid: user.uid,
@@ -3006,7 +3006,7 @@ class FirebaseService {
                         } else {
                             console.log('Firebase에서 기존 QR토큰 없음');
                         }
-                    } catch (error) {
+        } catch (error) {
                         console.warn('Firebase에서 기존 토큰 확인 실패:', error);
                     }
                 }
@@ -3164,7 +3164,7 @@ class FirebaseService {
             console.log(`Firebase 포인트 이력 조회 성공: ${history.length}건`);
             return history;
             
-        } catch (error) {
+    } catch (error) {
             console.error('Firebase 포인트 이력 조회 실패:', error);
             return this.getPointHistoryOffline(userId);
         }
@@ -3180,7 +3180,7 @@ class FirebaseService {
      */
     static async getOrderHistory(userId) {
         try {
-            if (!this.isFirebaseAvailable()) {
+        if (!this.isFirebaseAvailable()) {
                 console.log('Firebase 연결 실패 - 주문 이력 조회 불가 (Firebase 전용)');
                 return [];
             }
@@ -3308,19 +3308,19 @@ class FirebaseService {
     // 포인트 이력 조회 (Firebase)
     static async getPointHistory(uid) {
         console.log('포인트 이력 조회 시작:', uid);
-        
+
         if (!this.isFirebaseAvailable()) {
             console.log('Firebase 사용 불가 - 네트워크 연결을 확인해주세요');
             return [];
         }
-        
+
         try {
             const snapshot = await db.collection('pointHistory')
                 .where('userId', '==', uid)
                 .orderBy('timestamp', 'desc')
                 .limit(50)
                 .get();
-            
+
             const history = [];
             snapshot.forEach(doc => {
                 const data = doc.data();
