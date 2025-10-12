@@ -1430,37 +1430,8 @@ https://templatemo.com/tm-559-aether
                 return;
             }
             
-            // 하위 호환성: 기존 필드들도 지원
-            let html = '';
-            
-            if (footerData.address) {
-                html += `
-                    <li>
-                        <i class="fas fa-map-marker-alt fa-fw"></i>
-                        <span class="japanese-text">${footerData.address}</span>
-                    </li>
-                `;
-            }
-            
-            if (footerData.phone) {
-                html += `
-                    <li>
-                        <i class="fa fa-phone fa-fw"></i>
-                        <a class="text-decoration-none text-white" href="tel:${footerData.phone}">${footerData.phone}</a>
-                    </li>
-                `;
-            }
-            
-            if (footerData.email) {
-                html += `
-                    <li>
-                        <i class="fa fa-envelope fa-fw"></i>
-                        <a class="text-decoration-none text-white" href="mailto:${footerData.email}">${footerData.email}</a>
-                    </li>
-                `;
-            }
-            
-            companyInfoContainer.innerHTML = html;
+            // Firebase에서 데이터가 없으면 빈 상태 메시지 표시
+            companyInfoContainer.innerHTML = '<li><span class="text-muted japanese-text">会社情報が登録されていません。</span></li>';
         }
         
         // 푸터 브랜드명 업데이트

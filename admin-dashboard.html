@@ -15812,31 +15812,9 @@
                 console.log('🦶 기본 푸터 데이터 생성 시작');
                 
                 const defaultFooterData = {
-                companyInfo: [
-                        { type: 'address', name: '住所', value: '〒169-0072 東京都新宿区大久保2丁目21-10 ジュネス大久保 102号', order: 1 },
-                        { type: 'email', name: 'メールアドレス', value: 'aether7info@gmail.com', order: 2 },
-                        { type: 'phone', name: '電話番号', value: '03.3200.5547', order: 3 },
-                        { type: 'fax', name: 'ファックス', value: '03.3200.5548', order: 4 },
-                        { type: 'hours', name: '営業時間', value: '平日 9:00-18:00', order: 5 }
-                ],
-                furtherInfoLinks: [
-                    { name: 'Home', link: 'index.html', order: 1 },
-                    { name: 'About Us', link: 'about.html', order: 2 },
-                    { name: 'Shop Locations', link: 'shop.html', order: 3 },
-                    { name: 'FAQs', link: 'faqs.html', order: 4 },
-                    { name: 'Contact', link: 'contact.html', order: 5 }
-                ],
-                brandNames: [
-                    { name: 'LALARECIPE', link: 'brands/lalarecipe.html', order: 1 },
-                    { name: 'LUCINDE', link: 'brands/lucinde.html', order: 2 },
-                    { name: 'COSCELL', link: 'brands/coscell.html', order: 3 },
-                    { name: 'Make heal', link: 'brands/makeheal.html', order: 4 },
-                    { name: 'Monday Museum', link: 'brands/mondaymuseum.html', order: 5 },
-                    { name: 'Plareceta', link: 'brands/plareceta.html', order: 6 },
-                    { name: 'Catch By Sonyouna', link: 'brands/catchbysonyouna.html', order: 7 },
-                    { name: 'Medipeel', link: 'brands/medipeel.html', order: 8 },
-                    { name: 'Dancing Whale', link: 'brands/dancingwhale.html', order: 9 }
-                    ],
+                    companyInfo: [],
+                    furtherInfoLinks: [],
+                    brandNames: [],
                     createdAt: new Date().toISOString(),
                     updatedAt: new Date().toISOString()
                 };
@@ -15854,8 +15832,8 @@
                     batch.set(docRef, defaultFooterData);
                     
                     await batch.commit();
-                    console.log('✅ 기본 푸터 데이터 생성 완료');
-                    showAlert('기본 푸터 데이터가 생성되었습니다.', 'success');
+                    console.log('✅ 빈 푸터 데이터 생성 완료');
+                    showAlert('빈 푸터 데이터가 생성되었습니다. 관리자 페이지에서 정보를 입력해주세요.', 'success');
                 } else {
                     console.error('Firebase가 초기화되지 않았습니다.');
                     showAlert('Firebase 연결을 확인해주세요.', 'error');
