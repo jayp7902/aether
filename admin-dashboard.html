@@ -2903,13 +2903,10 @@
             <!-- 푸터 관리 탭 -->
             <div class="tab-pane fade" id="footer-section" role="tabpanel" aria-labelledby="footer-tab">
                 <div class="order-management pt-5">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="mb-4">
                         <h3 class="japanese-heading mb-0">
-                            <i class="fas fa-shoe-prints me-2"></i>フッター管理
-                        </h3>
-                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="window.clearAllFooterData()">
-                            <i class="fas fa-trash me-2"></i>データ初期化
-                        </button>
+                        <i class="fas fa-shoe-prints me-2"></i>フッター管理
+                    </h3>
                     </div>
                     
                     <div class="card">
@@ -2972,7 +2969,7 @@
                                                             <i class="fas fa-building me-2 text-secondary"></i>会社名 (フッター用)
                                                         </label>
                                                         <input type="text" class="form-control" id="company-name-footer" placeholder="フッターに表示する会社名を入力してください">
-                                                    </div>
+                                                </div>
                                                     
                                                     <!-- 회사 설명 (푸터용) -->
                                                     <div class="col-12">
@@ -2980,7 +2977,7 @@
                                                             <i class="fas fa-info-circle me-2 text-secondary"></i>会社説明 (フッター用)
                                                         </label>
                                                         <textarea class="form-control" id="company-description-footer" rows="3" placeholder="フッターに表示する会社の簡単な説明を入力してください"></textarea>
-                                                    </div>
+                                            </div>
                                                     
                                                     <!-- 소셜 미디어 링크 -->
                                                     <div class="col-12">
@@ -2990,11 +2987,11 @@
                                                         <div class="row g-2">
                                                             <div class="col-md-6">
                                                                 <input type="text" class="form-control" id="social-facebook" placeholder="Facebook URL">
-                                                            </div>
+                                        </div>
                                                             <div class="col-md-6">
                                                                 <input type="text" class="form-control" id="social-instagram" placeholder="Instagram URL">
-                                                            </div>
-                                                            <div class="col-md-6">
+                                    </div>
+                                    <div class="col-md-6">
                                                                 <input type="text" class="form-control" id="social-twitter" placeholder="Twitter URL">
                                                             </div>
                                                             <div class="col-md-6">
@@ -3018,20 +3015,20 @@
                                                     <div class="row g-2">
                                                         <div class="col-md-6">
                                                             <input type="text" class="form-control" id="quick-link-name" placeholder="リンク名 (例: 会社概要)">
-                                                        </div>
+                                                    </div>
                                                         <div class="col-md-6">
                                                             <input type="text" class="form-control" id="quick-link-url" placeholder="リンク先 (例: about.html)">
-                                                        </div>
+                                                    </div>
                                                         <div class="col-12">
                                                             <button type="button" class="btn btn-outline-secondary w-100" onclick="window.addQuickLink()">
                                                                 <i class="fas fa-plus me-2"></i>クイックリンク追加
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                    <div id="quick-links-list" class="mt-3">
-                                                        <!-- 퀵 링크 리스트 -->
+                                                        </button>
                                                     </div>
                                                 </div>
+                                                    <div id="quick-links-list" class="mt-3">
+                                                        <!-- 퀵 링크 리스트 -->
+                                                </div>
+                                            </div>
                                                 
                                                 <!-- 법적 페이지 링크 섹션 -->
                                                 <div class="mb-4">
@@ -3041,7 +3038,7 @@
                                                     <div class="row g-2">
                                                         <div class="col-md-6">
                                                             <input type="text" class="form-control" id="legal-link-name" placeholder="リンク名 (例: 特定商取引法)">
-                                                        </div>
+                                        </div>
                                                         <div class="col-md-6">
                                                             <input type="text" class="form-control" id="legal-link-url" placeholder="リンク先 (例: legal-terms.html)">
                                                         </div>
@@ -15806,46 +15803,6 @@
             }
         }
 
-        // Firebase 푸터 데이터 완전 초기화
-        window.clearAllFooterData = async function() {
-            try {
-                console.log('🗑️ Firebase 푸터 데이터 완전 삭제 시작');
-                
-                if (window.firebase && window.firebase.firestore) {
-                    // footer_content 컬렉션의 모든 문서 삭제
-                    const footerContentSnapshot = await window.firebase.firestore().collection('footer_content').get();
-                    const footerBatch = window.firebase.firestore().batch();
-                    
-                    footerContentSnapshot.docs.forEach(doc => {
-                        footerBatch.delete(doc.ref);
-                        console.log('🗑️ footer_content 문서 삭제:', doc.id);
-                    });
-                    
-                    // footerSettings 컬렉션의 모든 문서 삭제
-                    const footerSettingsSnapshot = await window.firebase.firestore().collection('footerSettings').get();
-                    footerSettingsSnapshot.docs.forEach(doc => {
-                        footerBatch.delete(doc.ref);
-                        console.log('🗑️ footerSettings 문서 삭제:', doc.id);
-                    });
-                    
-                    await footerBatch.commit();
-                    console.log('✅ Firebase 푸터 데이터 완전 삭제 완료');
-                    showAlert('모든 푸터 데이터가 삭제되었습니다. 이제 관리자 페이지에서 새로 입력해주세요.', 'success');
-                    
-                    // 페이지 새로고침하여 빈 상태로 표시
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 2000);
-                } else {
-                    console.error('Firebase가 초기화되지 않았습니다.');
-                    showAlert('Firebase 연결을 확인해주세요.', 'error');
-                }
-                
-            } catch (error) {
-                console.error('❌ Firebase 푸터 데이터 삭제 오류:', error);
-                showAlert('데이터 삭제에 실패했습니다.', 'error');
-            }
-        }
 
         // 푸터 폼에 데이터 설정
         window.setFooterFormData = function(data) {
