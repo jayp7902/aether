@@ -811,6 +811,7 @@
             
             console.log('🏢 회사 정보 업데이트 시작:', footerData.companyInfo);
             
+            // companyInfo 배열이 있는 경우
             if (footerData.companyInfo && Array.isArray(footerData.companyInfo)) {
                 if (footerData.companyInfo.length === 0) {
                     companyInfoContainer.innerHTML = '';
@@ -818,14 +819,46 @@
                     return;
                 }
                 
+                // 순서대로 정렬
                 const sortedInfo = [...footerData.companyInfo].sort((a, b) => a.order - b.order);
                 console.log('📊 정렬된 회사 정보:', sortedInfo);
                 
                 let html = '';
                 sortedInfo.forEach(info => {
+                    let icon = '';
+                    let content = '';
+                    
+                    // 타입에 따라 아이콘과 링크 설정
+                    switch (info.type) {
+                        case 'address':
+                            icon = '<i class="fas fa-map-marker-alt fa-fw"></i>';
+                            content = info.value;
+                            break;
+                        case 'phone':
+                            icon = '<i class="fas fa-phone fa-fw"></i>';
+                            content = `<a class="text-decoration-none text-white" href="tel:${info.value}">${info.value}</a>`;
+                            break;
+                        case 'email':
+                            icon = '<i class="fas fa-envelope fa-fw"></i>';
+                            content = `<a class="text-decoration-none text-white" href="mailto:${info.value}">${info.value}</a>`;
+                            break;
+                        case 'fax':
+                            icon = '<i class="fas fa-fax fa-fw"></i>';
+                            content = info.value;
+                            break;
+                        case 'hours':
+                            icon = '<i class="fas fa-clock fa-fw"></i>';
+                            content = info.value;
+                            break;
+                        default:
+                            icon = '<i class="fas fa-info-circle fa-fw"></i>';
+                            content = info.value || info.name;
+                    }
+                    
                     html += `
-                        <li>
-                            <span class="text-white">${info.name}</span>
+                        <li class="pb-1">
+                            ${icon}
+                            <span class="ms-2 text-white">${content}</span>
                         </li>
                     `;
                 });
