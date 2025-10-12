@@ -29,7 +29,7 @@ exports.handler = async (event, context) => {
 
   try {
     // 요청 본문 파싱
-    const { amount, currency, orderData } = JSON.parse(event.body);
+    const { amount, currency, orderData, customerAddress } = JSON.parse(event.body);
 
     // 유효성 검사
     if (!amount || amount <= 0) {
@@ -57,6 +57,18 @@ exports.handler = async (event, context) => {
         enabled: true,
         allow_redirects: 'never'
       },
+      automatic_tax: {
+        enabled: true, // 세금 자동 계산 활성화
+      },
+      // 고객 주소 정보 (세금 계산용)
+      shipping: customerAddress ? {
+        address: {
+          country: customerAddress.country || 'JP',
+          postal_code: customerAddress.postal_code,
+          city: customerAddress.city,
+          line1: customerAddress.line1
+        }
+      } : undefined,
       metadata: metadata,
       description: `注文 ${metadata.orderId} - ${metadata.itemCount}点`,
     });
