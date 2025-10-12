@@ -2965,29 +2965,118 @@
                                                         </label>
                                                         <input type="text" class="form-control" id="company-hours" placeholder="営業時間を入力してください (例: 平日 9:00-18:00)">
                                                     </div>
+                                                    
+                                                    <!-- 회사명 (푸터용) -->
+                                                    <div class="col-12">
+                                                        <label class="form-label">
+                                                            <i class="fas fa-building me-2 text-secondary"></i>会社名 (フッター用)
+                                                        </label>
+                                                        <input type="text" class="form-control" id="company-name-footer" placeholder="フッターに表示する会社名を入力してください">
+                                                    </div>
+                                                    
+                                                    <!-- 회사 설명 (푸터용) -->
+                                                    <div class="col-12">
+                                                        <label class="form-label">
+                                                            <i class="fas fa-info-circle me-2 text-secondary"></i>会社説明 (フッター用)
+                                                        </label>
+                                                        <textarea class="form-control" id="company-description-footer" rows="3" placeholder="フッターに表示する会社の簡単な説明を入力してください"></textarea>
+                                                    </div>
+                                                    
+                                                    <!-- 소셜 미디어 링크 -->
+                                                    <div class="col-12">
+                                                        <label class="form-label">
+                                                            <i class="fas fa-share-alt me-2 text-secondary"></i>ソーシャルメディア
+                                                        </label>
+                                                        <div class="row g-2">
+                                                            <div class="col-md-6">
+                                                                <input type="text" class="form-control" id="social-facebook" placeholder="Facebook URL">
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <input type="text" class="form-control" id="social-instagram" placeholder="Instagram URL">
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <input type="text" class="form-control" id="social-twitter" placeholder="Twitter URL">
+                                                            </div>
+                                                            <div class="col-md-6">
+                                                                <input type="text" class="form-control" id="social-youtube" placeholder="YouTube URL">
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <h6 class="japanese-heading">Further Info リンク</h6>
+                                        <h6 class="japanese-heading">フッター リンク管理</h6>
                                         <div class="card">
                                             <div class="card-body">
-                                                <div class="row mb-3">
-                                                    <div class="col-md-4">
-                                                        <input type="text" class="form-control" id="new-further-info-name" placeholder="リンク名を入力">
+                                                <!-- 퀵 링크 섹션 -->
+                                                <div class="mb-4">
+                                                    <h6 class="japanese-heading text-secondary mb-3">
+                                                        <i class="fas fa-bolt me-2"></i>クイックリンク
+                                                    </h6>
+                                                    <div class="row g-2">
+                                                        <div class="col-md-6">
+                                                            <input type="text" class="form-control" id="quick-link-name" placeholder="リンク名 (例: 会社概要)">
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <input type="text" class="form-control" id="quick-link-url" placeholder="リンク先 (例: about.html)">
+                                                        </div>
+                                                        <div class="col-12">
+                                                            <button type="button" class="btn btn-outline-secondary w-100" onclick="window.addQuickLink()">
+                                                                <i class="fas fa-plus me-2"></i>クイックリンク追加
+                                                            </button>
+                                                        </div>
                                                     </div>
-                                                    <div class="col-md-4">
-                                                        <input type="text" class="form-control" id="new-further-info-link" placeholder="リンク先 (例: about.html)">
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <button type="button" class="btn btn-secondary w-100" onclick="window.addFurtherInfoLink()">
-                                                            <i class="fas fa-plus me-2"></i>リンク追加
-                                                        </button>
+                                                    <div id="quick-links-list" class="mt-3">
+                                                        <!-- 퀵 링크 리스트 -->
                                                     </div>
                                                 </div>
-                                                <div id="further-info-links-list">
-                                                    <!-- Further Info 링크가 여기에 동적으로 생성됩니다 -->
+                                                
+                                                <!-- 법적 페이지 링크 섹션 -->
+                                                <div class="mb-4">
+                                                    <h6 class="japanese-heading text-secondary mb-3">
+                                                        <i class="fas fa-gavel me-2"></i>法的ページ
+                                                    </h6>
+                                                    <div class="row g-2">
+                                                        <div class="col-md-6">
+                                                            <input type="text" class="form-control" id="legal-link-name" placeholder="リンク名 (例: 特定商取引法)">
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <input type="text" class="form-control" id="legal-link-url" placeholder="リンク先 (例: legal-terms.html)">
+                                                        </div>
+                                                        <div class="col-12">
+                                                            <button type="button" class="btn btn-outline-secondary w-100" onclick="window.addLegalLink()">
+                                                                <i class="fas fa-plus me-2"></i>法的ページリンク追加
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <div id="legal-links-list" class="mt-3">
+                                                        <!-- 법적 페이지 링크 리스트 -->
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- 고객 지원 링크 섹션 -->
+                                                <div class="mb-4">
+                                                    <h6 class="japanese-heading text-secondary mb-3">
+                                                        <i class="fas fa-headset me-2"></i>カスタマーサポート
+                                                    </h6>
+                                                    <div class="row g-2">
+                                                        <div class="col-md-6">
+                                                            <input type="text" class="form-control" id="support-link-name" placeholder="リンク名 (例: よくある質問)">
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <input type="text" class="form-control" id="support-link-url" placeholder="リンク先 (例: faq.html)">
+                                                        </div>
+                                                        <div class="col-12">
+                                                            <button type="button" class="btn btn-outline-secondary w-100" onclick="window.addSupportLink()">
+                                                                <i class="fas fa-plus me-2"></i>サポートリンク追加
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <div id="support-links-list" class="mt-3">
+                                                        <!-- 고객 지원 링크 리스트 -->
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -4919,6 +5008,19 @@
             // Firebase 초기화 완료 후 관리자 대시보드 초기화
             waitForFirebaseAndInitialize();
             initializeTabNavigation();
+            
+            // 푸터 링크들 로드
+            setTimeout(() => {
+                if (typeof window.loadQuickLinks === 'function') {
+                    window.loadQuickLinks();
+                }
+                if (typeof window.loadLegalLinks === 'function') {
+                    window.loadLegalLinks();
+                }
+                if (typeof window.loadSupportLinks === 'function') {
+                    window.loadSupportLinks();
+                }
+            }, 2000);
             
             // 메일 검색 버튼 이벤트 리스너 추가
             setTimeout(() => {
@@ -16033,7 +16135,274 @@
             linksListContainer.innerHTML = html;
         }
 
-        // Further Info 링크 추가
+        // 퀵 링크 추가
+        window.addQuickLink = function() {
+            const linkNameInput = document.getElementById('quick-link-name');
+            const linkUrlInput = document.getElementById('quick-link-url');
+            if (!linkNameInput || !linkUrlInput) return;
+            
+            const linkName = linkNameInput.value.trim();
+            const linkUrl = linkUrlInput.value.trim();
+            
+            if (!linkName || !linkUrl) {
+                showAlert('リンク名とリンク先を入力してください。', 'warning');
+                return;
+            }
+            
+            // Firebase에 저장
+            const quickLinksRef = db.collection('footerSettings').doc('quickLinks');
+            quickLinksRef.get().then(doc => {
+                const currentLinks = doc.exists ? doc.data().links || [] : [];
+                currentLinks.push({
+                    name: linkName,
+                    url: linkUrl,
+                    id: Date.now().toString()
+                });
+                
+                return quickLinksRef.set({ links: currentLinks });
+            }).then(() => {
+                linkNameInput.value = '';
+                linkUrlInput.value = '';
+                loadQuickLinks();
+                showAlert('クイックリンクが追加されました。', 'success');
+            }).catch(error => {
+                console.error('퀵 링크 추가 오류:', error);
+                showAlert('クイックリンクの追加に失敗しました。', 'danger');
+            });
+        };
+        
+        // 퀵 링크 로드
+        window.loadQuickLinks = function() {
+            const quickLinksRef = db.collection('footerSettings').doc('quickLinks');
+            quickLinksRef.get().then(doc => {
+                const links = doc.exists ? doc.data().links || [] : [];
+                displayQuickLinks(links);
+            }).catch(error => {
+                console.error('퀵 링크 로드 오류:', error);
+            });
+        };
+        
+        // 퀵 링크 표시
+        function displayQuickLinks(links) {
+            const container = document.getElementById('quick-links-list');
+            if (!container) return;
+            
+            let html = '';
+            links.forEach(link => {
+                html += `
+                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                        <div>
+                            <strong>${link.name}</strong>
+                            <br><small class="text-muted">${link.url}</small>
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteQuickLink('${link.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html || '<p class="text-muted">クイックリンクがありません。</p>';
+        }
+        
+        // 퀵 링크 삭제
+        window.deleteQuickLink = function(linkId) {
+            if (!confirm('このクイックリンクを削除しますか？')) return;
+            
+            const quickLinksRef = db.collection('footerSettings').doc('quickLinks');
+            quickLinksRef.get().then(doc => {
+                const currentLinks = doc.exists ? doc.data().links || [] : [];
+                const filteredLinks = currentLinks.filter(link => link.id !== linkId);
+                
+                return quickLinksRef.set({ links: filteredLinks });
+            }).then(() => {
+                loadQuickLinks();
+                showAlert('クイックリンクが削除されました。', 'success');
+            }).catch(error => {
+                console.error('퀵 링크 삭제 오류:', error);
+                showAlert('クイックリンクの削除に失敗しました。', 'danger');
+            });
+        };
+        
+        // 법적 페이지 링크 추가
+        window.addLegalLink = function() {
+            const linkNameInput = document.getElementById('legal-link-name');
+            const linkUrlInput = document.getElementById('legal-link-url');
+            if (!linkNameInput || !linkUrlInput) return;
+            
+            const linkName = linkNameInput.value.trim();
+            const linkUrl = linkUrlInput.value.trim();
+            
+            if (!linkName || !linkUrl) {
+                showAlert('リンク名とリンク先を入力してください。', 'warning');
+                return;
+            }
+            
+            // Firebase에 저장
+            const legalLinksRef = db.collection('footerSettings').doc('legalLinks');
+            legalLinksRef.get().then(doc => {
+                const currentLinks = doc.exists ? doc.data().links || [] : [];
+                currentLinks.push({
+                    name: linkName,
+                    url: linkUrl,
+                    id: Date.now().toString()
+                });
+                
+                return legalLinksRef.set({ links: currentLinks });
+            }).then(() => {
+                linkNameInput.value = '';
+                linkUrlInput.value = '';
+                loadLegalLinks();
+                showAlert('法的ページリンクが追加されました。', 'success');
+            }).catch(error => {
+                console.error('법적 페이지 링크 추가 오류:', error);
+                showAlert('法的ページリンクの追加に失敗しました。', 'danger');
+            });
+        };
+        
+        // 법적 페이지 링크 로드
+        window.loadLegalLinks = function() {
+            const legalLinksRef = db.collection('footerSettings').doc('legalLinks');
+            legalLinksRef.get().then(doc => {
+                const links = doc.exists ? doc.data().links || [] : [];
+                displayLegalLinks(links);
+            }).catch(error => {
+                console.error('법적 페이지 링크 로드 오류:', error);
+            });
+        };
+        
+        // 법적 페이지 링크 표시
+        function displayLegalLinks(links) {
+            const container = document.getElementById('legal-links-list');
+            if (!container) return;
+            
+            let html = '';
+            links.forEach(link => {
+                html += `
+                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                        <div>
+                            <strong>${link.name}</strong>
+                            <br><small class="text-muted">${link.url}</small>
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteLegalLink('${link.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html || '<p class="text-muted">法的ページリンクがありません。</p>';
+        }
+        
+        // 법적 페이지 링크 삭제
+        window.deleteLegalLink = function(linkId) {
+            if (!confirm('この法的ページリンクを削除しますか？')) return;
+            
+            const legalLinksRef = db.collection('footerSettings').doc('legalLinks');
+            legalLinksRef.get().then(doc => {
+                const currentLinks = doc.exists ? doc.data().links || [] : [];
+                const filteredLinks = currentLinks.filter(link => link.id !== linkId);
+                
+                return legalLinksRef.set({ links: filteredLinks });
+            }).then(() => {
+                loadLegalLinks();
+                showAlert('法的ページリンクが削除されました。', 'success');
+            }).catch(error => {
+                console.error('법적 페이지 링크 삭제 오류:', error);
+                showAlert('法的ページリンクの削除に失敗しました。', 'danger');
+            });
+        };
+        
+        // 고객 지원 링크 추가
+        window.addSupportLink = function() {
+            const linkNameInput = document.getElementById('support-link-name');
+            const linkUrlInput = document.getElementById('support-link-url');
+            if (!linkNameInput || !linkUrlInput) return;
+            
+            const linkName = linkNameInput.value.trim();
+            const linkUrl = linkUrlInput.value.trim();
+            
+            if (!linkName || !linkUrl) {
+                showAlert('リンク名とリンク先を入力してください。', 'warning');
+                return;
+            }
+            
+            // Firebase에 저장
+            const supportLinksRef = db.collection('footerSettings').doc('supportLinks');
+            supportLinksRef.get().then(doc => {
+                const currentLinks = doc.exists ? doc.data().links || [] : [];
+                currentLinks.push({
+                    name: linkName,
+                    url: linkUrl,
+                    id: Date.now().toString()
+                });
+                
+                return supportLinksRef.set({ links: currentLinks });
+            }).then(() => {
+                linkNameInput.value = '';
+                linkUrlInput.value = '';
+                loadSupportLinks();
+                showAlert('サポートリンクが追加されました。', 'success');
+            }).catch(error => {
+                console.error('고객 지원 링크 추가 오류:', error);
+                showAlert('サポートリンクの追加に失敗しました。', 'danger');
+            });
+        };
+        
+        // 고객 지원 링크 로드
+        window.loadSupportLinks = function() {
+            const supportLinksRef = db.collection('footerSettings').doc('supportLinks');
+            supportLinksRef.get().then(doc => {
+                const links = doc.exists ? doc.data().links || [] : [];
+                displaySupportLinks(links);
+            }).catch(error => {
+                console.error('고객 지원 링크 로드 오류:', error);
+            });
+        };
+        
+        // 고객 지원 링크 표시
+        function displaySupportLinks(links) {
+            const container = document.getElementById('support-links-list');
+            if (!container) return;
+            
+            let html = '';
+            links.forEach(link => {
+                html += `
+                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 border rounded">
+                        <div>
+                            <strong>${link.name}</strong>
+                            <br><small class="text-muted">${link.url}</small>
+                        </div>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteSupportLink('${link.id}')">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html || '<p class="text-muted">サポートリンクがありません。</p>';
+        }
+        
+        // 고객 지원 링크 삭제
+        window.deleteSupportLink = function(linkId) {
+            if (!confirm('このサポートリンクを削除しますか？')) return;
+            
+            const supportLinksRef = db.collection('footerSettings').doc('supportLinks');
+            supportLinksRef.get().then(doc => {
+                const currentLinks = doc.exists ? doc.data().links || [] : [];
+                const filteredLinks = currentLinks.filter(link => link.id !== linkId);
+                
+                return supportLinksRef.set({ links: filteredLinks });
+            }).then(() => {
+                loadSupportLinks();
+                showAlert('サポートリンクが削除されました。', 'success');
+            }).catch(error => {
+                console.error('고객 지원 링크 삭제 오류:', error);
+                showAlert('サポートリンクの削除に失敗しました。', 'danger');
+            });
+        };
+        
+        // 기존 Further Info 링크 추가 (호환성을 위해 유지)
         window.addFurtherInfoLink = function() {
             const newLinkNameInput = document.getElementById('new-further-info-name');
             const newLinkUrlInput = document.getElementById('new-further-info-link');
