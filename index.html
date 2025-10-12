@@ -1381,7 +1381,7 @@ https://templatemo.com/tm-559-aether
             // companyInfo 배열이 있는 경우
             if (footerData.companyInfo && Array.isArray(footerData.companyInfo)) {
                 if (footerData.companyInfo.length === 0) {
-                    companyInfoContainer.innerHTML = '<li><span class="text-muted japanese-text">会社情報が登録されていません。</span></li>';
+                    companyInfoContainer.innerHTML = '';
                     console.log('📝 회사 정보가 없습니다');
                     return;
                 }
@@ -1435,8 +1435,8 @@ https://templatemo.com/tm-559-aether
                 return;
             }
             
-            // Firebase에서 데이터가 없으면 빈 상태 메시지 표시
-            companyInfoContainer.innerHTML = '<li><span class="text-muted japanese-text">会社情報が登録されていません。</span></li>';
+            // Firebase에서 데이터가 없으면 빈 상태로 표시
+            companyInfoContainer.innerHTML = '';
         }
         
         // 푸터 브랜드명 업데이트
@@ -1445,7 +1445,7 @@ https://templatemo.com/tm-559-aether
             if (!brandsListContainer) return;
             
             if (brandNames.length === 0) {
-                brandsListContainer.innerHTML = '<li><span class="text-muted">ブランドが登録されていません。</span></li>';
+                brandsListContainer.innerHTML = '';
                 return;
             }
             
@@ -1483,7 +1483,7 @@ https://templatemo.com/tm-559-aether
             console.log('🔗 퀵 링크 업데이트 시작:', quickLinks);
             
             if (!quickLinks || quickLinks.length === 0) {
-                quickLinksContainer.innerHTML = '<li><span class="text-muted">リンクが登録されていません。</span></li>';
+                quickLinksContainer.innerHTML = '';
                 return;
             }
             
@@ -1521,7 +1521,7 @@ https://templatemo.com/tm-559-aether
             console.log('⚖️ 법적 링크 업데이트 시작:', legalLinks);
             
             if (!legalLinks || legalLinks.length === 0) {
-                legalLinksContainer.innerHTML = '<li><span class="text-muted">リンクが登録されていません。</span></li>';
+                legalLinksContainer.innerHTML = '';
                 return;
             }
             
