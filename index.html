@@ -1292,12 +1292,18 @@ https://templatemo.com/tm-559-aether
                             const footerContentData = footerContentSnapshot.docs[0].data();
                             console.log('📊 Firebase footer_content 원본 데이터:', footerContentData);
                             
-                            footerData = {
-                                companyInfo: footerContentData.companyInfo || [],
-                                quickLinks: footerContentData.quickLinks || [],
-                                legalLinks: footerContentData.legalLinks || [],
-                                brandNames: footerContentData.brandNames || []
-                            };
+                        footerData = {
+                            companyInfo: footerContentData.companyInfo || [],
+                            quickLinks: footerContentData.quickLinks || [],
+                            legalLinks: footerContentData.legalLinks || [],
+                            brandNames: footerContentData.brandNames || []
+                        };
+                        
+                        // 관리자 페이지에서 저장한 구조와 호환성 확보
+                        if (footerContentData.furtherInfoLinks && !footerData.quickLinks.length) {
+                            // furtherInfoLinks가 있으면 quickLinks로 사용
+                            footerData.quickLinks = footerContentData.furtherInfoLinks;
+                        }
                         } else {
                             console.log('📝 Firebase에 footer_content 데이터 없음');
                             footerData = {};
