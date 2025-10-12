@@ -1285,29 +1285,35 @@ https://templatemo.com/tm-559-aether
                 if (window.firebase && window.firebase.apps && window.firebase.apps.length > 0) {
                     try {
                         // 캐싱 방지를 위해 source: 'server' 옵션 추가
-                        const footerContentSnapshot = await window.firebase.firestore().collection('footer_content').limit(1).get({ source: 'server' });
+                        const [footerContentSnapshot, legalLinksSnapshot, quickLinksSnapshot] = await Promise.all([
+                            window.firebase.firestore().collection('footer_content').limit(1).get({ source: 'server' }),
+                            window.firebase.firestore().collection('footerSettings').doc('legalLinks').get({ source: 'server' }),
+                            window.firebase.firestore().collection('footerSettings').doc('quickLinks').get({ source: 'server' })
+                        ]);
                         
                         // footer_content에서 모든 데이터 로드
+                        let footerContentData = {};
                         if (!footerContentSnapshot.empty) {
-                            const footerContentData = footerContentSnapshot.docs[0].data();
+                            footerContentData = footerContentSnapshot.docs[0].data();
                             console.log('📊 Firebase footer_content 원본 데이터:', footerContentData);
-                            
+                        }
+                        
+                        // legalLinks 데이터 로드
+                        const legalLinks = legalLinksSnapshot.exists ? legalLinksSnapshot.data().links || [] : [];
+                        console.log('📊 Firebase legalLinks 데이터:', legalLinks);
+                        
+                        // quickLinks 데이터 로드
+                        const quickLinks = quickLinksSnapshot.exists ? quickLinksSnapshot.data().links || [] : [];
+                        console.log('📊 Firebase quickLinks 데이터:', quickLinks);
+                        
                         footerData = {
                             companyInfo: footerContentData.companyInfo || [],
-                            quickLinks: footerContentData.quickLinks || [],
-                            legalLinks: footerContentData.legalLinks || [],
+                            quickLinks: quickLinks.length > 0 ? quickLinks : (footerContentData.quickLinks || footerContentData.furtherInfoLinks || []),
+                            legalLinks: legalLinks,
                             brandNames: footerContentData.brandNames || []
                         };
                         
-                        // 관리자 페이지에서 저장한 구조와 호환성 확보
-                        if (footerContentData.furtherInfoLinks && !footerData.quickLinks.length) {
-                            // furtherInfoLinks가 있으면 quickLinks로 사용
-                            footerData.quickLinks = footerContentData.furtherInfoLinks;
-                        }
-                        } else {
-                            console.log('📝 Firebase에 footer_content 데이터 없음');
-                            footerData = {};
-                        }
+                        console.log('📊 처리된 푸터 데이터:', footerData);
                         
                         console.log('📊 Firebase에서 푸터 데이터 로드 완료:', footerData);
                     } catch (error) {
