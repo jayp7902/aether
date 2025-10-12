@@ -2903,13 +2903,10 @@
             <!-- 푸터 관리 탭 -->
             <div class="tab-pane fade" id="footer-section" role="tabpanel" aria-labelledby="footer-tab">
                 <div class="order-management pt-5">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div class="mb-4">
                         <h3 class="japanese-heading mb-0">
-                        <i class="fas fa-shoe-prints me-2"></i>フッター管理
-                    </h3>
-                        <button type="button" class="btn btn-outline-secondary" onclick="window.createDefaultFooterData()">
-                            <i class="fas fa-plus me-2"></i>기본 데이터 생성
-                        </button>
+                            <i class="fas fa-shoe-prints me-2"></i>フッター管理
+                        </h3>
                     </div>
                     
                     <div class="card">
@@ -15806,44 +15803,6 @@
             }
         }
 
-        // 기본 푸터 데이터 생성 (Firebase 초기화용)
-        window.createDefaultFooterData = async function() {
-            try {
-                console.log('🦶 기본 푸터 데이터 생성 시작');
-                
-                const defaultFooterData = {
-                    companyInfo: [],
-                    furtherInfoLinks: [],
-                    brandNames: [],
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
-                };
-                
-                if (window.firebase && window.firebase.firestore) {
-                    // 기존 데이터 삭제 후 새 데이터 추가
-                    const existingSnapshot = await window.firebase.firestore().collection('footer_content').get();
-                    const batch = window.firebase.firestore().batch();
-                    
-                    existingSnapshot.docs.forEach(doc => {
-                        batch.delete(doc.ref);
-                    });
-                    
-                    const docRef = window.firebase.firestore().collection('footer_content').doc();
-                    batch.set(docRef, defaultFooterData);
-                    
-                    await batch.commit();
-                    console.log('✅ 빈 푸터 데이터 생성 완료');
-                    showAlert('빈 푸터 데이터가 생성되었습니다. 관리자 페이지에서 정보를 입력해주세요.', 'success');
-                } else {
-                    console.error('Firebase가 초기화되지 않았습니다.');
-                    showAlert('Firebase 연결을 확인해주세요.', 'error');
-                }
-                
-            } catch (error) {
-                console.error('❌ 기본 푸터 데이터 생성 오류:', error);
-                showAlert('기본 푸터 데이터 생성에 실패했습니다.', 'error');
-            }
-        }
 
         // 푸터 폼에 데이터 설정
         window.setFooterFormData = function(data) {
