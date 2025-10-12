@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>모달 테스트</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h4>카드 결제 완료 모달 테스트</h4>
+                        <button class="btn btn-primary btn-lg" onclick="showOrderCompleteModal('TEST-ORDER-123', 15000, 450)">
+                            <i class="fas fa-credit-card me-2"></i>모달 표시 테스트
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 주문 완료 모달 (카드 결제용) -->
+    <div class="modal fade" id="orderCompleteModal" tabindex="-1" aria-labelledby="orderCompleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 15px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+                <div class="modal-header text-center" style="border-bottom: 1px solid #dee2e6; padding: 30px 30px 20px 30px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 15px 15px 0 0;">
+                    <div class="w-100">
+                        <div class="mb-3">
+                            <i class="fas fa-check-circle text-success" style="font-size: 4rem;"></i>
+                        </div>
+                        <h4 class="modal-title fw-bold text-dark mb-0" id="orderCompleteModalLabel">ご注文完了！</h4>
+                        <p class="text-muted mt-2 mb-0">注文が正常に処理されました</p>
+                    </div>
+                </div>
+                <div class="modal-body text-center" style="padding: 30px; background-color: #ffffff;">
+                    <div class="row mb-4">
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded">
+                                <h6 class="text-muted mb-1">注文番号</h6>
+                                <p class="fw-bold mb-0 text-dark" id="order-complete-modal-order-id">-</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 bg-light rounded">
+                                <h6 class="text-muted mb-1">合計金額</h6>
+                                <p class="fw-bold mb-0 text-dark" id="order-complete-modal-total">-</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-3 bg-success bg-opacity-10 rounded mb-4">
+                        <div class="d-flex align-items-center justify-content-center">
+                            <i class="fas fa-gift text-success me-2"></i>
+                            <span class="text-success fw-bold">獲得ポイント: <span id="order-complete-modal-points">-</span></span>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info border-0" style="background-color: #e7f3ff; border-radius: 10px;">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-info-circle text-info me-2 mt-1"></i>
+                            <div class="text-start">
+                                <p class="mb-2 fw-bold text-info">注文確認メールを送信しました</p>
+                                <p class="mb-0 small text-muted">商品の準備ができ次第、配送いたします。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid #dee2e6; padding: 20px 30px 30px 30px; background-color: #f8f9fa; border-radius: 0 0 15px 15px;">
+                    <button type="button" class="btn btn-dark btn-lg w-100" onclick="closeOrderCompleteModal()" style="border-radius: 10px; padding: 12px; font-weight: 600;">
+                        <i class="fas fa-home me-2"></i>ホームに戻る
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 주문 완료 모달 표시 (카드 결제용)
+        function showOrderCompleteModal(orderId, totalAmount, earnedPoints) {
+            try {
+                console.log('✅ 주문 완료 모달 표시:', { orderId, totalAmount, earnedPoints });
+                
+                // 주문 번호와 금액 표시
+                document.getElementById('order-complete-modal-order-id').textContent = orderId;
+                document.getElementById('order-complete-modal-total').textContent = '¥' + totalAmount.toLocaleString();
+                document.getElementById('order-complete-modal-points').textContent = earnedPoints + 'ポイント';
+                
+                // 모달 표시
+                const modal = new bootstrap.Modal(document.getElementById('orderCompleteModal'));
+                modal.show();
+                
+                console.log('✅ 주문 완료 모달 표시 완료');
+            } catch (error) {
+                console.error('❌ 주문 완료 모달 표시 실패:', error);
+            }
+        }
+
+        // 주문 완료 모달 닫기
+        function closeOrderCompleteModal() {
+            try {
+                // 모달 닫기
+                const modal = bootstrap.Modal.getInstance(document.getElementById('orderCompleteModal'));
+                if (modal) {
+                    modal.hide();
+                    console.log('✅ 주문 완료 모달 닫기 완료');
+                }
+            } catch (error) {
+                console.error('❌ 모달 닫기 실패:', error);
+            }
+        }
+    </script>
+</body>
+</html>
