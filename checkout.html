@@ -3626,6 +3626,14 @@
                     totalAmount: orderData.totalAmount
                 };
                 
+                // 고객 주소 정보 수집 (세금 계산용)
+                const customerAddress = {
+                    country: 'JP', // 일본 고정 (필요시 동적으로 변경)
+                    postal_code: orderData.shipping?.postal_code || '100-0001',
+                    city: orderData.shipping?.city || 'Tokyo',
+                    line1: orderData.shipping?.address || '주소 정보 없음'
+                };
+
                 const response = await fetch('/.netlify/functions/create-payment-intent', {
                     method: 'POST',
                     headers: {
@@ -3634,7 +3642,8 @@
                     body: JSON.stringify({
                         amount: amount,
                         currency: 'jpy',
-                        orderData: minimalOrderData
+                        orderData: minimalOrderData,
+                        customerAddress: customerAddress
                     })
                 });
                 
