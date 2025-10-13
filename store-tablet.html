@@ -2178,18 +2178,28 @@
                     throw new Error('사용 가능한 카메라가 없습니다');
                 }
                 
-                // 후면 카메라 우선 선택
+                // 후면 카메라 우선 선택 (iPad/태블릿 고려)
                 let selectedDeviceId = null;
+                
+                // 1순위: 라벨에서 후면 카메라 찾기
                 const backCamera = videoInputDevices.find(device => 
                     device.label.toLowerCase().includes('back') || 
                     device.label.toLowerCase().includes('rear') ||
-                    device.label.toLowerCase().includes('environment')
+                    device.label.toLowerCase().includes('environment') ||
+                    device.label.toLowerCase().includes('camera2') ||
+                    device.label.toLowerCase().includes('주 카메라') ||
+                    device.label.toLowerCase().includes('primary')
                 );
                 
                 if (backCamera) {
                     selectedDeviceId = backCamera.deviceId;
-                    console.log('✅ 후면 카메라 선택:', backCamera.label);
+                    console.log('✅ 라벨로 후면 카메라 선택:', backCamera.label);
+                } else if (videoInputDevices.length > 1) {
+                    // 2순위: 카메라가 2개 이상일 때 마지막 카메라 선택 (보통 후면 카메라)
+                    selectedDeviceId = videoInputDevices[videoInputDevices.length - 1].deviceId;
+                    console.log('✅ 마지막 카메라 선택 (후면 카메라 추정):', videoInputDevices[videoInputDevices.length - 1].label);
                 } else {
+                    // 3순위: 첫 번째 카메라 선택
                     selectedDeviceId = videoInputDevices[0].deviceId;
                     console.log('✅ 기본 카메라 선택:', videoInputDevices[0].label);
                 }
@@ -2230,7 +2240,7 @@
             }
         }
 
-        // 카메라 전환 (ZXing 사용)
+        // 카메라 전환 (ZXing 사용) - iPad 호환 개선
         async function switchCamera() {
             try {
                 console.log('=== 카메라 전환 시작 ===');
@@ -2246,38 +2256,31 @@
                 // 사용 가능한 카메라 목록 다시 가져오기
                 const videoInputDevices = await zxingReader.listVideoInputDevices();
                 console.log('사용 가능한 카메라:', videoInputDevices);
+                console.log('카메라 개수:', videoInputDevices.length);
                 
                 if (videoInputDevices.length < 2) {
                     updateScannerStatus('切替可能なカメラがありません', false);
                     return;
                 }
                 
-                // 현재 사용 중인 카메라 찾기
-                const currentDevice = videoInputDevices.find(device => 
-                    device.label.toLowerCase().includes('back') || 
-                    device.label.toLowerCase().includes('rear') ||
-                    device.label.toLowerCase().includes('environment')
-                );
+                // 현재 사용 중인 비디오 트랙에서 deviceId 가져오기
+                const currentTrack = barcodeVideo.srcObject?.getVideoTracks()[0];
+                const currentDeviceId = currentTrack?.getSettings()?.deviceId;
                 
-                // 다른 카메라 선택 (전면/후면 전환)
+                console.log('현재 카메라 deviceId:', currentDeviceId);
+                
+                // 다른 카메라 선택 (단순히 현재가 아닌 카메라 선택)
                 let selectedDeviceId;
-                if (currentDevice) {
-                    // 현재 후면 카메라면 전면 카메라 선택
-                    const frontCamera = videoInputDevices.find(device => 
-                        device.deviceId !== currentDevice.deviceId &&
-                        (device.label.toLowerCase().includes('front') || 
-                         device.label.toLowerCase().includes('user') ||
-                         device.label.toLowerCase().includes('facing'))
-                    );
-                    selectedDeviceId = frontCamera ? frontCamera.deviceId : videoInputDevices[0].deviceId;
+                
+                if (currentDeviceId) {
+                    // 현재 카메라가 아닌 다른 카메라 선택
+                    const otherCamera = videoInputDevices.find(device => device.deviceId !== currentDeviceId);
+                    selectedDeviceId = otherCamera ? otherCamera.deviceId : videoInputDevices[0].deviceId;
+                    console.log('다른 카메라로 전환:', otherCamera?.label || videoInputDevices[0].label);
                 } else {
-                    // 현재 전면 카메라면 후면 카메라 선택
-                    const backCamera = videoInputDevices.find(device => 
-                        device.label.toLowerCase().includes('back') || 
-                        device.label.toLowerCase().includes('rear') ||
-                        device.label.toLowerCase().includes('environment')
-                    );
-                    selectedDeviceId = backCamera ? backCamera.deviceId : videoInputDevices[0].deviceId;
+                    // 현재 카메라를 알 수 없으면 첫 번째와 다른 카메라 선택
+                    selectedDeviceId = videoInputDevices[1]?.deviceId || videoInputDevices[0].deviceId;
+                    console.log('기본 카메라 전환:', videoInputDevices[1]?.label || videoInputDevices[0].label);
                 }
                 
                 console.log('새 카메라 선택:', selectedDeviceId);
