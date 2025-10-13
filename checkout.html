@@ -1594,7 +1594,9 @@
                 
                 // 모달이 표시된 상태가 아닐 때만 리디렉션
                 const bankTransferModal = document.getElementById('bankTransferCompleteModal');
-                const isModalVisible = bankTransferModal && bankTransferModal.classList.contains('show');
+                const orderCompleteModal = document.getElementById('orderCompleteModal');
+                const isModalVisible = (bankTransferModal && bankTransferModal.classList.contains('show')) || 
+                                      (orderCompleteModal && orderCompleteModal.classList.contains('show'));
                 
                 if (!isModalVisible) {
                     console.log('⚠️ 모달이 표시되지 않음 - index.html로 리디렉션');
