@@ -1150,7 +1150,7 @@
         // ブランド情報読み込み
         async function loadBrands() {
             try {
-                console.log('브랜드 로드 시작');
+                LoggingUtils.log('브랜드 로드 시작');
                 
                 // Firebase 초기화 상태 확인
                 let firebaseAvailable = false;
@@ -1171,7 +1171,7 @@
                     try {
                         const db = firebase.firestore();
                 const brandsQuery = await db.collection('brands').get();
-                console.log('브랜드 쿼리 결과:', brandsQuery.size, '개 문서');
+                LoggingUtils.log('브랜드 쿼리 결과:', brandsQuery.size, '개 문서');
                 
                 // 기본 데이터 로드
                 allBrands = brandsQuery.docs.map(doc => ({
