@@ -2606,8 +2606,9 @@
                     showBankTransferCompleteModal(orderId, finalTotal);
                 } else {
                     // 카드 결제: 주문 완료 모달 표시
-                    await clearCart();
                     showOrderCompleteModal(orderId, finalTotal, earnedPoints);
+                    // 카트는 모달 표시 후에 비우기
+                    await clearCart();
                 }
                 
             } catch (error) {
