@@ -104,9 +104,37 @@ const LoggingUtils = {
 // 전역에서 접근 가능하도록 설정
 window.LoggingUtils = LoggingUtils;
 
-// 개발 환경 확인 로그 (한 번만)
-if (LoggingUtils.isDevelopment()) {
-    console.log('🔧 Aether 로깅 유틸리티 로드됨 (개발 모드)');
+// 프로덕션 환경에서 콘솔 완전 비활성화
+if (!LoggingUtils.isDevelopment()) {
+    // 기존 console 함수들을 빈 함수로 덮어쓰기
+    console.log = function() {};
+    console.info = function() {};
+    console.warn = function() {};
+    console.debug = function() {};
+    console.group = function() {};
+    console.groupEnd = function() {};
+    console.table = function() {};
+    console.trace = function() {};
+    
+    // 추가로 다른 가능한 로깅 방법들도 비활성화
+    if (window.console) {
+        // console.clear도 비활성화
+        console.clear = function() {};
+        
+        // console.count, console.countReset 등도 비활성화
+        console.count = function() {};
+        console.countReset = function() {};
+        console.dir = function() {};
+        console.dirxml = function() {};
+        console.time = function() {};
+        console.timeEnd = function() {};
+        console.timeLog = function() {};
+    }
+    
+    // 에러는 유지 (중요한 문제 추적을 위해)
+    // console.error는 그대로 유지
+    
+    console.log('🚀 Aether 로깅 유틸리티 로드됨 (프로덕션 모드 - 콘솔 완전 숨김)');
 } else {
-    console.log('🚀 Aether 로깅 유틸리티 로드됨 (프로덕션 모드 - 로그 숨김)');
+    console.log('🔧 Aether 로깅 유틸리티 로드됨 (개발 모드)');
 }
