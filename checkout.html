@@ -2724,7 +2724,7 @@
                             orderId: orderData.id,
                             items: itemsList,
                             paymentMethod: orderData.payment.method,
-                            subtotal: `¥${(orderData.originalAmount - (orderData.usedPoints || 0)).toLocaleString()}`,
+                            subtotal: `¥${orderData.originalAmount.toLocaleString()}`,
                             shipping: orderData.originalAmount >= 3000 ? '¥0' : '¥500',
                             pointsUsed: orderData.usedPoints ? `${orderData.usedPoints}ポイント` : '0ポイント',
                             totalAmount: `¥${orderData.totalAmount.toLocaleString()}`,
