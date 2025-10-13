@@ -2607,8 +2607,7 @@
                 } else {
                     // 카드 결제: 주문 완료 모달 표시
                     showOrderCompleteModal(orderId, finalTotal, earnedPoints);
-                    // 카트는 모달 표시 후에 비우기
-                    await clearCart();
+                    // 카트는 모달 닫기 시에 비우기 (closeOrderCompleteModal에서 처리)
                 }
                 
             } catch (error) {
@@ -3655,7 +3654,7 @@
         }
 
         // 주문 완료 모달 닫기 및 메인 페이지로 이동
-        function closeOrderCompleteModal() {
+        async function closeOrderCompleteModal() {
             console.log('🗑️ 주문 완료 모달 닫기 및 메인 페이지로 이동');
             
             try {
@@ -3664,6 +3663,14 @@
                 if (modal) {
                     modal.hide();
                     console.log('✅ 주문 완료 모달 닫기 완료');
+                }
+                
+                // 카트 비우기 (모달 닫은 후에 실행)
+                try {
+                    await clearCart();
+                    console.log('✅ 카드 결제 후 카트 비우기 완료');
+                } catch (cartError) {
+                    console.warn('⚠️ 카트 비우기 실패:', cartError);
                 }
                 
                 // 메인 페이지로 이동
