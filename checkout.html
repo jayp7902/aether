@@ -3635,8 +3635,12 @@
                 document.getElementById('order-complete-modal-total').textContent = '¥' + totalAmount.toLocaleString();
                 document.getElementById('order-complete-modal-points').textContent = earnedPoints + 'ポイント';
                 
-                // 모달 표시
-                const modal = new bootstrap.Modal(document.getElementById('orderCompleteModal'));
+                // 모달 표시 (자동 닫힘 방지)
+                const modalElement = document.getElementById('orderCompleteModal');
+                const modal = new bootstrap.Modal(modalElement, {
+                    backdrop: 'static',
+                    keyboard: false
+                });
                 modal.show();
                 
                 console.log('✅ 주문 완료 모달 표시 완료');
@@ -3813,7 +3817,7 @@
     </div>
 
     <!-- 주문 완료 모달 (카드 결제용) -->
-    <div class="modal fade" id="orderCompleteModal" tabindex="-1" aria-labelledby="orderCompleteModalLabel" aria-hidden="true">
+    <div class="modal fade" id="orderCompleteModal" tabindex="-1" aria-labelledby="orderCompleteModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content" style="border-radius: 15px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
                 <!-- 모노톤 헤더 -->
