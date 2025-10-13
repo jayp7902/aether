@@ -52,11 +52,7 @@ exports.handler = async (event, context) => {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount), // 엔화는 소수점 없음
       currency: currency || 'jpy',
-      payment_method_types: ['card'], // 명시적으로 카드 결제 방법 지정
-      automatic_payment_methods: {
-        enabled: true,
-        allow_redirects: 'never'
-      },
+      payment_method_types: ['card'], // 카드 결제만 허용
       metadata: metadata,
       description: `注文 ${metadata.orderId} - ${metadata.itemCount}点`,
     });
