@@ -57,18 +57,6 @@ exports.handler = async (event, context) => {
         enabled: true,
         allow_redirects: 'never'
       },
-      automatic_tax: {
-        enabled: true, // 세금 자동 계산 활성화
-      },
-      // 고객 주소 정보 (세금 계산용)
-      shipping: customerAddress ? {
-        address: {
-          country: customerAddress.country || 'JP',
-          postal_code: customerAddress.postal_code,
-          city: customerAddress.city,
-          line1: customerAddress.line1
-        }
-      } : undefined,
       metadata: metadata,
       description: `注文 ${metadata.orderId} - ${metadata.itemCount}点`,
     });
