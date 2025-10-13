@@ -1781,13 +1781,38 @@
         async function startScanner() {
             try {
                 const video = document.getElementById('scanner-video');
-                const stream = await navigator.mediaDevices.getUserMedia({ 
+                
+                // 사용 가능한 카메라 디바이스 확인
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoInputs = devices.filter(device => device.kind === 'videoinput');
+                
+                console.log('사용 가능한 카메라 디바이스:', videoInputs);
+                
+                let constraints = {
                     video: { 
                         facingMode: 'environment',
-                        width: { ideal: 400 },
-                        height: { ideal: 300 }
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
                     } 
-                });
+                };
+                
+                // 후면 카메라가 있는지 확인하고 우선 사용
+                const backCamera = videoInputs.find(device => 
+                    device.label.toLowerCase().includes('back') || 
+                    device.label.toLowerCase().includes('rear') ||
+                    device.label.toLowerCase().includes('environment') ||
+                    device.label.toLowerCase().includes('camera2') ||
+                    device.label.toLowerCase().includes('primary')
+                );
+                
+                if (backCamera) {
+                    console.log('✅ 후면 카메라 발견:', backCamera.label);
+                    constraints.video.deviceId = { exact: backCamera.deviceId };
+                } else {
+                    console.log('⚠️ 후면 카메라를 찾을 수 없음, facingMode 사용');
+                }
+                
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
                 
                 video.srcObject = stream;
                 video.play();
@@ -1797,7 +1822,29 @@
                 
             } catch (error) {
                 console.error('카메라 접근 실패:', error);
-                alert('カメラにアクセスできません。権限を確認してください。');
+                
+                // 후면 카메라 접근 실패 시 전면 카메라로 폴백
+                try {
+                    console.log('후면 카메라 실패, 전면 카메라로 폴백 시도');
+                    const video = document.getElementById('scanner-video');
+                    const fallbackStream = await navigator.mediaDevices.getUserMedia({ 
+                        video: { 
+                            facingMode: 'user',
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        } 
+                    });
+                    
+                    video.srcObject = fallbackStream;
+                    video.play();
+                    scanQRCode();
+                    
+                    alert('후면 카메라에 접근할 수 없어 전면 카메라를 사용합니다. 카메라 전환 버튼을 사용하여 후면 카메라로 변경할 수 있습니다.');
+                    
+                } catch (fallbackError) {
+                    console.error('전면 카메라 접근도 실패:', fallbackError);
+                    alert('カメラにアクセスできません。権限を確認してください。');
+                }
             }
         }
 
