@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로깅 유틸리티 테스트</title>
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-13ZBBBG0XR"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-13ZBBBG0XR');
+    </script>
+    
+    <!-- 로깅 유틸리티 로드 -->
+    <script src="assets/js/logging-utils.js"></script>
+    
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #results {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 로깅 유틸리티 테스트</h1>
+    
+    <div class="test-section">
+        <h2>1. 환경 확인</h2>
+        <button onclick="testEnvironment()">환경 확인</button>
+        <div id="env-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. 로깅 테스트</h2>
+        <button onclick="testLogging()">로깅 테스트</button>
+        <div id="logging-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. 콘솔 확인</h2>
+        <p>F12 → Console 탭에서 로그를 확인하세요:</p>
+        <ul>
+            <li><strong>localhost</strong>에서 접속: 모든 로그가 보여야 함</li>
+            <li><strong>aether7.netlify.app</strong>에서 접속: 로그가 숨겨져야 함</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>📊 테스트 결과</h2>
+        <div id="results">테스트를 실행하면 결과가 여기에 표시됩니다...</div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const results = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            results.textContent += `[${timestamp}] ${message}\n`;
+            
+            // LoggingUtils 사용 (개발 환경에서만 콘솔 출력)
+            if (typeof LoggingUtils !== 'undefined') {
+                LoggingUtils.log(message);
+            } else {
+                console.log(message);
+            }
+        }
+        
+        function testEnvironment() {
+            log('🔍 환경 확인 테스트 시작...');
+            
+            const isDev = LoggingUtils.isDevelopment();
+            const hostname = window.location.hostname;
+            const protocol = window.location.protocol;
+            
+            log(`현재 호스트: ${hostname}`);
+            log(`프로토콜: ${protocol}`);
+            log(`개발 환경 여부: ${isDev ? 'YES' : 'NO'}`);
+            
+            document.getElementById('env-results').innerHTML = 
+                `<div class="status ${isDev ? 'success' : 'info'}">
+                    ${isDev ? '✅ 개발 환경' : '🚀 프로덕션 환경'}
+                    <br>호스트: ${hostname}
+                </div>`;
+        }
+        
+        function testLogging() {
+            log('📝 로깅 테스트 시작...');
+            
+            // 다양한 로그 레벨 테스트
+            LoggingUtils.log('📋 일반 로그 테스트');
+            LoggingUtils.info('ℹ️ 정보 로그 테스트');
+            LoggingUtils.warn('⚠️ 경고 로그 테스트');
+            LoggingUtils.error('❌ 에러 로그 테스트 (항상 표시)');
+            LoggingUtils.debug('🐛 디버그 로그 테스트');
+            
+            // 그룹 로그 테스트
+            LoggingUtils.group('📁 그룹 로그 테스트');
+            LoggingUtils.log('그룹 내 로그 1');
+            LoggingUtils.log('그룹 내 로그 2');
+            LoggingUtils.groupEnd();
+            
+            // 테이블 로그 테스트
+            const testData = [
+                { name: '홈페이지', visitors: 100 },
+                { name: '브랜드', visitors: 50 },
+                { name: '상품', visitors: 25 }
+            ];
+            LoggingUtils.table(testData);
+            
+            log('✅ 로깅 테스트 완료');
+            
+            document.getElementById('logging-results').innerHTML = 
+                '<div class="status success">✅ 로깅 테스트 완료 - 콘솔을 확인하세요</div>';
+        }
+        
+        // 페이지 로드 시 자동 테스트
+        window.addEventListener('load', function() {
+            log('🚀 페이지 로드 완료 - 자동 테스트 시작');
+            setTimeout(testEnvironment, 500);
+        });
+    </script>
+</body>
+</html>

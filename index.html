@@ -596,6 +596,7 @@ https://templatemo.com/tm-559-aether
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
     
     <!-- 애플리케이션 스크립트 -->
+    <script src="assets/js/logging-utils.js"></script>
     <script src="assets/js/firebase-config-new.js"></script>
     <script src="assets/js/auth-utils-new.js"></script>
     <script src="assets/js/custom.js?v=1759597551"></script>
@@ -886,7 +887,7 @@ https://templatemo.com/tm-559-aether
         // 홈페이지 데이터 로딩
         async function loadHomepageContent() {
             try {
-                console.log('🏠 홈페이지 콘텐츠 로딩 시작');
+                LoggingUtils.log('🏠 홈페이지 콘텐츠 로딩 시작');
                 
                 // Firebase 초기화 대기
                 await waitForFirebase();
@@ -903,10 +904,10 @@ https://templatemo.com/tm-559-aether
                 // 푸터 데이터 로드
                 await loadFooterContent();
                 
-                console.log('✅ 홈페이지 콘텐츠 로딩 완료');
+                LoggingUtils.log('✅ 홈페이지 콘텐츠 로딩 완료');
                 
             } catch (error) {
-                console.error('❌ 홈페이지 콘텐츠 로딩 오류:', error);
+                LoggingUtils.error('❌ 홈페이지 콘텐츠 로딩 오류:', error);
             }
         }
         
