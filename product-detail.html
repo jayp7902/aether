@@ -1286,8 +1286,42 @@
                 // 옵션 선택 이벤트 리스너
                 optionDropdown.addEventListener('change', function() {
                     const addBtn = document.getElementById('add-color-btn');
-                    addBtn.disabled = !this.value;
+                    const quantityInput = document.getElementById('color-quantity');
+                    
+                    if (this.value) {
+                        // 선택된 옵션의 재고 확인
+                        const selectedOption = productInfo.productOptions.find(option => option.id === this.value);
+                        if (selectedOption) {
+                            // 수량 입력 필드의 최대값을 선택된 옵션의 재고로 설정
+                            quantityInput.max = selectedOption.stock || 1;
+                            quantityInput.value = 1; // 기본값을 1로 설정
+                            console.log('✅ 옵션 선택됨, 최대 수량 설정:', selectedOption.stock);
+                        }
+                        addBtn.disabled = false;
+                    } else {
+                        addBtn.disabled = true;
+                        quantityInput.max = 10; // 기본값으로 복원
+                    }
                 });
+                
+                // 수량 입력 필드 이벤트 리스너 추가
+                const quantityInput = document.getElementById('color-quantity');
+                if (quantityInput) {
+                    quantityInput.addEventListener('input', function() {
+                        const dropdown = document.getElementById('color-dropdown');
+                        if (dropdown.value) {
+                            const selectedOption = productInfo.productOptions.find(option => option.id === dropdown.value);
+                            if (selectedOption) {
+                                let quantity = parseInt(this.value) || 1;
+                                if (quantity > selectedOption.stock) {
+                                    quantity = selectedOption.stock;
+                                    this.value = quantity;
+                                    showToast('在庫不足', `最大在庫数: ${selectedOption.stock}個`, 'warning');
+                                }
+                            }
+                        }
+                    });
+                }
                 
                 // 추가 버튼 클릭 이벤트 리스너
                 const addBtn = document.getElementById('add-color-btn');
@@ -1461,6 +1495,17 @@
                     showToast('在庫不足', `利用可能な在庫: ${selectedOption.stock}個`, 'warning');
                     return;
                 }
+                
+                // 이미 선택된 같은 옵션이 있는지 확인하고 재고 검증
+                const existingOption = selectedColors.find(color => color.id === selectedOptionId);
+                if (existingOption) {
+                    const totalRequestedQuantity = existingOption.quantity + quantity;
+                    if (totalRequestedQuantity > selectedOption.stock) {
+                        const availableQuantity = selectedOption.stock - existingOption.quantity;
+                        showToast('在庫不足', `追加可能な在庫: ${availableQuantity}個 (既に${existingOption.quantity}個選択済み)`, 'warning');
+                        return;
+                    }
+                }
             }
             
             // 이미 선택된 옵션인지 확인
@@ -1472,8 +1517,10 @@
                         showToast('売り切れ', 'このオプションは現在売り切れです。', 'warning');
                         return;
                     }
-                    if (existingColor.quantity + quantity > selectedOption.stock) {
-                        showToast('在庫不足', `利用可能な在庫: ${selectedOption.stock}個`, 'warning');
+                    const totalQuantity = existingColor.quantity + quantity;
+                    if (totalQuantity > selectedOption.stock) {
+                        const availableQuantity = selectedOption.stock - existingColor.quantity;
+                        showToast('在庫不足', `追加可能な在庫: ${availableQuantity}個 (現在${existingColor.quantity}個選択中)`, 'warning');
                         return;
                     }
                 }
@@ -1575,8 +1622,17 @@
                 return;
             }
             
-            if (newQuantity > color.stock) {
-                showToast('在庫不足', `在庫数は ${color.stock}個 までです。`, 'warning');
+            // 재고 확인 - 옵션 상품인 경우 개별 옵션의 재고 확인
+            let maxStock = color.stock || 0;
+            if (productInfo && productInfo.productType === 'option' && productInfo.productOptions && productInfo.productOptions.length > 0) {
+                const originalOption = productInfo.productOptions.find(option => option.id === color.id);
+                if (originalOption) {
+                    maxStock = originalOption.stock || 0;
+                }
+            }
+            
+            if (newQuantity > maxStock) {
+                showToast('在庫不足', `在庫数は ${maxStock}個 までです。`, 'warning');
                 return;
             }
             
