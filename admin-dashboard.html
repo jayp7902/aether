@@ -13460,6 +13460,15 @@
                     optionRadio.checked = true;
                 }
                 toggleOptionSection(); // 옵션 섹션 표시/숨김
+                
+                // 옵션 상품인 경우 기존 옵션 데이터 로드
+                if (productType === 'option' && product.productOptions && product.productOptions.length > 0) {
+                    console.log('📝 옵션 상품 - 기존 옵션 데이터 로드:', product.productOptions);
+                    // 약간의 지연을 두고 옵션 데이터 로드 (DOM이 완전히 준비된 후)
+                    setTimeout(() => {
+                        loadExistingProductOptions(product.productOptions);
+                    }, 100);
+                }
             }
             
             // 이미지 URL
@@ -13921,6 +13930,61 @@
             });
             
             return options;
+        };
+        
+        // 기존 상품 옵션 데이터 로드
+        window.loadExistingProductOptions = function(productOptions) {
+            console.log('📝 기존 상품 옵션 데이터 로드:', productOptions);
+            
+            const optionsList = document.getElementById('product-options-list');
+            if (!optionsList) {
+                console.error('❌ product-options-list 요소를 찾을 수 없습니다');
+                return;
+            }
+            
+            // 기존 옵션 목록 초기화
+            optionsList.innerHTML = '';
+            
+            if (!productOptions || productOptions.length === 0) {
+                console.log('⚠️ 로드할 옵션이 없습니다');
+                return;
+            }
+            
+            // 기존 옵션들을 UI에 추가
+            productOptions.forEach((option, index) => {
+                productOptionCounter++;
+                const optionId = productOptionCounter;
+                
+                const optionHtml = `
+                    <div class="product-option-row border rounded p-3 mb-2" data-option-id="${optionId}">
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <label class="form-label small">オプション名</label>
+                                <input type="text" class="form-control form-control-sm" 
+                                       placeholder="例: 1号, 2号, 3号" 
+                                       name="optionName_${optionId}"
+                                       value="${option.name || ''}">
+                            </div>
+                            <div class="col-md-2">
+                                <label class="form-label small">在庫数</label>
+                                <input type="number" class="form-control form-control-sm" 
+                                       placeholder="0" min="0" 
+                                       name="optionStock_${optionId}"
+                                       value="${option.stock || 0}">
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="removeProductOption(${optionId})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                optionsList.insertAdjacentHTML('beforeend', optionHtml);
+            });
+            
+            console.log('✅ 기존 상품 옵션 데이터 로드 완료:', productOptions.length, '개');
         };
         
         // 色オプション追加
