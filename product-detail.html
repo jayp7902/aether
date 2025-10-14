@@ -1270,7 +1270,16 @@
                 productInfo.productOptions.forEach(option => {
                     const optionElement = document.createElement('option');
                     optionElement.value = option.id;
-                    optionElement.textContent = option.name || option.type || 'オプション';
+                    
+                    // 재고가 없는 옵션은 비활성화하고 표시
+                    if (option.stock <= 0) {
+                        optionElement.textContent = `${option.name || option.type || 'オプション'} (売り切れ)`;
+                        optionElement.disabled = true;
+                        optionElement.style.color = '#6c757d'; // 회색으로 표시
+                    } else {
+                        optionElement.textContent = option.name || option.type || 'オプション';
+                    }
+                    
                     optionDropdown.appendChild(optionElement);
                 });
                 
@@ -1321,7 +1330,16 @@
             productInfo.colorOptions.forEach(option => {
                 const optionElement = document.createElement('option');
                 optionElement.value = option.id;
-                optionElement.textContent = `${option.name}${option.priceAdjustment ? ` +¥${option.priceAdjustment.toLocaleString()}` : ''}`;
+                
+                // 재고가 없는 옵션은 비활성화하고 표시
+                if (option.stock <= 0) {
+                    optionElement.textContent = `${option.name} (売り切れ)${option.priceAdjustment ? ` +¥${option.priceAdjustment.toLocaleString()}` : ''}`;
+                    optionElement.disabled = true;
+                    optionElement.style.color = '#6c757d'; // 회색으로 표시
+                } else {
+                    optionElement.textContent = `${option.name}${option.priceAdjustment ? ` +¥${option.priceAdjustment.toLocaleString()}` : ''}`;
+                }
+                
                 optionElement.dataset.option = JSON.stringify(option);
                 colorDropdown.appendChild(optionElement);
             });
@@ -1404,11 +1422,23 @@
                 console.log('새로운 옵션 시스템 사용');
                 selectedOption = productInfo.productOptions.find(option => option.id === selectedOptionId);
                 console.log('선택된 옵션:', selectedOption);
+                
+                // 개별 옵션 재고 확인
+                if (selectedOption && selectedOption.stock <= 0) {
+                    showToast('売り切れ', 'このオプションは現在売り切れです。', 'warning');
+                    return;
+                }
             } else if (hasColorOptions) {
                 // 기존 색상 옵션 시스템
                 console.log('기존 색상 옵션 시스템 사용');
                 selectedOption = productInfo.colorOptions.find(option => option.id === selectedOptionId);
                 console.log('선택된 색상 옵션:', selectedOption);
+                
+                // 개별 옵션 재고 확인
+                if (selectedOption && selectedOption.stock <= 0) {
+                    showToast('売り切れ', 'このオプションは現在売り切れです。', 'warning');
+                    return;
+                }
             } else {
                 console.error('옵션 시스템을 찾을 수 없습니다');
                 alert('オプションが見つかりません。');
@@ -1423,8 +1453,12 @@
             
             // 재고 확인 (새로운 옵션 시스템인 경우)
             if (isOptionProduct && hasProductOptions) {
+                if (selectedOption.stock <= 0) {
+                    showToast('売り切れ', 'このオプションは現在売り切れです。', 'warning');
+                    return;
+                }
                 if (selectedOption.stock < quantity) {
-                    alert(`在庫が不足しています。利用可能な在庫: ${selectedOption.stock}`);
+                    showToast('在庫不足', `利用可能な在庫: ${selectedOption.stock}個`, 'warning');
                     return;
                 }
             }
@@ -1434,8 +1468,12 @@
             if (existingColor) {
                 // 재고 확인 (새로운 옵션 시스템인 경우)
                 if (isOptionProduct && hasProductOptions) {
+                    if (selectedOption.stock <= 0) {
+                        showToast('売り切れ', 'このオプションは現在売り切れです。', 'warning');
+                        return;
+                    }
                     if (existingColor.quantity + quantity > selectedOption.stock) {
-                        alert(`在庫が不足しています。利用可能な在庫: ${selectedOption.stock}`);
+                        showToast('在庫不足', `利用可能な在庫: ${selectedOption.stock}個`, 'warning');
                         return;
                     }
                 }
