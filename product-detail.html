@@ -1703,7 +1703,15 @@
             // 재고 상태 표시 (품절 상품만)
             const stockStatusContainer = document.getElementById('stock-status-container');
             const stockStatusElement = document.getElementById('product-stock-status');
-            if (productInfo.stock <= 0 && stockStatusElement && stockStatusContainer) {
+            
+            // 옵션 상품인 경우 개별 옵션들의 재고 합산 계산
+            let totalStock = productInfo.stock || 0;
+            if (productInfo.productType === 'option' && productInfo.productOptions && productInfo.productOptions.length > 0) {
+                totalStock = productInfo.productOptions.reduce((sum, option) => sum + (option.stock || 0), 0);
+                console.log('옵션 상품 재고 합산:', totalStock, '개별 옵션들:', productInfo.productOptions.map(o => ({name: o.name, stock: o.stock})));
+            }
+            
+            if (totalStock <= 0 && stockStatusElement && stockStatusContainer) {
                 stockStatusElement.innerHTML = `<span class="badge bg-dark">売り切れ</span>`;
                 stockStatusContainer.style.display = 'block';
             } else if (stockStatusContainer) {
@@ -1990,9 +1998,14 @@
             const addToCartBtn = document.getElementById('add-to-cart');
             const buyNowBtn = document.getElementById('buy-now');
             
-            // 재고 상태에 따른 버튼 비활성화
-            if (productInfo && productInfo.stock <= 0) {
-                console.log('⚠️ 재고 부족으로 버튼 비활성화');
+            // 재고 상태에 따른 버튼 비활성화 (옵션 상품인 경우 개별 옵션 재고 합산)
+            let totalStock = productInfo?.stock || 0;
+            if (productInfo && productInfo.productType === 'option' && productInfo.productOptions && productInfo.productOptions.length > 0) {
+                totalStock = productInfo.productOptions.reduce((sum, option) => sum + (option.stock || 0), 0);
+            }
+            
+            if (productInfo && totalStock <= 0) {
+                console.log('⚠️ 재고 부족으로 버튼 비활성화, 총 재고:', totalStock);
                 
                 if (addToCartBtn) {
                     addToCartBtn.disabled = true;
@@ -2015,8 +2028,13 @@
                 addToCartBtn.addEventListener('click', async function() {
                     if (!productInfo) return;
                     
-                    // 재고 확인
-                    if (productInfo.stock <= 0) {
+                    // 재고 확인 (옵션 상품인 경우 개별 옵션 재고 합산)
+                    let totalStock = productInfo.stock || 0;
+                    if (productInfo.productType === 'option' && productInfo.productOptions && productInfo.productOptions.length > 0) {
+                        totalStock = productInfo.productOptions.reduce((sum, option) => sum + (option.stock || 0), 0);
+                    }
+                    
+                    if (totalStock <= 0) {
                         showToast('売り切れ', 'この商品は現在売り切れです。', 'warning');
                         return;
                     }
@@ -2125,8 +2143,13 @@
                 buyNowBtn.addEventListener('click', async function() {
                     if (!productInfo) return;
                     
-                    // 재고 확인
-                    if (productInfo.stock <= 0) {
+                    // 재고 확인 (옵션 상품인 경우 개별 옵션 재고 합산)
+                    let totalStock = productInfo.stock || 0;
+                    if (productInfo.productType === 'option' && productInfo.productOptions && productInfo.productOptions.length > 0) {
+                        totalStock = productInfo.productOptions.reduce((sum, option) => sum + (option.stock || 0), 0);
+                    }
+                    
+                    if (totalStock <= 0) {
                         showToast('売り切れ', 'この商品は現在売り切れです。', 'warning');
                         return;
                     }
