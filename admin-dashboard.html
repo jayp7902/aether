@@ -14273,8 +14273,22 @@
                             <h6 class="card-title mb-2">${product.nameEn || product.nameJp || '商品名なし'}</h6>
                             <div class="product-meta mb-2">
                                 <span class="badge bg-secondary me-1">${product.brandName || '不明'}</span>
-                                <span class="badge bg-${product.stock > 10 ? 'success' : product.stock > 0 ? 'warning' : 'danger'}">
-                                    ${product.stock > 10 ? '在庫あり' : product.stock > 0 ? '在庫少' : '在庫切れ'}
+                                <span class="badge bg-${(() => {
+                                    // 옵션 상품인 경우 개별 옵션들의 재고 합산 계산
+                                    let totalStock = product.stock || 0;
+                                    if (product.productType === 'option' && product.productOptions && product.productOptions.length > 0) {
+                                        totalStock = product.productOptions.reduce((sum, option) => sum + (option.stock || 0), 0);
+                                    }
+                                    return totalStock >= 5 ? 'success' : totalStock > 0 ? 'warning' : 'danger';
+                                })()}">
+                                    ${(() => {
+                                        // 옵션 상품인 경우 개별 옵션들의 재고 합산 계산
+                                        let totalStock = product.stock || 0;
+                                        if (product.productType === 'option' && product.productOptions && product.productOptions.length > 0) {
+                                            totalStock = product.productOptions.reduce((sum, option) => sum + (option.stock || 0), 0);
+                                        }
+                                        return totalStock >= 5 ? `在庫あり (${totalStock}個)` : totalStock > 0 ? `在庫不足 (${totalStock}個)` : '売り切れ';
+                                    })()}
                                 </span>
                                 ${badgeHtml}
                             </div>
@@ -14481,8 +14495,22 @@
                             <h6 class="card-title mb-2">${product.nameEn || product.nameJp || '상품명 없음'}</h6>
                             <div class="product-meta mb-2">
                                 <span class="badge bg-secondary me-1">${product.brandName || product.brandCode || '브랜드 미상'}</span>
-                                <span class="badge bg-${product.stock > 10 ? 'success' : product.stock > 0 ? 'warning' : 'danger'}">
-                                    ${product.stock > 10 ? '在庫あり' : product.stock > 0 ? '在庫不足' : '売り切れ'}
+                                <span class="badge bg-${(() => {
+                                    // 옵션 상품인 경우 개별 옵션들의 재고 합산 계산
+                                    let totalStock = product.stock || 0;
+                                    if (product.productType === 'option' && product.productOptions && product.productOptions.length > 0) {
+                                        totalStock = product.productOptions.reduce((sum, option) => sum + (option.stock || 0), 0);
+                                    }
+                                    return totalStock >= 5 ? 'success' : totalStock > 0 ? 'warning' : 'danger';
+                                })()}">
+                                    ${(() => {
+                                        // 옵션 상품인 경우 개별 옵션들의 재고 합산 계산
+                                        let totalStock = product.stock || 0;
+                                        if (product.productType === 'option' && product.productOptions && product.productOptions.length > 0) {
+                                            totalStock = product.productOptions.reduce((sum, option) => sum + (option.stock || 0), 0);
+                                        }
+                                        return totalStock >= 5 ? `在庫あり (${totalStock}個)` : totalStock > 0 ? `在庫不足 (${totalStock}個)` : '売り切れ';
+                                    })()}
                                 </span>
                             </div>
                             <div class="d-flex justify-content-between align-items-center">
