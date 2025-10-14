@@ -1385,11 +1385,18 @@
                             <p class="card-text text-muted small">${product.description || ''}</p>
                             
                             <!-- 재고 상태 표시 (품절 상품만) -->
-                            ${product.stock <= 0 ? `
-                            <div class="stock-status mb-2">
-                                <span class="badge bg-dark">売り切れ</span>
-                            </div>
-                            ` : ''}
+                            ${(() => {
+                                // 옵션 상품인 경우 개별 옵션들의 재고 합산 계산
+                                let totalStock = product.stock || 0;
+                                if (product.productType === 'option' && product.productOptions && product.productOptions.length > 0) {
+                                    totalStock = product.productOptions.reduce((sum, option) => sum + (option.stock || 0), 0);
+                                }
+                                return totalStock <= 0 ? `
+                                <div class="stock-status mb-2">
+                                    <span class="badge bg-dark">売り切れ</span>
+                                </div>
+                                ` : '';
+                            })()}
                             
                             <div class="mt-auto">
                                 <div class="price mb-2">
@@ -1399,14 +1406,20 @@
                                             `<span class="regular-price fw-bold">¥${(product.price || 0).toLocaleString()}</span>`
                                     }
                                 </div>
-                                ${product.stock > 0 ? 
-                                    `<button class="btn btn-dark btn-sm w-100" onclick="addToCart('${product.id}'); event.stopPropagation();">
-                                        <i class="fas fa-cart-plus me-1"></i>カートに追加
-                                    </button>` :
-                                    `<button class="btn btn-outline-secondary btn-sm w-100" disabled>
-                                        <i class="fas fa-times me-1"></i>売り切れ
-                                    </button>`
-                                }
+                                ${(() => {
+                                    // 옵션 상품인 경우 개별 옵션들의 재고 합산 계산
+                                    let totalStock = product.stock || 0;
+                                    if (product.productType === 'option' && product.productOptions && product.productOptions.length > 0) {
+                                        totalStock = product.productOptions.reduce((sum, option) => sum + (option.stock || 0), 0);
+                                    }
+                                    return totalStock > 0 ? 
+                                        `<button class="btn btn-dark btn-sm w-100" onclick="addToCart('${product.id}'); event.stopPropagation();">
+                                            <i class="fas fa-cart-plus me-1"></i>カートに追加
+                                        </button>` :
+                                        `<button class="btn btn-outline-secondary btn-sm w-100" disabled>
+                                            <i class="fas fa-times me-1"></i>売り切れ
+                                        </button>`;
+                                })()}
                             </div>
                         </div>
                     </div>
@@ -1531,9 +1544,14 @@
                     return false;
                 }
                 
-                // 재고 확인
-                if (product.stock <= 0) {
-                    console.warn('⚠️ 재고 부족으로 카트 추가 불가:', product.nameJp);
+                // 재고 확인 (옵션 상품인 경우 개별 옵션 재고 합산)
+                let totalStock = product.stock || 0;
+                if (product.productType === 'option' && product.productOptions && product.productOptions.length > 0) {
+                    totalStock = product.productOptions.reduce((sum, option) => sum + (option.stock || 0), 0);
+                }
+                
+                if (totalStock <= 0) {
+                    console.warn('⚠️ 재고 부족으로 카트 추가 불가:', product.nameJp, '총 재고:', totalStock);
                     showToast('売り切れ', 'この商品は現在売り切れです。', 'warning');
                     return false;
                 }
