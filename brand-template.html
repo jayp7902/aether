@@ -1383,6 +1383,17 @@
                         <div class="card-body d-flex flex-column">
                             <h5 class="card-title">${product.nameJp}</h5>
                             <p class="card-text text-muted small">${product.description || ''}</p>
+                            
+                            <!-- 재고 상태 표시 -->
+                            <div class="stock-status mb-2">
+                                ${product.stock > 10 ? 
+                                    `<span class="badge bg-secondary">在庫あり (${product.stock}個)</span>` : 
+                                    product.stock > 0 ? 
+                                        `<span class="badge bg-secondary">在庫不足 (${product.stock}個)</span>` :
+                                        `<span class="badge bg-dark">売り切れ</span>`
+                                }
+                            </div>
+                            
                             <div class="mt-auto">
                                 <div class="price mb-2">
                                     ${product.salePrice && product.salePrice > 0 ? 
@@ -1391,9 +1402,14 @@
                                             `<span class="regular-price fw-bold">¥${(product.price || 0).toLocaleString()}</span>`
                                     }
                                 </div>
-                                <button class="btn btn-dark btn-sm w-100" onclick="addToCart('${product.id}'); event.stopPropagation();">
-                                    <i class="fas fa-cart-plus me-1"></i>カートに追加
-                                </button>
+                                ${product.stock > 0 ? 
+                                    `<button class="btn btn-dark btn-sm w-100" onclick="addToCart('${product.id}'); event.stopPropagation();">
+                                        <i class="fas fa-cart-plus me-1"></i>カートに追加
+                                    </button>` :
+                                    `<button class="btn btn-outline-secondary btn-sm w-100" disabled>
+                                        <i class="fas fa-times me-1"></i>売り切れ
+                                    </button>`
+                                }
                             </div>
                         </div>
                     </div>
@@ -1515,6 +1531,13 @@
                 if (!product) {
                     console.error('상품을 찾을 수 없습니다:', productId);
                     showToast('상품情報を 찾을 수 없습니다。', 'error');
+                    return false;
+                }
+                
+                // 재고 확인
+                if (product.stock <= 0) {
+                    console.warn('⚠️ 재고 부족으로 카트 추가 불가:', product.nameJp);
+                    showToast('売り切れ', 'この商品は現在売り切れです。', 'warning');
                     return false;
                 }
                 
