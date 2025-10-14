@@ -4344,7 +4344,7 @@
         // 상품 삭제 함수 (Firebase에서 실제 삭제)
         window.deleteProduct = async function(productId) {
             // 커스텀 확인 다이얼로그 표시
-            showCustomConfirm(
+            showCustomConfirmDialog(
                 'この商品を削除しますか？',
                 'この操作は元に戻すことができません。',
                 async () => {
