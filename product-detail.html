@@ -624,8 +624,8 @@
                                     </li>
                                 </ul>
 
-                                <!-- 재고 상태 표시 -->
-                                <ul class="list-inline">
+                                <!-- 재고 상태 표시 (품절 상품만) -->
+                                <ul class="list-inline" id="stock-status-container" style="display: none;">
                                     <li class="list-inline-item">
                                         <h6>在庫状況:</h6>
                                     </li>
@@ -1700,16 +1700,14 @@
             document.getElementById('product-brand').textContent = productInfo.brandName || productInfo.brandCode || 'Unknown Brand';
             document.getElementById('product-capacity').textContent = productInfo.capacity || '容量情報なし';
             
-            // 재고 상태 표시
+            // 재고 상태 표시 (품절 상품만)
+            const stockStatusContainer = document.getElementById('stock-status-container');
             const stockStatusElement = document.getElementById('product-stock-status');
-            if (stockStatusElement) {
-                if (productInfo.stock > 10) {
-                    stockStatusElement.innerHTML = `<span class="badge bg-secondary">在庫あり (${productInfo.stock}個)</span>`;
-                } else if (productInfo.stock > 0) {
-                    stockStatusElement.innerHTML = `<span class="badge bg-secondary">在庫不足 (${productInfo.stock}個)</span>`;
-                } else {
-                    stockStatusElement.innerHTML = `<span class="badge bg-dark">売り切れ</span>`;
-                }
+            if (productInfo.stock <= 0 && stockStatusElement && stockStatusContainer) {
+                stockStatusElement.innerHTML = `<span class="badge bg-dark">売り切れ</span>`;
+                stockStatusContainer.style.display = 'block';
+            } else if (stockStatusContainer) {
+                stockStatusContainer.style.display = 'none';
             }
             
             // 원본 가격 저장 (옵션 시스템과 관계없이) - 할인 가격이 있으면 할인 가격을 기본으로 사용
