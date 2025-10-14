@@ -1384,15 +1384,12 @@
                             <h5 class="card-title">${product.nameJp}</h5>
                             <p class="card-text text-muted small">${product.description || ''}</p>
                             
-                            <!-- 재고 상태 표시 -->
+                            <!-- 재고 상태 표시 (품절 상품만) -->
+                            ${product.stock <= 0 ? `
                             <div class="stock-status mb-2">
-                                ${product.stock > 10 ? 
-                                    `<span class="badge bg-secondary">在庫あり (${product.stock}個)</span>` : 
-                                    product.stock > 0 ? 
-                                        `<span class="badge bg-secondary">在庫不足 (${product.stock}個)</span>` :
-                                        `<span class="badge bg-dark">売り切れ</span>`
-                                }
+                                <span class="badge bg-dark">売り切れ</span>
                             </div>
+                            ` : ''}
                             
                             <div class="mt-auto">
                                 <div class="price mb-2">
