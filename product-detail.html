@@ -624,6 +624,16 @@
                                     </li>
                                 </ul>
 
+                                <!-- 재고 상태 표시 -->
+                                <ul class="list-inline">
+                                    <li class="list-inline-item">
+                                        <h6>在庫状況:</h6>
+                                    </li>
+                                    <li class="list-inline-item">
+                                        <span id="product-stock-status"></span>
+                                    </li>
+                                </ul>
+
                                 
                                 <div id="color-options-section" style="display: none;">
                                     <h6 class="japanese-text">オプション:</h6>
@@ -1690,6 +1700,18 @@
             document.getElementById('product-brand').textContent = productInfo.brandName || productInfo.brandCode || 'Unknown Brand';
             document.getElementById('product-capacity').textContent = productInfo.capacity || '容量情報なし';
             
+            // 재고 상태 표시
+            const stockStatusElement = document.getElementById('product-stock-status');
+            if (stockStatusElement) {
+                if (productInfo.stock > 10) {
+                    stockStatusElement.innerHTML = `<span class="badge bg-secondary">在庫あり (${productInfo.stock}個)</span>`;
+                } else if (productInfo.stock > 0) {
+                    stockStatusElement.innerHTML = `<span class="badge bg-secondary">在庫不足 (${productInfo.stock}個)</span>`;
+                } else {
+                    stockStatusElement.innerHTML = `<span class="badge bg-dark">売り切れ</span>`;
+                }
+            }
+            
             // 원본 가격 저장 (옵션 시스템과 관계없이) - 할인 가격이 있으면 할인 가격을 기본으로 사용
             originalPrice = (productInfo.salePrice && productInfo.salePrice > 0) ? productInfo.salePrice : (productInfo.price || 0);
             console.log('상품 정보에서 원본 가격 설정:', originalPrice);
@@ -1970,9 +1992,36 @@
             const addToCartBtn = document.getElementById('add-to-cart');
             const buyNowBtn = document.getElementById('buy-now');
             
+            // 재고 상태에 따른 버튼 비활성화
+            if (productInfo && productInfo.stock <= 0) {
+                console.log('⚠️ 재고 부족으로 버튼 비활성화');
+                
+                if (addToCartBtn) {
+                    addToCartBtn.disabled = true;
+                    addToCartBtn.classList.remove('btn-outline-secondary');
+                    addToCartBtn.classList.add('btn-outline-secondary');
+                    addToCartBtn.innerHTML = '<i class="fas fa-times me-2"></i>売り切れ';
+                }
+                
+                if (buyNowBtn) {
+                    buyNowBtn.disabled = true;
+                    buyNowBtn.classList.remove('btn-secondary');
+                    buyNowBtn.classList.add('btn-outline-secondary');
+                    buyNowBtn.innerHTML = '<i class="fas fa-times me-2"></i>売り切れ';
+                }
+                
+                return; // 재고가 없으면 버튼 이벤트 리스너 추가하지 않음
+            }
+            
             if (addToCartBtn) {
                 addToCartBtn.addEventListener('click', async function() {
                     if (!productInfo) return;
+                    
+                    // 재고 확인
+                    if (productInfo.stock <= 0) {
+                        showToast('売り切れ', 'この商品は現在売り切れです。', 'warning');
+                        return;
+                    }
                     
                     // 옵션 상품인지 확인
                     const isOptionProduct = productInfo.productType === 'option';
@@ -2077,6 +2126,12 @@
             if (buyNowBtn) {
                 buyNowBtn.addEventListener('click', async function() {
                     if (!productInfo) return;
+                    
+                    // 재고 확인
+                    if (productInfo.stock <= 0) {
+                        showToast('売り切れ', 'この商品は現在売り切れです。', 'warning');
+                        return;
+                    }
                     
                     const quantity = parseInt(document.getElementById('quantity').value) || 1;
                     
