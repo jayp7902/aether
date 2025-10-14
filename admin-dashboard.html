@@ -14404,7 +14404,7 @@
                             <div class="product-meta mb-2">
                                 <span class="badge bg-secondary me-1">${product.brandName || product.brandCode || '브랜드 미상'}</span>
                                 <span class="badge bg-${product.stock > 10 ? 'success' : product.stock > 0 ? 'warning' : 'danger'}">
-                                    ${product.stock > 10 ? '재고있음' : product.stock > 0 ? '재고부족' : '품절'}
+                                    ${product.stock > 10 ? '在庫あり' : product.stock > 0 ? '在庫不足' : '売り切れ'}
                                 </span>
                             </div>
                             <div class="d-flex justify-content-between align-items-center">
