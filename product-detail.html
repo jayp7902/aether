@@ -1903,13 +1903,24 @@
                 let quantity = parseInt(currentValue) || 1;
                 console.log('📊 현재 수량 (증가 전):', quantity, '원본 값:', currentValue);
                 
-                if (quantity < 10) {
+                // 재고 확인 (옵션 상품인 경우 개별 옵션 재고 합산)
+                let maxStock = 10; // 기본 최대값
+                if (productInfo && productInfo.productType === 'option' && productInfo.productOptions && productInfo.productOptions.length > 0) {
+                    maxStock = productInfo.productOptions.reduce((sum, option) => sum + (option.stock || 0), 0);
+                } else if (productInfo && productInfo.stock) {
+                    maxStock = productInfo.stock;
+                }
+                
+                console.log('📊 최대 재고:', maxStock);
+                
+                if (quantity < maxStock) {
                     quantity = quantity + 1; // 명시적으로 1 증가
                     quantityInput.value = quantity;
                     console.log('📊 수량 증가 후:', quantity);
                     updateTotalPrice();
                 } else {
-                    console.log('⚠️ 최대 수량(10)에 도달했습니다.');
+                    console.log('⚠️ 최대 재고에 도달했습니다:', maxStock);
+                    showToast('在庫不足', `最大在庫数: ${maxStock}個`, 'warning');
                 }
             }
             
@@ -1942,12 +1953,23 @@
                     let quantity = parseInt(this.value) || 1;
                     console.log('📝 수량 직접 입력:', quantity);
                     
+                    // 재고 확인 (옵션 상품인 경우 개별 옵션 재고 합산)
+                    let maxStock = 10; // 기본 최대값
+                    if (productInfo && productInfo.productType === 'option' && productInfo.productOptions && productInfo.productOptions.length > 0) {
+                        maxStock = productInfo.productOptions.reduce((sum, option) => sum + (option.stock || 0), 0);
+                    } else if (productInfo && productInfo.stock) {
+                        maxStock = productInfo.stock;
+                    }
+                    
                     // 수량 범위 검증
                     if (quantity < 1) quantity = 1;
-                    if (quantity > 10) quantity = 10;
+                    if (quantity > maxStock) {
+                        quantity = maxStock;
+                        showToast('在庫不足', `最大在庫数: ${maxStock}個`, 'warning');
+                    }
                     
                     this.value = quantity;
-                    console.log('📝 수량 입력 후 최종 값:', quantity);
+                    console.log('📝 수량 입력 후 최종 값:', quantity, '최대 재고:', maxStock);
                     updateTotalPrice();
                 });
                 
@@ -1955,14 +1977,39 @@
                     let quantity = parseInt(this.value) || 1;
                     console.log('📝 수량 변경 완료:', quantity);
                     
+                    // 재고 확인 (옵션 상품인 경우 개별 옵션 재고 합산)
+                    let maxStock = 10; // 기본 최대값
+                    if (productInfo && productInfo.productType === 'option' && productInfo.productOptions && productInfo.productOptions.length > 0) {
+                        maxStock = productInfo.productOptions.reduce((sum, option) => sum + (option.stock || 0), 0);
+                    } else if (productInfo && productInfo.stock) {
+                        maxStock = productInfo.stock;
+                    }
+                    
                     if (quantity < 1) quantity = 1;
-                    if (quantity > 10) quantity = 10;
+                    if (quantity > maxStock) {
+                        quantity = maxStock;
+                        showToast('在庫不足', `最大在庫数: ${maxStock}個`, 'warning');
+                    }
                     
                     this.value = quantity;
                     updateTotalPrice();
                 });
                 
                 console.log('✅ 수량 입력 필드 이벤트 리스너 등록 완료');
+            }
+            
+            // 수량 입력 필드의 최대값 설정
+            if (quantityInput && productInfo) {
+                // 재고 확인 (옵션 상품인 경우 개별 옵션 재고 합산)
+                let maxStock = 10; // 기본 최대값
+                if (productInfo.productType === 'option' && productInfo.productOptions && productInfo.productOptions.length > 0) {
+                    maxStock = productInfo.productOptions.reduce((sum, option) => sum + (option.stock || 0), 0);
+                } else if (productInfo.stock) {
+                    maxStock = productInfo.stock;
+                }
+                
+                quantityInput.max = maxStock;
+                console.log('✅ 수량 입력 필드 최대값 설정:', maxStock);
             }
             
             // 초기 가격 업데이트
@@ -2193,6 +2240,13 @@
                     }
                     
                     const quantity = parseInt(document.getElementById('quantity').value) || 1;
+                    
+                    // 재고 확인 (옵션 상품인 경우 개별 옵션 재고 합산)
+                    let maxStock = totalStock;
+                    if (quantity > maxStock) {
+                        showToast('在庫不足', `最大在庫数: ${maxStock}個`, 'warning');
+                        return;
+                    }
                     
                     const cartItem = {
                         id: productInfo.id,
