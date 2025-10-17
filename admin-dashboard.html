@@ -12974,11 +12974,35 @@
         // 商品保存機能
         async function saveProduct() {
             try {
-                adminConsole.log('상품 저장 시작');
+                adminConsole.log('=== 상품 저장 함수 시작 ===');
+                adminConsole.log('현재 시간:', new Date().toISOString());
+                adminConsole.log('Firebase 상태:', {
+                    firebase: typeof firebase,
+                    firestore: typeof firebase?.firestore,
+                    auth: typeof firebase?.auth,
+                    storage: typeof firebase?.storage
+                });
                 
                 const form = document.getElementById('productForm');
+                adminConsole.log('폼 요소 확인:', {
+                    form: !!form,
+                    formId: form?.id,
+                    formElements: form ? Array.from(form.elements).map(el => ({ name: el.name, value: el.value, type: el.type })) : 'form not found'
+                });
+                
+                if (!form) {
+                    adminConsole.error('productForm을 찾을 수 없습니다!');
+                    showAlert('상품 폼을 찾을 수 없습니다. 페이지를 새로고침해주세요.', 'danger');
+                    return;
+                }
+                
                 const formData = new FormData(form);
                 const productId = document.getElementById('product-id').value;
+                
+                adminConsole.log('폼 데이터 수집:', {
+                    productId: productId,
+                    formDataEntries: Array.from(formData.entries())
+                });
                 
                 // フィールドの取得
                 const code = formData.get('code')?.trim() || '';
@@ -13020,6 +13044,15 @@
                 }
                 
                 // 브랜드 존재 여부 확인
+                adminConsole.log('브랜드 데이터 상태:', {
+                    allBrands: !!allBrands,
+                    allBrandsLength: allBrands?.length || 0,
+                    allBrandsList: !!allBrandsList,
+                    allBrandsListLength: allBrandsList?.length || 0,
+                    windowAllBrands: !!window.allBrands,
+                    windowAllBrandsLength: window.allBrands?.length || 0
+                });
+                
                 if (!allBrands || allBrands.length === 0) {
                     adminConsole.warn('브랜드 데이터 없음, 로드 시도');
                     showAlert('브랜드 데이터를 먼저 로드해주세요.', 'warning');
@@ -13408,9 +13441,24 @@
                     });
                     
                     adminConsole.log('새 상품 저장 시작:', productDocId);
-                    adminConsole.log('저장할 productData.additionalImages:', productData.additionalImages);
-                    await db.collection('products').doc(productDocId).set(productData);
-                    adminConsole.log('새 상품 저장 완료:', productDocId);
+                    adminConsole.log('저장할 productData:', {
+                        code: productData.code,
+                        nameEn: productData.nameEn,
+                        nameJp: productData.nameJp,
+                        brandCode: productData.brandCode,
+                        price: productData.price,
+                        imageUrl: productData.imageUrl,
+                        additionalImages: productData.additionalImages,
+                        additionalImagesLength: productData.additionalImages?.length
+                    });
+                    
+                    try {
+                        await db.collection('products').doc(productDocId).set(productData);
+                        adminConsole.log('새 상품 저장 성공:', productDocId);
+                    } catch (saveError) {
+                        adminConsole.error('Firebase 저장 실패:', saveError);
+                        throw saveError;
+                    }
                     
                     // 저장 후 즉시 확인
                     const savedDoc = await db.collection('products').doc(productDocId).get();
@@ -13437,9 +13485,26 @@
                 adminConsole.log('상품 저장 완료 후 목록 새로고침 완료');
                 
             } catch (error) {
-                adminConsole.error('상품 저장 에러:', error);
+                adminConsole.error('=== 상품 저장 에러 발생 ===');
+                adminConsole.error('에러 타입:', typeof error);
+                adminConsole.error('에러 메시지:', error.message);
+                adminConsole.error('에러 코드:', error.code);
                 adminConsole.error('에러 스택:', error.stack);
-                showAlert(`商品の保存に失敗しました: ${error.message}`, 'danger');
+                adminConsole.error('전체 에러 객체:', error);
+                
+                // 사용자에게 더 구체적인 에러 메시지 표시
+                let errorMessage = '상품 저장에 실패했습니다.';
+                if (error.message.includes('Firebase')) {
+                    errorMessage = 'Firebase 연결에 문제가 있습니다. 페이지를 새로고침해주세요.';
+                } else if (error.message.includes('network') || error.message.includes('Network')) {
+                    errorMessage = '네트워크 연결을 확인해주세요.';
+                } else if (error.message.includes('permission') || error.message.includes('권한')) {
+                    errorMessage = '저장 권한이 없습니다. 관리자에게 문의해주세요.';
+                } else {
+                    errorMessage = `상품 저장 실패: ${error.message}`;
+                }
+                
+                showAlert(errorMessage, 'danger');
             }
         }
 
@@ -13493,11 +13558,21 @@
                 });
                 
                 // Firebase 초기화 확인
+                adminConsole.log('Firebase 초기화 상태 재확인:', {
+                    firebase: !!firebase,
+                    firestore: !!firebase?.firestore,
+                    auth: !!firebase?.auth,
+                    storage: !!firebase?.storage,
+                    currentUser: firebase?.auth?.currentUser
+                });
+                
                 if (!firebase || !firebase.firestore) {
+                    adminConsole.error('Firebase 초기화 실패');
                     throw new Error('Firebase가 초기화되지 않았습니다.');
                 }
                 
                 const db = firebase.firestore();
+                adminConsole.log('Firestore 데이터베이스 연결 성공');
                 
                 // 기존 상품 데이터 가져오기
                 const productDoc = await db.collection('products').doc(productId).get();
