@@ -4167,8 +4167,8 @@
             loadProducts();
         }
         
-        // 상품 편집 함수
-        window.editProduct = function(productId) {
+        // 기존 동적 모달용 editProduct 함수 제거됨 - 통합 모달용 함수로 대체
+        // window.editProduct = function(productId) {
             console.log('🔧 상품 편집 시작:', productId);
             console.log('현재 상품 데이터:', window.allProductsList);
             
@@ -4381,7 +4381,7 @@
             // 모달 표시
             const modal = new bootstrap.Modal(document.getElementById('productEditModal'));
             modal.show();
-        }
+        // }
         
         // 기존 상품 편집 함수들 제거됨 - 새로운 통합 함수로 대체
         
@@ -13617,8 +13617,8 @@
 
         // 商品編集機能
         function editProduct(productId) {
-            console.log('🔧 상품 편집 함수 호출:', productId);
-            console.log('현재 상품 데이터:', allProductsList);
+            adminConsole.log('🔧 상품 편집 함수 호출:', productId);
+            adminConsole.log('현재 상품 데이터:', allProductsList);
             
             // 여러 위치에서 상품 찾기 시도
             let product = null;
@@ -13705,7 +13705,7 @@
 
         // 상품 편집 모달 열기 함수 (통합 모달 사용)
         function openProductEditModal(product) {
-            console.log('🔧 상품 편집 모달 열기 (통합 모달):', product);
+            adminConsole.log('🔧 상품 편집 모달 열기 (통합 모달):', product);
             
             // 통합 모달 열기
             const modalElement = document.getElementById('productModal');
