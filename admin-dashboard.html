@@ -13129,7 +13129,7 @@
                 if (existingAdditionalImages) {
                     try {
                         const parsedImages = JSON.parse(existingAdditionalImages);
-                        console.log('✅ 기존 추가 이미지 데이터 발견:', parsedImages);
+                        adminConsole.log('기존 추가 이미지 데이터 발견:', parsedImages);
                         
                         // 기존 데이터를 3개 슬롯에 맞게 정리
                         for (let i = 0; i < 3; i++) {
@@ -13137,11 +13137,13 @@
                                 additionalImages[i] = parsedImages[i];
                             }
                         }
-                        console.log('✅ 정리된 추가 이미지 데이터:', additionalImages);
+                        adminConsole.log('정리된 추가 이미지 데이터:', additionalImages);
                     } catch (e) {
-                        console.log('⚠️ 기존 추가 이미지 데이터 파싱 실패, 빈 배열로 시작');
+                        adminConsole.warn('기존 추가 이미지 데이터 파싱 실패, 빈 배열로 시작');
                         additionalImages = ['', '', ''];
                     }
+                } else {
+                    adminConsole.log('기존 추가 이미지 데이터 없음, 빈 배열로 시작');
                 }
                 
                 // 기존 상세 이미지 데이터 보존
@@ -13206,6 +13208,7 @@
                             // 첫 번째 슬롯에 직접 할당
                             additionalImages[0] = uploadResult.url;
                             adminConsole.log('추가 이미지 1 업로드 성공:', uploadResult.url);
+                            adminConsole.log('현재 additionalImages 배열:', additionalImages);
                     } else {
                             adminConsole.warn('추가 이미지 1 업로드 실패, 기존 데이터 유지');
                         }
@@ -13240,6 +13243,7 @@
                             // 두 번째 슬롯에 직접 할당
                             additionalImages[1] = uploadResult.url;
                             adminConsole.log('추가 이미지 2 업로드 성공:', uploadResult.url);
+                            adminConsole.log('현재 additionalImages 배열:', additionalImages);
                     } else {
                             adminConsole.warn('추가 이미지 2 업로드 실패, 기존 데이터 유지');
                         }
@@ -13274,6 +13278,7 @@
                             // 세 번째 슬롯에 직접 할당
                             additionalImages[2] = uploadResult.url;
                             adminConsole.log('추가 이미지 3 업로드 성공:', uploadResult.url);
+                            adminConsole.log('현재 additionalImages 배열:', additionalImages);
                     } else {
                             adminConsole.warn('추가 이미지 3 업로드 실패, 기존 데이터 유지');
                         }
@@ -13331,8 +13336,15 @@
                     return;
                 }
                 
-                // 빈 이미지 슬롯 정리 (빈 문자열 제거)
-                const cleanedAdditionalImages = additionalImages.filter(img => img && img.trim() !== '');
+                // 추가 이미지 배열 유지 (빈 문자열도 포함하여 인덱스 보존)
+                const cleanedAdditionalImages = additionalImages; // 빈 문자열도 포함하여 배열 구조 유지
+                
+                adminConsole.log('최종 additionalImages 배열 상태:', {
+                    originalArray: additionalImages,
+                    arrayLength: additionalImages.length,
+                    hasEmptyStrings: additionalImages.some(img => img === ''),
+                    nonEmptyCount: additionalImages.filter(img => img && img.trim() !== '').length
+                });
                 
                 // 商品データの準備
                 adminConsole.log('상품 저장 데이터 준비:', {
