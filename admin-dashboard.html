@@ -11519,8 +11519,8 @@
 
         // 画像アップロード機能 (Firebase Storage 방식)
         async function uploadImageToFirebase(file, brandCode, retryCount = 0) {
-            const maxRetries = 3;
-            const retryDelay = 3000; // 3초로 증가
+            const maxRetries = 5; // 재시도 횟수 증가
+            const retryDelay = 5000; // 5초로 증가
             
             try {
                 adminConsole.log(`이미지 업로드 시작 (시도 ${retryCount + 1}/${maxRetries + 1}):`, {
@@ -11604,13 +11604,20 @@
             } catch (error) {
                 adminConsole.error('이미지 업로드 실패:', error);
                 
-                // 503 Service Unavailable 에러인 경우 재시도
-                if ((error.code === 'storage/unknown' || error.message.includes('503') || error.message.includes('Service Unavailable')) && retryCount < maxRetries) {
-                    adminConsole.warn(`503 에러 발생, ${retryDelay/1000}초 후 재시도 (${retryCount + 1}/${maxRetries})`);
-                    showAlert(`서버가 일시적으로 사용할 수 없습니다. ${retryDelay/1000}초 후 재시도합니다...`, 'warning');
+                // 503 Service Unavailable 에러인 경우 재시도 (더 강력한 감지)
+                const is503Error = error.code === 'storage/unknown' || 
+                                 error.message.includes('503') || 
+                                 error.message.includes('Service Unavailable') ||
+                                 error.message.includes('connection.ts:81') ||
+                                 (error.code && error.code.toString().includes('503'));
+                
+                if (is503Error && retryCount < maxRetries) {
+                    const currentDelay = retryDelay * (retryCount + 1); // 지수적 백오프
+                    adminConsole.warn(`503 에러 발생, ${currentDelay/1000}초 후 재시도 (${retryCount + 1}/${maxRetries}):`, error);
+                    showAlert(`서버가 일시적으로 사용할 수 없습니다. ${currentDelay/1000}초 후 재시도합니다... (${retryCount + 1}/${maxRetries})`, 'warning');
                     
-                    // 재시도 전 대기
-                    await new Promise(resolve => setTimeout(resolve, retryDelay));
+                    // 재시도 전 대기 (지수적 백오프)
+                    await new Promise(resolve => setTimeout(resolve, currentDelay));
                     
                     // 재시도
                     return await uploadImageToFirebase(file, brandCode, retryCount + 1);
@@ -13059,6 +13066,10 @@
                         }
                     }
                     
+                    // 메인 이미지 업로드 전 2초 대기
+                    adminConsole.log('메인 이미지 업로드 전 2초 대기...');
+                    await new Promise(resolve => setTimeout(resolve, 2000));
+                    
                     const uploadResult = await uploadImageToFirebase(imageFile, code);
                     if (uploadResult.success) {
                         imageUrl = uploadResult.url;
@@ -13080,9 +13091,9 @@
                 });
                 if (imageFile1) {
                     try {
-                        // 이미지 업로드 간격 조정 (1초 대기)
-                        adminConsole.log('추가 이미지 1 업로드 전 1초 대기...');
-                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        // 이미지 업로드 간격 조정 (3초 대기)
+                        adminConsole.log('추가 이미지 1 업로드 전 3초 대기...');
+                        await new Promise(resolve => setTimeout(resolve, 3000));
                         
                         // 기존 추가 이미지 1이 있으면 Firebase Storage에서 삭제
                         if (additionalImages[0] && additionalImages[0].includes('firebasestorage.googleapis.com')) {
@@ -13120,9 +13131,9 @@
                 });
                 if (imageFile2) {
                     try {
-                        // 이미지 업로드 간격 조정 (1초 대기)
-                        adminConsole.log('추가 이미지 2 업로드 전 1초 대기...');
-                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        // 이미지 업로드 간격 조정 (3초 대기)
+                        adminConsole.log('추가 이미지 2 업로드 전 3초 대기...');
+                        await new Promise(resolve => setTimeout(resolve, 3000));
                         
                         // 기존 추가 이미지 2가 있으면 Firebase Storage에서 삭제
                         if (additionalImages[1] && additionalImages[1].includes('firebasestorage.googleapis.com')) {
@@ -13160,9 +13171,9 @@
                 });
                 if (imageFile3) {
                     try {
-                        // 이미지 업로드 간격 조정 (1초 대기)
-                        adminConsole.log('추가 이미지 3 업로드 전 1초 대기...');
-                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        // 이미지 업로드 간격 조정 (3초 대기)
+                        adminConsole.log('추가 이미지 3 업로드 전 3초 대기...');
+                        await new Promise(resolve => setTimeout(resolve, 3000));
                         
                         // 기존 추가 이미지 3이 있으면 Firebase Storage에서 삭제
                         if (additionalImages[2] && additionalImages[2].includes('firebasestorage.googleapis.com')) {
@@ -13195,9 +13206,9 @@
                 const detailImageFile = document.getElementById('product-detail-image').files[0];
                 if (detailImageFile) {
                     try {
-                        // 이미지 업로드 간격 조정 (1초 대기)
-                        adminConsole.log('상세 이미지 업로드 전 1초 대기...');
-                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        // 이미지 업로드 간격 조정 (3초 대기)
+                        adminConsole.log('상세 이미지 업로드 전 3초 대기...');
+                        await new Promise(resolve => setTimeout(resolve, 3000));
                         
                         // 기존 상세 이미지가 있으면 Firebase Storage에서 삭제
                         if (detailImageUrl && detailImageUrl.includes('firebasestorage.googleapis.com')) {
@@ -13469,6 +13480,10 @@
                 
                 if (imageFile) {
                     try {
+                        // 메인 이미지 업로드 전 2초 대기
+                        adminConsole.log('메인 이미지 업로드 전 2초 대기...');
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                        
                         adminConsole.log('메인 이미지 업로드 시작:', imageFile.name);
                         imageUrl = await uploadImageToFirebase(imageFile, brandCode);
                         adminConsole.log('메인 이미지 업로드 완료:', imageUrl);
