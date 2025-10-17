@@ -3863,6 +3863,41 @@
     
     <!-- 탭 전환 함수들 -->
     <script>
+        // 관리자 페이지 전용 콘솔 로그 관리
+        window.adminConsole = {
+            isAdminPage: window.location.pathname.includes('admin-dashboard.html'),
+            
+            log: function(message, ...args) {
+                if (this.isAdminPage) {
+                    console.log('🔧 [ADMIN]', message, ...args);
+                }
+            },
+            
+            error: function(message, ...args) {
+                if (this.isAdminPage) {
+                    console.error('❌ [ADMIN]', message, ...args);
+                }
+            },
+            
+            warn: function(message, ...args) {
+                if (this.isAdminPage) {
+                    console.warn('⚠️ [ADMIN]', message, ...args);
+                }
+            },
+            
+            info: function(message, ...args) {
+                if (this.isAdminPage) {
+                    console.info('ℹ️ [ADMIN]', message, ...args);
+                }
+            },
+            
+            debug: function(message, ...args) {
+                if (this.isAdminPage) {
+                    console.debug('🐛 [ADMIN]', message, ...args);
+                }
+            }
+        };
+
         // 전역 탭 전환 함수들
         function switchToPoints() {
             console.log('📋 포인트 관리 탭으로 전환');
@@ -12415,15 +12450,15 @@
         // 상품 추가모ーダル表示
         window.showAddProductModal = async function() {
             try {
-                console.log('🔄 상품 추가 모달 열기 시작...');
-                console.log('현재 DOM 상태:', document.readyState);
-                console.log('Bootstrap 사용 가능:', typeof bootstrap !== 'undefined');
+                adminConsole.log('상품 추가 모달 열기 시작...');
+                adminConsole.log('현재 DOM 상태:', document.readyState);
+                adminConsole.log('Bootstrap 사용 가능:', typeof bootstrap !== 'undefined');
                 
                 // 모달 요소 확인
                 const modalElement = document.getElementById('productModal');
-                console.log('모달 요소:', modalElement);
+                adminConsole.log('모달 요소:', modalElement);
                 if (!modalElement) {
-                    console.error('❌ 상품 모달 요소를 찾을 수 없습니다');
+                    adminConsole.error('상품 모달 요소를 찾을 수 없습니다');
                     showAlert('상품 모달을 찾을 수 없습니다.', 'danger');
                     return;
                 }
@@ -12850,6 +12885,8 @@
         // 商品保存機能
         async function saveProduct() {
             try {
+                adminConsole.log('상품 저장 시작');
+                
                 const form = document.getElementById('productForm');
                 const formData = new FormData(form);
                 const productId = document.getElementById('product-id').value;
@@ -12863,33 +12900,45 @@
                 const salePrice = parseInt(formData.get('salePrice')) || 0;
                 const stock = parseInt(formData.get('stock')) || 0;
                 
+                adminConsole.log('폼 데이터 수집 완료:', {
+                    code, nameEn, nameJp, brandCode, price, salePrice, stock
+                });
+                
                 // 필수 필드 검증
+                adminConsole.log('필수 필드 검증 시작');
                 if (!code) {
+                    adminConsole.warn('상품 코드 누락');
                     showAlert('상품 코드를 입력해주세요.', 'warning');
                     return;
                 }
                 
                 if (!nameJp && !nameEn) {
+                    adminConsole.warn('상품명 누락');
                     showAlert('상품명(일본어 또는 영어)을 입력해주세요.', 'warning');
                     return;
                 }
                 
                 if (!brandCode) {
+                    adminConsole.warn('브랜드 선택 누락');
                     showAlert('브랜드를 선택해주세요.', 'warning');
                     return;
                 }
                 
                 if (price <= 0) {
+                    adminConsole.warn('가격 검증 실패:', price);
                     showAlert('가격을 올바르게 입력해주세요.', 'warning');
                     return;
                 }
                 
                 // 브랜드 존재 여부 확인
                 if (!allBrands || allBrands.length === 0) {
+                    adminConsole.warn('브랜드 데이터 없음, 로드 시도');
                     showAlert('브랜드 데이터를 먼저 로드해주세요.', 'warning');
                     await loadBrands();
                     return;
                 }
+                
+                adminConsole.log('필수 필드 검증 통과');
                 
                 // 상품 타입 확인
                 const productType = document.querySelector('input[name="productType"]:checked')?.value || 'simple';
@@ -13083,18 +13132,17 @@
                 }
                 
                 // ブランド情報を取得
-                console.log('🔍 브랜드 찾기 시도:', {
+                adminConsole.log('브랜드 찾기 시도:', {
                     brandCode: brandCode,
-                    allBrandsLength: allBrands ? allBrands.length : 0,
-                    allBrands: allBrands
+                    allBrandsLength: allBrands ? allBrands.length : 0
                 });
                 
                 const brand = allBrands.find(b => b.code === brandCode);
-                console.log('🔍 찾은 브랜드:', brand);
+                adminConsole.log('찾은 브랜드:', brand);
                 
                 if (!brand) {
-                    console.error('❌ 브랜드를 찾을 수 없음:', brandCode);
-                    console.log('🔍 사용 가능한 브랜드 코드들:', allBrands.map(b => b.code));
+                    adminConsole.error('브랜드를 찾을 수 없음:', brandCode);
+                    adminConsole.log('사용 가능한 브랜드 코드들:', allBrands.map(b => b.code));
                     showAlert(`선택한 브랜드(${brandCode})를 찾을 수 없습니다. 브랜드를 다시 선택해주세요.`, 'danger');
                     return;
                 }
@@ -13103,7 +13151,7 @@
                 const cleanedAdditionalImages = additionalImages.filter(img => img && img.trim() !== '');
                 
                 // 商品データの準備
-                console.log('🔍 상품 저장 데이터 확인:', {
+                adminConsole.log('상품 저장 데이터 준비:', {
                     code: code,
                     nameEn: nameEn,
                     nameJp: nameJp,
@@ -13150,19 +13198,23 @@
                 
                 // 새 상품인 경우 중복 코드 검사
                 if (!productId) {
+                    adminConsole.log('중복 코드 검사 시작:', code);
                     const existingProduct = await db.collection('products').where('code', '==', code).get();
                     if (!existingProduct.empty) {
+                        adminConsole.warn('중복 코드 발견:', code);
                         showAlert('이미 존재하는 상품 코드입니다. 다른 코드를 사용해주세요.', 'warning');
                         return;
                     }
+                    adminConsole.log('중복 코드 검사 통과');
                     // 新規追加
                     productData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
                 }
                 if (productId) {
                     // 更新
+                    adminConsole.log('상품 업데이트 시작:', productId);
                     await db.collection('products').doc(productId).update(productData);
-                    console.log('✅ 상품 업데이트 완료, 문서 ID:', productId);
-                    console.log('🔍 최종 업데이트된 이미지 데이터:', {
+                    adminConsole.log('상품 업데이트 완료:', productId);
+                    adminConsole.log('최종 업데이트된 이미지 데이터:', {
                         imageUrl: productData.imageUrl,
                         additionalImages: productData.additionalImages,
                         detailImageUrl: productData.detailImageUrl
@@ -13201,18 +13253,17 @@
                         productDocId = `product-${Date.now()}`;
                     }
                     
-                    console.log('🔍 상품 ID 생성 디버깅:', {
+                    adminConsole.log('상품 ID 생성:', {
                         '원본 nameJp': productData.nameJp,
-                        '원본 nameKr': productData.nameKr,
                         '원본 nameEn': productData.nameEn,
                         '원본 code': productData.code,
-                        '생성된 productDocId': productDocId,
-                        'productData': productData
+                        '생성된 productDocId': productDocId
                     });
                     
+                    adminConsole.log('새 상품 저장 시작:', productDocId);
                     await db.collection('products').doc(productDocId).set(productData);
-                    console.log('✅ 상품 저장 완료, 문서 ID:', productDocId);
-                    console.log('🔍 최종 저장된 이미지 데이터:', {
+                    adminConsole.log('새 상품 저장 완료:', productDocId);
+                    adminConsole.log('최종 저장된 이미지 데이터:', {
                         imageUrl: productData.imageUrl,
                         additionalImages: productData.additionalImages,
                         detailImageUrl: productData.detailImageUrl
@@ -13228,7 +13279,8 @@
                 await loadProducts();
                 
             } catch (error) {
-                console.error('❌ 商品保存エラー:', error);
+                adminConsole.error('상품 저장 에러:', error);
+                adminConsole.error('에러 스택:', error.stack);
                 showAlert(`商品の保存に失敗しました: ${error.message}`, 'danger');
             }
         }
