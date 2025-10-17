@@ -11516,8 +11516,13 @@
 
 
         // 画像アップロード機能 (Firebase Storage 방식)
-        async function uploadImageToFirebase(file, brandCode) {
+        async function uploadImageToFirebase(file, brandCode, retryCount = 0) {
+            const maxRetries = 3;
+            const retryDelay = 2000; // 2초
+            
             try {
+                adminConsole.log(`이미지 업로드 시작 (시도 ${retryCount + 1}/${maxRetries + 1}):`, file.name);
+                
                 // Firebase 초기화 확인
                 if (!firebase || !firebase.storage) {
                     throw new Error('Firebase Storage가 초기화되지 않았습니다.');
@@ -11560,17 +11565,17 @@
                 
                 console.log('🔥 Firebase Storage 업로드 시작:', fileName);
                 
-                // 파일 업로드
+                // 파일 업로드 (재시도 로직 포함)
                 const uploadTask = storageRef.put(file);
                 
                 // 업로드 진행률 모니터링
                 uploadTask.on('state_changed', 
                     (snapshot) => {
                         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                        console.log(`📤 업로드 진행률: ${Math.round(progress)}%`);
+                        adminConsole.log(`업로드 진행률: ${Math.round(progress)}%`);
                     },
                     (error) => {
-                        console.error('❌ 업로드 실패:', error);
+                        adminConsole.error('업로드 실패:', error);
                         throw error;
                     }
                 );
@@ -11579,7 +11584,7 @@
                 const snapshot = await uploadTask;
                 const downloadURL = await snapshot.ref.getDownloadURL();
                 
-                console.log('✅ Firebase Storage 업로드 성공:', downloadURL);
+                adminConsole.log('Firebase Storage 업로드 성공:', downloadURL);
                 return {
                     success: true,
                     url: downloadURL,
@@ -11590,18 +11595,34 @@
                 };
                 
             } catch (error) {
-                console.error('❌ 画像アップロード失敗:', error);
+                adminConsole.error('이미지 업로드 실패:', error);
+                
+                // 503 Service Unavailable 에러인 경우 재시도
+                if ((error.code === 'storage/unknown' || error.message.includes('503') || error.message.includes('Service Unavailable')) && retryCount < maxRetries) {
+                    adminConsole.warn(`503 에러 발생, ${retryDelay/1000}초 후 재시도 (${retryCount + 1}/${maxRetries})`);
+                    showAlert(`서버가 일시적으로 사용할 수 없습니다. ${retryDelay/1000}초 후 재시도합니다...`, 'warning');
+                    
+                    // 재시도 전 대기
+                    await new Promise(resolve => setTimeout(resolve, retryDelay));
+                    
+                    // 재시도
+                    return await uploadImageToFirebase(file, brandCode, retryCount + 1);
+                }
                 
                 // CORS 오류인 경우 특별 처리
                 if (error.message && error.message.includes('CORS')) {
                     showAlert('CORS 오류가 발생했습니다. Firebase Storage 설정을 확인해주세요.', 'danger');
+                } else if (error.code === 'storage/unknown' || error.message.includes('503')) {
+                    showAlert('Firebase Storage 서버가 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도해주세요.', 'danger');
                 } else {
-                showAlert(`画像アップロードに失敗しました: ${error.message}`, 'danger');
+                    showAlert(`画像アップロードに失敗しました: ${error.message}`, 'danger');
                 }
                 
                 return {
                     success: false,
-                    error: error.message
+                    error: error.message,
+                    code: error.code,
+                    retryCount: retryCount
                 };
             }
         }
@@ -13033,9 +13054,11 @@
                     if (uploadResult.success) {
                         imageUrl = uploadResult.url;
                         imagePath = uploadResult.path;
+                        adminConsole.log('메인 이미지 업로드 성공:', imageUrl);
                     } else {
-                        showAlert('メイン画像のアップロードに失敗しました。', 'danger');
-                        return;
+                        adminConsole.warn('메인 이미지 업로드 실패, 이미지 없이 상품 저장 계속');
+                        showAlert('メイン画像のアップロードに失敗しましたが、商品は保存されます。', 'warning');
+                        // 이미지 업로드 실패해도 상품 저장은 계속 진행
                     }
                 }
                 
@@ -13060,9 +13083,9 @@
                     if (uploadResult.success) {
                             // 첫 번째 슬롯에 직접 할당
                             additionalImages[0] = uploadResult.url;
-                            console.log('✅ 추가 이미지 1 업로드 성공:', uploadResult.url);
+                            adminConsole.log('추가 이미지 1 업로드 성공:', uploadResult.url);
                     } else {
-                            console.log('⚠️ 추가 이미지 1 업로드 실패, 기존 데이터 유지');
+                            adminConsole.warn('추가 이미지 1 업로드 실패, 기존 데이터 유지');
                         }
                     } catch (error) {
                         console.log('⚠️ 추가 이미지 1 업로드 오류, 기존 데이터 유지:', error);
