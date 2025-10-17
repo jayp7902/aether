@@ -4150,24 +4150,13 @@
         // 중복된 switchToProducts 함수 제거됨 - window.switchToProducts로 대체
         
         // 기존 동적 모달용 editProduct 함수 제거됨 - 통합 모달용 함수로 대체
-        // window.editProduct = function(productId) {
-            console.log('🔧 상품 편집 시작:', productId);
-            console.log('현재 상품 데이터:', window.allProductsList);
             
             // 여러 위치에서 상품 찾기 시도
             let product = null;
             
-            // 1. window.allProductsList에서 찾기
-            if (window.allProductsList && window.allProductsList.length > 0) {
-                product = window.allProductsList.find(p => p.id === productId);
-                console.log('allProductsList에서 찾기 시도:', product);
-            }
+            // 주석 처리된 함수 내용 제거됨
             
-            // 2. window.allProducts에서 찾기
-            if (!product && window.allProducts && window.allProducts.length > 0) {
-                product = window.allProducts.find(p => p.id === productId);
-                console.log('allProducts에서 찾기 시도:', product);
-            }
+            // 주석 처리된 함수 내용 제거됨
             
             // 3. filteredProductsList에서 찾기
             if (!product && window.filteredProductsList && window.filteredProductsList.length > 0) {
@@ -13168,8 +13157,17 @@
                             }
                         }
                         
+                    adminConsole.log('추가 이미지 1 업로드 시작:', {
+                        fileName: imageFile1.name,
+                        fileSize: imageFile1.size,
+                        fileType: imageFile1.type,
+                        brandCode: code
+                    });
+                    
                     const uploadResult = await uploadImageToFirebase(imageFile1, `${code}_1`);
-                    if (uploadResult.success) {
+                    adminConsole.log('추가 이미지 1 업로드 결과:', uploadResult);
+                    
+                    if (uploadResult && uploadResult.success) {
                             // 첫 번째 슬롯에 직접 할당
                             additionalImages[0] = uploadResult.url;
                             adminConsole.log('추가 이미지 1 업로드 성공:', uploadResult.url);
@@ -13208,8 +13206,17 @@
                             }
                         }
                         
+                    adminConsole.log('추가 이미지 2 업로드 시작:', {
+                        fileName: imageFile2.name,
+                        fileSize: imageFile2.size,
+                        fileType: imageFile2.type,
+                        brandCode: code
+                    });
+                    
                     const uploadResult = await uploadImageToFirebase(imageFile2, `${code}_2`);
-                    if (uploadResult.success) {
+                    adminConsole.log('추가 이미지 2 업로드 결과:', uploadResult);
+                    
+                    if (uploadResult && uploadResult.success) {
                             // 두 번째 슬롯에 직접 할당
                             additionalImages[1] = uploadResult.url;
                             adminConsole.log('추가 이미지 2 업로드 성공:', uploadResult.url);
@@ -13248,8 +13255,17 @@
                             }
                         }
                         
+                    adminConsole.log('추가 이미지 3 업로드 시작:', {
+                        fileName: imageFile3.name,
+                        fileSize: imageFile3.size,
+                        fileType: imageFile3.type,
+                        brandCode: code
+                    });
+                    
                     const uploadResult = await uploadImageToFirebase(imageFile3, `${code}_3`);
-                    if (uploadResult.success) {
+                    adminConsole.log('추가 이미지 3 업로드 결과:', uploadResult);
+                    
+                    if (uploadResult && uploadResult.success) {
                             // 세 번째 슬롯에 직접 할당
                             additionalImages[2] = uploadResult.url;
                             adminConsole.log('추가 이미지 3 업로드 성공:', uploadResult.url);
@@ -13283,13 +13299,22 @@
                             }
                         }
                         
+                    adminConsole.log('상세 이미지 업로드 시작:', {
+                        fileName: detailImageFile.name,
+                        fileSize: detailImageFile.size,
+                        fileType: detailImageFile.type,
+                        brandCode: code
+                    });
+                    
                     const uploadResult = await uploadImageToFirebase(detailImageFile, `${code}_detail`);
-                    if (uploadResult.success) {
+                    adminConsole.log('상세 이미지 업로드 결과:', uploadResult);
+                    
+                    if (uploadResult && uploadResult.success) {
                         detailImageUrl = uploadResult.url;
-                            adminConsole.log('상세 이미지 업로드 성공');
+                        adminConsole.log('상세 이미지 업로드 성공:', uploadResult.url);
                     } else {
-                            adminConsole.warn('상세 이미지 업로드 실패, 기존 데이터 유지');
-                        }
+                        adminConsole.warn('상세 이미지 업로드 실패, 기존 데이터 유지');
+                    }
                     } catch (error) {
                         adminConsole.error('상세 이미지 업로드 오류, 기존 데이터 유지:', error);
                     }
@@ -13448,8 +13473,17 @@
                         brandCode: productData.brandCode,
                         price: productData.price,
                         imageUrl: productData.imageUrl,
+                        imagePath: productData.imagePath,
                         additionalImages: productData.additionalImages,
-                        additionalImagesLength: productData.additionalImages?.length
+                        additionalImagesLength: productData.additionalImages?.length,
+                        additionalImagesDetails: productData.additionalImages?.map((img, idx) => ({
+                            index: idx,
+                            value: img,
+                            isEmpty: img === '',
+                            isUrl: img && img.includes('http')
+                        })),
+                        detailImageUrl: productData.detailImageUrl,
+                        hasDetailImage: !!(productData.detailImageUrl && productData.detailImageUrl.trim() !== '')
                     });
                     
                     try {
@@ -13463,7 +13497,22 @@
                     // 저장 후 즉시 확인
                     const savedDoc = await db.collection('products').doc(productDocId).get();
                     const savedData = savedDoc.data();
-                    adminConsole.log('저장 후 확인 - additionalImages:', savedData.additionalImages);
+                    adminConsole.log('저장 후 확인 - 전체 데이터:', {
+                        id: savedDoc.id,
+                        exists: savedDoc.exists,
+                        imageUrl: savedData.imageUrl,
+                        imagePath: savedData.imagePath,
+                        additionalImages: savedData.additionalImages,
+                        additionalImagesLength: savedData.additionalImages?.length,
+                        additionalImagesDetails: savedData.additionalImages?.map((img, idx) => ({
+                            index: idx,
+                            value: img,
+                            isEmpty: img === '',
+                            isUrl: img && img.includes('http')
+                        })),
+                        detailImageUrl: savedData.detailImageUrl,
+                        hasDetailImage: !!(savedData.detailImageUrl && savedData.detailImageUrl.trim() !== '')
+                    });
                     adminConsole.log('최종 저장된 이미지 데이터:', {
                         imageUrl: productData.imageUrl,
                         imagePath: productData.imagePath,
@@ -13542,7 +13591,7 @@
                 }
                 
                 // 브랜드 존재 확인
-                const brand = allBrandsList.find(b => b.code === brandCode);
+                const brand = allBrands.find(b => b.code === brandCode);
                 if (!brand) {
                     showAlert('選択されたブランドが見つかりません。', 'danger');
                     return;
