@@ -155,12 +155,12 @@
 
         // Firebase 설정
         const firebaseConfig = {
-            apiKey: "AIzaSyBQJQJQJQJQJQJQJQJQJQJQJQJQJQJQJQ",
+            apiKey: "AIzaSyDMXVksXuTT0rY33GHwlnE1a9tAGbviNFc",
             authDomain: "aether-fixed.firebaseapp.com",
             projectId: "aether-fixed",
             storageBucket: "aether-fixed.firebasestorage.app",
-            messagingSenderId: "123456789012",
-            appId: "1:123456789012:web:abcdefghijklmnopqrstuv"
+            messagingSenderId: "229862254275",
+            appId: "1:229862254275:web:7190d726004e2da72b2476"
         };
 
         // Firebase 초기화
@@ -186,19 +186,23 @@
 
         // 테스트 로그 함수
         window.testLog = function(message, type = 'info') {
-            const console = document.getElementById('test-console');
+            const consoleElement = document.getElementById('test-console');
             const timestamp = new Date().toLocaleTimeString();
             const logEntry = `[${timestamp}] ${type.toUpperCase()}: ${message}\n`;
-            console.textContent += logEntry;
-            console.scrollTop = console.scrollHeight;
+            consoleElement.textContent += logEntry;
+            consoleElement.scrollTop = consoleElement.scrollHeight;
             
-            // 콘솔에도 출력
-            if (type === 'error') {
-                console.error(message);
-            } else if (type === 'warning') {
-                console.warn(message);
-            } else {
-                console.log(message);
+            // 브라우저 콘솔에도 출력
+            try {
+                if (type === 'error') {
+                    window.console.error(message);
+                } else if (type === 'warning') {
+                    window.console.warn(message);
+                } else {
+                    window.console.log(message);
+                }
+            } catch (e) {
+                // 콘솔 출력 실패 시 무시
             }
         };
 
