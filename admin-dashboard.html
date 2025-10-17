@@ -12863,6 +12863,34 @@
                 const salePrice = parseInt(formData.get('salePrice')) || 0;
                 const stock = parseInt(formData.get('stock')) || 0;
                 
+                // 필수 필드 검증
+                if (!code) {
+                    showAlert('상품 코드를 입력해주세요.', 'warning');
+                    return;
+                }
+                
+                if (!nameJp && !nameEn) {
+                    showAlert('상품명(일본어 또는 영어)을 입력해주세요.', 'warning');
+                    return;
+                }
+                
+                if (!brandCode) {
+                    showAlert('브랜드를 선택해주세요.', 'warning');
+                    return;
+                }
+                
+                if (price <= 0) {
+                    showAlert('가격을 올바르게 입력해주세요.', 'warning');
+                    return;
+                }
+                
+                // 브랜드 존재 여부 확인
+                if (!allBrands || allBrands.length === 0) {
+                    showAlert('브랜드 데이터를 먼저 로드해주세요.', 'warning');
+                    await loadBrands();
+                    return;
+                }
+                
                 // 상품 타입 확인
                 const productType = document.querySelector('input[name="productType"]:checked')?.value || 'simple';
                 console.log('상품 타입:', productType);
@@ -13065,8 +13093,10 @@
                 console.log('🔍 찾은 브랜드:', brand);
                 
                 if (!brand) {
-                    console.warn('⚠️ 브랜드를 찾을 수 없음:', brandCode);
+                    console.error('❌ 브랜드를 찾을 수 없음:', brandCode);
                     console.log('🔍 사용 가능한 브랜드 코드들:', allBrands.map(b => b.code));
+                    showAlert(`선택한 브랜드(${brandCode})를 찾을 수 없습니다. 브랜드를 다시 선택해주세요.`, 'danger');
+                    return;
                 }
                 
                 // 빈 이미지 슬롯 정리 (빈 문자열 제거)
@@ -13115,13 +13145,19 @@
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 
+                // Firestoreに保存
+                const db = firebase.firestore();
+                
+                // 새 상품인 경우 중복 코드 검사
                 if (!productId) {
+                    const existingProduct = await db.collection('products').where('code', '==', code).get();
+                    if (!existingProduct.empty) {
+                        showAlert('이미 존재하는 상품 코드입니다. 다른 코드를 사용해주세요.', 'warning');
+                        return;
+                    }
                     // 新規追加
                     productData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
                 }
-                
-                // Firestoreに保存
-                const db = firebase.firestore();
                 if (productId) {
                     // 更新
                     await db.collection('products').doc(productId).update(productData);
