@@ -1310,9 +1310,14 @@
                     <div class="japanese-text">
                         <div><i class="fas fa-user-shield me-1"></i><span id="admin-name"></span></div>
                         <div id="current-time" style="font-size: 1.1rem; font-weight: bold;"></div>
-                        <button class="btn btn-outline-light btn-sm mt-1" onclick="logout()">
-                            <i class="fas fa-sign-out-alt me-1"></i>ログアウト
-                        </button>
+                        <div class="d-flex gap-2 justify-content-end mt-1">
+                            <button class="btn btn-outline-secondary btn-sm" onclick="window.adminConsole.toggle()" id="log-toggle-btn" title="로그 활성화/비활성화">
+                                <i class="fas fa-terminal me-1"></i><span id="log-status">로그 ON</span>
+                            </button>
+                            <button class="btn btn-outline-light btn-sm" onclick="logout()">
+                                <i class="fas fa-sign-out-alt me-1"></i>ログアウト
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -3866,42 +3871,144 @@
         // 관리자 페이지 전용 콘솔 로그 관리
         window.adminConsole = {
             isAdminPage: window.location.pathname.includes('admin-dashboard.html'),
+            isEnabled: true, // 관리자 로그 활성화/비활성화 토글
+            
+            // 관리자 페이지 확인 및 로그 활성화 상태 체크
+            shouldLog: function() {
+                return this.isAdminPage && this.isEnabled;
+            },
             
             log: function(message, ...args) {
-                if (this.isAdminPage) {
-                    console.log('🔧 [ADMIN]', message, ...args);
+                if (this.shouldLog()) {
+                    console.log('%c🔧 [ADMIN]', 'color: #007bff; font-weight: bold; background: #e3f2fd; padding: 2px 6px; border-radius: 3px;', message, ...args);
                 }
             },
             
             error: function(message, ...args) {
-                if (this.isAdminPage) {
-                    console.error('❌ [ADMIN]', message, ...args);
+                if (this.shouldLog()) {
+                    console.error('%c❌ [ADMIN ERROR]', 'color: #dc3545; font-weight: bold; background: #f8d7da; padding: 2px 6px; border-radius: 3px;', message, ...args);
                 }
             },
             
             warn: function(message, ...args) {
-                if (this.isAdminPage) {
-                    console.warn('⚠️ [ADMIN]', message, ...args);
+                if (this.shouldLog()) {
+                    console.warn('%c⚠️ [ADMIN WARNING]', 'color: #fd7e14; font-weight: bold; background: #fff3cd; padding: 2px 6px; border-radius: 3px;', message, ...args);
                 }
             },
             
             info: function(message, ...args) {
-                if (this.isAdminPage) {
-                    console.info('ℹ️ [ADMIN]', message, ...args);
+                if (this.shouldLog()) {
+                    console.info('%cℹ️ [ADMIN INFO]', 'color: #17a2b8; font-weight: bold; background: #d1ecf1; padding: 2px 6px; border-radius: 3px;', message, ...args);
+                }
+            },
+            
+            success: function(message, ...args) {
+                if (this.shouldLog()) {
+                    console.log('%c✅ [ADMIN SUCCESS]', 'color: #28a745; font-weight: bold; background: #d4edda; padding: 2px 6px; border-radius: 3px;', message, ...args);
                 }
             },
             
             debug: function(message, ...args) {
-                if (this.isAdminPage) {
-                    console.debug('🐛 [ADMIN]', message, ...args);
+                if (this.shouldLog()) {
+                    console.log('%c🐛 [ADMIN DEBUG]', 'color: #6f42c1; font-weight: bold; background: #e2e3e5; padding: 2px 6px; border-radius: 3px;', message, ...args);
                 }
+            },
+            
+            // 관리자 로그 토글 함수
+            toggle: function() {
+                this.isEnabled = !this.isEnabled;
+                console.log(`%c🔧 [ADMIN] 로그 ${this.isEnabled ? '활성화' : '비활성화'}됨`, 
+                    'color: #007bff; font-weight: bold; background: #e3f2fd; padding: 2px 6px; border-radius: 3px;');
+                
+                // 버튼 상태 업데이트
+                this.updateToggleButton();
+                return this.isEnabled;
+            },
+            
+            // 로그 토글 버튼 상태 업데이트
+            updateToggleButton: function() {
+                const button = document.getElementById('log-toggle-btn');
+                const statusSpan = document.getElementById('log-status');
+                
+                if (button && statusSpan) {
+                    if (this.isEnabled) {
+                        button.className = 'btn btn-outline-secondary btn-sm';
+                        statusSpan.textContent = '로그 ON';
+                        button.title = '로그 비활성화';
+                    } else {
+                        button.className = 'btn btn-outline-dark btn-sm';
+                        statusSpan.textContent = '로그 OFF';
+                        button.title = '로그 활성화';
+                    }
+                }
+            },
+            
+            // 관리자 로그 상태 확인
+            status: function() {
+                console.log(`%c🔧 [ADMIN] 로그 상태: ${this.isAdminPage ? '관리자 페이지' : '일반 페이지'} | ${this.isEnabled ? '활성화' : '비활성화'}`, 
+                    'color: #007bff; font-weight: bold; background: #e3f2fd; padding: 2px 6px; border-radius: 3px;');
+                return {
+                    isAdminPage: this.isAdminPage,
+                    isEnabled: this.isEnabled
+                };
             }
         };
 
-        // 즉시 테스트 로그 출력
-        console.log('🔧 [ADMIN] 관리자 콘솔 시스템 초기화 완료');
-        console.log('🔧 [ADMIN] 현재 페이지:', window.location.pathname);
-        console.log('🔧 [ADMIN] 관리자 페이지 여부:', window.adminConsole.isAdminPage);
+        // 일반 사용자 페이지에서 로그 숨기기 (관리자 페이지가 아닌 경우)
+        if (!window.adminConsole.isAdminPage) {
+            // 일반 페이지에서는 모든 console 로그를 숨김
+            const originalConsole = {
+                log: console.log,
+                error: console.error,
+                warn: console.warn,
+                info: console.info,
+                debug: console.debug
+            };
+            
+            // console 메서드들을 빈 함수로 오버라이드
+            console.log = function() {};
+            console.error = function() {};
+            console.warn = function() {};
+            console.info = function() {};
+            console.debug = function() {};
+            
+            // 개발자 도구에서 원본 console 복원 함수 제공
+            window.restoreConsole = function() {
+                console.log = originalConsole.log;
+                console.error = originalConsole.error;
+                console.warn = originalConsole.warn;
+                console.info = originalConsole.info;
+                console.debug = originalConsole.debug;
+                console.log('🔧 Console이 복원되었습니다.');
+            };
+            
+            // 관리자 콘솔 시스템 비활성화
+            window.adminConsole.isEnabled = false;
+        }
+
+        // 관리자 페이지에서만 테스트 로그 출력
+        if (window.adminConsole.isAdminPage) {
+            window.adminConsole.log('관리자 콘솔 시스템 초기화 완료');
+            window.adminConsole.log('현재 페이지:', window.location.pathname);
+            window.adminConsole.log('관리자 페이지 여부:', window.adminConsole.isAdminPage);
+            window.adminConsole.success('관리자 전용 로그 시스템이 활성화되었습니다!');
+            
+            // 관리자 콘솔 사용법 안내
+            window.adminConsole.info('사용법:');
+            window.adminConsole.info('- adminConsole.log("메시지") : 일반 로그');
+            window.adminConsole.info('- adminConsole.error("메시지") : 에러 로그');
+            window.adminConsole.info('- adminConsole.warn("메시지") : 경고 로그');
+            window.adminConsole.info('- adminConsole.success("메시지") : 성공 로그');
+            window.adminConsole.info('- adminConsole.toggle() : 로그 활성화/비활성화');
+            window.adminConsole.info('- adminConsole.status() : 로그 상태 확인');
+            
+            // DOM 로드 후 버튼 상태 초기화
+            document.addEventListener('DOMContentLoaded', function() {
+                setTimeout(() => {
+                    window.adminConsole.updateToggleButton();
+                }, 100);
+            });
+        }
         
         // adminConsole 함수 테스트
         window.adminConsole.log('adminConsole.log 테스트');
