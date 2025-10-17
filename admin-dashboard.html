@@ -11518,7 +11518,7 @@
         // 画像アップロード機能 (Firebase Storage 방식)
         async function uploadImageToFirebase(file, brandCode, retryCount = 0) {
             const maxRetries = 3;
-            const retryDelay = 2000; // 2초
+            const retryDelay = 3000; // 3초로 증가
             
             try {
                 adminConsole.log(`이미지 업로드 시작 (시도 ${retryCount + 1}/${maxRetries + 1}):`, file.name);
@@ -13066,16 +13066,20 @@
                 const imageFile1 = document.getElementById('product-image-1').files[0];
                 if (imageFile1) {
                     try {
+                        // 이미지 업로드 간격 조정 (1초 대기)
+                        adminConsole.log('추가 이미지 1 업로드 전 1초 대기...');
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        
                         // 기존 추가 이미지 1이 있으면 Firebase Storage에서 삭제
                         if (additionalImages[0] && additionalImages[0].includes('firebasestorage.googleapis.com')) {
                             try {
-                                console.log('🗑️ 기존 추가 이미지 1 삭제 시도:', additionalImages[0]);
+                                adminConsole.log('기존 추가 이미지 1 삭제 시도:', additionalImages[0]);
                                 const storage = firebase.storage();
                                 const oldImageRef = storage.refFromURL(additionalImages[0]);
                                 await oldImageRef.delete();
-                                console.log('✅ 기존 추가 이미지 1 삭제 완료');
+                                adminConsole.log('기존 추가 이미지 1 삭제 완료');
                             } catch (error) {
-                                console.error('❌ 기존 추가 이미지 1 삭제 실패:', error);
+                                adminConsole.error('기존 추가 이미지 1 삭제 실패:', error);
                             }
                         }
                         
@@ -13088,7 +13092,7 @@
                             adminConsole.warn('추가 이미지 1 업로드 실패, 기존 데이터 유지');
                         }
                     } catch (error) {
-                        console.log('⚠️ 추가 이미지 1 업로드 오류, 기존 데이터 유지:', error);
+                        adminConsole.error('추가 이미지 1 업로드 오류, 기존 데이터 유지:', error);
                     }
                 }
                 
@@ -13096,16 +13100,20 @@
                 const imageFile2 = document.getElementById('product-image-2').files[0];
                 if (imageFile2) {
                     try {
+                        // 이미지 업로드 간격 조정 (1초 대기)
+                        adminConsole.log('추가 이미지 2 업로드 전 1초 대기...');
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        
                         // 기존 추가 이미지 2가 있으면 Firebase Storage에서 삭제
                         if (additionalImages[1] && additionalImages[1].includes('firebasestorage.googleapis.com')) {
                             try {
-                                console.log('🗑️ 기존 추가 이미지 2 삭제 시도:', additionalImages[1]);
+                                adminConsole.log('기존 추가 이미지 2 삭제 시도:', additionalImages[1]);
                                 const storage = firebase.storage();
                                 const oldImageRef = storage.refFromURL(additionalImages[1]);
                                 await oldImageRef.delete();
-                                console.log('✅ 기존 추가 이미지 2 삭제 완료');
+                                adminConsole.log('기존 추가 이미지 2 삭제 완료');
                             } catch (error) {
-                                console.error('❌ 기존 추가 이미지 2 삭제 실패:', error);
+                                adminConsole.error('기존 추가 이미지 2 삭제 실패:', error);
                             }
                         }
                         
@@ -13113,12 +13121,12 @@
                     if (uploadResult.success) {
                             // 두 번째 슬롯에 직접 할당
                             additionalImages[1] = uploadResult.url;
-                            console.log('✅ 추가 이미지 2 업로드 성공:', uploadResult.url);
+                            adminConsole.log('추가 이미지 2 업로드 성공:', uploadResult.url);
                     } else {
-                            console.log('⚠️ 추가 이미지 2 업로드 실패, 기존 데이터 유지');
+                            adminConsole.warn('추가 이미지 2 업로드 실패, 기존 데이터 유지');
                         }
                     } catch (error) {
-                        console.log('⚠️ 추가 이미지 2 업로드 오류, 기존 데이터 유지:', error);
+                        adminConsole.error('추가 이미지 2 업로드 오류, 기존 데이터 유지:', error);
                     }
                 }
                 
@@ -13126,16 +13134,20 @@
                 const imageFile3 = document.getElementById('product-image-3').files[0];
                 if (imageFile3) {
                     try {
+                        // 이미지 업로드 간격 조정 (1초 대기)
+                        adminConsole.log('추가 이미지 3 업로드 전 1초 대기...');
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        
                         // 기존 추가 이미지 3이 있으면 Firebase Storage에서 삭제
                         if (additionalImages[2] && additionalImages[2].includes('firebasestorage.googleapis.com')) {
                             try {
-                                console.log('🗑️ 기존 추가 이미지 3 삭제 시도:', additionalImages[2]);
+                                adminConsole.log('기존 추가 이미지 3 삭제 시도:', additionalImages[2]);
                                 const storage = firebase.storage();
                                 const oldImageRef = storage.refFromURL(additionalImages[2]);
                                 await oldImageRef.delete();
-                                console.log('✅ 기존 추가 이미지 3 삭제 완료');
+                                adminConsole.log('기존 추가 이미지 3 삭제 완료');
                             } catch (error) {
-                                console.error('❌ 기존 추가 이미지 3 삭제 실패:', error);
+                                adminConsole.error('기존 추가 이미지 3 삭제 실패:', error);
                             }
                         }
                         
@@ -13143,12 +13155,12 @@
                     if (uploadResult.success) {
                             // 세 번째 슬롯에 직접 할당
                             additionalImages[2] = uploadResult.url;
-                            console.log('✅ 추가 이미지 3 업로드 성공:', uploadResult.url);
+                            adminConsole.log('추가 이미지 3 업로드 성공:', uploadResult.url);
                     } else {
-                            console.log('⚠️ 추가 이미지 3 업로드 실패, 기존 데이터 유지');
+                            adminConsole.warn('추가 이미지 3 업로드 실패, 기존 데이터 유지');
                         }
                     } catch (error) {
-                        console.log('⚠️ 추가 이미지 3 업로드 오류, 기존 데이터 유지:', error);
+                        adminConsole.error('추가 이미지 3 업로드 오류, 기존 데이터 유지:', error);
                     }
                 }
                 
@@ -13156,28 +13168,32 @@
                 const detailImageFile = document.getElementById('product-detail-image').files[0];
                 if (detailImageFile) {
                     try {
+                        // 이미지 업로드 간격 조정 (1초 대기)
+                        adminConsole.log('상세 이미지 업로드 전 1초 대기...');
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        
                         // 기존 상세 이미지가 있으면 Firebase Storage에서 삭제
                         if (detailImageUrl && detailImageUrl.includes('firebasestorage.googleapis.com')) {
                             try {
-                                console.log('🗑️ 기존 상세 이미지 삭제 시도:', detailImageUrl);
+                                adminConsole.log('기존 상세 이미지 삭제 시도:', detailImageUrl);
                                 const storage = firebase.storage();
                                 const oldImageRef = storage.refFromURL(detailImageUrl);
                                 await oldImageRef.delete();
-                                console.log('✅ 기존 상세 이미지 삭제 완료');
+                                adminConsole.log('기존 상세 이미지 삭제 완료');
                             } catch (error) {
-                                console.error('❌ 기존 상세 이미지 삭제 실패:', error);
+                                adminConsole.error('기존 상세 이미지 삭제 실패:', error);
                             }
                         }
                         
                     const uploadResult = await uploadImageToFirebase(detailImageFile, `${code}_detail`);
                     if (uploadResult.success) {
                         detailImageUrl = uploadResult.url;
-                            console.log('✅ 상세 이미지 업로드 성공');
+                            adminConsole.log('상세 이미지 업로드 성공');
                     } else {
-                            console.log('⚠️ 상세 이미지 업로드 실패, 기존 데이터 유지');
+                            adminConsole.warn('상세 이미지 업로드 실패, 기존 데이터 유지');
                         }
                     } catch (error) {
-                        console.log('⚠️ 상세 이미지 업로드 오류, 기존 데이터 유지:', error);
+                        adminConsole.error('상세 이미지 업로드 오류, 기존 데이터 유지:', error);
                     }
                 }
                 
