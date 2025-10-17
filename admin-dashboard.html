@@ -11105,18 +11105,18 @@
         // 상품 로드 함수 (통합된 버전)
         window.loadProducts = async function() {
             try {
-                console.log('📦 상품 데이터 로드 시작 (통합된 버전)');
+                adminConsole.log('상품 데이터 로드 시작');
                 
                 // 먼저 브랜드 데이터가 로드되었는지 확인
                 if (!window.allBrands || window.allBrands.length === 0) {
-                    console.log('🔄 브랜드 데이터가 없습니다 -> 브랜드 로드');
+                    adminConsole.log('브랜드 데이터가 없습니다 -> 브랜드 로드');
                     await loadBrands();
                 }
                 
                 // Firebase에서 상품 데이터 로드 시도
                 if (typeof firebase !== 'undefined' && firebase && firebase.firestore) {
                     try {
-                        console.log('🔥 Firebase에서 상품 데이터 로드 시도...');
+                        adminConsole.log('Firebase에서 상품 데이터 로드 시도...');
                         const db = firebase.firestore();
                         
                         // 타임아웃 설정
@@ -11128,11 +11128,11 @@
                         const productsSnapshot = await Promise.race([productsPromise, timeoutPromise]);
                         
                         if (productsSnapshot && !productsSnapshot.empty) {
-                            console.log('📋 Firebase에서 상품 문서 개수:', productsSnapshot.docs.length);
+                            adminConsole.log('Firebase에서 상품 문서 개수:', productsSnapshot.docs.length);
                             
                             const products = productsSnapshot.docs.map(doc => {
                                 const data = doc.data();
-                                console.log('📦 상품 데이터:', doc.id, data);
+                                adminConsole.log('상품 데이터:', doc.id, data);
                                 return {
                                     id: doc.id,
                                     ...data,
@@ -11145,7 +11145,12 @@
                             window.allProductsList = products;
                             window.filteredProductsList = [...products];
                             
-                            console.log('✅ Firebase 상품 로드 완료:', products.length, '개');
+                            adminConsole.log('Firebase 상품 로드 완료:', products.length, '개');
+                            adminConsole.log('전역 변수 저장 완료:', {
+                                allProductsList: window.allProductsList.length,
+                                filteredProductsList: window.filteredProductsList.length
+                            });
+                            
                             displayProducts(products);
                             updateProductStats(products);
                             return;
@@ -11182,21 +11187,31 @@
 
         // 상품 표시 함수 (통합된 버전)
         window.displayProducts = function(products = null) {
+            adminConsole.log('displayProducts 함수 시작');
+            
             const container = document.getElementById('products-container');
             if (!container) {
-                console.error('❌ 상품 컨테이너를 찾을 수 없습니다');
+                adminConsole.error('상품 컨테이너를 찾을 수 없습니다');
                 return;
             }
             
             // 매개변수가 없으면 전역 변수 사용
             const productsToShow = products || window.filteredProductsList || window.allProductsList || [];
             
+            adminConsole.log('표시할 상품 데이터:', {
+                productsParam: products ? products.length : 'null',
+                filteredProductsList: window.filteredProductsList ? window.filteredProductsList.length : 'undefined',
+                allProductsList: window.allProductsList ? window.allProductsList.length : 'undefined',
+                productsToShow: productsToShow.length
+            });
+            
             // 디버깅: 상품 데이터 구조 확인
             if (productsToShow && productsToShow.length > 0) {
-                console.log('🔍 상품 데이터 구조 확인 (첫 번째 상품):', productsToShow[0]);
-                console.log('🔍 상품명 필드들:', {
+                adminConsole.log('상품 데이터 구조 확인 (첫 번째 상품):', productsToShow[0]);
+                adminConsole.log('상품명 필드들:', {
                     nameEn: productsToShow[0].nameEn,
-                    nameJp: productsToShow[0].nameJp
+                    nameJp: productsToShow[0].nameJp,
+                    code: productsToShow[0].code
                 });
             }
             
@@ -13288,7 +13303,9 @@
                 modal.hide();
                 
                 // 商品リストを再読込
+                adminConsole.log('상품 저장 완료 후 목록 새로고침 시작');
                 await loadProducts();
+                adminConsole.log('상품 저장 완료 후 목록 새로고침 완료');
                 
             } catch (error) {
                 adminConsole.error('상품 저장 에러:', error);
@@ -14293,125 +14310,7 @@
             return colorOptions;
         };
 
-        // 商品表示機能 (brand-template.html 방식 적용)
-        function displayProducts() {
-            console.log('🎨 displayProducts 함수 시작');
-            console.log('📊 현재 상품 데이터:', {
-                allProductsList: allProductsList ? allProductsList.length : 'undefined',
-                filteredProductsList: filteredProductsList ? filteredProductsList.length : 'undefined',
-                windowAllProductsList: window.allProductsList ? window.allProductsList.length : 'undefined'
-            });
-            
-            const container = document.getElementById('products-container');
-            if (!container) {
-                console.error('❌ 상품 컨테이너를 찾을 수 없습니다');
-                return;
-            }
-            
-            console.log('📦 상품 컨테이너 찾음:', container);
-            
-            if (!filteredProductsList || filteredProductsList.length === 0) {
-                console.log('⚠️ 표시할 상품이 없음 - 메시지 표시');
-                const searchTerm = document.getElementById('product-search')?.value?.trim();
-                const hasSearchTerm = searchTerm && searchTerm.length > 0;
-                
-                container.innerHTML = `
-                    <div class="text-center py-5">
-                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">
-                            ${hasSearchTerm ? 
-                                `"${searchTerm}" に一致する商品が見つかりません。` : 
-                                '商品が見つかりません。'
-                            }
-                        </p>
-                        ${hasSearchTerm ? 
-                            '<p class="text-muted small">別のキーワードで検索してみてください。</p>' : 
-                            ''
-                        }
-                    </div>
-                `;
-                return;
-            }
-            
-            console.log('🎯 상품 카드 생성 시작:', filteredProductsList.length, '개');
-            console.log('📋 표시할 상품들:', filteredProductsList.map(p => p.nameEn || p.nameJp || p.nameKr));
-            console.log('🔍 filteredProductsList 상세 정보:', filteredProductsList);
-            
-            const productsHTML = filteredProductsList.map(product => {
-                // 배지 정보 처리
-                let badgeHtml = '';
-                const colorMap = {
-                    'red': '#dc3545',
-                    'blue': '#0d6efd',
-                    'green': '#198754',
-                    'orange': '#fd7e14',
-                    'purple': '#6f42c1',
-                    'dark': '#212529'
-                };
-                
-                if (product.badgeType && product.badgeType !== '') {
-                    const badgeText = product.badgeType === 'CUSTOM' ? (product.badgeText || 'CUSTOM') : product.badgeType;
-                    const badgeColor = colorMap[product.badgeColor] || '#dc3545';
-                    badgeHtml = `<span class="badge" style="background-color: ${badgeColor}; color: white; font-size: 10px; margin-left: 5px;">${badgeText}</span>`;
-                }
-
-                return `
-                <div class="col-6 col-md-6 col-lg-4 mb-4">
-                    <div class="card product-card h-100">
-                        <div class="position-relative">
-                            <img src="${product.imageUrl || 'assets/img/placeholder-product.jpg'}" 
-                                 class="card-img-top" alt="${product.nameJp}"
-                                 onerror="this.src='assets/img/placeholder-product.jpg'"
-                                 style="height: 150px; object-fit: cover;">
-                            ${product.badgeType && product.badgeType !== '' ? `
-                                <span class="badge" style="position: absolute; top: 8px; right: 8px; background-color: ${colorMap[product.badgeColor] || '#dc3545'}; color: white; font-size: 11px; padding: 4px 8px; border-radius: 4px; z-index: 10;">
-                                    ${product.badgeType === 'CUSTOM' ? (product.badgeText || 'CUSTOM') : product.badgeType}
-                                </span>
-                            ` : ''}
-                        </div>
-                        <div class="card-body">
-                            <h6 class="card-title mb-2">${product.nameEn || product.nameJp || '商品名なし'}</h6>
-                            <div class="product-meta mb-2">
-                                <span class="badge bg-secondary me-1">${product.brandName || '不明'}</span>
-                                <span class="badge bg-${(() => {
-                                    // 옵션 상품인 경우 개별 옵션들의 재고 합산 계산
-                                    let totalStock = product.stock || 0;
-                                    if (product.productType === 'option' && product.productOptions && product.productOptions.length > 0) {
-                                        totalStock = product.productOptions.reduce((sum, option) => sum + (option.stock || 0), 0);
-                                    }
-                                    return totalStock >= 5 ? 'success' : totalStock > 0 ? 'warning' : 'danger';
-                                })()}">
-                                    ${(() => {
-                                        // 옵션 상품인 경우 개별 옵션들의 재고 합산 계산
-                                        let totalStock = product.stock || 0;
-                                        if (product.productType === 'option' && product.productOptions && product.productOptions.length > 0) {
-                                            totalStock = product.productOptions.reduce((sum, option) => sum + (option.stock || 0), 0);
-                                        }
-                                        return totalStock >= 5 ? `在庫あり (${totalStock}個)` : totalStock > 0 ? `在庫不足 (${totalStock}個)` : '売り切れ';
-                                    })()}
-                                </span>
-                                ${badgeHtml}
-                            </div>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="price fw-bold">¥${product.price?.toLocaleString() || '0'}</span>
-                                <div class="btn-group">
-                                    <button class="btn btn-outline-secondary btn-sm" onclick="editProduct('${product.id}')" title="編集">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-outline-secondary btn-sm" onclick="deleteProduct('${product.id}')" title="削除">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            `;
-            }).join('');
-            
-            container.innerHTML = `<div class="row">${productsHTML}</div>`;
-            console.log('✅ 상품 카드 HTML 생성 완료 - DOM에 적용됨');
-        }
+        // 중복된 displayProducts 함수 제거됨 - window.displayProducts 사용
 
         // 브랜드 목록 로드 및 드롭다운 채우기
         async function loadBrandFilter() {
