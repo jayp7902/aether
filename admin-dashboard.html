@@ -2507,7 +2507,7 @@
                             <i class="fas fa-box me-2"></i>商品管理
                         </h3>
                         <div class="d-flex gap-2">
-                            <button class="btn btn-dark" onclick="console.log('버튼 클릭됨'); if (typeof window.showAddProductModal === 'function') { window.showAddProductModal(); } else { console.error('showAddProductModal 함수를 찾을 수 없습니다'); }">
+                            <button class="btn btn-dark" onclick="console.log('🔧 [ADMIN] 상품 추가 버튼 클릭됨'); window.adminConsole.log('상품 추가 버튼 클릭됨'); if (typeof window.showAddProductModal === 'function') { window.showAddProductModal(); } else { console.error('showAddProductModal 함수를 찾을 수 없습니다'); }">
                                 <i class="fas fa-plus me-2"></i>新しい商品を追加
                             </button>
                             <div class="btn-group">
@@ -3429,7 +3429,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">キャンセル</button>
-                    <button type="button" class="btn btn-dark" onclick="saveProduct()">
+                    <button type="button" class="btn btn-dark" onclick="console.log('🔧 [ADMIN] 저장 버튼 클릭됨'); window.adminConsole.log('저장 버튼 클릭됨'); saveProduct()">
                         <i class="fas fa-save me-2"></i>保存
                     </button>
                 </div>
@@ -3897,6 +3897,16 @@
                 }
             }
         };
+
+        // 즉시 테스트 로그 출력
+        console.log('🔧 [ADMIN] 관리자 콘솔 시스템 초기화 완료');
+        console.log('🔧 [ADMIN] 현재 페이지:', window.location.pathname);
+        console.log('🔧 [ADMIN] 관리자 페이지 여부:', window.adminConsole.isAdminPage);
+        
+        // adminConsole 함수 테스트
+        window.adminConsole.log('adminConsole.log 테스트');
+        window.adminConsole.error('adminConsole.error 테스트');
+        window.adminConsole.warn('adminConsole.warn 테스트');
 
         // 전역 탭 전환 함수들
         function switchToPoints() {
@@ -5052,6 +5062,8 @@
 
         // 페이지 로드 시 초기화
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔧 [ADMIN] DOMContentLoaded 이벤트 발생');
+            
             // Firebase 초기화 완료 후 관리자 대시보드 초기화
             waitForFirebaseAndInitialize();
             initializeTabNavigation();
