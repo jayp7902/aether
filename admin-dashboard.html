@@ -11639,7 +11639,12 @@
             const retryDelay = 3000; // 3초로 증가
             
             try {
-                adminConsole.log(`이미지 업로드 시작 (시도 ${retryCount + 1}/${maxRetries + 1}):`, file.name);
+                adminConsole.log(`이미지 업로드 시작 (시도 ${retryCount + 1}/${maxRetries + 1}):`, {
+                    fileName: file.name,
+                    fileSize: file.size,
+                    fileType: file.type,
+                    brandCode: brandCode
+                });
                 
                 // Firebase 초기화 확인
                 if (!firebase || !firebase.storage) {
@@ -13184,6 +13189,11 @@
                 
                 // 追加画像1がアップロードされている場合
                 const imageFile1 = document.getElementById('product-image-1').files[0];
+                adminConsole.log('추가 이미지 1 파일 확인:', {
+                    hasFile: !!imageFile1,
+                    fileName: imageFile1 ? imageFile1.name : 'none',
+                    fileSize: imageFile1 ? imageFile1.size : 0
+                });
                 if (imageFile1) {
                     try {
                         // 이미지 업로드 간격 조정 (1초 대기)
@@ -13219,6 +13229,11 @@
                 
                 // 追加画像2がアップロードされている場合
                 const imageFile2 = document.getElementById('product-image-2').files[0];
+                adminConsole.log('추가 이미지 2 파일 확인:', {
+                    hasFile: !!imageFile2,
+                    fileName: imageFile2 ? imageFile2.name : 'none',
+                    fileSize: imageFile2 ? imageFile2.size : 0
+                });
                 if (imageFile2) {
                     try {
                         // 이미지 업로드 간격 조정 (1초 대기)
@@ -13254,6 +13269,11 @@
                 
                 // 追加画像3がアップロードされている場合
                 const imageFile3 = document.getElementById('product-image-3').files[0];
+                adminConsole.log('추가 이미지 3 파일 확인:', {
+                    hasFile: !!imageFile3,
+                    fileName: imageFile3 ? imageFile3.name : 'none',
+                    fileSize: imageFile3 ? imageFile3.size : 0
+                });
                 if (imageFile3) {
                     try {
                         // 이미지 업로드 간격 조정 (1초 대기)
@@ -13487,6 +13507,210 @@
                 adminConsole.error('에러 스택:', error.stack);
                 showAlert(`商品の保存に失敗しました: ${error.message}`, 'danger');
             }
+        }
+
+        // 상품 편집 저장 함수
+        async function saveProductEdit() {
+            try {
+                adminConsole.log('상품 편집 저장 시작');
+                
+                const form = document.getElementById('productForm');
+                const formData = new FormData(form);
+                const productId = document.getElementById('product-id').value;
+                
+                if (!productId) {
+                    showAlert('상품 ID를 찾을 수 없습니다.', 'danger');
+                    return;
+                }
+                
+                // 필드 값 가져오기
+                const code = formData.get('code')?.trim() || '';
+                const nameEn = formData.get('nameEn')?.trim() || '';
+                const nameJp = formData.get('nameJp')?.trim() || '';
+                const brandCode = formData.get('brandCode')?.trim() || '';
+                const price = parseFloat(formData.get('price')) || 0;
+                const description = formData.get('description')?.trim() || '';
+                const ingredients = formData.get('ingredients')?.trim() || '';
+                const usage = formData.get('usage')?.trim() || '';
+                const volume = formData.get('volume')?.trim() || '';
+                const category = formData.get('category')?.trim() || '';
+                const isActive = formData.get('isActive') === 'on';
+                
+                // 필수 필드 검증
+                if (!code || !nameEn || !nameJp || !brandCode || price <= 0) {
+                    showAlert('必須項目を入力してください。', 'danger');
+                    return;
+                }
+                
+                // 브랜드 존재 확인
+                const brand = allBrandsList.find(b => b.code === brandCode);
+                if (!brand) {
+                    showAlert('選択されたブランドが見つかりません。', 'danger');
+                    return;
+                }
+                
+                adminConsole.log('상품 편집 데이터 검증 완료:', {
+                    productId,
+                    code,
+                    nameEn,
+                    nameJp,
+                    brandCode,
+                    price
+                });
+                
+                // Firebase 초기화 확인
+                if (!firebase || !firebase.firestore) {
+                    throw new Error('Firebase가 초기화되지 않았습니다.');
+                }
+                
+                const db = firebase.firestore();
+                
+                // 기존 상품 데이터 가져오기
+                const productDoc = await db.collection('products').doc(productId).get();
+                if (!productDoc.exists) {
+                    showAlert('상품을 찾을 수 없습니다.', 'danger');
+                    return;
+                }
+                
+                const existingProduct = productDoc.data();
+                adminConsole.log('기존 상품 데이터:', existingProduct);
+                
+                // 기존 추가 이미지 데이터 가져오기
+                let additionalImages = existingProduct.additionalImages || ['', '', ''];
+                adminConsole.log('기존 추가 이미지 데이터:', additionalImages);
+                
+                // 새로운 이미지 업로드 처리
+                const imageFile = document.getElementById('product-image').files[0];
+                let imageUrl = existingProduct.imageUrl || '';
+                
+                if (imageFile) {
+                    try {
+                        adminConsole.log('메인 이미지 업로드 시작:', imageFile.name);
+                        imageUrl = await uploadImageToFirebase(imageFile, brandCode);
+                        adminConsole.log('메인 이미지 업로드 완료:', imageUrl);
+                    } catch (error) {
+                        adminConsole.error('메인 이미지 업로드 실패:', error);
+                        showAlert('メイン画像のアップロードに失敗しましたが、商品は保存されます。', 'warning');
+                    }
+                }
+                
+                // 추가 이미지들 업로드 처리
+                const imageFile1 = document.getElementById('product-image-1').files[0];
+                if (imageFile1) {
+                    try {
+                        adminConsole.log('추가 이미지 1 업로드 시작:', imageFile1.name);
+                        additionalImages[0] = await uploadImageToFirebase(imageFile1, brandCode);
+                        adminConsole.log('추가 이미지 1 업로드 완료:', additionalImages[0]);
+                    } catch (error) {
+                        adminConsole.error('추가 이미지 1 업로드 실패:', error);
+                    }
+                }
+                
+                const imageFile2 = document.getElementById('product-image-2').files[0];
+                if (imageFile2) {
+                    try {
+                        adminConsole.log('추가 이미지 2 업로드 시작:', imageFile2.name);
+                        additionalImages[1] = await uploadImageToFirebase(imageFile2, brandCode);
+                        adminConsole.log('추가 이미지 2 업로드 완료:', additionalImages[1]);
+                    } catch (error) {
+                        adminConsole.error('추가 이미지 2 업로드 실패:', error);
+                    }
+                }
+                
+                const imageFile3 = document.getElementById('product-image-3').files[0];
+                if (imageFile3) {
+                    try {
+                        adminConsole.log('추가 이미지 3 업로드 시작:', imageFile3.name);
+                        additionalImages[2] = await uploadImageToFirebase(imageFile3, brandCode);
+                        adminConsole.log('추가 이미지 3 업로드 완료:', additionalImages[2]);
+                    } catch (error) {
+                        adminConsole.error('추가 이미지 3 업로드 실패:', error);
+                    }
+                }
+                
+                // 상품 데이터 준비
+                const productData = {
+                    code,
+                    nameEn,
+                    nameJp,
+                    brandCode,
+                    brandName: brand.name,
+                    price,
+                    description,
+                    ingredients,
+                    usage,
+                    volume,
+                    category,
+                    isActive,
+                    imageUrl,
+                    additionalImages,
+                    updatedAt: new Date()
+                };
+                
+                adminConsole.log('상품 편집 저장 데이터:', productData);
+                
+                // Firestore에 저장
+                await db.collection('products').doc(productId).update(productData);
+                adminConsole.log('상품 편집 저장 완료:', productId);
+                
+                showAlert('商品が正常に更新されました。', 'success');
+                
+                // 모달 닫기
+                closeProductEditModal();
+                
+                // 상품 목록 새로고침
+                await loadProducts();
+                
+            } catch (error) {
+                adminConsole.error('상품 편집 저장 에러:', error);
+                showAlert(`商品の更新に失敗しました: ${error.message}`, 'danger');
+            }
+        }
+
+        // 상품 편집 모달 닫기 함수
+        function closeProductEditModal() {
+            adminConsole.log('상품 편집 모달 닫기');
+            
+            // Bootstrap 모달 닫기
+            const modalElement = document.getElementById('productModal');
+            if (modalElement) {
+                const modal = bootstrap.Modal.getInstance(modalElement);
+                if (modal) {
+                    modal.hide();
+                }
+            }
+            
+            // 폼 초기화
+            const form = document.getElementById('productForm');
+            if (form) {
+                form.reset();
+            }
+            
+            // 이미지 미리보기 초기화
+            const previews = [
+                { preview: 'product-image-preview', placeholder: 'product-upload-placeholder' },
+                { preview: 'product-image-1-preview', placeholder: 'product-upload-placeholder-1' },
+                { preview: 'product-image-2-preview', placeholder: 'product-upload-placeholder-2' },
+                { preview: 'product-image-3-preview', placeholder: 'product-upload-placeholder-3' }
+            ];
+            
+            previews.forEach(({ preview, placeholder }) => {
+                const previewElement = document.getElementById(preview);
+                const placeholderElement = document.getElementById(placeholder);
+                if (previewElement && placeholderElement) {
+                    previewElement.style.display = 'none';
+                    placeholderElement.style.display = 'block';
+                }
+            });
+            
+            // 파일 입력 초기화
+            const fileInputs = ['product-image', 'product-image-1', 'product-image-2', 'product-image-3'];
+            fileInputs.forEach(inputId => {
+                const input = document.getElementById(inputId);
+                if (input) {
+                    input.value = '';
+                }
+            });
         }
 
         // 商品編集機能
@@ -13769,8 +13993,10 @@
             
             // 추가 이미지들 설정 - 기존 데이터를 숨겨진 필드에 저장
             if (product.additionalImages && Array.isArray(product.additionalImages)) {
-                console.log('🔍 추가 이미지 설정:', product.additionalImages);
-                console.log('🔍 추가 이미지 개수:', product.additionalImages.length);
+                adminConsole.log('🔍 추가 이미지 설정:', product.additionalImages);
+                adminConsole.log('🔍 추가 이미지 개수:', product.additionalImages.length);
+                adminConsole.log('🔍 추가 이미지 타입:', typeof product.additionalImages);
+                adminConsole.log('🔍 추가 이미지 배열 여부:', Array.isArray(product.additionalImages));
                 
                 // 추가 이미지들을 콘솔에 출력하여 확인
                 product.additionalImages.forEach((img, index) => {
