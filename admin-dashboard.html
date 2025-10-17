@@ -11230,7 +11230,13 @@
                             
                             const products = productsSnapshot.docs.map(doc => {
                                 const data = doc.data();
-                                adminConsole.log('상품 데이터:', doc.id, data);
+                                adminConsole.log('상품 데이터:', doc.id, {
+                                    nameEn: data.nameEn,
+                                    nameJp: data.nameJp,
+                                    imageUrl: data.imageUrl,
+                                    imagePath: data.imagePath,
+                                    additionalImages: data.additionalImages
+                                });
                                 return {
                                     id: doc.id,
                                     ...data,
@@ -11333,6 +11339,16 @@
                 
                 // 이미지 URL 결정 - Firebase Storage URL 우선 사용
                 let imageUrl = 'assets/img/logo.png'; // 존재하는 기본 이미지 사용
+                
+                adminConsole.log('상품 이미지 URL 처리:', {
+                    productId: product.id,
+                    productName: product.nameEn || product.nameJp,
+                    imageUrl: product.imageUrl,
+                    imagePath: product.imagePath,
+                    hasImageUrl: !!(product.imageUrl && product.imageUrl.trim() !== ''),
+                    hasImagePath: !!(product.imagePath && product.imagePath.trim() !== '')
+                });
+                
                 if (product.imageUrl && product.imageUrl.trim() !== '') {
                     imageUrl = product.imageUrl;
                     adminConsole.log('상품 이미지 URL 사용:', product.imageUrl);
@@ -13325,8 +13341,11 @@
                     nameJp: nameJp,
                     brandCode: brandCode,
                     imageUrl: imageUrl,
+                    imagePath: imagePath,
                     additionalImages: cleanedAdditionalImages,
-                    detailImageUrl: detailImageUrl
+                    detailImageUrl: detailImageUrl,
+                    hasImageUrl: !!(imageUrl && imageUrl.trim() !== ''),
+                    hasImagePath: !!(imagePath && imagePath.trim() !== '')
                 });
                 
                 const productData = {
@@ -13433,8 +13452,11 @@
                     adminConsole.log('새 상품 저장 완료:', productDocId);
                     adminConsole.log('최종 저장된 이미지 데이터:', {
                         imageUrl: productData.imageUrl,
+                        imagePath: productData.imagePath,
                         additionalImages: productData.additionalImages,
-                        detailImageUrl: productData.detailImageUrl
+                        detailImageUrl: productData.detailImageUrl,
+                        hasImageUrl: !!(productData.imageUrl && productData.imageUrl.trim() !== ''),
+                        hasImagePath: !!(productData.imagePath && productData.imagePath.trim() !== '')
                     });
                     showAlert(`新しい商品が追加されました！ (ID: ${productDocId})`, 'success');
                 }
