@@ -4047,16 +4047,7 @@
             console.log('✅ 주문 데이터 즉시 표시 완료:', emergencyOrders.length, '개');
         }
         
-        function switchToBrands() {
-            console.log('📋 브랜드 관리 탭으로 전환');
-            hideAllTabs();
-            showTab('brands-section');
-            updateTabButtons('brands-tab');
-            
-            // Firebase에서 브랜드 데이터 로드
-            console.log('🔥 Firebase에서 브랜드 데이터 로드...');
-            loadBrands();
-        }
+        // 중복된 switchToBrands 함수 제거됨 - window.switchToBrands로 대체
         
         
         // 브랜드 편집 모달 닫기
@@ -4156,16 +4147,7 @@
             }
         }
         
-        function switchToProducts() {
-            console.log('📋 상품 관리 탭으로 전환');
-            hideAllTabs();
-            showTab('products-section');
-            updateTabButtons('products-tab');
-            
-            // Firebase에서 상품 데이터 로드
-            console.log('🚀 Firebase에서 상품 데이터 로드...');
-            loadProducts();
-        }
+        // 중복된 switchToProducts 함수 제거됨 - window.switchToProducts로 대체
         
         // 기존 동적 모달용 editProduct 함수 제거됨 - 통합 모달용 함수로 대체
         // window.editProduct = function(productId) {
@@ -4201,7 +4183,7 @@
                     filteredProductsList: window.filteredProductsList?.map(p => p.id) || []
                 });
                 showAlert('商品が見つかりません。', 'danger');
-                return;
+                // return;
             }
             
             // 상품 편집 모달 열기
