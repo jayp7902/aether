@@ -4291,8 +4291,8 @@
                                     <div class="mb-3">
                                         <label class="form-label">현재 이미지 미리보기</label>
                                         <div class="text-center">
-                                            <img src="${product.imageUrl || 'assets/img/placeholder-brand.svg'}" alt="${product.nameEn}" class="img-fluid" style="max-height: 200px;" 
-                                                 onerror="this.src='assets/img/placeholder-brand.svg'">
+                                            <img src="${product.imageUrl || 'assets/img/logo.png'}" alt="${product.nameEn}" class="img-fluid" style="max-height: 200px;" 
+                                                 onerror="this.src='assets/img/logo.png'">
                                         </div>
                                     </div>
                                     
@@ -4383,7 +4383,105 @@
             modal.show();
         }
         
-        // 기존 편집 모달 관련 함수들 제거됨 (통합 모달 사용)
+        // 상품 편집 저장 함수
+        window.saveProductEdit = async function() {
+            try {
+                adminConsole.log('상품 편집 저장 시작');
+                
+                const form = document.getElementById('productEditForm');
+                const formData = new FormData(form);
+                const productId = document.getElementById('edit-product-id').value;
+                
+                // 필드 데이터 수집
+                const code = formData.get('code')?.trim() || '';
+                const nameEn = formData.get('nameEn')?.trim() || '';
+                const nameJp = formData.get('nameJp')?.trim() || '';
+                const brandCode = formData.get('brandCode') || '';
+                const price = parseInt(formData.get('price')) || 0;
+                const salePrice = parseInt(formData.get('salePrice')) || 0;
+                const stock = parseInt(formData.get('stock')) || 0;
+                
+                // 이미지 URL 직접 입력 필드에서 가져오기
+                const imageUrl = document.getElementById('edit-product-image-url')?.value?.trim() || '';
+                
+                adminConsole.log('편집된 상품 데이터:', {
+                    productId, code, nameEn, nameJp, brandCode, price, salePrice, stock, imageUrl
+                });
+                
+                // 필수 필드 검증
+                if (!code) {
+                    showAlert('상품 코드를 입력해주세요.', 'warning');
+                    return;
+                }
+                
+                if (!nameJp && !nameEn) {
+                    showAlert('상품명(일본어 또는 영어)을 입력해주세요.', 'warning');
+                    return;
+                }
+                
+                if (!brandCode) {
+                    showAlert('브랜드를 선택해주세요.', 'warning');
+                    return;
+                }
+                
+                if (price <= 0) {
+                    showAlert('가격을 올바르게 입력해주세요.', 'warning');
+                    return;
+                }
+                
+                // 브랜드 정보 찾기
+                const brand = allBrands.find(b => b.code === brandCode);
+                if (!brand) {
+                    showAlert(`선택한 브랜드(${brandCode})를 찾을 수 없습니다.`, 'danger');
+                    return;
+                }
+                
+                // 상품 데이터 준비
+                const productData = {
+                    code: code,
+                    nameEn: nameEn,
+                    nameJp: nameJp,
+                    brandCode: brandCode,
+                    brandName: brand.nameEn || brand.nameJp || brand.nameKr || brandCode,
+                    category: formData.get('category') || '',
+                    price: price,
+                    salePrice: salePrice,
+                    originalPrice: parseInt(formData.get('originalPrice')) || null,
+                    stock: stock,
+                    status: formData.get('status') || 'active',
+                    priority: parseInt(formData.get('priority')) || 50,
+                    imageUrl: imageUrl, // 직접 입력된 이미지 URL 사용
+                    capacity: formData.get('capacity') || '',
+                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+                };
+                
+                // Firestore에 업데이트
+                const db = firebase.firestore();
+                await db.collection('products').doc(productId).update(productData);
+                
+                adminConsole.log('상품 편집 저장 완료:', productId);
+                showAlert('商品が更新されました！', 'success');
+                
+                // 모달 닫기
+                const modal = bootstrap.Modal.getInstance(document.getElementById('productEditModal'));
+                modal.hide();
+                
+                // 상품 목록 새로고침
+                await loadProducts();
+                
+            } catch (error) {
+                adminConsole.error('상품 편집 저장 에러:', error);
+                showAlert(`商品の更新に失敗しました: ${error.message}`, 'danger');
+            }
+        };
+        
+        // 상품 편집 모달 닫기 함수
+        window.closeProductEditModal = function() {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('productEditModal'));
+            if (modal) {
+                modal.hide();
+            }
+        };
         
         
         // 상품 삭제 함수 (Firebase에서 실제 삭제)
@@ -10990,7 +11088,7 @@
                     const statusText = brand.status === 'active' ? 'アクティブ' : '非アクティブ';
                     
                     // 이미지 URL 결정 (우선순위: imageData -> logoUrl -> logoPath -> placeholder)
-                    let imageUrl = 'assets/img/placeholder-brand.svg';
+                    let imageUrl = 'assets/img/logo.png';
                     if (brand.imageData && brand.imageData.trim() !== '') {
                         imageUrl = brand.imageData;
                     } else if (brand.logoUrl && brand.logoUrl.trim() !== '') {
@@ -11087,7 +11185,7 @@
         // 브랜드 이미지 로딩 오류 처리
         function handleBrandImageError(img) {
             console.warn('❌ 브랜드 이미지 로드 실패:', img.src);
-            img.src = 'assets/img/placeholder-brand.svg';
+            img.src = 'assets/img/logo.png';
             img.alt = 'ブランドロゴ';
         }
 
@@ -11233,12 +11331,16 @@
                 const statusClass = product.status === 'active' ? 'status-active' : 'status-inactive';
                 const statusText = product.status === 'active' ? 'アクティブ' : '非アクティブ';
                 
-                // 이미지 URL 결정
-                let imageUrl = 'assets/img/placeholder-brand.svg';
+                // 이미지 URL 결정 - Firebase Storage URL 우선 사용
+                let imageUrl = 'assets/img/logo.png'; // 존재하는 기본 이미지 사용
                 if (product.imageUrl && product.imageUrl.trim() !== '') {
                     imageUrl = product.imageUrl;
+                    adminConsole.log('상품 이미지 URL 사용:', product.imageUrl);
                 } else if (product.imagePath && product.imagePath.trim() !== '') {
                     imageUrl = product.imagePath;
+                    adminConsole.log('상품 이미지 경로 사용:', product.imagePath);
+                } else {
+                    adminConsole.warn('상품 이미지 없음, 기본 이미지 사용:', product.nameEn || product.nameJp);
                 }
                 
                 // 배지 정보 처리
@@ -11262,9 +11364,9 @@
                     <div class="col-6 col-md-6 col-lg-4 mb-4">
                         <div class="card product-card h-100" data-product-id="${product.id}">
                             <div class="position-relative">
-                                <img src="${imageUrl}" alt="${product.nameEn}" class="card-img-top"
-                                     onerror="this.src='assets/img/placeholder-product.jpg'"
-                                     style="height: 150px; object-fit: cover;">
+                            <img src="${imageUrl}" alt="${product.nameEn}" class="card-img-top"
+                                onerror="this.src='assets/img/logo.png'"
+                                style="height: 150px; object-fit: cover;">
                                 ${product.badgeType && product.badgeType !== '' ? `
                                     <span class="badge" style="position: absolute; top: 8px; right: 8px; background-color: ${colorMap[product.badgeColor] || '#dc3545'}; color: white; font-size: 11px; padding: 4px 8px; border-radius: 4px; z-index: 10;">
                                         ${product.badgeType === 'CUSTOM' ? (product.badgeText || 'CUSTOM') : product.badgeType}
@@ -13895,8 +13997,8 @@
                                     <div class="mb-3">
                                         <label class="form-label">현재 이미지 미리보기</label>
                                         <div class="text-center">
-                                            <img src="${product.imageUrl || 'assets/img/placeholder-brand.svg'}" alt="${product.nameEn}" class="img-fluid" style="max-height: 200px;" 
-                                                 onerror="this.src='assets/img/placeholder-brand.svg'">
+                                            <img src="${product.imageUrl || 'assets/img/logo.png'}" alt="${product.nameEn}" class="img-fluid" style="max-height: 200px;" 
+                                                 onerror="this.src='assets/img/logo.png'">
                                         </div>
                                     </div>
                                     
@@ -14524,9 +14626,9 @@
                 <div class="col-6 col-md-6 col-lg-4 mb-4">
                     <div class="card product-card h-100">
                         <div class="position-relative">
-                            <img src="${product.imageUrl || 'assets/img/placeholder-product.jpg'}" 
+                            <img src="${product.imageUrl || 'assets/img/logo.png'}" 
                                  class="card-img-top" alt="${product.nameJp || product.nameEn}"
-                                 onerror="this.src='assets/img/placeholder-product.jpg'"
+                                 onerror="this.src='assets/img/logo.png'"
                                  style="height: 150px; object-fit: cover;">
                         </div>
                         <div class="card-body">
