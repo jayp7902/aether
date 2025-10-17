@@ -11119,7 +11119,15 @@
                                     nameJp: data.nameJp,
                                     imageUrl: data.imageUrl,
                                     imagePath: data.imagePath,
-                                    additionalImages: data.additionalImages
+                                    additionalImages: data.additionalImages,
+                                    additionalImagesType: typeof data.additionalImages,
+                                    additionalImagesLength: data.additionalImages ? data.additionalImages.length : 'undefined',
+                                    additionalImagesDetails: data.additionalImages ? data.additionalImages.map((img, idx) => ({
+                                        index: idx,
+                                        value: img,
+                                        isEmpty: img === '',
+                                        isUrl: img && img.includes('http')
+                                    })) : 'undefined'
                                 });
                                 return {
                                     id: doc.id,
@@ -11260,6 +11268,24 @@
                     badgeHtml = `<span class="badge" style="background-color: ${badgeColor}; color: white; font-size: 10px; margin-left: 5px;">${badgeText}</span>`;
                 }
 
+                // 추가 이미지 처리
+                let additionalImagesHtml = '';
+                if (product.additionalImages && Array.isArray(product.additionalImages) && product.additionalImages.length > 0) {
+                    const validImages = product.additionalImages.filter(img => img && img.trim() !== '');
+                    if (validImages.length > 0) {
+                        additionalImagesHtml = `
+                            <div class="additional-images mt-2" style="display: flex; gap: 2px; flex-wrap: wrap;">
+                                ${validImages.slice(0, 3).map(img => `
+                                    <img src="${img}" alt="추가 이미지" 
+                                         style="width: 30px; height: 30px; object-fit: cover; border-radius: 3px; border: 1px solid #ddd;"
+                                         onerror="this.style.display='none'">
+                                `).join('')}
+                                ${validImages.length > 3 ? `<span style="font-size: 10px; color: #666; align-self: center;">+${validImages.length - 3}</span>` : ''}
+                            </div>
+                        `;
+                    }
+                }
+
                 html += `
                     <div class="col-6 col-md-6 col-lg-4 mb-4">
                         <div class="card product-card h-100" data-product-id="${product.id}">
@@ -11279,7 +11305,8 @@
                                     <span class="badge bg-secondary me-1">${product.brandName || product.brandCode || '不明'}</span>
                                     <span class="badge ${statusClass}">${statusText}</span>
                                 ${badgeHtml}
-                            </div>
+                                </div>
+                                ${additionalImagesHtml}
                                 <div class="d-flex justify-content-between align-items-center">
                                 <div class="product-price">
                                     ${product.salePrice && product.salePrice > 0 ? 
@@ -13258,7 +13285,13 @@
                     originalArray: additionalImages,
                     arrayLength: additionalImages.length,
                     hasEmptyStrings: additionalImages.some(img => img === ''),
-                    nonEmptyCount: additionalImages.filter(img => img && img.trim() !== '').length
+                    nonEmptyCount: additionalImages.filter(img => img && img.trim() !== '').length,
+                    detailedArray: additionalImages.map((img, index) => ({
+                        index: index,
+                        value: img,
+                        isEmpty: img === '',
+                        isUrl: img && img.includes('http')
+                    }))
                 });
                 
                 // 商品データの準備
@@ -13375,8 +13408,14 @@
                     });
                     
                     adminConsole.log('새 상품 저장 시작:', productDocId);
+                    adminConsole.log('저장할 productData.additionalImages:', productData.additionalImages);
                     await db.collection('products').doc(productDocId).set(productData);
                     adminConsole.log('새 상품 저장 완료:', productDocId);
+                    
+                    // 저장 후 즉시 확인
+                    const savedDoc = await db.collection('products').doc(productDocId).get();
+                    const savedData = savedDoc.data();
+                    adminConsole.log('저장 후 확인 - additionalImages:', savedData.additionalImages);
                     adminConsole.log('최종 저장된 이미지 데이터:', {
                         imageUrl: productData.imageUrl,
                         imagePath: productData.imagePath,
