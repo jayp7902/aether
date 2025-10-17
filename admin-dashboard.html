@@ -1315,8 +1315,8 @@
                                 <i class="fas fa-terminal me-1"></i><span id="log-status">로그 ON</span>
                             </button>
                             <button class="btn btn-outline-light btn-sm" onclick="logout()">
-                                <i class="fas fa-sign-out-alt me-1"></i>ログアウト
-                            </button>
+                            <i class="fas fa-sign-out-alt me-1"></i>ログアウト
+                        </button>
                         </div>
                     </div>
                 </div>
@@ -11386,9 +11386,9 @@
                     <div class="col-6 col-md-6 col-lg-4 mb-4">
                         <div class="card product-card h-100" data-product-id="${product.id}">
                             <div class="position-relative">
-                            <img src="${imageUrl}" alt="${product.nameEn}" class="card-img-top"
+                                <img src="${imageUrl}" alt="${product.nameEn}" class="card-img-top"
                                 onerror="this.src='assets/img/logo.png'"
-                                style="height: 150px; object-fit: cover;">
+                                     style="height: 150px; object-fit: cover;">
                                 ${product.badgeType && product.badgeType !== '' ? `
                                     <span class="badge" style="position: absolute; top: 8px; right: 8px; background-color: ${colorMap[product.badgeColor] || '#dc3545'}; color: white; font-size: 11px; padding: 4px 8px; border-radius: 4px; z-index: 10;">
                                         ${product.badgeType === 'CUSTOM' ? (product.badgeText || 'CUSTOM') : product.badgeType}
@@ -11401,7 +11401,7 @@
                                     <span class="badge bg-secondary me-1">${product.brandName || product.brandCode || '不明'}</span>
                                     <span class="badge ${statusClass}">${statusText}</span>
                                 ${badgeHtml}
-                                </div>
+                            </div>
                                 ${additionalImagesHtml}
                                 <div class="d-flex justify-content-between align-items-center">
                                 <div class="product-price">
@@ -11752,7 +11752,7 @@
                 } else if (error.code === 'storage/unknown' || error.message.includes('503')) {
                     showAlert('Firebase Storage 서버가 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도해주세요.', 'danger');
                 } else {
-                    showAlert(`画像アップロードに失敗しました: ${error.message}`, 'danger');
+                showAlert(`画像アップロードに失敗しました: ${error.message}`, 'danger');
                 }
                 
                 return {
@@ -13270,7 +13270,7 @@
                         fileType: imageFile1.type,
                         brandCode: code
                     });
-                    
+                        
                     const uploadResult = await uploadImageToFirebase(imageFile1, `${code}_1`);
                     adminConsole.log('추가 이미지 1 업로드 결과:', uploadResult);
                     
@@ -13319,7 +13319,7 @@
                         fileType: imageFile2.type,
                         brandCode: code
                     });
-                    
+                        
                     const uploadResult = await uploadImageToFirebase(imageFile2, `${code}_2`);
                     adminConsole.log('추가 이미지 2 업로드 결과:', uploadResult);
                     
@@ -13368,7 +13368,7 @@
                         fileType: imageFile3.type,
                         brandCode: code
                     });
-                    
+                        
                     const uploadResult = await uploadImageToFirebase(imageFile3, `${code}_3`);
                     adminConsole.log('추가 이미지 3 업로드 결과:', uploadResult);
                     
@@ -13412,7 +13412,7 @@
                         fileType: detailImageFile.type,
                         brandCode: code
                     });
-                    
+                        
                     const uploadResult = await uploadImageToFirebase(detailImageFile, `${code}_detail`);
                     adminConsole.log('상세 이미지 업로드 결과:', uploadResult);
                     
@@ -13421,7 +13421,7 @@
                         adminConsole.log('상세 이미지 업로드 성공:', uploadResult.url);
                     } else {
                         adminConsole.warn('상세 이미지 업로드 실패, 기존 데이터 유지');
-                    }
+                        }
                     } catch (error) {
                         adminConsole.error('상세 이미지 업로드 오류, 기존 데이터 유지:', error);
                     }
@@ -13594,7 +13594,7 @@
                     });
                     
                     try {
-                        await db.collection('products').doc(productDocId).set(productData);
+                    await db.collection('products').doc(productDocId).set(productData);
                         adminConsole.log('새 상품 저장 성공:', productDocId);
                     } catch (saveError) {
                         adminConsole.error('Firebase 저장 실패:', saveError);
