@@ -1,10 +1,163 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // ⚠️ 임시 완전 개방 규칙 (데이터 로딩 복구용)
-    // TODO: 데이터 로딩 확인 후 보안 규칙으로 복원할 것
-    match /{document=**} {
-      allow read, write: if true;
+    // ===================
+    // 공개 데이터 (모든 사용자 읽기 가능)
+    // ===================
+    
+    // 상품: 모든 사용자가 읽기 가능, 관리자만 쓰기 가능
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
+    }
+    
+    // 브랜드: 모든 사용자가 읽기 가능, 관리자만 쓰기 가능
+    match /brands/{brandId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
+    }
+    
+    // 홈페이지 슬라이더: 모든 사용자가 읽기 가능, 관리자만 쓰기 가능
+    match /homepage_sliders/{sliderId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
+    }
+    
+    // 홈페이지 BEST ITEM: 모든 사용자가 읽기 가능, 관리자만 쓰기 가능
+    match /homepage_best_items/{itemId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
+    }
+    
+    // 홈페이지 Featured Product: 모든 사용자가 읽기 가능, 관리자만 쓰기 가능
+    match /homepage_featured_products/{productId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
+    }
+    
+    // 푸터 콘텐츠: 모든 사용자가 읽기 가능, 관리자만 쓰기 가능
+    match /footer_content/{contentId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
+    }
+    
+    // 푸터 설정: 모든 사용자가 읽기 가능, 관리자만 쓰기 가능
+    match /footerSettings/{settingId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
+    }
+    
+    // 법적 링크: 모든 사용자가 읽기 가능, 관리자만 쓰기 가능
+    match /legal_links/{linkId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
+    }
+    
+    // 스토어 통계: 모든 사용자가 읽기 가능, 관리자만 쓰기 가능
+    match /storeStats/{statId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
+    }
+    
+    // 리뷰: 모든 사용자가 읽기 가능, 로그인한 사용자만 쓰기 가능, 작성자만 수정/삭제 가능
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if request.auth != null && 
+        request.auth.uid == request.resource.data.userId;
+      allow update, delete: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+    }
+    
+    // ===================
+    // 사용자 데이터 (인증 필요)
+    // ===================
+    
+    // 사용자 프로필: 자신의 프로필만 읽기/쓰기 가능
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // 주문: 자신의 주문만 읽기/쓰기 가능
+    match /orders/{orderId} {
+      allow read, write: if request.auth != null && 
+        (request.auth.uid == resource.data.userId || 
+         request.auth.uid == request.resource.data.userId);
+    }
+    
+    // 포인트 히스토리: 자신의 포인트 히스토리만 읽기/쓰기 가능
+    match /pointHistory/{historyId} {
+      allow read, write: if request.auth != null && 
+        (request.auth.uid == resource.data.userId || 
+         request.auth.uid == request.resource.data.userId);
+    }
+    
+    // 사용자 카트: 자신의 카트만 접근 가능
+    match /userCarts/{userId} {
+      allow read, write: if request.auth != null && 
+        (request.auth.uid == userId || request.auth.token.email == userId);
+    }
+    
+    // QR 토큰: 로그인한 사용자만 접근 가능
+    match /qrTokens/{tokenId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // ===================
+    // 관리자 전용 데이터
+    // ===================
+    
+    // 관리자 전용 컬렉션
+    match /admins/{document=**} {
+      allow read, write: if request.auth != null && 
+        request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
+    }
+    
+    // 이메일 템플릿: 관리자만 접근 가능
+    match /emailTemplates/{templateId} {
+      allow read, write: if request.auth != null && 
+        request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
+    }
+    
+    // 이메일 이력: 관리자만 접근 가능
+    match /emailHistory/{historyId} {
+      allow read, write: if request.auth != null && 
+        request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
+    }
+    
+    // 설정: 관리자만 접근 가능
+    match /settings/{settingId} {
+      allow read, write: if request.auth != null && 
+        request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
+    }
+    
+    // 삭제된 이메일 블랙리스트: 관리자만 접근 가능
+    match /deletedEmails/{emailId} {
+      allow read, write: if request.auth != null && 
+        (request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'] ||
+         request.auth.token.email in ['storeadmin@aether.com']);
+    }
+    
+    // ===================
+    // 테스트 및 시스템 컬렉션
+    // ===================
+    
+    // 테스트 컬렉션: 모든 인증된 사용자 접근 가능
+    match /test/{testId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // 연결 테스트 컬렉션: 모든 인증된 사용자 접근 가능
+    match /_test_connection/{testId} {
+      allow read, write: if request.auth != null;
     }
   }
 } 
