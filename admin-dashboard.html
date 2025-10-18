@@ -12890,8 +12890,10 @@
                         
                         // 기존 데이터를 3개 슬롯에 맞게 정리
                         for (let i = 0; i < 3; i++) {
-                            if (parsedImages[i]) {
+                            if (parsedImages[i] && typeof parsedImages[i] === 'string') {
                                 additionalImages[i] = parsedImages[i];
+                            } else {
+                                additionalImages[i] = ''; // null/undefined인 경우 빈 문자열로 설정
                             }
                         }
                         console.log('✅ 정리된 추가 이미지 데이터:', additionalImages);
@@ -13070,7 +13072,10 @@
                 }
                 
                 // 빈 이미지 슬롯 정리 (빈 문자열 제거)
-                const cleanedAdditionalImages = additionalImages.filter(img => img && img.trim() !== '');
+                const cleanedAdditionalImages = additionalImages.filter(img => {
+                    // img가 문자열이고 비어있지 않은지 확인
+                    return img && typeof img === 'string' && img.trim() !== '';
+                });
                 
                 // 商品データの準備
                 console.log('🔍 상품 저장 데이터 확인:', {
