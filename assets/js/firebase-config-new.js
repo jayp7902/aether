@@ -3257,22 +3257,29 @@ class FirebaseService {
      */
     static async getOrderHistory(userId) {
         try {
-        if (!this.isFirebaseAvailable()) {
-                console.log('Firebase 연결 실패 - 주문 이력 조회 불가 (Firebase 전용)');
+            console.log('🚀 FirebaseService.getOrderHistory 호출됨');
+            console.log('🔍 전달된 userId:', userId);
+            console.log('🔍 this.isFirebaseAvailable():', this.isFirebaseAvailable());
+            
+            if (!this.isFirebaseAvailable()) {
+                console.log('❌ Firebase 연결 실패 - 주문 이력 조회 불가 (Firebase 전용)');
                 return [];
             }
             
-            console.log('주문 이력 조회 시작:', userId);
+            console.log('✅ Firebase 사용 가능 - 주문 이력 조회 시작:', userId);
             
             // 현재 로그인된 사용자 정보 가져오기
             const currentUser = firebase.auth().currentUser;
+            console.log('🔍 Firebase Auth currentUser:', currentUser);
+            
             if (!currentUser) {
-                console.log('로그인된 사용자가 없음');
+                console.log('❌ 로그인된 사용자가 없음');
                 return [];
             }
             
             const userEmail = currentUser.email;
-            console.log('현재 사용자 이메일:', userEmail);
+            console.log('✅ 현재 사용자 이메일:', userEmail);
+            console.log('🔍 사용자 UID:', currentUser.uid);
             
             // 일반 사용자는 자신의 주문만 조회 (권한 문제 해결)
             let allOrders = [];
@@ -3280,20 +3287,27 @@ class FirebaseService {
             console.log('📋 사용자별 주문 조회 시작:', userEmail);
             
             // 사용자 이메일로 필터링된 주문만 조회
+            console.log('🔍 userEmail로 주문 조회 시작:', userEmail);
             const ordersSnapshot = await db.collection('orders')
                 .where('userEmail', '==', userEmail)
                 .get();
+            
+            console.log('🔍 userEmail 주문 조회 결과:', ordersSnapshot.size, '건');
             
             ordersSnapshot.forEach(doc => {
                 const data = doc.data();
                 data.id = doc.id;
                 allOrders.push(data);
+                console.log('🔍 주문 추가:', doc.id, data.userEmail);
             });
             
             // customerEmail로도 조회 (중복 제거)
+            console.log('🔍 customerEmail로 주문 조회 시작:', userEmail);
             const customerOrdersSnapshot = await db.collection('orders')
                 .where('customerEmail', '==', userEmail)
                 .get();
+            
+            console.log('🔍 customerEmail 주문 조회 결과:', customerOrdersSnapshot.size, '건');
             
             customerOrdersSnapshot.forEach(doc => {
                 const data = doc.data();
@@ -3303,6 +3317,9 @@ class FirebaseService {
                 const exists = allOrders.some(order => order.id === data.id);
                 if (!exists) {
                     allOrders.push(data);
+                    console.log('🔍 customerEmail 주문 추가:', doc.id, data.customerEmail);
+                } else {
+                    console.log('🔍 중복 주문 제외:', doc.id);
                 }
             });
             
