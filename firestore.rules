@@ -137,5 +137,49 @@ service cloud.firestore {
       allow write: if request.auth != null && 
         request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
     }
+    
+    // 사용자 카트: 자신의 카트만 접근 가능
+    match /userCarts/{userId} {
+      allow read, write: if request.auth != null && 
+        (request.auth.uid == userId || request.auth.token.email == userId);
+    }
+    
+    // QR 토큰: 로그인한 사용자만 접근 가능
+    match /qrTokens/{tokenId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // 이메일 이력: 관리자만 접근 가능
+    match /emailHistory/{historyId} {
+      allow read, write: if request.auth != null && 
+        request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
+    }
+    
+    // 설정: 관리자만 접근 가능
+    match /settings/{settingId} {
+      allow read, write: if request.auth != null && 
+        request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
+    }
+    
+    // 브랜드: 모든 사용자가 읽기 가능, 관리자만 쓰기 가능
+    match /brands/{brandId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
+    }
+    
+    // 상품: 모든 사용자가 읽기 가능, 관리자만 쓰기 가능
+    match /products/{productId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
+    }
+    
+    // 홈페이지 Featured Product: 모든 사용자가 읽기 가능, 관리자만 쓰기 가능
+    match /homepage_featured_products/{productId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
+    }
   }
 } 
