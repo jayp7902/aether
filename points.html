@@ -646,69 +646,64 @@
                     let filteredDocs = [];
                     
                     try {
-                        // 인덱스 없이도 작동하도록 단순 쿼리 사용 (서버에서 직접 가져오기)
-                        console.log('단순 쿼리로 포인트 이력 검색 시작 (서버에서)');
-                        // 캐시 무효화를 위해 강제로 서버에서 가져오기
-                        historySnapshot = await db.collection('pointHistory').get({ 
-                            source: 'server',
-                            cache: false 
-                        });
-                        console.log('전체 포인트 이력 문서 수:', historySnapshot.size, '건');
+                        // 서버에서 필터링된 쿼리 사용 (권한 문제 해결)
+                        console.log('서버 필터링 쿼리로 포인트 이력 검색 시작');
                         
-                        historySnapshot.forEach(doc => {
+                        const userEmail = pointsPageUser.email;
+                        let allHistory = [];
+                        
+                        // userEmail로 필터링된 포인트 이력 조회
+                        const pointHistorySnapshot = await db.collection('pointHistory')
+                            .where('userEmail', '==', userEmail)
+                            .orderBy('timestamp', 'desc')
+                            .limit(50)
+                            .get();
+                        
+                        pointHistorySnapshot.forEach(doc => {
                             const data = doc.data();
-                            console.log('이력 문서 확인:', {
-                                docId: doc.id,
-                                userId: data.userId,
-                                userEmail: data.userEmail,
-                                type: data.type,
-                                points: data.points,
-                                reason: data.reason,
-                                currentUserUid: pointsPageUser.uid,
-                                currentUserEmail: pointsPageUser.email
-                            });
+                            data.id = doc.id;
+                            allHistory.push(data);
+                        });
+                        
+                        // customerEmail로도 조회 (중복 제거)
+                        const customerPointHistorySnapshot = await db.collection('pointHistory')
+                            .where('customerEmail', '==', userEmail)
+                            .orderBy('timestamp', 'desc')
+                            .limit(50)
+                            .get();
+                        
+                        customerPointHistorySnapshot.forEach(doc => {
+                            const data = doc.data();
+                            data.id = doc.id;
                             
-                            if (data.userId === pointsPageUser.uid || 
-                                data.userEmail === pointsPageUser.email ||
-                                data.userId === pointsPageUser.email) {
-                                filteredDocs.push({ id: doc.id, ...data });
-                                
-                                // 포인트 계산 (undefined 처리)
-                                const points = data.points || 0;
-                                if (data.type === 'earn' || data.type === 'admin_add' || data.type === 'welcome_bonus' || data.type === 'refund') {
-                                    earnedPoints += points;
-                                    console.log('적립/환불 포인트 추가:', data.type, points, '총 적립:', earnedPoints);
-                                } else if (data.type === 'use' || data.type === 'admin_subtract' || data.type === 'deduction') {
-                                    usedPoints += Math.abs(points); // 절댓값으로 처리
-                                    console.log('사용/차감 포인트 추가:', data.type, Math.abs(points), '총 사용:', usedPoints);
-                                }
+                            // 중복 확인
+                            const exists = allHistory.some(history => history.id === data.id);
+                            if (!exists) {
+                                allHistory.push(data);
                             }
                         });
                         
                         // 시간순 정렬 (최신순)
-                        filteredDocs.sort((a, b) => {
+                        allHistory.sort((a, b) => {
                             const timeA = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp);
                             const timeB = b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp);
                             return timeB - timeA;
                         });
                         
-                        // 최대 10개만 선택
-                        const limitedDocs = filteredDocs.slice(0, 10);
-                        console.log('필터링된 포인트 이력:', limitedDocs.length, '건');
+                        filteredDocs = allHistory;
+                        console.log('서버 필터링된 포인트 이력:', filteredDocs.length, '건');
                         
-                        // Firestore 스냅샷 형태로 변환
-                        historySnapshot = {
-                            empty: limitedDocs.length === 0,
-                            size: limitedDocs.length,
-                            forEach: (callback) => {
-                                limitedDocs.forEach((doc, index) => {
-                                    callback({
-                                        id: doc.id,
-                                        data: () => doc
-                                    });
-                                });
+                        // 포인트 계산
+                        filteredDocs.forEach(item => {
+                            const points = item.points || 0;
+                            if (item.type === 'earn' || item.type === 'admin_add' || item.type === 'welcome_bonus' || item.type === 'refund') {
+                                earnedPoints += points;
+                                console.log('적립/환불 포인트 추가:', item.type, points, '총 적립:', earnedPoints);
+                            } else if (item.type === 'use' || item.type === 'admin_subtract' || item.type === 'deduction') {
+                                usedPoints += Math.abs(points);
+                                console.log('사용/차감 포인트 추가:', item.type, Math.abs(points), '총 사용:', usedPoints);
                             }
-                        };
+                        });
                         
                     } catch (queryError) {
                         console.warn('포인트 이력 쿼리 실패:', queryError);
