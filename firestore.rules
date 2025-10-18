@@ -115,6 +115,14 @@ service cloud.firestore {
       allow read, write: if request.auth != null;
     }
     
+    // 사용자 방문 기록: 본인 기록만 접근 가능
+    match /userVisits/{visitId} {
+      allow read, write: if request.auth != null && 
+        (request.auth.token.email == resource.data.userEmail ||
+         request.auth.token.email == request.resource.data.userEmail ||
+         request.auth.token.email in ['mrparkj2@gmail.com', 'aether7info@gmail.com', 'info@aether-store.jp']);
+    }
+    
     // ===================
     // 관리자 전용 데이터
     // ===================
