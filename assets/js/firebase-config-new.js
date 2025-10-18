@@ -3272,25 +3272,40 @@ class FirebaseService {
             const userEmail = currentUser.email;
             console.log('현재 사용자 이메일:', userEmail);
             
-            // 주문 관리 페이지와 완전히 동일한 방식: 모든 주문 조회 후 클라이언트에서 필터링
+            // 일반 사용자는 자신의 주문만 조회 (권한 문제 해결)
             let allOrders = [];
             
-            console.log('📋 모든 주문 조회 시작 (주문 관리 페이지와 동일한 방식)');
-            const ordersSnapshot = await db.collection('orders').get();
+            console.log('📋 사용자별 주문 조회 시작:', userEmail);
+            
+            // 사용자 이메일로 필터링된 주문만 조회
+            const ordersSnapshot = await db.collection('orders')
+                .where('userEmail', '==', userEmail)
+                .get();
             
             ordersSnapshot.forEach(doc => {
                 const data = doc.data();
                 data.id = doc.id;
+                allOrders.push(data);
+            });
+            
+            // customerEmail로도 조회 (중복 제거)
+            const customerOrdersSnapshot = await db.collection('orders')
+                .where('customerEmail', '==', userEmail)
+                .get();
+            
+            customerOrdersSnapshot.forEach(doc => {
+                const data = doc.data();
+                data.id = doc.id;
                 
-                // 현재 사용자와 관련된 주문만 필터링
-                if (data.userId === userId || 
-                    data.userEmail === userEmail || 
-                    data.customerEmail === userEmail) {
+                // 중복 확인
+                const exists = allOrders.some(order => order.id === data.id);
+                if (!exists) {
                     allOrders.push(data);
                 }
             });
             
-            console.log(`📋 전체 주문 조회: ${ordersSnapshot.size}건`);
+            console.log(`📋 userEmail 주문 조회: ${ordersSnapshot.size}건`);
+            console.log(`📋 customerEmail 주문 조회: ${customerOrdersSnapshot.size}건`);
             console.log(`👤 사용자 관련 주문: ${allOrders.length}건`);
             
             console.log(`총 조회된 주문: ${allOrders.length}건`);
