@@ -252,11 +252,20 @@ async function initializeFirebase() {
         // 전역 Firebase 객체 설정
         setGlobalFirebaseObjects(auth, db, storage);
         
-        // 블랙리스트 자동 정리 (백그라운드에서 실행)
+        // 블랙리스트 자동 정리 (백그라운드에서 실행) - 인증 후에만 실행
         if (typeof FirebaseService !== 'undefined') {
-            FirebaseService.cleanupExpiredBlacklist().catch(error => {
-                console.warn('블랙리스트 정리 실패:', error);
-            });
+            // 인증 상태 확인 후 실행
+            setTimeout(() => {
+                const currentUser = firebase.auth().currentUser;
+                if (currentUser) {
+                    console.log('🔍 인증된 사용자 감지, 블랙리스트 정리 시작');
+                    FirebaseService.cleanupExpiredBlacklist().catch(error => {
+                        console.warn('블랙리스트 정리 실패:', error);
+                    });
+                } else {
+                    console.log('⚠️ 인증되지 않은 상태, 블랙리스트 정리 건너뜀');
+                }
+            }, 2000); // 2초 후 실행
         }
         
         // Firebase 초기화 완료 이벤트 발생
@@ -951,6 +960,15 @@ class FirebaseService {
             
             if (!this.isFirebaseAvailable()) {
                 console.log('Firebase 사용 불가, 블랙리스트 정리 건너뜀');
+                return;
+            }
+            
+            // 현재 인증 상태 확인
+            const currentUser = firebase.auth().currentUser;
+            console.log('🔍 현재 인증된 사용자:', currentUser ? currentUser.email : '없음');
+            
+            if (!currentUser) {
+                console.log('⚠️ 인증되지 않은 사용자, 블랙리스트 정리 건너뜀');
                 return;
             }
             
