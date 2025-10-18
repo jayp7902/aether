@@ -2166,7 +2166,10 @@
             }
             
             if (addToCartBtn) {
-                addToCartBtn.addEventListener('click', async function() {
+                // 기존 이벤트 리스너 제거 (중복 방지)
+                addToCartBtn.removeEventListener('click', addToCartBtn.clickHandler);
+                
+                addToCartBtn.clickHandler = async function() {
                     if (!productInfo) return;
                     
                     // 재고 확인 (옵션 상품인 경우 개별 옵션 재고 합산)
@@ -2277,11 +2280,17 @@
 
                     // 알림 표시
                     showToast('カートに追加されました！', 'カートに商品が追加されました。', 'success');
-                });
+                };
+                
+                // 이벤트 리스너 등록
+                addToCartBtn.addEventListener('click', addToCartBtn.clickHandler);
             }
             
             if (buyNowBtn) {
-                buyNowBtn.addEventListener('click', async function() {
+                // 기존 이벤트 리스너 제거 (중복 방지)
+                buyNowBtn.removeEventListener('click', buyNowBtn.clickHandler);
+                
+                buyNowBtn.clickHandler = async function() {
                     if (!productInfo) return;
                     
                     // 재고 확인 (옵션 상품인 경우 개별 옵션 재고 합산)
@@ -2326,7 +2335,10 @@
                     
                     // 바로 체크아웃 페이지로 이동
                     window.location.href = 'checkout.html';
-                });
+                };
+                
+                // 이벤트 리스너 등록
+                buyNowBtn.addEventListener('click', buyNowBtn.clickHandler);
             }
         }
 
