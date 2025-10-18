@@ -1460,16 +1460,25 @@
                 
                 if (typeof FirebaseService !== 'undefined' && FirebaseService.getOrderHistory) {
                     try {
+                        console.log('🔍 FirebaseService.getOrderHistory 호출 시작:', userId);
+                        console.log('🔍 FirebaseService 객체 확인:', FirebaseService);
+                        console.log('🔍 getOrderHistory 메서드 확인:', typeof FirebaseService.getOrderHistory);
+                        
                         orders = await FirebaseService.getOrderHistory(userId);
-                        console.log('FirebaseService 주문 이력 조회 결과:', orders.length, '건');
+                        console.log('✅ FirebaseService 주문 이력 조회 결과:', orders.length, '건');
+                        console.log('🔍 조회된 주문 데이터:', orders);
                     } catch (serviceError) {
-                        console.error('FirebaseService 주문 이력 조회 실패:', serviceError);
+                        console.error('❌ FirebaseService 주문 이력 조회 실패:', serviceError);
+                        console.error('❌ 오류 상세:', serviceError.message);
+                        console.error('❌ 오류 스택:', serviceError.stack);
                         // Firebase 실패 시 빈 배열 반환 (로컬스토리지 폴백 제거)
                         orders = [];
                         console.log('Firebase 실패 - 주문 이력 없음');
                     }
                 } else {
-                    console.warn('FirebaseService를 사용할 수 없음 - 주문 이력 없음');
+                    console.warn('❌ FirebaseService를 사용할 수 없음 - 주문 이력 없음');
+                    console.warn('🔍 FirebaseService 타입:', typeof FirebaseService);
+                    console.warn('🔍 getOrderHistory 메서드 존재:', FirebaseService && typeof FirebaseService.getOrderHistory);
                     orders = [];
                 }
                 
