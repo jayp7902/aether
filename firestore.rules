@@ -88,5 +88,54 @@ service cloud.firestore {
     match /_test_connection/{testId} {
       allow read, write: if request.auth != null;
     }
+    
+    // 홈페이지 슬라이더: 모든 사용자가 읽기 가능, 관리자만 쓰기 가능
+    match /homepage_sliders/{sliderId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
+    }
+    
+    // 홈페이지 BEST ITEM: 모든 사용자가 읽기 가능, 관리자만 쓰기 가능
+    match /homepage_best_items/{itemId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
+    }
+    
+    // 홈페이지 Featured Product: 모든 사용자가 읽기 가능, 관리자만 쓰기 가능
+    match /homepage_featured_products/{productId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
+    }
+    
+    // 푸터 콘텐츠: 모든 사용자가 읽기 가능, 관리자만 쓰기 가능
+    match /footer_content/{contentId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
+    }
+    
+    // 푸터 설정: 모든 사용자가 읽기 가능, 관리자만 쓰기 가능
+    match /footerSettings/{settingId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
+    }
+    
+    // 법적 링크: 모든 사용자가 읽기 가능, 관리자만 쓰기 가능
+    match /legal_links/{linkId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
+    }
+    
+    // 스토어 통계: 모든 사용자가 읽기 가능, 관리자만 쓰기 가능
+    match /storeStats/{statId} {
+      allow read: if true;
+      allow write: if request.auth != null && 
+        request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
+    }
   }
 } 
