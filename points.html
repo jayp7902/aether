@@ -652,25 +652,27 @@
                         const userEmail = pointsPageUser.email;
                         let allHistory = [];
                         
-                        // userEmail로 필터링된 포인트 이력 조회
+                        // userEmail로 필터링된 포인트 이력 조회 (인덱스 없이도 작동)
+                        console.log('userEmail로 포인트 이력 조회:', userEmail);
                         const pointHistorySnapshot = await db.collection('pointHistory')
                             .where('userEmail', '==', userEmail)
-                            .orderBy('timestamp', 'desc')
-                            .limit(50)
                             .get();
                         
+                        console.log('userEmail 조회 결과:', pointHistorySnapshot.size, '건');
                         pointHistorySnapshot.forEach(doc => {
                             const data = doc.data();
                             data.id = doc.id;
                             allHistory.push(data);
+                            console.log('userEmail 이력 추가:', data.type, data.points, data.reason);
                         });
                         
                         // customerEmail로도 조회 (중복 제거)
+                        console.log('customerEmail로 포인트 이력 조회:', userEmail);
                         const customerPointHistorySnapshot = await db.collection('pointHistory')
                             .where('customerEmail', '==', userEmail)
-                            .orderBy('timestamp', 'desc')
-                            .limit(50)
                             .get();
+                        
+                        console.log('customerEmail 조회 결과:', customerPointHistorySnapshot.size, '건');
                         
                         customerPointHistorySnapshot.forEach(doc => {
                             const data = doc.data();
@@ -680,6 +682,7 @@
                             const exists = allHistory.some(history => history.id === data.id);
                             if (!exists) {
                                 allHistory.push(data);
+                                console.log('customerEmail 이력 추가:', data.type, data.points, data.reason);
                             }
                         });
                         
@@ -692,6 +695,14 @@
                         
                         filteredDocs = allHistory;
                         console.log('서버 필터링된 포인트 이력:', filteredDocs.length, '건');
+                        console.log('전체 이력 상세:', filteredDocs.map(item => ({
+                            id: item.id,
+                            type: item.type,
+                            points: item.points,
+                            reason: item.reason,
+                            userEmail: item.userEmail,
+                            customerEmail: item.customerEmail
+                        })));
                         
                         // 포인트 계산
                         filteredDocs.forEach(item => {
@@ -801,6 +812,8 @@
             const container = document.getElementById('point-history-container');
             
             console.log('포인트 이력 표시 업데이트 시작:', pointHistory.length, '건');
+            console.log('pointHistory 배열 상세:', pointHistory);
+            console.log('container 요소:', container);
             
             if (pointHistory.length === 0) {
                 container.innerHTML = `
