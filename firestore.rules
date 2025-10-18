@@ -161,6 +161,13 @@ service cloud.firestore {
         request.auth.token.email in ['mrparkj2@gmail.com', 'aether7info@gmail.com', 'info@aether-store.jp'];
     }
     
+    // 스토어 사용자: 스토어 사용자 자신과 관리자만 접근 가능
+    match /storeuser/{storeUserId} {
+      allow read, write: if request.auth != null && 
+        (request.auth.token.email == storeUserId ||
+         request.auth.token.email in ['mrparkj2@gmail.com', 'aether7info@gmail.com', 'info@aether-store.jp']);
+    }
+    
     // ===================
     // 테스트 및 시스템 컬렉션
     // ===================
