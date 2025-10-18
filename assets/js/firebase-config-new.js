@@ -383,7 +383,16 @@ console.log('Firebase 초기화 시작 (즉시)');
         document.addEventListener('DOMContentLoaded', async () => {
             console.log('Firebase 초기화 재시도 (DOM 로드 후)');
             setTimeout(async () => {
-                await waitForFirebaseAndInitialize();
+                const success = await waitForFirebaseAndInitialize();
+                if (!success) {
+                    console.warn('⚠️ Firebase 초기화 재시도 실패, 수동 초기화 시도');
+                    // 수동 초기화 시도
+                    try {
+                        await window.initializeFirebaseManually();
+                    } catch (manualError) {
+                        console.error('❌ 수동 Firebase 초기화도 실패:', manualError);
+                    }
+                }
             }, 100);
         });
     }
@@ -427,6 +436,19 @@ async function waitForFirebaseAndInitialize() {
     }
     
     console.error('❌ Firebase SDK 로드 시간 초과 (10초)');
+    
+    // 최종 시도: 강제 초기화
+    try {
+        console.log('🔄 Firebase 강제 초기화 시도...');
+        const result = await initializeFirebase();
+        if (result.success) {
+            console.log('✅ Firebase 강제 초기화 성공');
+            return true;
+        }
+    } catch (error) {
+        console.error('❌ Firebase 강제 초기화 실패:', error);
+    }
+    
     return false;
 }
 
