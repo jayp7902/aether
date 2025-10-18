@@ -1029,29 +1029,10 @@ https://templatemo.com/tm-559-aether
                     }
                 }
                 
-                // 데이터가 없으면 기본 데이터 사용
+                // 데이터가 없으면 빈 배열로 설정 (Firebase 전용)
                 if (sliders.length === 0) {
-                    console.log('📝 Firebase에 슬라이더 데이터 없음, 기본 데이터 사용');
-                    sliders = [
-                        {
-                            id: 'default-1',
-                            title: 'Aether',
-                            subtitle: '韓国コスメブランド',
-                            description: '高品質な韓国コスメを日本にお届けします',
-                            bannerImage: 'assets/img/MAIN BANNER/LALARECIPE_MAIN Banner.jpg',
-                            brandLogo: 'assets/img/logo.png',
-                            order: 1
-                        },
-                        {
-                            id: 'default-2', 
-                            title: 'Premium',
-                            subtitle: 'プレミアムコスメ',
-                            description: '厳選された韓国コスメブランドの商品をご紹介',
-                            bannerImage: 'assets/img/MAIN BANNER/COSCELL_MAIN Banner.jpg',
-                            brandLogo: 'assets/img/logo.png',
-                            order: 2
-                        }
-                    ];
+                    sliders = [];
+                    console.log('📝 Firebase에 슬라이더 데이터 없음');
                 }
                 
                 // 슬라이더 HTML 업데이트
@@ -1144,32 +1125,10 @@ https://templatemo.com/tm-559-aether
                     bestItems = [];
                 }
                 
-                // 데이터가 없으면 기본 데이터 사용
+                // 데이터가 없으면 빈 배열로 설정 (Firebase 전용)
                 if (bestItems.length === 0) {
-                    console.log('📝 Firebase에 BEST ITEM 데이터 없음, 기본 데이터 사용');
-                    bestItems = [
-                        {
-                            id: 'default-best-1',
-                            name: 'LALARECIPE BAKUCHINOL EYE CREAM',
-                            price: 12000,
-                            image: 'assets/img/Featured Product/Bakucinol Eye Cream.png',
-                            order: 1
-                        },
-                        {
-                            id: 'default-best-2',
-                            name: 'COSCELL GREEN PAPAYA PDRN PORE AMPOULE',
-                            price: 15000,
-                            image: 'assets/img/Featured Product/GREEN PAPAYA PDRN PORE AMPOULE.jpg',
-                            order: 2
-                        },
-                        {
-                            id: 'default-best-3',
-                            name: '1.P.L CUSHION',
-                            price: 18000,
-                            image: 'assets/img/Featured Product/1.P.L CUSHION.jpg',
-                            order: 3
-                        }
-                    ];
+                    bestItems = [];
+                    console.log('📝 Firebase에 BEST ITEM 데이터 없음');
                 }
                 
                 // BEST ITEM HTML 업데이트
