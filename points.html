@@ -686,12 +686,7 @@
                             }
                         });
                         
-                        // 시간순 정렬 (최신순)
-                        allHistory.sort((a, b) => {
-                            const timeA = a.timestamp?.toDate ? a.timestamp.toDate() : new Date(a.timestamp);
-                            const timeB = b.timestamp?.toDate ? b.timestamp.toDate() : new Date(b.timestamp);
-                            return timeB - timeA;
-                        });
+                        // 정렬은 updatePointHistoryDisplay에서 처리
                         
                         filteredDocs = allHistory;
                         console.log('서버 필터링된 포인트 이력:', filteredDocs.length, '건');
@@ -828,32 +823,32 @@
 
             // 포인트 이력을 최신 순으로 정렬 (최신이 맨 위에 오도록)
             const sortedHistory = [...pointHistory].sort((a, b) => {
-                // 강력한 타임스탬프 처리
-                const getTimestamp = (item, index) => {
-                    // 1. timestamp 필드 확인
+                console.log('정렬 비교 시작:', {
+                    a: { id: a.id, timestamp: a.timestamp, type: a.type },
+                    b: { id: b.id, timestamp: b.timestamp, type: b.type }
+                });
+                
+                // 타임스탬프 추출 함수
+                const getTimestamp = (item) => {
+                    // 1. timestamp 필드 확인 (가장 우선)
                     if (item && item.timestamp) {
                         try {
-                            // Firestore Timestamp 객체인 경우
                             if (item.timestamp.toDate && typeof item.timestamp.toDate === 'function') {
                                 const date = item.timestamp.toDate();
-                                console.log(`항목 ${index + 1} - Firestore Timestamp:`, date);
+                                console.log('Firestore Timestamp 사용:', date);
                                 return date.getTime();
                             }
-                            
-                            // Date 객체인 경우
                             if (item.timestamp instanceof Date) {
-                                console.log(`항목 ${index + 1} - Date 객체:`, item.timestamp);
+                                console.log('Date 객체 사용:', item.timestamp);
                                 return item.timestamp.getTime();
                             }
-                            
-                            // 숫자나 문자열인 경우
                             const date = new Date(item.timestamp);
                             if (!isNaN(date.getTime())) {
-                                console.log(`항목 ${index + 1} - 문자열/숫자:`, item.timestamp, '→ Date:', date);
+                                console.log('문자열/숫자 timestamp 사용:', item.timestamp, '→', date);
                                 return date.getTime();
                             }
                         } catch (error) {
-                            console.warn(`항목 ${index + 1} - 타임스탬프 파싱 오류:`, error, item.timestamp);
+                            console.warn('timestamp 파싱 오류:', error);
                         }
                     }
                     
@@ -862,71 +857,47 @@
                         try {
                             if (item.createdAt.toDate && typeof item.createdAt.toDate === 'function') {
                                 const date = item.createdAt.toDate();
-                                console.log(`항목 ${index + 1} - createdAt Firestore:`, date);
+                                console.log('createdAt Firestore 사용:', date);
                                 return date.getTime();
                             }
                             if (item.createdAt instanceof Date) {
-                                console.log(`항목 ${index + 1} - createdAt Date:`, item.createdAt);
+                                console.log('createdAt Date 사용:', item.createdAt);
                                 return item.createdAt.getTime();
                             }
                             const date = new Date(item.createdAt);
                             if (!isNaN(date.getTime())) {
-                                console.log(`항목 ${index + 1} - createdAt 문자열:`, item.createdAt, '→ Date:', date);
+                                console.log('createdAt 문자열 사용:', item.createdAt, '→', date);
                                 return date.getTime();
                             }
                         } catch (error) {
-                            console.warn(`항목 ${index + 1} - createdAt 파싱 오류:`, error);
+                            console.warn('createdAt 파싱 오류:', error);
                         }
                     }
                     
-                    // 3. orderDate 필드 확인
-                    if (item && item.orderDate) {
-                        try {
-                            if (item.orderDate.toDate && typeof item.orderDate.toDate === 'function') {
-                                const date = item.orderDate.toDate();
-                                console.log(`항목 ${index + 1} - orderDate Firestore:`, date);
-                                return date.getTime();
-                            }
-                            if (item.orderDate instanceof Date) {
-                                console.log(`항목 ${index + 1} - orderDate Date:`, item.orderDate);
-                                return item.orderDate.getTime();
-                            }
-                            const date = new Date(item.orderDate);
-                            if (!isNaN(date.getTime())) {
-                                console.log(`항목 ${index + 1} - orderDate 문자열:`, item.orderDate, '→ Date:', date);
-                                return date.getTime();
-                            }
-                        } catch (error) {
-                            console.warn(`항목 ${index + 1} - orderDate 파싱 오류:`, error);
-                        }
-                    }
-                    
-                    // 4. 문서 ID에서 시간 추출 시도 (문서 ID가 타임스탬프를 포함하는 경우)
+                    // 3. 문서 ID에서 타임스탬프 추출
                     if (item && item.id) {
-                        const timestampMatch = item.id.match(/(\d{13})/); // 13자리 타임스탬프
+                        const timestampMatch = item.id.match(/(\d{13})/);
                         if (timestampMatch) {
                             const timestamp = parseInt(timestampMatch[1]);
                             const date = new Date(timestamp);
-                            console.log(`항목 ${index + 1} - ID에서 타임스탬프 추출:`, date);
+                            console.log('ID에서 타임스탬프 추출:', date);
                             return timestamp;
                         }
                     }
                     
-                    // 5. 모든 방법이 실패한 경우 - 배열 인덱스를 기반으로 한 가상 시간 생성
-                    // (최신 항목이 배열의 끝에 있다고 가정)
-                    const virtualTime = Date.now() - (pointHistory.length - index) * 1000;
-                    console.warn(`항목 ${index + 1} - 타임스탬프 없음, 가상 시간 사용:`, new Date(virtualTime));
-                    return virtualTime;
+                    // 4. 현재 시간 사용 (fallback)
+                    console.warn('타임스탬프 없음, 현재 시간 사용');
+                    return Date.now();
                 };
                 
-                const timeA = getTimestamp(a, pointHistory.indexOf(a));
-                const timeB = getTimestamp(b, pointHistory.indexOf(b));
+                const timeA = getTimestamp(a);
+                const timeB = getTimestamp(b);
                 
                 // 최신 순으로 정렬 (큰 값이 먼저)
                 const diff = timeB - timeA;
-                console.log('정렬 비교:', {
-                    a: { index: pointHistory.indexOf(a), time: timeA, date: new Date(timeA) },
-                    b: { index: pointHistory.indexOf(b), time: timeB, date: new Date(timeB) },
+                console.log('정렬 결과:', {
+                    a: { time: timeA, date: new Date(timeA) },
+                    b: { time: timeB, date: new Date(timeB) },
                     diff: diff
                 });
                 
@@ -934,13 +905,16 @@
             });
             
             console.log('포인트 이력 정렬 완료 (최신 순):', sortedHistory.length, '건');
-            console.log('정렬된 모든 항목:', sortedHistory.map((item, index) => ({
-                index: index + 1,
-                timestamp: item.timestamp,
-                type: item.type,
-                reason: item.reason,
-                points: item.points
-            })));
+            console.log('정렬된 모든 항목:', sortedHistory.map((item, index) => {
+                const timestamp = item.timestamp?.toDate ? item.timestamp.toDate() : new Date(item.timestamp);
+                return {
+                    index: index + 1,
+                    timestamp: timestamp,
+                    type: item.type,
+                    reason: item.reason,
+                    points: item.points
+                };
+            }));
 
             let historyHTML = '<div class="table-responsive"><table class="table table-hover">';
             historyHTML += '<thead><tr><th class="japanese-text">日付</th><th class="japanese-text">内容・注文詳細</th><th class="japanese-text">ポイント</th></tr></thead><tbody>';
