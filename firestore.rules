@@ -72,10 +72,9 @@ service cloud.firestore {
         request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
     }
     
-    // 삭제된 이메일 블랙리스트: 관리자만 접근 가능
+    // 삭제된 이메일 블랙리스트: 인증된 사용자 접근 가능 (임시)
     match /deletedEmails/{emailId} {
-      allow read, write: if request.auth != null && 
-        request.auth.token.email in ['admin@aether.com', 'jayp@aether.com'];
+      allow read, write: if request.auth != null;
     }
     
     // 테스트 컬렉션: 모든 인증된 사용자 접근 가능
