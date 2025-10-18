@@ -1620,6 +1620,17 @@
             }
 
             const itemsHtml = cart.map((item, index) => {
+                // 디버깅: 각 아이템의 데이터 확인
+                console.log(`🔍 체크아웃 아이템 ${index + 1}:`, {
+                    name: item.name,
+                    nameJp: item.nameJp,
+                    nameKr: item.nameKr,
+                    brand: item.brand,
+                    brandName: item.brandName,
+                    price: item.price,
+                    quantity: item.quantity
+                });
+                
                 // 옵션 정보 표시
                 let optionInfo = '';
                 if (item.isOptionProduct && item.selectedColors && item.selectedColors.length > 0) {
@@ -1636,10 +1647,14 @@
                         '</div>';
                 }
                 
+                // 상품명과 브랜드명 정규화 (카트 페이지와 동일한 로직)
+                const itemName = item.nameJp || item.nameKr || item.name || '상품명 없음';
+                const itemBrand = item.brandName || item.brand || '브랜드 없음';
+                
                 return '<div class="order-item">' +
                     '<div class="order-item-info">' +
-                    '<div class="japanese-heading">' + (item.name || '상품명 없음') + '</div>' +
-                    '<small class="text-muted japanese-text">' + (item.brand || '브랜드 없음') + '</small>' +
+                    '<div class="japanese-heading">' + itemName + '</div>' +
+                    '<small class="text-muted japanese-text">' + itemBrand + '</small>' +
                     optionInfo +
                     '</div>' +
                     '<div class="order-item-controls">' +
