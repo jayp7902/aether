@@ -1034,12 +1034,26 @@ https://templatemo.com/tm-559-aether
                 // Firebase에서 데이터 로드 시도
                 if (window.firebase && window.firebase.firestore && window.firebase.apps && window.firebase.apps.length > 0) {
                     try {
-                        const snapshot = await window.firebase.firestore().collection('homepage_sliders').orderBy('order').get();
-                        sliders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        console.log('🔍 Firebase 슬라이더 데이터 로드 시도...');
+                        const db = window.firebase.firestore();
+                        console.log('🔍 Firestore 인스턴스 확인:', !!db);
+                        
+                        const snapshot = await db.collection('homepage_sliders').orderBy('order').get();
+                        console.log('🔍 슬라이더 쿼리 결과:', snapshot.size, '개 문서');
+                        
+                        sliders = snapshot.docs.map(doc => {
+                            const data = doc.data();
+                            console.log('🔍 슬라이더 문서 데이터:', doc.id, data);
+                            return { id: doc.id, ...data };
+                        });
                         console.log('📊 Firebase에서 슬라이더 데이터 로드:', sliders.length, '개');
                     } catch (firebaseError) {
-                        console.warn('⚠️ Firebase 슬라이더 데이터 로드 실패, 기본 데이터 사용:', firebaseError);
+                        console.error('❌ Firebase 슬라이더 데이터 로드 실패:', firebaseError);
+                        console.error('❌ 오류 상세:', firebaseError.message);
+                        console.error('❌ 오류 코드:', firebaseError.code);
                     }
+                } else {
+                    console.warn('⚠️ Firebase가 초기화되지 않음 - 슬라이더 데이터 로드 건너뜀');
                 }
                 
                 // 데이터가 없으면 빈 배열로 설정 (Firebase 전용)
@@ -1126,15 +1140,27 @@ https://templatemo.com/tm-559-aether
                 // Firebase에서 데이터 로드 시도 (안전한 방식)
                 if (window.firebase && window.firebase.apps && window.firebase.apps.length > 0) {
                     try {
-                        const snapshot = await window.firebase.firestore().collection('homepage_best_items').orderBy('order').get();
-                        bestItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                        console.log('🔍 Firebase BEST ITEM 데이터 로드 시도...');
+                        const db = window.firebase.firestore();
+                        console.log('🔍 Firestore 인스턴스 확인:', !!db);
+                        
+                        const snapshot = await db.collection('homepage_best_items').orderBy('order').get();
+                        console.log('🔍 BEST ITEM 쿼리 결과:', snapshot.size, '개 문서');
+                        
+                        bestItems = snapshot.docs.map(doc => {
+                            const data = doc.data();
+                            console.log('🔍 BEST ITEM 문서 데이터:', doc.id, data);
+                            return { id: doc.id, ...data };
+                        });
                         console.log('📊 Firebase에서 BEST ITEM 데이터 로드:', bestItems.length, '개');
                     } catch (error) {
-                        console.warn('⚠️ Firebase BEST ITEM 데이터 로드 실패:', error.message);
+                        console.error('❌ Firebase BEST ITEM 데이터 로드 실패:', error);
+                        console.error('❌ 오류 상세:', error.message);
+                        console.error('❌ 오류 코드:', error.code);
                         bestItems = [];
                     }
                 } else {
-                    console.log('📝 Firebase가 초기화되지 않음 - BEST ITEM 데이터 로드 건너뜀');
+                    console.warn('⚠️ Firebase가 초기화되지 않음 - BEST ITEM 데이터 로드 건너뜀');
                     bestItems = [];
                 }
                 
@@ -1307,13 +1333,22 @@ https://templatemo.com/tm-559-aether
                 // Firebase에서 데이터 로드 시도 (안전한 방식)
                 if (window.firebase && window.firebase.apps && window.firebase.apps.length > 0) {
                     try {
+                        console.log('🔍 Firebase 푸터 데이터 로드 시도...');
+                        const db = window.firebase.firestore();
+                        console.log('🔍 Firestore 인스턴스 확인:', !!db);
+                        
                         // 캐싱 방지를 위해 source: 'server' 옵션 추가
                         const [footerContentSnapshot, legalLinksSnapshot, quickLinksSnapshot, companyInfoSnapshot] = await Promise.all([
-                            window.firebase.firestore().collection('footer_content').limit(1).get({ source: 'server' }),
-                            window.firebase.firestore().collection('footerSettings').doc('legalLinks').get({ source: 'server' }),
-                            window.firebase.firestore().collection('footerSettings').doc('quickLinks').get({ source: 'server' }),
-                            window.firebase.firestore().collection('footerSettings').doc('companyInfo').get({ source: 'server' })
+                            db.collection('footer_content').limit(1).get({ source: 'server' }),
+                            db.collection('footerSettings').doc('legalLinks').get({ source: 'server' }),
+                            db.collection('footerSettings').doc('quickLinks').get({ source: 'server' }),
+                            db.collection('footerSettings').doc('companyInfo').get({ source: 'server' })
                         ]);
+                        
+                        console.log('🔍 푸터 콘텐츠 쿼리 결과:', footerContentSnapshot.size, '개 문서');
+                        console.log('🔍 법적 링크 쿼리 결과:', legalLinksSnapshot.exists ? '존재' : '없음');
+                        console.log('🔍 빠른 링크 쿼리 결과:', quickLinksSnapshot.exists ? '존재' : '없음');
+                        console.log('🔍 회사 정보 쿼리 결과:', companyInfoSnapshot.exists ? '존재' : '없음');
                         
                         // footer_content에서 모든 데이터 로드
                         let footerContentData = {};
@@ -1345,7 +1380,9 @@ https://templatemo.com/tm-559-aether
                         
                         console.log('📊 Firebase에서 푸터 데이터 로드 완료:', footerData);
                     } catch (error) {
-                        console.warn('⚠️ Firebase 푸터 데이터 로드 실패:', error.message);
+                        console.error('❌ Firebase 푸터 데이터 로드 실패:', error);
+                        console.error('❌ 오류 상세:', error.message);
+                        console.error('❌ 오류 코드:', error.code);
                         footerData = {};
                     }
                 } else {
