@@ -252,20 +252,32 @@ async function initializeFirebase() {
         // 전역 Firebase 객체 설정
         setGlobalFirebaseObjects(auth, db, storage);
         
-        // 블랙리스트 자동 정리 (백그라운드에서 실행) - 인증 후에만 실행
+        // 블랙리스트 자동 정리 (관리자만 실행)
         if (typeof FirebaseService !== 'undefined') {
-            // 인증 상태 확인 후 실행
-            setTimeout(() => {
-                const currentUser = firebase.auth().currentUser;
-                if (currentUser) {
-                    console.log('🔍 인증된 사용자 감지, 블랙리스트 정리 시작');
-                    FirebaseService.cleanupExpiredBlacklist().catch(error => {
-                        console.warn('블랙리스트 정리 실패:', error);
-                    });
-                } else {
-                    console.log('⚠️ 인증되지 않은 상태, 블랙리스트 정리 건너뜀');
+            // 관리자 권한 확인 후 실행
+            setTimeout(async () => {
+                try {
+                    const currentUser = firebase.auth().currentUser;
+                    if (currentUser) {
+                        console.log('🔍 인증된 사용자 감지:', currentUser.email);
+                        
+                        // 관리자 권한 확인
+                        const isAdmin = await FirebaseService.isAdmin(currentUser.email);
+                        if (isAdmin) {
+                            console.log('✅ 관리자 권한 확인됨, 블랙리스트 정리 시작');
+                            FirebaseService.cleanupExpiredBlacklist().catch(error => {
+                                console.warn('블랙리스트 정리 실패:', error);
+                            });
+                        } else {
+                            console.log('⚠️ 관리자 권한 없음, 블랙리스트 정리 건너뜀');
+                        }
+                    } else {
+                        console.log('⚠️ 인증되지 않은 상태, 블랙리스트 정리 건너뜀');
+                    }
+                } catch (error) {
+                    console.warn('블랙리스트 정리 권한 확인 실패:', error);
                 }
-            }, 2000); // 2초 후 실행
+            }, 3000); // 3초 후 실행
         }
         
         // Firebase 초기화 완료 이벤트 발생
@@ -824,24 +836,40 @@ class FirebaseService {
                 return false;
             }
 
-            console.log('✅ Firebase 사용 가능, Firestore 조회 시작');
-            console.log('🔧 db 객체 확인:', typeof db);
-            console.log('🔧 firebase 객체 확인:', typeof firebase);
+            // 하드코딩된 관리자 이메일 목록 (보안상 안전)
+            const hardcodedAdmins = [
+                'admin@aether.com',
+                'jayp@aether.com',
+                'storeadmin@aether.com'
+            ];
             
-            // Firestore에서 관리자 이메일 목록 조회
-            const adminDoc = await db.collection('admins').doc('admin-emails').get();
+            // 1차: 하드코딩된 관리자 목록 확인
+            if (hardcodedAdmins.includes(userEmail)) {
+                console.log('✅ 하드코딩된 관리자 확인됨:', userEmail);
+                return true;
+            }
             
-            if (adminDoc.exists) {
-                const adminData = adminDoc.data();
-                const adminEmails = adminData.emails || [];
+            // 2차: Firestore에서 관리자 이메일 목록 조회
+            try {
+                console.log('✅ Firebase 사용 가능, Firestore 조회 시작');
+                console.log('🔧 db 객체 확인:', typeof db);
+                console.log('🔧 firebase 객체 확인:', typeof firebase);
                 
-                const isAdmin = adminEmails.includes(userEmail);
-                // 보안상 관리자 이메일 목록은 로그에 출력하지 않음
-                console.log(`🎯 관리자 권한 확인: ${isAdmin ? '✅ 관리자' : '❌ 일반 사용자'}`);
-                return isAdmin;
-            } else {
-                console.log('❌ 관리자 문서가 존재하지 않습니다.');
-                console.log('💡 Firebase Console에서 admins 컬렉션을 생성해주세요.');
+                const adminDoc = await db.collection('admins').doc('admin-emails').get();
+                
+                if (adminDoc.exists) {
+                    const adminData = adminDoc.data();
+                    const adminEmails = adminData.emails || [];
+                    
+                    const isAdmin = adminEmails.includes(userEmail);
+                    console.log(`🎯 Firestore 관리자 권한 확인: ${isAdmin ? '✅ 관리자' : '❌ 일반 사용자'}`);
+                    return isAdmin;
+                } else {
+                    console.log('⚠️ Firestore 관리자 문서가 존재하지 않음, 하드코딩된 목록만 사용');
+                    return false;
+                }
+            } catch (firestoreError) {
+                console.warn('⚠️ Firestore 관리자 권한 확인 실패, 하드코딩된 목록만 사용:', firestoreError);
                 return false;
             }
         } catch (error) {
@@ -969,6 +997,13 @@ class FirebaseService {
             
             if (!currentUser) {
                 console.log('⚠️ 인증되지 않은 사용자, 블랙리스트 정리 건너뜀');
+                return;
+            }
+            
+            // 관리자 권한 재확인
+            const isAdmin = await this.isAdmin(currentUser.email);
+            if (!isAdmin) {
+                console.log('⚠️ 관리자 권한 없음, 블랙리스트 정리 건너뜀');
                 return;
             }
             
