@@ -924,19 +924,80 @@
                 
                 let date;
                 try {
-                    if (item.timestamp && item.timestamp.toDate) {
-                        date = item.timestamp.toDate();
-                    } else if (item.timestamp) {
-                        date = new Date(item.timestamp);
-                    } else {
+                    console.log(`이력 ${index + 1} 날짜 필드 확인:`, {
+                        timestamp: item.timestamp,
+                        createdAt: item.createdAt,
+                        orderDate: item.orderDate,
+                        date: item.date
+                    });
+                    
+                    // 1. timestamp 필드 확인 (가장 우선)
+                    if (item.timestamp) {
+                        if (item.timestamp.toDate && typeof item.timestamp.toDate === 'function') {
+                            date = item.timestamp.toDate();
+                            console.log(`이력 ${index + 1} - timestamp Firestore 사용:`, date);
+                        } else if (item.timestamp instanceof Date) {
+                            date = item.timestamp;
+                            console.log(`이력 ${index + 1} - timestamp Date 사용:`, date);
+                        } else {
+                            date = new Date(item.timestamp);
+                            console.log(`이력 ${index + 1} - timestamp 문자열 사용:`, item.timestamp, '→', date);
+                        }
+                    }
+                    // 2. createdAt 필드 확인
+                    else if (item.createdAt) {
+                        if (item.createdAt.toDate && typeof item.createdAt.toDate === 'function') {
+                            date = item.createdAt.toDate();
+                            console.log(`이력 ${index + 1} - createdAt Firestore 사용:`, date);
+                        } else if (item.createdAt instanceof Date) {
+                            date = item.createdAt;
+                            console.log(`이력 ${index + 1} - createdAt Date 사용:`, date);
+                        } else {
+                            date = new Date(item.createdAt);
+                            console.log(`이력 ${index + 1} - createdAt 문자열 사용:`, item.createdAt, '→', date);
+                        }
+                    }
+                    // 3. orderDate 필드 확인
+                    else if (item.orderDate) {
+                        if (item.orderDate.toDate && typeof item.orderDate.toDate === 'function') {
+                            date = item.orderDate.toDate();
+                            console.log(`이력 ${index + 1} - orderDate Firestore 사용:`, date);
+                        } else if (item.orderDate instanceof Date) {
+                            date = item.orderDate;
+                            console.log(`이력 ${index + 1} - orderDate Date 사용:`, date);
+                        } else {
+                            date = new Date(item.orderDate);
+                            console.log(`이력 ${index + 1} - orderDate 문자열 사용:`, item.orderDate, '→', date);
+                        }
+                    }
+                    // 4. 문서 ID에서 타임스탬프 추출
+                    else if (item.id) {
+                        const timestampMatch = item.id.match(/(\d{13})/);
+                        if (timestampMatch) {
+                            const timestamp = parseInt(timestampMatch[1]);
+                            date = new Date(timestamp);
+                            console.log(`이력 ${index + 1} - ID에서 타임스탬프 추출:`, date);
+                        } else {
+                            console.warn(`이력 ${index + 1} - 날짜 필드 없음, 현재 시간 사용`);
+                            date = new Date();
+                        }
+                    }
+                    // 5. 모든 방법 실패
+                    else {
+                        console.warn(`이력 ${index + 1} - 날짜 필드 없음, 현재 시간 사용`);
                         date = new Date();
                     }
                 } catch (dateError) {
-                    console.warn('날짜 파싱 오류:', dateError, item.timestamp);
+                    console.warn(`이력 ${index + 1} - 날짜 파싱 오류:`, dateError);
                     date = new Date();
                 }
                 
                 const dateStr = date.toLocaleDateString('ja-JP');
+                console.log(`이력 ${index + 1} - 최종 날짜:`, {
+                    originalDate: date,
+                    formattedDate: dateStr,
+                    timestamp: date.getTime()
+                });
                 
                 // 포인트 표시 로직 개선 (type에 따라 표시)
                 const points = item.points || 0; // undefined 처리
