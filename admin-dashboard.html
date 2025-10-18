@@ -1310,14 +1310,9 @@
                     <div class="japanese-text">
                         <div><i class="fas fa-user-shield me-1"></i><span id="admin-name"></span></div>
                         <div id="current-time" style="font-size: 1.1rem; font-weight: bold;"></div>
-                        <div class="d-flex gap-2 justify-content-end mt-1">
-                            <button class="btn btn-outline-secondary btn-sm" onclick="window.adminConsole.toggle()" id="log-toggle-btn" title="로그 활성화/비활성화">
-                                <i class="fas fa-terminal me-1"></i><span id="log-status">로그 ON</span>
-                            </button>
-                            <button class="btn btn-outline-light btn-sm" onclick="logout()">
+                        <button class="btn btn-outline-light btn-sm mt-1" onclick="logout()">
                             <i class="fas fa-sign-out-alt me-1"></i>ログアウト
                         </button>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -2512,7 +2507,7 @@
                             <i class="fas fa-box me-2"></i>商品管理
                         </h3>
                         <div class="d-flex gap-2">
-                            <button class="btn btn-dark" onclick="console.log('🔧 [ADMIN] 상품 추가 버튼 클릭됨'); window.adminConsole.log('상품 추가 버튼 클릭됨'); if (typeof window.showAddProductModal === 'function') { window.showAddProductModal(); } else { console.error('showAddProductModal 함수를 찾을 수 없습니다'); }">
+                            <button class="btn btn-dark" onclick="console.log('버튼 클릭됨'); if (typeof window.showAddProductModal === 'function') { window.showAddProductModal(); } else { console.error('showAddProductModal 함수를 찾을 수 없습니다'); }">
                                 <i class="fas fa-plus me-2"></i>新しい商品を追加
                             </button>
                             <div class="btn-group">
@@ -3434,7 +3429,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">キャンセル</button>
-                    <button type="button" class="btn btn-dark" onclick="console.log('🔧 [ADMIN] 편집 저장 버튼 클릭됨'); window.adminConsole.log('편집 저장 버튼 클릭됨'); saveProductEdit()">
+                    <button type="button" class="btn btn-dark" onclick="saveProduct()">
                         <i class="fas fa-save me-2"></i>保存
                     </button>
                 </div>
@@ -3868,153 +3863,6 @@
     
     <!-- 탭 전환 함수들 -->
     <script>
-        // 관리자 페이지 전용 콘솔 로그 관리
-        window.adminConsole = {
-            isAdminPage: window.location.pathname.includes('admin-dashboard.html'),
-            isEnabled: true, // 관리자 로그 활성화/비활성화 토글
-            
-            // 관리자 페이지 확인 및 로그 활성화 상태 체크
-            shouldLog: function() {
-                return this.isAdminPage && this.isEnabled;
-            },
-            
-            log: function(message, ...args) {
-                if (this.shouldLog()) {
-                    console.log('%c🔧 [ADMIN]', 'color: #007bff; font-weight: bold; background: #e3f2fd; padding: 2px 6px; border-radius: 3px;', message, ...args);
-                }
-            },
-            
-            error: function(message, ...args) {
-                if (this.shouldLog()) {
-                    console.error('%c❌ [ADMIN ERROR]', 'color: #dc3545; font-weight: bold; background: #f8d7da; padding: 2px 6px; border-radius: 3px;', message, ...args);
-                }
-            },
-            
-            warn: function(message, ...args) {
-                if (this.shouldLog()) {
-                    console.warn('%c⚠️ [ADMIN WARNING]', 'color: #fd7e14; font-weight: bold; background: #fff3cd; padding: 2px 6px; border-radius: 3px;', message, ...args);
-                }
-            },
-            
-            info: function(message, ...args) {
-                if (this.shouldLog()) {
-                    console.info('%cℹ️ [ADMIN INFO]', 'color: #17a2b8; font-weight: bold; background: #d1ecf1; padding: 2px 6px; border-radius: 3px;', message, ...args);
-                }
-            },
-            
-            success: function(message, ...args) {
-                if (this.shouldLog()) {
-                    console.log('%c✅ [ADMIN SUCCESS]', 'color: #28a745; font-weight: bold; background: #d4edda; padding: 2px 6px; border-radius: 3px;', message, ...args);
-                }
-            },
-            
-            debug: function(message, ...args) {
-                if (this.shouldLog()) {
-                    console.log('%c🐛 [ADMIN DEBUG]', 'color: #6f42c1; font-weight: bold; background: #e2e3e5; padding: 2px 6px; border-radius: 3px;', message, ...args);
-                }
-            },
-            
-            // 관리자 로그 토글 함수
-            toggle: function() {
-                this.isEnabled = !this.isEnabled;
-                console.log(`%c🔧 [ADMIN] 로그 ${this.isEnabled ? '활성화' : '비활성화'}됨`, 
-                    'color: #007bff; font-weight: bold; background: #e3f2fd; padding: 2px 6px; border-radius: 3px;');
-                
-                // 버튼 상태 업데이트
-                this.updateToggleButton();
-                return this.isEnabled;
-            },
-            
-            // 로그 토글 버튼 상태 업데이트
-            updateToggleButton: function() {
-                const button = document.getElementById('log-toggle-btn');
-                const statusSpan = document.getElementById('log-status');
-                
-                if (button && statusSpan) {
-                    if (this.isEnabled) {
-                        button.className = 'btn btn-outline-secondary btn-sm';
-                        statusSpan.textContent = '로그 ON';
-                        button.title = '로그 비활성화';
-                    } else {
-                        button.className = 'btn btn-outline-dark btn-sm';
-                        statusSpan.textContent = '로그 OFF';
-                        button.title = '로그 활성화';
-                    }
-                }
-            },
-            
-            // 관리자 로그 상태 확인
-            status: function() {
-                console.log(`%c🔧 [ADMIN] 로그 상태: ${this.isAdminPage ? '관리자 페이지' : '일반 페이지'} | ${this.isEnabled ? '활성화' : '비활성화'}`, 
-                    'color: #007bff; font-weight: bold; background: #e3f2fd; padding: 2px 6px; border-radius: 3px;');
-                return {
-                    isAdminPage: this.isAdminPage,
-                    isEnabled: this.isEnabled
-                };
-            }
-        };
-
-        // 일반 사용자 페이지에서 로그 숨기기 (관리자 페이지가 아닌 경우)
-        if (!window.adminConsole.isAdminPage) {
-            // 일반 페이지에서는 모든 console 로그를 숨김
-            const originalConsole = {
-                log: console.log,
-                error: console.error,
-                warn: console.warn,
-                info: console.info,
-                debug: console.debug
-            };
-            
-            // console 메서드들을 빈 함수로 오버라이드
-            console.log = function() {};
-            console.error = function() {};
-            console.warn = function() {};
-            console.info = function() {};
-            console.debug = function() {};
-            
-            // 개발자 도구에서 원본 console 복원 함수 제공
-            window.restoreConsole = function() {
-                console.log = originalConsole.log;
-                console.error = originalConsole.error;
-                console.warn = originalConsole.warn;
-                console.info = originalConsole.info;
-                console.debug = originalConsole.debug;
-                console.log('🔧 Console이 복원되었습니다.');
-            };
-            
-            // 관리자 콘솔 시스템 비활성화
-            window.adminConsole.isEnabled = false;
-        }
-
-        // 관리자 페이지에서만 테스트 로그 출력
-        if (window.adminConsole.isAdminPage) {
-            window.adminConsole.log('관리자 콘솔 시스템 초기화 완료');
-            window.adminConsole.log('현재 페이지:', window.location.pathname);
-            window.adminConsole.log('관리자 페이지 여부:', window.adminConsole.isAdminPage);
-            window.adminConsole.success('관리자 전용 로그 시스템이 활성화되었습니다!');
-            
-            // 관리자 콘솔 사용법 안내
-            window.adminConsole.info('사용법:');
-            window.adminConsole.info('- adminConsole.log("메시지") : 일반 로그');
-            window.adminConsole.info('- adminConsole.error("메시지") : 에러 로그');
-            window.adminConsole.info('- adminConsole.warn("메시지") : 경고 로그');
-            window.adminConsole.info('- adminConsole.success("메시지") : 성공 로그');
-            window.adminConsole.info('- adminConsole.toggle() : 로그 활성화/비활성화');
-            window.adminConsole.info('- adminConsole.status() : 로그 상태 확인');
-            
-            // DOM 로드 후 버튼 상태 초기화
-            document.addEventListener('DOMContentLoaded', function() {
-                setTimeout(() => {
-                    window.adminConsole.updateToggleButton();
-                }, 100);
-            });
-        }
-        
-        // adminConsole 함수 테스트
-        window.adminConsole.log('adminConsole.log 테스트');
-        window.adminConsole.error('adminConsole.error 테스트');
-        window.adminConsole.warn('adminConsole.warn 테스트');
-
         // 전역 탭 전환 함수들
         function switchToPoints() {
             console.log('📋 포인트 관리 탭으로 전환');
@@ -4154,7 +4002,16 @@
             console.log('✅ 주문 데이터 즉시 표시 완료:', emergencyOrders.length, '개');
         }
         
-        // 중복된 switchToBrands 함수 제거됨 - window.switchToBrands로 대체
+        function switchToBrands() {
+            console.log('📋 브랜드 관리 탭으로 전환');
+            hideAllTabs();
+            showTab('brands-section');
+            updateTabButtons('brands-tab');
+            
+            // Firebase에서 브랜드 데이터 로드
+            console.log('🔥 Firebase에서 브랜드 데이터 로드...');
+            loadBrands();
+        }
         
         
         // 브랜드 편집 모달 닫기
@@ -4254,16 +4111,36 @@
             }
         }
         
-        // 중복된 switchToProducts 함수 제거됨 - window.switchToProducts로 대체
+        function switchToProducts() {
+            console.log('📋 상품 관리 탭으로 전환');
+            hideAllTabs();
+            showTab('products-section');
+            updateTabButtons('products-tab');
+            
+            // Firebase에서 상품 데이터 로드
+            console.log('🚀 Firebase에서 상품 데이터 로드...');
+            loadProducts();
+        }
         
-        // 기존 동적 모달용 editProduct 함수 제거됨 - 통합 모달용 함수로 대체
+        // 상품 편집 함수
+        window.editProduct = function(productId) {
+            console.log('🔧 상품 편집 시작:', productId);
+            console.log('현재 상품 데이터:', window.allProductsList);
             
             // 여러 위치에서 상품 찾기 시도
             let product = null;
             
-            // 주석 처리된 함수 내용 제거됨
+            // 1. window.allProductsList에서 찾기
+            if (window.allProductsList && window.allProductsList.length > 0) {
+                product = window.allProductsList.find(p => p.id === productId);
+                console.log('allProductsList에서 찾기 시도:', product);
+            }
             
-            // 주석 처리된 함수 내용 제거됨
+            // 2. window.allProducts에서 찾기
+            if (!product && window.allProducts && window.allProducts.length > 0) {
+                product = window.allProducts.find(p => p.id === productId);
+                console.log('allProducts에서 찾기 시도:', product);
+            }
             
             // 3. filteredProductsList에서 찾기
             if (!product && window.filteredProductsList && window.filteredProductsList.length > 0) {
@@ -4279,7 +4156,7 @@
                     filteredProductsList: window.filteredProductsList?.map(p => p.id) || []
                 });
                 showAlert('商品が見つかりません。', 'danger');
-                // return;
+                return;
             }
             
             // 상품 편집 모달 열기
@@ -4369,8 +4246,8 @@
                                     <div class="mb-3">
                                         <label class="form-label">현재 이미지 미리보기</label>
                                         <div class="text-center">
-                                            <img src="${product.imageUrl || 'assets/img/logo.png'}" alt="${product.nameEn}" class="img-fluid" style="max-height: 200px;" 
-                                                 onerror="this.src='assets/img/logo.png'">
+                                            <img src="${product.imageUrl || 'assets/img/placeholder-brand.svg'}" alt="${product.nameEn}" class="img-fluid" style="max-height: 200px;" 
+                                                 onerror="this.src='assets/img/placeholder-brand.svg'">
                                         </div>
                                     </div>
                                     
@@ -4459,9 +4336,9 @@
             // 모달 표시
             const modal = new bootstrap.Modal(document.getElementById('productEditModal'));
             modal.show();
-        // }
+        }
         
-        // 기존 상품 편집 함수들 제거됨 - 새로운 통합 함수로 대체
+        // 기존 편집 모달 관련 함수들 제거됨 (통합 모달 사용)
         
         
         // 상품 삭제 함수 (Firebase에서 실제 삭제)
@@ -5140,8 +5017,6 @@
 
         // 페이지 로드 시 초기화
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔧 [ADMIN] DOMContentLoaded 이벤트 발생');
-            
             // Firebase 초기화 완료 후 관리자 대시보드 초기화
             waitForFirebaseAndInitialize();
             initializeTabNavigation();
@@ -11068,7 +10943,7 @@
                     const statusText = brand.status === 'active' ? 'アクティブ' : '非アクティブ';
                     
                     // 이미지 URL 결정 (우선순위: imageData -> logoUrl -> logoPath -> placeholder)
-                    let imageUrl = 'assets/img/logo.png';
+                    let imageUrl = 'assets/img/placeholder-brand.svg';
                     if (brand.imageData && brand.imageData.trim() !== '') {
                         imageUrl = brand.imageData;
                     } else if (brand.logoUrl && brand.logoUrl.trim() !== '') {
@@ -11165,7 +11040,7 @@
         // 브랜드 이미지 로딩 오류 처리
         function handleBrandImageError(img) {
             console.warn('❌ 브랜드 이미지 로드 실패:', img.src);
-            img.src = 'assets/img/logo.png';
+            img.src = 'assets/img/placeholder-brand.svg';
             img.alt = 'ブランドロゴ';
         }
 
@@ -11183,18 +11058,18 @@
         // 상품 로드 함수 (통합된 버전)
         window.loadProducts = async function() {
             try {
-                adminConsole.log('상품 데이터 로드 시작');
+                console.log('📦 상품 데이터 로드 시작 (통합된 버전)');
                 
                 // 먼저 브랜드 데이터가 로드되었는지 확인
                 if (!window.allBrands || window.allBrands.length === 0) {
-                    adminConsole.log('브랜드 데이터가 없습니다 -> 브랜드 로드');
+                    console.log('🔄 브랜드 데이터가 없습니다 -> 브랜드 로드');
                     await loadBrands();
                 }
                 
                 // Firebase에서 상품 데이터 로드 시도
                 if (typeof firebase !== 'undefined' && firebase && firebase.firestore) {
                     try {
-                        adminConsole.log('Firebase에서 상품 데이터 로드 시도...');
+                        console.log('🔥 Firebase에서 상품 데이터 로드 시도...');
                         const db = firebase.firestore();
                         
                         // 타임아웃 설정
@@ -11206,25 +11081,11 @@
                         const productsSnapshot = await Promise.race([productsPromise, timeoutPromise]);
                         
                         if (productsSnapshot && !productsSnapshot.empty) {
-                            adminConsole.log('Firebase에서 상품 문서 개수:', productsSnapshot.docs.length);
+                            console.log('📋 Firebase에서 상품 문서 개수:', productsSnapshot.docs.length);
                             
                             const products = productsSnapshot.docs.map(doc => {
                                 const data = doc.data();
-                                adminConsole.log('상품 데이터:', doc.id, {
-                                    nameEn: data.nameEn,
-                                    nameJp: data.nameJp,
-                                    imageUrl: data.imageUrl,
-                                    imagePath: data.imagePath,
-                                    additionalImages: data.additionalImages,
-                                    additionalImagesType: typeof data.additionalImages,
-                                    additionalImagesLength: data.additionalImages ? data.additionalImages.length : 'undefined',
-                                    additionalImagesDetails: data.additionalImages ? data.additionalImages.map((img, idx) => ({
-                                        index: idx,
-                                        value: img,
-                                        isEmpty: img === '',
-                                        isUrl: img && img.includes('http')
-                                    })) : 'undefined'
-                                });
+                                console.log('📦 상품 데이터:', doc.id, data);
                                 return {
                                     id: doc.id,
                                     ...data,
@@ -11237,12 +11098,7 @@
                             window.allProductsList = products;
                             window.filteredProductsList = [...products];
                             
-                            adminConsole.log('Firebase 상품 로드 완료:', products.length, '개');
-                            adminConsole.log('전역 변수 저장 완료:', {
-                                allProductsList: window.allProductsList.length,
-                                filteredProductsList: window.filteredProductsList.length
-                            });
-                            
+                            console.log('✅ Firebase 상품 로드 완료:', products.length, '개');
                             displayProducts(products);
                             updateProductStats(products);
                             return;
@@ -11279,31 +11135,21 @@
 
         // 상품 표시 함수 (통합된 버전)
         window.displayProducts = function(products = null) {
-            adminConsole.log('displayProducts 함수 시작');
-            
             const container = document.getElementById('products-container');
             if (!container) {
-                adminConsole.error('상품 컨테이너를 찾을 수 없습니다');
+                console.error('❌ 상품 컨테이너를 찾을 수 없습니다');
                 return;
             }
             
             // 매개변수가 없으면 전역 변수 사용
             const productsToShow = products || window.filteredProductsList || window.allProductsList || [];
             
-            adminConsole.log('표시할 상품 데이터:', {
-                productsParam: products ? products.length : 'null',
-                filteredProductsList: window.filteredProductsList ? window.filteredProductsList.length : 'undefined',
-                allProductsList: window.allProductsList ? window.allProductsList.length : 'undefined',
-                productsToShow: productsToShow.length
-            });
-            
             // 디버깅: 상품 데이터 구조 확인
             if (productsToShow && productsToShow.length > 0) {
-                adminConsole.log('상품 데이터 구조 확인 (첫 번째 상품):', productsToShow[0]);
-                adminConsole.log('상품명 필드들:', {
+                console.log('🔍 상품 데이터 구조 확인 (첫 번째 상품):', productsToShow[0]);
+                console.log('🔍 상품명 필드들:', {
                     nameEn: productsToShow[0].nameEn,
-                    nameJp: productsToShow[0].nameJp,
-                    code: productsToShow[0].code
+                    nameJp: productsToShow[0].nameJp
                 });
             }
             
@@ -11325,26 +11171,12 @@
                 const statusClass = product.status === 'active' ? 'status-active' : 'status-inactive';
                 const statusText = product.status === 'active' ? 'アクティブ' : '非アクティブ';
                 
-                // 이미지 URL 결정 - Firebase Storage URL 우선 사용
-                let imageUrl = 'assets/img/logo.png'; // 존재하는 기본 이미지 사용
-                
-                adminConsole.log('상품 이미지 URL 처리:', {
-                    productId: product.id,
-                    productName: product.nameEn || product.nameJp,
-                    imageUrl: product.imageUrl,
-                    imagePath: product.imagePath,
-                    hasImageUrl: !!(product.imageUrl && product.imageUrl.trim() !== ''),
-                    hasImagePath: !!(product.imagePath && product.imagePath.trim() !== '')
-                });
-                
+                // 이미지 URL 결정
+                let imageUrl = 'assets/img/placeholder-brand.svg';
                 if (product.imageUrl && product.imageUrl.trim() !== '') {
                     imageUrl = product.imageUrl;
-                    adminConsole.log('상품 이미지 URL 사용:', product.imageUrl);
                 } else if (product.imagePath && product.imagePath.trim() !== '') {
                     imageUrl = product.imagePath;
-                    adminConsole.log('상품 이미지 경로 사용:', product.imagePath);
-                } else {
-                    adminConsole.warn('상품 이미지 없음, 기본 이미지 사용:', product.nameEn || product.nameJp);
                 }
                 
                 // 배지 정보 처리
@@ -11364,30 +11196,12 @@
                     badgeHtml = `<span class="badge" style="background-color: ${badgeColor}; color: white; font-size: 10px; margin-left: 5px;">${badgeText}</span>`;
                 }
 
-                // 추가 이미지 처리
-                let additionalImagesHtml = '';
-                if (product.additionalImages && Array.isArray(product.additionalImages) && product.additionalImages.length > 0) {
-                    const validImages = product.additionalImages.filter(img => img && img.trim() !== '');
-                    if (validImages.length > 0) {
-                        additionalImagesHtml = `
-                            <div class="additional-images mt-2" style="display: flex; gap: 2px; flex-wrap: wrap;">
-                                ${validImages.slice(0, 3).map(img => `
-                                    <img src="${img}" alt="추가 이미지" 
-                                         style="width: 30px; height: 30px; object-fit: cover; border-radius: 3px; border: 1px solid #ddd;"
-                                         onerror="this.style.display='none'">
-                                `).join('')}
-                                ${validImages.length > 3 ? `<span style="font-size: 10px; color: #666; align-self: center;">+${validImages.length - 3}</span>` : ''}
-                            </div>
-                        `;
-                    }
-                }
-
                 html += `
                     <div class="col-6 col-md-6 col-lg-4 mb-4">
                         <div class="card product-card h-100" data-product-id="${product.id}">
                             <div class="position-relative">
                                 <img src="${imageUrl}" alt="${product.nameEn}" class="card-img-top"
-                                onerror="this.src='assets/img/logo.png'"
+                                     onerror="this.src='assets/img/placeholder-product.jpg'"
                                      style="height: 150px; object-fit: cover;">
                                 ${product.badgeType && product.badgeType !== '' ? `
                                     <span class="badge" style="position: absolute; top: 8px; right: 8px; background-color: ${colorMap[product.badgeColor] || '#dc3545'}; color: white; font-size: 11px; padding: 4px 8px; border-radius: 4px; z-index: 10;">
@@ -11402,7 +11216,6 @@
                                     <span class="badge ${statusClass}">${statusText}</span>
                                 ${badgeHtml}
                             </div>
-                                ${additionalImagesHtml}
                                 <div class="d-flex justify-content-between align-items-center">
                                 <div class="product-price">
                                     ${product.salePrice && product.salePrice > 0 ? 
@@ -11641,18 +11454,8 @@
 
 
         // 画像アップロード機能 (Firebase Storage 방식)
-        async function uploadImageToFirebase(file, brandCode, retryCount = 0) {
-            const maxRetries = 5; // 재시도 횟수 증가
-            const retryDelay = 5000; // 5초로 증가
-            
+        async function uploadImageToFirebase(file, brandCode) {
             try {
-                adminConsole.log(`이미지 업로드 시작 (시도 ${retryCount + 1}/${maxRetries + 1}):`, {
-                    fileName: file.name,
-                    fileSize: file.size,
-                    fileType: file.type,
-                    brandCode: brandCode
-                });
-                
                 // Firebase 초기화 확인
                 if (!firebase || !firebase.storage) {
                     throw new Error('Firebase Storage가 초기화되지 않았습니다.');
@@ -11695,17 +11498,17 @@
                 
                 console.log('🔥 Firebase Storage 업로드 시작:', fileName);
                 
-                // 파일 업로드 (재시도 로직 포함)
+                // 파일 업로드
                 const uploadTask = storageRef.put(file);
                 
                 // 업로드 진행률 모니터링
                 uploadTask.on('state_changed', 
                     (snapshot) => {
                         const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                        adminConsole.log(`업로드 진행률: ${Math.round(progress)}%`);
+                        console.log(`📤 업로드 진행률: ${Math.round(progress)}%`);
                     },
                     (error) => {
-                        adminConsole.error('업로드 실패:', error);
+                        console.error('❌ 업로드 실패:', error);
                         throw error;
                     }
                 );
@@ -11714,7 +11517,7 @@
                 const snapshot = await uploadTask;
                 const downloadURL = await snapshot.ref.getDownloadURL();
                 
-                adminConsole.log('Firebase Storage 업로드 성공:', downloadURL);
+                console.log('✅ Firebase Storage 업로드 성공:', downloadURL);
                 return {
                     success: true,
                     url: downloadURL,
@@ -11725,41 +11528,18 @@
                 };
                 
             } catch (error) {
-                adminConsole.error('이미지 업로드 실패:', error);
-                
-                // 503 Service Unavailable 에러인 경우 재시도 (더 강력한 감지)
-                const is503Error = error.code === 'storage/unknown' || 
-                                 error.message.includes('503') || 
-                                 error.message.includes('Service Unavailable') ||
-                                 error.message.includes('connection.ts:81') ||
-                                 (error.code && error.code.toString().includes('503'));
-                
-                if (is503Error && retryCount < maxRetries) {
-                    const currentDelay = retryDelay * (retryCount + 1); // 지수적 백오프
-                    adminConsole.warn(`503 에러 발생, ${currentDelay/1000}초 후 재시도 (${retryCount + 1}/${maxRetries}):`, error);
-                    showAlert(`서버가 일시적으로 사용할 수 없습니다. ${currentDelay/1000}초 후 재시도합니다... (${retryCount + 1}/${maxRetries})`, 'warning');
-                    
-                    // 재시도 전 대기 (지수적 백오프)
-                    await new Promise(resolve => setTimeout(resolve, currentDelay));
-                    
-                    // 재시도
-                    return await uploadImageToFirebase(file, brandCode, retryCount + 1);
-                }
+                console.error('❌ 画像アップロード失敗:', error);
                 
                 // CORS 오류인 경우 특별 처리
                 if (error.message && error.message.includes('CORS')) {
                     showAlert('CORS 오류가 발생했습니다. Firebase Storage 설정을 확인해주세요.', 'danger');
-                } else if (error.code === 'storage/unknown' || error.message.includes('503')) {
-                    showAlert('Firebase Storage 서버가 일시적으로 사용할 수 없습니다. 잠시 후 다시 시도해주세요.', 'danger');
                 } else {
                 showAlert(`画像アップロードに失敗しました: ${error.message}`, 'danger');
                 }
                 
                 return {
                     success: false,
-                    error: error.message,
-                    code: error.code,
-                    retryCount: retryCount
+                    error: error.message
                 };
             }
         }
@@ -12635,15 +12415,15 @@
         // 상품 추가모ーダル表示
         window.showAddProductModal = async function() {
             try {
-                adminConsole.log('상품 추가 모달 열기 시작...');
-                adminConsole.log('현재 DOM 상태:', document.readyState);
-                adminConsole.log('Bootstrap 사용 가능:', typeof bootstrap !== 'undefined');
+                console.log('🔄 상품 추가 모달 열기 시작...');
+                console.log('현재 DOM 상태:', document.readyState);
+                console.log('Bootstrap 사용 가능:', typeof bootstrap !== 'undefined');
                 
                 // 모달 요소 확인
                 const modalElement = document.getElementById('productModal');
-                adminConsole.log('모달 요소:', modalElement);
+                console.log('모달 요소:', modalElement);
                 if (!modalElement) {
-                    adminConsole.error('상품 모달 요소를 찾을 수 없습니다');
+                    console.error('❌ 상품 모달 요소를 찾을 수 없습니다');
                     showAlert('상품 모달을 찾을 수 없습니다.', 'danger');
                     return;
                 }
@@ -13070,35 +12850,9 @@
         // 商品保存機能
         async function saveProduct() {
             try {
-                adminConsole.log('=== 상품 저장 함수 시작 ===');
-                adminConsole.log('현재 시간:', new Date().toISOString());
-                adminConsole.log('Firebase 상태:', {
-                    firebase: typeof firebase,
-                    firestore: typeof firebase?.firestore,
-                    auth: typeof firebase?.auth,
-                    storage: typeof firebase?.storage
-                });
-                
                 const form = document.getElementById('productForm');
-                adminConsole.log('폼 요소 확인:', {
-                    form: !!form,
-                    formId: form?.id,
-                    formElements: form ? Array.from(form.elements).map(el => ({ name: el.name, value: el.value, type: el.type })) : 'form not found'
-                });
-                
-                if (!form) {
-                    adminConsole.error('productForm을 찾을 수 없습니다!');
-                    showAlert('상품 폼을 찾을 수 없습니다. 페이지를 새로고침해주세요.', 'danger');
-                    return;
-                }
-                
                 const formData = new FormData(form);
                 const productId = document.getElementById('product-id').value;
-                
-                adminConsole.log('폼 데이터 수집:', {
-                    productId: productId,
-                    formDataEntries: Array.from(formData.entries())
-                });
                 
                 // フィールドの取得
                 const code = formData.get('code')?.trim() || '';
@@ -13108,55 +12862,6 @@
                 const price = parseInt(formData.get('price')) || 0;
                 const salePrice = parseInt(formData.get('salePrice')) || 0;
                 const stock = parseInt(formData.get('stock')) || 0;
-                
-                adminConsole.log('폼 데이터 수집 완료:', {
-                    code, nameEn, nameJp, brandCode, price, salePrice, stock
-                });
-                
-                // 필수 필드 검증
-                adminConsole.log('필수 필드 검증 시작');
-                if (!code) {
-                    adminConsole.warn('상품 코드 누락');
-                    showAlert('상품 코드를 입력해주세요.', 'warning');
-                    return;
-                }
-                
-                if (!nameJp && !nameEn) {
-                    adminConsole.warn('상품명 누락');
-                    showAlert('상품명(일본어 또는 영어)을 입력해주세요.', 'warning');
-                    return;
-                }
-                
-                if (!brandCode) {
-                    adminConsole.warn('브랜드 선택 누락');
-                    showAlert('브랜드를 선택해주세요.', 'warning');
-                    return;
-                }
-                
-                if (price <= 0) {
-                    adminConsole.warn('가격 검증 실패:', price);
-                    showAlert('가격을 올바르게 입력해주세요.', 'warning');
-                    return;
-                }
-                
-                // 브랜드 존재 여부 확인
-                adminConsole.log('브랜드 데이터 상태:', {
-                    allBrands: !!allBrands,
-                    allBrandsLength: allBrands?.length || 0,
-                    allBrandsList: !!allBrandsList,
-                    allBrandsListLength: allBrandsList?.length || 0,
-                    windowAllBrands: !!window.allBrands,
-                    windowAllBrandsLength: window.allBrands?.length || 0
-                });
-                
-                if (!allBrands || allBrands.length === 0) {
-                    adminConsole.warn('브랜드 데이터 없음, 로드 시도');
-                    showAlert('브랜드 데이터를 먼저 로드해주세요.', 'warning');
-                    await loadBrands();
-                    return;
-                }
-                
-                adminConsole.log('필수 필드 검증 통과');
                 
                 // 상품 타입 확인
                 const productType = document.querySelector('input[name="productType"]:checked')?.value || 'simple';
@@ -13181,7 +12886,7 @@
                 if (existingAdditionalImages) {
                     try {
                         const parsedImages = JSON.parse(existingAdditionalImages);
-                        adminConsole.log('기존 추가 이미지 데이터 발견:', parsedImages);
+                        console.log('✅ 기존 추가 이미지 데이터 발견:', parsedImages);
                         
                         // 기존 데이터를 3개 슬롯에 맞게 정리
                         for (let i = 0; i < 3; i++) {
@@ -13189,13 +12894,11 @@
                                 additionalImages[i] = parsedImages[i];
                             }
                         }
-                        adminConsole.log('정리된 추가 이미지 데이터:', additionalImages);
+                        console.log('✅ 정리된 추가 이미지 데이터:', additionalImages);
                     } catch (e) {
-                        adminConsole.warn('기존 추가 이미지 데이터 파싱 실패, 빈 배열로 시작');
+                        console.log('⚠️ 기존 추가 이미지 데이터 파싱 실패, 빈 배열로 시작');
                         additionalImages = ['', '', ''];
                     }
-                } else {
-                    adminConsole.log('기존 추가 이미지 데이터 없음, 빈 배열로 시작');
                 }
                 
                 // 기존 상세 이미지 데이터 보존
@@ -13222,166 +12925,103 @@
                         }
                     }
                     
-                    // 메인 이미지 업로드 전 2초 대기
-                    adminConsole.log('메인 이미지 업로드 전 2초 대기...');
-                    await new Promise(resolve => setTimeout(resolve, 2000));
-                    
                     const uploadResult = await uploadImageToFirebase(imageFile, code);
                     if (uploadResult.success) {
                         imageUrl = uploadResult.url;
                         imagePath = uploadResult.path;
-                        adminConsole.log('메인 이미지 업로드 성공:', imageUrl);
                     } else {
-                        adminConsole.warn('메인 이미지 업로드 실패, 이미지 없이 상품 저장 계속');
-                        showAlert('メイン画像のアップロードに失敗しましたが、商品は保存されます。', 'warning');
-                        // 이미지 업로드 실패해도 상품 저장은 계속 진행
+                        showAlert('メイン画像のアップロードに失敗しました。', 'danger');
+                        return;
                     }
                 }
                 
                 // 追加画像1がアップロードされている場合
                 const imageFile1 = document.getElementById('product-image-1').files[0];
-                adminConsole.log('추가 이미지 1 파일 확인:', {
-                    hasFile: !!imageFile1,
-                    fileName: imageFile1 ? imageFile1.name : 'none',
-                    fileSize: imageFile1 ? imageFile1.size : 0
-                });
                 if (imageFile1) {
                     try {
-                        // 이미지 업로드 간격 조정 (3초 대기)
-                        adminConsole.log('추가 이미지 1 업로드 전 3초 대기...');
-                        await new Promise(resolve => setTimeout(resolve, 3000));
-                        
                         // 기존 추가 이미지 1이 있으면 Firebase Storage에서 삭제
                         if (additionalImages[0] && additionalImages[0].includes('firebasestorage.googleapis.com')) {
                             try {
-                                adminConsole.log('기존 추가 이미지 1 삭제 시도:', additionalImages[0]);
+                                console.log('🗑️ 기존 추가 이미지 1 삭제 시도:', additionalImages[0]);
                                 const storage = firebase.storage();
                                 const oldImageRef = storage.refFromURL(additionalImages[0]);
                                 await oldImageRef.delete();
-                                adminConsole.log('기존 추가 이미지 1 삭제 완료');
+                                console.log('✅ 기존 추가 이미지 1 삭제 완료');
                             } catch (error) {
-                                adminConsole.error('기존 추가 이미지 1 삭제 실패:', error);
+                                console.error('❌ 기존 추가 이미지 1 삭제 실패:', error);
                             }
                         }
                         
-                    adminConsole.log('추가 이미지 1 업로드 시작:', {
-                        fileName: imageFile1.name,
-                        fileSize: imageFile1.size,
-                        fileType: imageFile1.type,
-                        brandCode: code
-                    });
-                        
                     const uploadResult = await uploadImageToFirebase(imageFile1, `${code}_1`);
-                    adminConsole.log('추가 이미지 1 업로드 결과:', uploadResult);
-                    
-                    if (uploadResult && uploadResult.success) {
+                    if (uploadResult.success) {
                             // 첫 번째 슬롯에 직접 할당
                             additionalImages[0] = uploadResult.url;
-                            adminConsole.log('추가 이미지 1 업로드 성공:', uploadResult.url);
-                            adminConsole.log('현재 additionalImages 배열:', additionalImages);
+                            console.log('✅ 추가 이미지 1 업로드 성공:', uploadResult.url);
                     } else {
-                            adminConsole.warn('추가 이미지 1 업로드 실패, 기존 데이터 유지');
+                            console.log('⚠️ 추가 이미지 1 업로드 실패, 기존 데이터 유지');
                         }
                     } catch (error) {
-                        adminConsole.error('추가 이미지 1 업로드 오류, 기존 데이터 유지:', error);
+                        console.log('⚠️ 추가 이미지 1 업로드 오류, 기존 데이터 유지:', error);
                     }
                 }
                 
                 // 追加画像2がアップロードされている場合
                 const imageFile2 = document.getElementById('product-image-2').files[0];
-                adminConsole.log('추가 이미지 2 파일 확인:', {
-                    hasFile: !!imageFile2,
-                    fileName: imageFile2 ? imageFile2.name : 'none',
-                    fileSize: imageFile2 ? imageFile2.size : 0
-                });
                 if (imageFile2) {
                     try {
-                        // 이미지 업로드 간격 조정 (3초 대기)
-                        adminConsole.log('추가 이미지 2 업로드 전 3초 대기...');
-                        await new Promise(resolve => setTimeout(resolve, 3000));
-                        
                         // 기존 추가 이미지 2가 있으면 Firebase Storage에서 삭제
                         if (additionalImages[1] && additionalImages[1].includes('firebasestorage.googleapis.com')) {
                             try {
-                                adminConsole.log('기존 추가 이미지 2 삭제 시도:', additionalImages[1]);
+                                console.log('🗑️ 기존 추가 이미지 2 삭제 시도:', additionalImages[1]);
                                 const storage = firebase.storage();
                                 const oldImageRef = storage.refFromURL(additionalImages[1]);
                                 await oldImageRef.delete();
-                                adminConsole.log('기존 추가 이미지 2 삭제 완료');
+                                console.log('✅ 기존 추가 이미지 2 삭제 완료');
                             } catch (error) {
-                                adminConsole.error('기존 추가 이미지 2 삭제 실패:', error);
+                                console.error('❌ 기존 추가 이미지 2 삭제 실패:', error);
                             }
                         }
                         
-                    adminConsole.log('추가 이미지 2 업로드 시작:', {
-                        fileName: imageFile2.name,
-                        fileSize: imageFile2.size,
-                        fileType: imageFile2.type,
-                        brandCode: code
-                    });
-                        
                     const uploadResult = await uploadImageToFirebase(imageFile2, `${code}_2`);
-                    adminConsole.log('추가 이미지 2 업로드 결과:', uploadResult);
-                    
-                    if (uploadResult && uploadResult.success) {
+                    if (uploadResult.success) {
                             // 두 번째 슬롯에 직접 할당
                             additionalImages[1] = uploadResult.url;
-                            adminConsole.log('추가 이미지 2 업로드 성공:', uploadResult.url);
-                            adminConsole.log('현재 additionalImages 배열:', additionalImages);
+                            console.log('✅ 추가 이미지 2 업로드 성공:', uploadResult.url);
                     } else {
-                            adminConsole.warn('추가 이미지 2 업로드 실패, 기존 데이터 유지');
+                            console.log('⚠️ 추가 이미지 2 업로드 실패, 기존 데이터 유지');
                         }
                     } catch (error) {
-                        adminConsole.error('추가 이미지 2 업로드 오류, 기존 데이터 유지:', error);
+                        console.log('⚠️ 추가 이미지 2 업로드 오류, 기존 데이터 유지:', error);
                     }
                 }
                 
                 // 追加画像3がアップロードされている場合
                 const imageFile3 = document.getElementById('product-image-3').files[0];
-                adminConsole.log('추가 이미지 3 파일 확인:', {
-                    hasFile: !!imageFile3,
-                    fileName: imageFile3 ? imageFile3.name : 'none',
-                    fileSize: imageFile3 ? imageFile3.size : 0
-                });
                 if (imageFile3) {
                     try {
-                        // 이미지 업로드 간격 조정 (3초 대기)
-                        adminConsole.log('추가 이미지 3 업로드 전 3초 대기...');
-                        await new Promise(resolve => setTimeout(resolve, 3000));
-                        
                         // 기존 추가 이미지 3이 있으면 Firebase Storage에서 삭제
                         if (additionalImages[2] && additionalImages[2].includes('firebasestorage.googleapis.com')) {
                             try {
-                                adminConsole.log('기존 추가 이미지 3 삭제 시도:', additionalImages[2]);
+                                console.log('🗑️ 기존 추가 이미지 3 삭제 시도:', additionalImages[2]);
                                 const storage = firebase.storage();
                                 const oldImageRef = storage.refFromURL(additionalImages[2]);
                                 await oldImageRef.delete();
-                                adminConsole.log('기존 추가 이미지 3 삭제 완료');
+                                console.log('✅ 기존 추가 이미지 3 삭제 완료');
                             } catch (error) {
-                                adminConsole.error('기존 추가 이미지 3 삭제 실패:', error);
+                                console.error('❌ 기존 추가 이미지 3 삭제 실패:', error);
                             }
                         }
                         
-                    adminConsole.log('추가 이미지 3 업로드 시작:', {
-                        fileName: imageFile3.name,
-                        fileSize: imageFile3.size,
-                        fileType: imageFile3.type,
-                        brandCode: code
-                    });
-                        
                     const uploadResult = await uploadImageToFirebase(imageFile3, `${code}_3`);
-                    adminConsole.log('추가 이미지 3 업로드 결과:', uploadResult);
-                    
-                    if (uploadResult && uploadResult.success) {
+                    if (uploadResult.success) {
                             // 세 번째 슬롯에 직접 할당
                             additionalImages[2] = uploadResult.url;
-                            adminConsole.log('추가 이미지 3 업로드 성공:', uploadResult.url);
-                            adminConsole.log('현재 additionalImages 배열:', additionalImages);
+                            console.log('✅ 추가 이미지 3 업로드 성공:', uploadResult.url);
                     } else {
-                            adminConsole.warn('추가 이미지 3 업로드 실패, 기존 데이터 유지');
+                            console.log('⚠️ 추가 이미지 3 업로드 실패, 기존 데이터 유지');
                         }
                     } catch (error) {
-                        adminConsole.error('추가 이미지 3 업로드 오류, 기존 데이터 유지:', error);
+                        console.log('⚠️ 추가 이미지 3 업로드 오류, 기존 데이터 유지:', error);
                     }
                 }
                 
@@ -13389,88 +13029,58 @@
                 const detailImageFile = document.getElementById('product-detail-image').files[0];
                 if (detailImageFile) {
                     try {
-                        // 이미지 업로드 간격 조정 (3초 대기)
-                        adminConsole.log('상세 이미지 업로드 전 3초 대기...');
-                        await new Promise(resolve => setTimeout(resolve, 3000));
-                        
                         // 기존 상세 이미지가 있으면 Firebase Storage에서 삭제
                         if (detailImageUrl && detailImageUrl.includes('firebasestorage.googleapis.com')) {
                             try {
-                                adminConsole.log('기존 상세 이미지 삭제 시도:', detailImageUrl);
+                                console.log('🗑️ 기존 상세 이미지 삭제 시도:', detailImageUrl);
                                 const storage = firebase.storage();
                                 const oldImageRef = storage.refFromURL(detailImageUrl);
                                 await oldImageRef.delete();
-                                adminConsole.log('기존 상세 이미지 삭제 완료');
+                                console.log('✅ 기존 상세 이미지 삭제 완료');
                             } catch (error) {
-                                adminConsole.error('기존 상세 이미지 삭제 실패:', error);
+                                console.error('❌ 기존 상세 이미지 삭제 실패:', error);
                             }
                         }
                         
-                    adminConsole.log('상세 이미지 업로드 시작:', {
-                        fileName: detailImageFile.name,
-                        fileSize: detailImageFile.size,
-                        fileType: detailImageFile.type,
-                        brandCode: code
-                    });
-                        
                     const uploadResult = await uploadImageToFirebase(detailImageFile, `${code}_detail`);
-                    adminConsole.log('상세 이미지 업로드 결과:', uploadResult);
-                    
-                    if (uploadResult && uploadResult.success) {
+                    if (uploadResult.success) {
                         detailImageUrl = uploadResult.url;
-                        adminConsole.log('상세 이미지 업로드 성공:', uploadResult.url);
+                            console.log('✅ 상세 이미지 업로드 성공');
                     } else {
-                        adminConsole.warn('상세 이미지 업로드 실패, 기존 데이터 유지');
+                            console.log('⚠️ 상세 이미지 업로드 실패, 기존 데이터 유지');
                         }
                     } catch (error) {
-                        adminConsole.error('상세 이미지 업로드 오류, 기존 데이터 유지:', error);
+                        console.log('⚠️ 상세 이미지 업로드 오류, 기존 데이터 유지:', error);
                     }
                 }
                 
                 // ブランド情報を取得
-                adminConsole.log('브랜드 찾기 시도:', {
+                console.log('🔍 브랜드 찾기 시도:', {
                     brandCode: brandCode,
-                    allBrandsLength: allBrands ? allBrands.length : 0
+                    allBrandsLength: allBrands ? allBrands.length : 0,
+                    allBrands: allBrands
                 });
                 
                 const brand = allBrands.find(b => b.code === brandCode);
-                adminConsole.log('찾은 브랜드:', brand);
+                console.log('🔍 찾은 브랜드:', brand);
                 
                 if (!brand) {
-                    adminConsole.error('브랜드를 찾을 수 없음:', brandCode);
-                    adminConsole.log('사용 가능한 브랜드 코드들:', allBrands.map(b => b.code));
-                    showAlert(`선택한 브랜드(${brandCode})를 찾을 수 없습니다. 브랜드를 다시 선택해주세요.`, 'danger');
-                    return;
+                    console.warn('⚠️ 브랜드를 찾을 수 없음:', brandCode);
+                    console.log('🔍 사용 가능한 브랜드 코드들:', allBrands.map(b => b.code));
                 }
                 
-                // 추가 이미지 배열 유지 (빈 문자열도 포함하여 인덱스 보존)
-                const cleanedAdditionalImages = additionalImages; // 빈 문자열도 포함하여 배열 구조 유지
-                
-                adminConsole.log('최종 additionalImages 배열 상태:', {
-                    originalArray: additionalImages,
-                    arrayLength: additionalImages.length,
-                    hasEmptyStrings: additionalImages.some(img => img === ''),
-                    nonEmptyCount: additionalImages.filter(img => img && img.trim() !== '').length,
-                    detailedArray: additionalImages.map((img, index) => ({
-                        index: index,
-                        value: img,
-                        isEmpty: img === '',
-                        isUrl: img && img.includes('http')
-                    }))
-                });
+                // 빈 이미지 슬롯 정리 (빈 문자열 제거)
+                const cleanedAdditionalImages = additionalImages.filter(img => img && img.trim() !== '');
                 
                 // 商品データの準備
-                adminConsole.log('상품 저장 데이터 준비:', {
+                console.log('🔍 상품 저장 데이터 확인:', {
                     code: code,
                     nameEn: nameEn,
                     nameJp: nameJp,
                     brandCode: brandCode,
                     imageUrl: imageUrl,
-                    imagePath: imagePath,
                     additionalImages: cleanedAdditionalImages,
-                    detailImageUrl: detailImageUrl,
-                    hasImageUrl: !!(imageUrl && imageUrl.trim() !== ''),
-                    hasImagePath: !!(imagePath && imagePath.trim() !== '')
+                    detailImageUrl: detailImageUrl
                 });
                 
                 const productData = {
@@ -13505,28 +13115,18 @@
                     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
                 };
                 
-                // Firestoreに保存
-                const db = firebase.firestore();
-                
-                // 새 상품인 경우 중복 코드 검사
                 if (!productId) {
-                    adminConsole.log('중복 코드 검사 시작:', code);
-                    const existingProduct = await db.collection('products').where('code', '==', code).get();
-                    if (!existingProduct.empty) {
-                        adminConsole.warn('중복 코드 발견:', code);
-                        showAlert('이미 존재하는 상품 코드입니다. 다른 코드를 사용해주세요.', 'warning');
-                        return;
-                    }
-                    adminConsole.log('중복 코드 검사 통과');
                     // 新規追加
                     productData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
                 }
+                
+                // Firestoreに保存
+                const db = firebase.firestore();
                 if (productId) {
                     // 更新
-                    adminConsole.log('상품 업데이트 시작:', productId);
                     await db.collection('products').doc(productId).update(productData);
-                    adminConsole.log('상품 업데이트 완료:', productId);
-                    adminConsole.log('최종 업데이트된 이미지 데이터:', {
+                    console.log('✅ 상품 업데이트 완료, 문서 ID:', productId);
+                    console.log('🔍 최종 업데이트된 이미지 데이터:', {
                         imageUrl: productData.imageUrl,
                         additionalImages: productData.additionalImages,
                         detailImageUrl: productData.detailImageUrl
@@ -13565,68 +13165,21 @@
                         productDocId = `product-${Date.now()}`;
                     }
                     
-                    adminConsole.log('상품 ID 생성:', {
+                    console.log('🔍 상품 ID 생성 디버깅:', {
                         '원본 nameJp': productData.nameJp,
+                        '원본 nameKr': productData.nameKr,
                         '원본 nameEn': productData.nameEn,
                         '원본 code': productData.code,
-                        '생성된 productDocId': productDocId
+                        '생성된 productDocId': productDocId,
+                        'productData': productData
                     });
                     
-                    adminConsole.log('새 상품 저장 시작:', productDocId);
-                    adminConsole.log('저장할 productData:', {
-                        code: productData.code,
-                        nameEn: productData.nameEn,
-                        nameJp: productData.nameJp,
-                        brandCode: productData.brandCode,
-                        price: productData.price,
-                        imageUrl: productData.imageUrl,
-                        imagePath: productData.imagePath,
-                        additionalImages: productData.additionalImages,
-                        additionalImagesLength: productData.additionalImages?.length,
-                        additionalImagesDetails: productData.additionalImages?.map((img, idx) => ({
-                            index: idx,
-                            value: img,
-                            isEmpty: img === '',
-                            isUrl: img && img.includes('http')
-                        })),
-                        detailImageUrl: productData.detailImageUrl,
-                        hasDetailImage: !!(productData.detailImageUrl && productData.detailImageUrl.trim() !== '')
-                    });
-                    
-                    try {
                     await db.collection('products').doc(productDocId).set(productData);
-                        adminConsole.log('새 상품 저장 성공:', productDocId);
-                    } catch (saveError) {
-                        adminConsole.error('Firebase 저장 실패:', saveError);
-                        throw saveError;
-                    }
-                    
-                    // 저장 후 즉시 확인
-                    const savedDoc = await db.collection('products').doc(productDocId).get();
-                    const savedData = savedDoc.data();
-                    adminConsole.log('저장 후 확인 - 전체 데이터:', {
-                        id: savedDoc.id,
-                        exists: savedDoc.exists,
-                        imageUrl: savedData.imageUrl,
-                        imagePath: savedData.imagePath,
-                        additionalImages: savedData.additionalImages,
-                        additionalImagesLength: savedData.additionalImages?.length,
-                        additionalImagesDetails: savedData.additionalImages?.map((img, idx) => ({
-                            index: idx,
-                            value: img,
-                            isEmpty: img === '',
-                            isUrl: img && img.includes('http')
-                        })),
-                        detailImageUrl: savedData.detailImageUrl,
-                        hasDetailImage: !!(savedData.detailImageUrl && savedData.detailImageUrl.trim() !== '')
-                    });
-                    adminConsole.log('최종 저장된 이미지 데이터:', {
+                    console.log('✅ 상품 저장 완료, 문서 ID:', productDocId);
+                    console.log('🔍 최종 저장된 이미지 데이터:', {
                         imageUrl: productData.imageUrl,
-                        imagePath: productData.imagePath,
                         additionalImages: productData.additionalImages,
-                        detailImageUrl: productData.detailImageUrl,
-                        hasImageUrl: !!(productData.imageUrl && productData.imageUrl.trim() !== ''),
-                        hasImagePath: !!(productData.imagePath && productData.imagePath.trim() !== '')
+                        detailImageUrl: productData.detailImageUrl
                     });
                     showAlert(`新しい商品が追加されました！ (ID: ${productDocId})`, 'success');
                 }
@@ -13636,256 +13189,18 @@
                 modal.hide();
                 
                 // 商品リストを再読込
-                adminConsole.log('상품 저장 완료 후 목록 새로고침 시작');
-                await loadProducts();
-                adminConsole.log('상품 저장 완료 후 목록 새로고침 완료');
-                
-            } catch (error) {
-                adminConsole.error('=== 상품 저장 에러 발생 ===');
-                adminConsole.error('에러 타입:', typeof error);
-                adminConsole.error('에러 메시지:', error.message);
-                adminConsole.error('에러 코드:', error.code);
-                adminConsole.error('에러 스택:', error.stack);
-                adminConsole.error('전체 에러 객체:', error);
-                
-                // 사용자에게 더 구체적인 에러 메시지 표시
-                let errorMessage = '상품 저장에 실패했습니다.';
-                if (error.message.includes('Firebase')) {
-                    errorMessage = 'Firebase 연결에 문제가 있습니다. 페이지를 새로고침해주세요.';
-                } else if (error.message.includes('network') || error.message.includes('Network')) {
-                    errorMessage = '네트워크 연결을 확인해주세요.';
-                } else if (error.message.includes('permission') || error.message.includes('권한')) {
-                    errorMessage = '저장 권한이 없습니다. 관리자에게 문의해주세요.';
-                } else {
-                    errorMessage = `상품 저장 실패: ${error.message}`;
-                }
-                
-                showAlert(errorMessage, 'danger');
-            }
-        }
-
-        // 상품 편집 저장 함수
-        async function saveProductEdit() {
-            try {
-                adminConsole.log('상품 편집 저장 시작');
-                
-                const form = document.getElementById('productForm');
-                const formData = new FormData(form);
-                const productId = document.getElementById('product-id').value;
-                
-                if (!productId) {
-                    showAlert('상품 ID를 찾을 수 없습니다.', 'danger');
-                    return;
-                }
-                
-                // 필드 값 가져오기
-                const code = formData.get('code')?.trim() || '';
-                const nameEn = formData.get('nameEn')?.trim() || '';
-                const nameJp = formData.get('nameJp')?.trim() || '';
-                const brandCode = formData.get('brandCode')?.trim() || '';
-                const price = parseFloat(formData.get('price')) || 0;
-                const description = formData.get('description')?.trim() || '';
-                const ingredients = formData.get('ingredients')?.trim() || '';
-                const usage = formData.get('usage')?.trim() || '';
-                const volume = formData.get('volume')?.trim() || '';
-                const category = formData.get('category')?.trim() || '';
-                const isActive = formData.get('isActive') === 'on';
-                
-                // 필수 필드 검증
-                if (!code || !nameEn || !nameJp || !brandCode || price <= 0) {
-                    showAlert('必須項目を入力してください。', 'danger');
-                    return;
-                }
-                
-                // 브랜드 존재 확인
-                const brand = allBrands.find(b => b.code === brandCode);
-                if (!brand) {
-                    showAlert('選択されたブランドが見つかりません。', 'danger');
-                    return;
-                }
-                
-                adminConsole.log('상품 편집 데이터 검증 완료:', {
-                    productId,
-                    code,
-                    nameEn,
-                    nameJp,
-                    brandCode,
-                    price
-                });
-                
-                // Firebase 초기화 확인
-                adminConsole.log('Firebase 초기화 상태 재확인:', {
-                    firebase: !!firebase,
-                    firestore: !!firebase?.firestore,
-                    auth: !!firebase?.auth,
-                    storage: !!firebase?.storage,
-                    currentUser: firebase?.auth?.currentUser
-                });
-                
-                if (!firebase || !firebase.firestore) {
-                    adminConsole.error('Firebase 초기화 실패');
-                    throw new Error('Firebase가 초기화되지 않았습니다.');
-                }
-                
-                const db = firebase.firestore();
-                adminConsole.log('Firestore 데이터베이스 연결 성공');
-                
-                // 기존 상품 데이터 가져오기
-                const productDoc = await db.collection('products').doc(productId).get();
-                if (!productDoc.exists) {
-                    showAlert('상품을 찾을 수 없습니다.', 'danger');
-                    return;
-                }
-                
-                const existingProduct = productDoc.data();
-                adminConsole.log('기존 상품 데이터:', existingProduct);
-                
-                // 기존 추가 이미지 데이터 가져오기
-                let additionalImages = existingProduct.additionalImages || ['', '', ''];
-                adminConsole.log('기존 추가 이미지 데이터:', additionalImages);
-                
-                // 새로운 이미지 업로드 처리
-                const imageFile = document.getElementById('product-image').files[0];
-                let imageUrl = existingProduct.imageUrl || '';
-                
-                if (imageFile) {
-                    try {
-                        // 메인 이미지 업로드 전 2초 대기
-                        adminConsole.log('메인 이미지 업로드 전 2초 대기...');
-                        await new Promise(resolve => setTimeout(resolve, 2000));
-                        
-                        adminConsole.log('메인 이미지 업로드 시작:', imageFile.name);
-                        imageUrl = await uploadImageToFirebase(imageFile, brandCode);
-                        adminConsole.log('메인 이미지 업로드 완료:', imageUrl);
-                    } catch (error) {
-                        adminConsole.error('메인 이미지 업로드 실패:', error);
-                        showAlert('メイン画像のアップロードに失敗しましたが、商品は保存されます。', 'warning');
-                    }
-                }
-                
-                // 추가 이미지들 업로드 처리
-                const imageFile1 = document.getElementById('product-image-1').files[0];
-                if (imageFile1) {
-                    try {
-                        adminConsole.log('추가 이미지 1 업로드 시작:', imageFile1.name);
-                        additionalImages[0] = await uploadImageToFirebase(imageFile1, brandCode);
-                        adminConsole.log('추가 이미지 1 업로드 완료:', additionalImages[0]);
-                    } catch (error) {
-                        adminConsole.error('추가 이미지 1 업로드 실패:', error);
-                    }
-                }
-                
-                const imageFile2 = document.getElementById('product-image-2').files[0];
-                if (imageFile2) {
-                    try {
-                        adminConsole.log('추가 이미지 2 업로드 시작:', imageFile2.name);
-                        additionalImages[1] = await uploadImageToFirebase(imageFile2, brandCode);
-                        adminConsole.log('추가 이미지 2 업로드 완료:', additionalImages[1]);
-                    } catch (error) {
-                        adminConsole.error('추가 이미지 2 업로드 실패:', error);
-                    }
-                }
-                
-                const imageFile3 = document.getElementById('product-image-3').files[0];
-                if (imageFile3) {
-                    try {
-                        adminConsole.log('추가 이미지 3 업로드 시작:', imageFile3.name);
-                        additionalImages[2] = await uploadImageToFirebase(imageFile3, brandCode);
-                        adminConsole.log('추가 이미지 3 업로드 완료:', additionalImages[2]);
-                    } catch (error) {
-                        adminConsole.error('추가 이미지 3 업로드 실패:', error);
-                    }
-                }
-                
-                // 상품 데이터 준비
-                const productData = {
-                    code,
-                    nameEn,
-                    nameJp,
-                    brandCode,
-                    brandName: brand.name,
-                    price,
-                    description,
-                    ingredients,
-                    usage,
-                    volume,
-                    category,
-                    isActive,
-                    imageUrl,
-                    additionalImages,
-                    updatedAt: new Date()
-                };
-                
-                adminConsole.log('상품 편집 저장 데이터:', productData);
-                
-                // Firestore에 저장
-                await db.collection('products').doc(productId).update(productData);
-                adminConsole.log('상품 편집 저장 완료:', productId);
-                
-                showAlert('商品が正常に更新されました。', 'success');
-                
-                // 모달 닫기
-                closeProductEditModal();
-                
-                // 상품 목록 새로고침
                 await loadProducts();
                 
             } catch (error) {
-                adminConsole.error('상품 편집 저장 에러:', error);
-                showAlert(`商品の更新に失敗しました: ${error.message}`, 'danger');
+                console.error('❌ 商品保存エラー:', error);
+                showAlert(`商品の保存に失敗しました: ${error.message}`, 'danger');
             }
-        }
-
-        // 상품 편집 모달 닫기 함수
-        function closeProductEditModal() {
-            adminConsole.log('상품 편집 모달 닫기');
-            
-            // Bootstrap 모달 닫기
-            const modalElement = document.getElementById('productModal');
-            if (modalElement) {
-                const modal = bootstrap.Modal.getInstance(modalElement);
-                if (modal) {
-                    modal.hide();
-                }
-            }
-            
-            // 폼 초기화
-            const form = document.getElementById('productForm');
-            if (form) {
-                form.reset();
-            }
-            
-            // 이미지 미리보기 초기화
-            const previews = [
-                { preview: 'product-image-preview', placeholder: 'product-upload-placeholder' },
-                { preview: 'product-image-1-preview', placeholder: 'product-upload-placeholder-1' },
-                { preview: 'product-image-2-preview', placeholder: 'product-upload-placeholder-2' },
-                { preview: 'product-image-3-preview', placeholder: 'product-upload-placeholder-3' }
-            ];
-            
-            previews.forEach(({ preview, placeholder }) => {
-                const previewElement = document.getElementById(preview);
-                const placeholderElement = document.getElementById(placeholder);
-                if (previewElement && placeholderElement) {
-                    previewElement.style.display = 'none';
-                    placeholderElement.style.display = 'block';
-                }
-            });
-            
-            // 파일 입력 초기화
-            const fileInputs = ['product-image', 'product-image-1', 'product-image-2', 'product-image-3'];
-            fileInputs.forEach(inputId => {
-                const input = document.getElementById(inputId);
-                if (input) {
-                    input.value = '';
-                }
-            });
         }
 
         // 商品編集機能
         function editProduct(productId) {
-            adminConsole.log('🔧 상품 편집 함수 호출:', productId);
-            adminConsole.log('현재 상품 데이터:', allProductsList);
+            console.log('🔧 상품 편집 함수 호출:', productId);
+            console.log('현재 상품 데이터:', allProductsList);
             
             // 여러 위치에서 상품 찾기 시도
             let product = null;
@@ -13972,7 +13287,7 @@
 
         // 상품 편집 모달 열기 함수 (통합 모달 사용)
         function openProductEditModal(product) {
-            adminConsole.log('🔧 상품 편집 모달 열기 (통합 모달):', product);
+            console.log('🔧 상품 편집 모달 열기 (통합 모달):', product);
             
             // 통합 모달 열기
             const modalElement = document.getElementById('productModal');
@@ -14162,10 +13477,8 @@
             
             // 추가 이미지들 설정 - 기존 데이터를 숨겨진 필드에 저장
             if (product.additionalImages && Array.isArray(product.additionalImages)) {
-                adminConsole.log('🔍 추가 이미지 설정:', product.additionalImages);
-                adminConsole.log('🔍 추가 이미지 개수:', product.additionalImages.length);
-                adminConsole.log('🔍 추가 이미지 타입:', typeof product.additionalImages);
-                adminConsole.log('🔍 추가 이미지 배열 여부:', Array.isArray(product.additionalImages));
+                console.log('🔍 추가 이미지 설정:', product.additionalImages);
+                console.log('🔍 추가 이미지 개수:', product.additionalImages.length);
                 
                 // 추가 이미지들을 콘솔에 출력하여 확인
                 product.additionalImages.forEach((img, index) => {
@@ -14426,8 +13739,8 @@
                                     <div class="mb-3">
                                         <label class="form-label">현재 이미지 미리보기</label>
                                         <div class="text-center">
-                                            <img src="${product.imageUrl || 'assets/img/logo.png'}" alt="${product.nameEn}" class="img-fluid" style="max-height: 200px;" 
-                                                 onerror="this.src='assets/img/logo.png'">
+                                            <img src="${product.imageUrl || 'assets/img/placeholder-brand.svg'}" alt="${product.nameEn}" class="img-fluid" style="max-height: 200px;" 
+                                                 onerror="this.src='assets/img/placeholder-brand.svg'">
                                         </div>
                                     </div>
                                     
@@ -14880,7 +14193,125 @@
             return colorOptions;
         };
 
-        // 중복된 displayProducts 함수 제거됨 - window.displayProducts 사용
+        // 商品表示機能 (brand-template.html 방식 적용)
+        function displayProducts() {
+            console.log('🎨 displayProducts 함수 시작');
+            console.log('📊 현재 상품 데이터:', {
+                allProductsList: allProductsList ? allProductsList.length : 'undefined',
+                filteredProductsList: filteredProductsList ? filteredProductsList.length : 'undefined',
+                windowAllProductsList: window.allProductsList ? window.allProductsList.length : 'undefined'
+            });
+            
+            const container = document.getElementById('products-container');
+            if (!container) {
+                console.error('❌ 상품 컨테이너를 찾을 수 없습니다');
+                return;
+            }
+            
+            console.log('📦 상품 컨테이너 찾음:', container);
+            
+            if (!filteredProductsList || filteredProductsList.length === 0) {
+                console.log('⚠️ 표시할 상품이 없음 - 메시지 표시');
+                const searchTerm = document.getElementById('product-search')?.value?.trim();
+                const hasSearchTerm = searchTerm && searchTerm.length > 0;
+                
+                container.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">
+                            ${hasSearchTerm ? 
+                                `"${searchTerm}" に一致する商品が見つかりません。` : 
+                                '商品が見つかりません。'
+                            }
+                        </p>
+                        ${hasSearchTerm ? 
+                            '<p class="text-muted small">別のキーワードで検索してみてください。</p>' : 
+                            ''
+                        }
+                    </div>
+                `;
+                return;
+            }
+            
+            console.log('🎯 상품 카드 생성 시작:', filteredProductsList.length, '개');
+            console.log('📋 표시할 상품들:', filteredProductsList.map(p => p.nameEn || p.nameJp || p.nameKr));
+            console.log('🔍 filteredProductsList 상세 정보:', filteredProductsList);
+            
+            const productsHTML = filteredProductsList.map(product => {
+                // 배지 정보 처리
+                let badgeHtml = '';
+                const colorMap = {
+                    'red': '#dc3545',
+                    'blue': '#0d6efd',
+                    'green': '#198754',
+                    'orange': '#fd7e14',
+                    'purple': '#6f42c1',
+                    'dark': '#212529'
+                };
+                
+                if (product.badgeType && product.badgeType !== '') {
+                    const badgeText = product.badgeType === 'CUSTOM' ? (product.badgeText || 'CUSTOM') : product.badgeType;
+                    const badgeColor = colorMap[product.badgeColor] || '#dc3545';
+                    badgeHtml = `<span class="badge" style="background-color: ${badgeColor}; color: white; font-size: 10px; margin-left: 5px;">${badgeText}</span>`;
+                }
+
+                return `
+                <div class="col-6 col-md-6 col-lg-4 mb-4">
+                    <div class="card product-card h-100">
+                        <div class="position-relative">
+                            <img src="${product.imageUrl || 'assets/img/placeholder-product.jpg'}" 
+                                 class="card-img-top" alt="${product.nameJp}"
+                                 onerror="this.src='assets/img/placeholder-product.jpg'"
+                                 style="height: 150px; object-fit: cover;">
+                            ${product.badgeType && product.badgeType !== '' ? `
+                                <span class="badge" style="position: absolute; top: 8px; right: 8px; background-color: ${colorMap[product.badgeColor] || '#dc3545'}; color: white; font-size: 11px; padding: 4px 8px; border-radius: 4px; z-index: 10;">
+                                    ${product.badgeType === 'CUSTOM' ? (product.badgeText || 'CUSTOM') : product.badgeType}
+                                </span>
+                            ` : ''}
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title mb-2">${product.nameEn || product.nameJp || '商品名なし'}</h6>
+                            <div class="product-meta mb-2">
+                                <span class="badge bg-secondary me-1">${product.brandName || '不明'}</span>
+                                <span class="badge bg-${(() => {
+                                    // 옵션 상품인 경우 개별 옵션들의 재고 합산 계산
+                                    let totalStock = product.stock || 0;
+                                    if (product.productType === 'option' && product.productOptions && product.productOptions.length > 0) {
+                                        totalStock = product.productOptions.reduce((sum, option) => sum + (option.stock || 0), 0);
+                                    }
+                                    return totalStock >= 5 ? 'success' : totalStock > 0 ? 'warning' : 'danger';
+                                })()}">
+                                    ${(() => {
+                                        // 옵션 상품인 경우 개별 옵션들의 재고 합산 계산
+                                        let totalStock = product.stock || 0;
+                                        if (product.productType === 'option' && product.productOptions && product.productOptions.length > 0) {
+                                            totalStock = product.productOptions.reduce((sum, option) => sum + (option.stock || 0), 0);
+                                        }
+                                        return totalStock >= 5 ? `在庫あり (${totalStock}個)` : totalStock > 0 ? `在庫不足 (${totalStock}個)` : '売り切れ';
+                                    })()}
+                                </span>
+                                ${badgeHtml}
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="price fw-bold">¥${product.price?.toLocaleString() || '0'}</span>
+                                <div class="btn-group">
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="editProduct('${product.id}')" title="編集">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-outline-secondary btn-sm" onclick="deleteProduct('${product.id}')" title="削除">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            }).join('');
+            
+            container.innerHTML = `<div class="row">${productsHTML}</div>`;
+            console.log('✅ 상품 카드 HTML 생성 완료 - DOM에 적용됨');
+        }
 
         // 브랜드 목록 로드 및 드롭다운 채우기
         async function loadBrandFilter() {
@@ -15055,9 +14486,9 @@
                 <div class="col-6 col-md-6 col-lg-4 mb-4">
                     <div class="card product-card h-100">
                         <div class="position-relative">
-                            <img src="${product.imageUrl || 'assets/img/logo.png'}" 
+                            <img src="${product.imageUrl || 'assets/img/placeholder-product.jpg'}" 
                                  class="card-img-top" alt="${product.nameJp || product.nameEn}"
-                                 onerror="this.src='assets/img/logo.png'"
+                                 onerror="this.src='assets/img/placeholder-product.jpg'"
                                  style="height: 150px; object-fit: cover;">
                         </div>
                         <div class="card-body">
