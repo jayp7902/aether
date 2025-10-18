@@ -1,7 +1,7 @@
 // Firebase 설정 - 새로운 프로젝트 (aether-fixed)
 const firebaseConfig = {
     apiKey: "AIzaSyDMXVksXuTT0rY33GHwlnE1a9tAGbviNFc",
-    authDomain: "aether-fixed.firebaseapp.com",
+    authDomain: "aether-store.jp",
     projectId: "aether-fixed",
     storageBucket: "aether-fixed.firebasestorage.app",
     messagingSenderId: "229862254275",
@@ -252,12 +252,12 @@ async function initializeFirebase() {
         // 전역 Firebase 객체 설정
         setGlobalFirebaseObjects(auth, db, storage);
         
-        // 블랙리스트 자동 정리 (백그라운드에서 실행) - 권한 문제로 임시 비활성화
-        // if (typeof FirebaseService !== 'undefined') {
-        //     FirebaseService.cleanupExpiredBlacklist().catch(error => {
-        //         console.warn('블랙리스트 정리 실패:', error);
-        //     });
-        // }
+        // 블랙리스트 자동 정리 (백그라운드에서 실행)
+        if (typeof FirebaseService !== 'undefined') {
+            FirebaseService.cleanupExpiredBlacklist().catch(error => {
+                console.warn('블랙리스트 정리 실패:', error);
+            });
+        }
         
         // Firebase 초기화 완료 이벤트 발생
         window.dispatchEvent(new CustomEvent('firebaseInitialized', {
@@ -944,7 +944,7 @@ class FirebaseService {
         }
     }
 
-    // 블랙리스트 자동 정리 (6개월 경과된 항목 제거) - 권한 문제로 임시 비활성화
+    // 블랙리스트 자동 정리 (6개월 경과된 항목 제거)
     static async cleanupExpiredBlacklist() {
         try {
             console.log('🧹 블랙리스트 자동 정리 시작...');
@@ -954,27 +954,23 @@ class FirebaseService {
                 return;
             }
             
-            // 권한 문제로 인해 임시로 비활성화
-            console.log('⚠️ 블랙리스트 정리 기능이 권한 문제로 인해 비활성화되었습니다.');
-            return;
+            const now = new Date();
+            const expiredSnapshot = await db.collection('deletedEmails')
+                .where('canRejoinAfter', '<=', now)
+                .get();
             
-            // const now = new Date();
-            // const expiredSnapshot = await db.collection('deletedEmails')
-            //     .where('canRejoinAfter', '<=', now)
-            //     .get();
+            if (expiredSnapshot.empty) {
+                console.log('정리할 만료된 블랙리스트 항목 없음');
+                return;
+            }
             
-            // if (expiredSnapshot.empty) {
-            //     console.log('정리할 만료된 블랙리스트 항목 없음');
-            //     return;
-            // }
+            const batch = db.batch();
+            expiredSnapshot.forEach(doc => {
+                batch.delete(doc.ref);
+            });
             
-            // const batch = db.batch();
-            // expiredSnapshot.forEach(doc => {
-            //     batch.delete(doc.ref);
-            // });
-            
-            // await batch.commit();
-            // console.log(`✅ 만료된 블랙리스트 ${expiredSnapshot.size}개 항목 정리 완료`);
+            await batch.commit();
+            console.log(`✅ 만료된 블랙리스트 ${expiredSnapshot.size}개 항목 정리 완료`);
             
         } catch (error) {
             console.error('블랙리스트 정리 실패:', error);
