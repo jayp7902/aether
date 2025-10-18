@@ -1084,7 +1084,19 @@
                 }
                 
                 if (!firebaseReady) {
-                    console.warn('Firebase 초기화 시간 초과, 기본 모드로 진행');
+                    console.warn('Firebase 초기화 시간 초과, 수동 초기화 시도');
+                    
+                    // 수동 초기화 시도
+                    if (typeof window.initializeFirebaseManually === 'function') {
+                        try {
+                            await window.initializeFirebaseManually();
+                            console.log('✅ 수동 Firebase 초기화 성공');
+                        } catch (error) {
+                            console.error('❌ 수동 Firebase 초기화 실패:', error);
+                        }
+                    } else {
+                        console.warn('⚠️ 수동 초기화 함수 없음, 기본 모드로 진행');
+                    }
                 }
                 
                 // 브랜드 정보 로드 (Firebase 상태와 관계없이)
