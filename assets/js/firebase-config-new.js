@@ -1,7 +1,7 @@
 // Firebase 설정 - 새로운 프로젝트 (aether-fixed)
 const firebaseConfig = {
     apiKey: "AIzaSyDMXVksXuTT0rY33GHwlnE1a9tAGbviNFc",
-    authDomain: "aether-store.jp",
+    authDomain: "aether-fixed.firebaseapp.com",
     projectId: "aether-fixed",
     storageBucket: "aether-fixed.firebasestorage.app",
     messagingSenderId: "229862254275",
