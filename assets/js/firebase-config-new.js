@@ -1963,47 +1963,7 @@ class FirebaseService {
     // 오프라인 포인트 조회
 
 
-    // 포인트 이력 조회
-    static async getPointHistory(uid) {
-        console.log('포인트 이력 조회:', uid);
-
-        if (!this.isFirebaseAvailable()) {
-            console.log('Firebase 사용 불가 - 네트워크 연결을 확인해주세요');
-            return [];
-        }
-
-        try {
-            const snapshot = await db.collection('pointHistory')
-                .where('userId', '==', uid)
-                .get();
-
-            const history = [];
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                history.push({
-                    id: doc.id,
-                    ...data,
-                    createdAt: data.createdAt ? {
-                        seconds: data.createdAt.seconds || data.createdAt._seconds || 0,
-                        nanoseconds: data.createdAt.nanoseconds || data.createdAt._nanoseconds || 0
-                    } : { seconds: Date.now() / 1000, nanoseconds: 0 }
-                });
-            });
-
-            // JavaScript에서 정렬
-            history.sort((a, b) => {
-                const timeA = a.createdAt.seconds * 1000 + a.createdAt.nanoseconds / 1000000;
-                const timeB = b.createdAt.seconds * 1000 + b.createdAt.nanoseconds / 1000000;
-                return timeB - timeA;
-            });
-
-            console.log('포인트 이력 조회 성공:', history.length);
-            return history;
-        } catch (error) {
-            console.error('포인트 이력 조회 실패:', error);
-            return [];
-        }
-    }
+    // 포인트 이력 조회 (중복 제거됨 - 아래 getPointHistory 함수 사용)
 
     // 오프라인 포인트 이력 조회
 
@@ -3215,33 +3175,75 @@ class FirebaseService {
     static async getPointHistory(userId) {
         try {
             if (!this.isFirebaseAvailable()) {
-                return this.getPointHistoryOffline(userId);
+                console.log('Firebase 연결 실패 - 포인트 이력 조회 불가 (Firebase 전용)');
+                return [];
             }
             
             console.log('포인트 이력 조회 시작:', userId);
             
-            const snapshot = await db.collection('pointHistory')
-                .where('userId', '==', userId)
+            // 현재 로그인된 사용자 정보 가져오기
+            const currentUser = firebase.auth().currentUser;
+            if (!currentUser) {
+                console.log('로그인된 사용자가 없음');
+                return [];
+            }
+            
+            const userEmail = currentUser.email;
+            console.log('현재 사용자 이메일:', userEmail);
+            
+            // 일반 사용자는 자신의 포인트 이력만 조회 (권한 문제 해결)
+            let allHistory = [];
+            
+            console.log('📋 사용자별 포인트 이력 조회 시작:', userEmail);
+            
+            // 사용자 이메일로 필터링된 포인트 이력만 조회
+            const pointHistorySnapshot = await db.collection('pointHistory')
+                .where('userEmail', '==', userEmail)
                 .orderBy('timestamp', 'desc')
                 .limit(50)
                 .get();
             
-            const history = [];
-            snapshot.forEach(doc => {
+            pointHistorySnapshot.forEach(doc => {
                 const data = doc.data();
-                history.push({
-                    id: doc.id,
-                    ...data,
-                    timestamp: data.timestamp || data.createdAt
-                });
+                data.id = doc.id;
+                allHistory.push(data);
             });
             
-            console.log(`Firebase 포인트 이력 조회 성공: ${history.length}건`);
-            return history;
+            // customerEmail로도 조회 (중복 제거)
+            const customerPointHistorySnapshot = await db.collection('pointHistory')
+                .where('customerEmail', '==', userEmail)
+                .orderBy('timestamp', 'desc')
+                .limit(50)
+                .get();
             
-    } catch (error) {
+            customerPointHistorySnapshot.forEach(doc => {
+                const data = doc.data();
+                data.id = doc.id;
+                
+                // 중복 확인
+                const exists = allHistory.some(history => history.id === data.id);
+                if (!exists) {
+                    allHistory.push(data);
+                }
+            });
+            
+            console.log(`📋 userEmail 포인트 이력 조회: ${pointHistorySnapshot.size}건`);
+            console.log(`📋 customerEmail 포인트 이력 조회: ${customerPointHistorySnapshot.size}건`);
+            console.log(`👤 사용자 관련 포인트 이력: ${allHistory.length}건`);
+            
+            // 시간순 정렬
+            allHistory.sort((a, b) => {
+                const timeA = a.timestamp?.seconds ? a.timestamp.seconds * 1000 : new Date(a.timestamp || 0).getTime();
+                const timeB = b.timestamp?.seconds ? b.timestamp.seconds * 1000 : new Date(b.timestamp || 0).getTime();
+                return timeB - timeA;
+            });
+            
+            console.log(`Firebase 포인트 이력 조회 성공: ${allHistory.length}건`);
+            return allHistory;
+            
+        } catch (error) {
             console.error('Firebase 포인트 이력 조회 실패:', error);
-            return this.getPointHistoryOffline(userId);
+            return [];
         }
     }
     
@@ -3395,42 +3397,7 @@ class FirebaseService {
      */
 
     
-    // 포인트 이력 조회 (Firebase)
-    static async getPointHistory(uid) {
-        console.log('포인트 이력 조회 시작:', uid);
-
-        if (!this.isFirebaseAvailable()) {
-            console.log('Firebase 사용 불가 - 네트워크 연결을 확인해주세요');
-            return [];
-        }
-
-        try {
-            const snapshot = await db.collection('pointHistory')
-                .where('userId', '==', uid)
-                .orderBy('timestamp', 'desc')
-                .limit(50)
-                .get();
-
-            const history = [];
-            snapshot.forEach(doc => {
-                const data = doc.data();
-                history.push({
-                    id: doc.id,
-                    ...data,
-                    // Firestore Timestamp를 JavaScript Date로 변환
-                    timestamp: data.timestamp && data.timestamp.toDate ? data.timestamp.toDate() : new Date(data.timestamp),
-                    createdAt: data.createdAt && data.createdAt.toDate ? data.createdAt.toDate() : new Date(data.createdAt)
-                });
-            });
-            
-            console.log(`Firebase 포인트 이력 조회 성공: ${history.length}건`);
-            return history;
-        } catch (error) {
-            console.error('Firebase 포인트 이력 조회 실패:', error);
-            // Firebase 실패 시 localStorage 폴백
-            return [];
-        }
-    }
+    // 포인트 이력 조회 (중복 제거됨 - 위의 getPointHistory 함수 사용)
     
     // 포인트 이력 조회 (localStorage)
 
