@@ -217,23 +217,32 @@
             testLog('Firebase 연결 테스트 시작...');
             
             try {
-                // 익명 인증
-                const userCredential = await signInAnonymously(auth);
-                testLog(`익명 인증 성공: ${userCredential.user.uid}`, 'success');
-                
-                // Firestore 연결 테스트
+                // Firestore 연결 테스트 (인증 없이)
                 const testCollection = collection(db, 'test');
                 testLog('Firestore 연결 성공', 'success');
                 
-                // Storage 연결 테스트
+                // Storage 연결 테스트 (인증 없이)
                 const testRef = ref(storage, 'test/test.txt');
                 testLog('Storage 연결 성공', 'success');
                 
-                showTestResult('firebase-test-result', 
-                    '<i class="fas fa-check-circle me-2"></i>Firebase 연결 성공!<br>' +
-                    '• 인증: 성공<br>' +
-                    '• Firestore: 연결됨<br>' +
-                    '• Storage: 연결됨', 'success');
+                // 익명 인증 시도 (선택사항)
+                try {
+                    const userCredential = await signInAnonymously(auth);
+                    testLog(`익명 인증 성공: ${userCredential.user.uid}`, 'success');
+                    showTestResult('firebase-test-result', 
+                        '<i class="fas fa-check-circle me-2"></i>Firebase 연결 성공!<br>' +
+                        '• 인증: 익명 로그인 성공<br>' +
+                        '• Firestore: 연결됨<br>' +
+                        '• Storage: 연결됨', 'success');
+                } catch (authError) {
+                    testLog(`익명 인증 실패: ${authError.message}`, 'warning');
+                    showTestResult('firebase-test-result', 
+                        '<i class="fas fa-exclamation-triangle me-2"></i>Firebase 연결 부분 성공<br>' +
+                        '• 인증: 익명 로그인 실패 (Storage 기능 제한)<br>' +
+                        '• Firestore: 연결됨<br>' +
+                        '• Storage: 연결됨<br>' +
+                        '<small>이미지 업로드는 실패할 수 있습니다</small>', 'warning');
+                }
                 
             } catch (error) {
                 testLog(`Firebase 연결 실패: ${error.message}`, 'error');
@@ -307,6 +316,18 @@
             const results = [];
             
             try {
+                // 익명 인증 시도 (이미지 업로드를 위해)
+                try {
+                    await signInAnonymously(auth);
+                    testLog('익명 인증 성공 (이미지 업로드용)', 'success');
+                } catch (authError) {
+                    testLog(`익명 인증 실패: ${authError.message}`, 'warning');
+                    showTestResult('image-test-result', 
+                        '<i class="fas fa-exclamation-triangle me-2"></i>이미지 업로드 실패<br>' +
+                        '익명 인증이 필요합니다. Firebase 콘솔에서 익명 인증을 활성화해주세요.', 'error');
+                    return;
+                }
+                
                 // 메인 이미지 업로드
                 if (mainFile) {
                     testLog(`메인 이미지 업로드 시작: ${mainFile.name}`);
