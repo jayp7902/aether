@@ -1582,7 +1582,7 @@
                                     <i class="fas fa-cog text-white"></i>
                                 </div>
                                 <div>
-                                    <h6 class="mb-1 fw-bold">${optionType}: ${color.name}</h6>
+                                    <h6 class="mb-1 fw-bold">${color.name}</h6>
                                     <div class="d-flex align-items-center">
                                         <span class="text-muted me-3">数量: ${color.quantity}個</span>
                                         ${color.priceAdjustment > 0 ? `<span class="badge bg-success">+¥${color.priceAdjustment.toLocaleString()}</span>` : ''}
@@ -2207,7 +2207,7 @@
                         finalPrice = originalPrice;
                         
                         // 옵션 요약 생성
-                        optionSummary = selectedColors.map(option => `${option.type}: ${option.name} x${option.quantity}`).join(', ');
+                        optionSummary = selectedColors.map(option => `${option.name} x${option.quantity}`).join(', ');
                         
                         console.log('옵션 상품 장바구니 정보:', {
                             quantity: quantity,
