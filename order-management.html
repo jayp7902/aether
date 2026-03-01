@@ -2389,7 +2389,7 @@
         }
         
         async function generateDeliveryNoteHTMLOrderManagement(order) {
-            let companyName = 'Aether';
+            let companyName = '株式会社JAYCOS';
             const companyLines = [];
             if (typeof firebase !== 'undefined' && firebase.firestore) {
                 const db = firebase.firestore();
@@ -2404,6 +2404,7 @@
                     }
                     if (companySnap.exists) {
                         (companySnap.data().companyInfo || []).forEach(function(item) {
+                            if (item.type === 'email' || item.type === 'hours') return;
                             if (item.value) companyLines.push((item.name ? item.name + ': ' : '') + item.value);
                         });
                     }
@@ -2411,7 +2412,6 @@
             }
             const shipping = order.shipping || {};
             const customerName = escapeHtml(shipping.name || (order.customer && order.customer.name) || '');
-            const customerEmail = escapeHtml((order.customer && order.customer.email) || '');
             const customerPhone = escapeHtml(shipping.phone || (order.customer && order.customer.phone) || '');
             const postal = escapeHtml(shipping.postal || '');
             const addressLine = escapeHtml([shipping.prefecture, shipping.city, shipping.address1, shipping.address2].filter(Boolean).join(' '));
@@ -2434,7 +2434,7 @@
             const paymentMethod = (order.payment && order.payment.method) ? order.payment.method : 'N/A';
             const orderIdEsc = escapeHtml(order.id);
             var printScript = '<script>window.onload=function(){window.print();}<\\/script>';
-            return '<!DOCTYPE html><html><head><meta charset="utf-8"><title>納品書 - ' + orderIdEsc + '</title><style>body{font-family:"Noto Sans JP",sans-serif;margin:24px;color:#333}.doc{max-width:800px;margin:0 auto}h1{text-align:center;font-size:24px;margin-bottom:24px;border-bottom:2px solid #000;padding-bottom:12px}.two-cols{display:flex;justify-content:space-between;gap:24px;margin-bottom:24px}.box{flex:1;border:1px solid #ddd;padding:12px}.box-title{font-weight:bold;margin-bottom:8px;font-size:12px;color:#666}table{width:100%;border-collapse:collapse;margin:16px 0}th,td{border:1px solid #ddd;padding:8px 12px;text-align:left}th{background:#f5f5f5;font-size:12px}.text-center{text-align:center}.text-end{text-align:right}.totals{margin-top:16px;text-align:right}.totals div{margin-bottom:4px}.issue-date{text-align:right;font-size:12px;color:#666;margin-top:24px}@media print{body{margin:12px}}</style></head><body><div class="doc"><h1>納 品 書</h1><div class="two-cols"><div class="box"><div class="box-title">発行元（会社情報）</div><strong>' + companyNameEsc + '</strong><br>' + companyLinesEsc + '</div><div class="box"><div class="box-title">お届け先（注文先）</div><strong>' + customerName + ' 様</strong><br>〒' + postal + '<br>' + addressLine + '<br>TEL: ' + customerPhone + '<br>' + (customerEmail ? 'Email: ' + customerEmail : '') + '</div></div><div class="box" style="margin-bottom:16px"><div class="box-title">注文内容</div><div>注文番号: <strong>' + orderIdEsc + '</strong></div><div>注文日: ' + orderDate.toLocaleDateString('ja-JP') + ' ' + orderDate.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }) + '</div></div><table><thead><tr><th>商品名</th><th class="text-center" style="width:80px">数量</th><th class="text-end" style="width:100px">単価（税込）</th><th class="text-end" style="width:120px">小計</th></tr></thead><tbody>' + itemsRows + '</tbody></table><div class="totals">' + (usedPoints > 0 ? '<div>商品小計: ¥' + (order.originalAmount || subtotal).toLocaleString() + '</div><div>ポイント使用: -¥' + usedPoints.toLocaleString() + '</div>' : '') + '<div><strong>合計金額: ¥' + totalAmount.toLocaleString() + '</strong></div><div>支払方法: ' + paymentMethod + '</div></div><div class="issue-date">発行日: ' + issueDate.toLocaleDateString('ja-JP') + '</div></div>' + printScript + '</body></html>';
+            return '<!DOCTYPE html><html><head><meta charset="utf-8"><title>納品書 - ' + orderIdEsc + '</title><style>body{font-family:"Noto Sans JP",sans-serif;margin:24px;color:#333}.doc{max-width:800px;margin:0 auto}h1{text-align:center;font-size:24px;margin-bottom:24px;border-bottom:2px solid #000;padding-bottom:12px}.two-cols{display:flex;justify-content:space-between;gap:24px;margin-bottom:24px}.box{flex:1;border:1px solid #ddd;padding:12px}.box-title{font-weight:bold;margin-bottom:8px;font-size:12px;color:#666}table{width:100%;border-collapse:collapse;margin:16px 0}th,td{border:1px solid #ddd;padding:8px 12px;text-align:left}th{background:#f5f5f5;font-size:12px}.text-center{text-align:center}.text-end{text-align:right}.totals{margin-top:16px;text-align:right}.totals div{margin-bottom:4px}.issue-date{text-align:right;font-size:12px;color:#666;margin-top:24px}@media print{body{margin:12px}}</style></head><body><div class="doc"><h1>納 品 書</h1><div class="two-cols"><div class="box"><div class="box-title">発行元（会社情報）</div><strong>' + companyNameEsc + '</strong><br>' + companyLinesEsc + '</div><div class="box"><div class="box-title">お届け先（注文先）</div><strong>' + customerName + ' 様</strong><br>〒' + postal + '<br>' + addressLine + '<br>TEL: ' + customerPhone + '<br>' + '' + '</div></div><div class="box" style="margin-bottom:16px"><div class="box-title">注文内容</div><div>注文番号: <strong>' + orderIdEsc + '</strong></div><div>注文日: ' + orderDate.toLocaleDateString('ja-JP') + ' ' + orderDate.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' }) + '</div></div><table><thead><tr><th>商品名</th><th class="text-center" style="width:80px">数量</th><th class="text-end" style="width:100px">単価（税込）</th><th class="text-end" style="width:120px">小計</th></tr></thead><tbody>' + itemsRows + '</tbody></table><div class="totals">' + (usedPoints > 0 ? '<div>商品小計: ¥' + (order.originalAmount || subtotal).toLocaleString() + '</div><div>ポイント使用: -¥' + usedPoints.toLocaleString() + '</div>' : '') + '<div><strong>合計金額: ¥' + totalAmount.toLocaleString() + '</strong></div><div>支払方法: ' + paymentMethod + '</div></div><div class="issue-date">発行日: ' + issueDate.toLocaleDateString('ja-JP') + '</div></div>' + printScript + '</body></html>';
         }
         
         // 이메일 알림 발송
