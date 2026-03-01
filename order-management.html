@@ -2058,6 +2058,11 @@
                         if (order.status !== 'pending' && order.status !== 'pending_payment') {
                             return false;
                         }
+                    } else if (statusFilter === 'shipping') {
+                        // 配送中 필터는 shipping と shipped 모두 포함（상단 카운트와 동일）
+                        if (order.status !== 'shipping' && order.status !== 'shipped') {
+                            return false;
+                        }
                     } else if (order.status !== statusFilter) {
                         return false;
                     }
