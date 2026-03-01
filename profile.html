@@ -1601,8 +1601,8 @@
                                         ${items.map(item => `
                                             <div class="d-flex justify-content-between align-items-center mb-2">
                                                 <div>
-                                                    <div class="japanese-heading">${item.name || item.productName || '商品名不明'}</div>
-                                                    <small class="text-muted japanese-text">${item.brand || ''} × ${item.quantity || 1}</small>
+                                                    <div class="japanese-heading">${item.nameJp || item.nameKr || item.name || item.productName || item.title || '商品名不明'}</div>
+                                                    <small class="text-muted japanese-text">${item.brandName || item.brand || ''} × ${item.quantity || 1}</small>
                                                 </div>
                                                 <div class="japanese-text">¥${((item.price || 0) * (item.quantity || 1)).toLocaleString()}</div>
                                             </div>
@@ -3672,16 +3672,19 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                ${receiptData.items.map((item, index) => `
+                                ${receiptData.items.map((item, index) => {
+                                    const itemName = item.nameJp || item.nameKr || item.name || item.productName || item.title || '商品名不明';
+                                    return `
                                     <tr>
                                         <td>${index + 1}</td>
-                                        <td>${item.name}</td>
+                                        <td>${itemName}</td>
                                         <td>${item.quantity}</td>
                                         <td>¥${item.price.toLocaleString()}</td>
                                         <td>10%</td>
                                         <td>¥${(item.price * item.quantity).toLocaleString()}</td>
                                     </tr>
-                                `).join('')}
+                                `;
+                                }).join('')}
                             </tbody>
                         </table>
                     </div>
