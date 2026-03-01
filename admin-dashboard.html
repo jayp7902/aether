@@ -9667,7 +9667,7 @@
         
         // 納品書 HTML 生成（会社情報・注文内容・商品明細）
         async function generateDeliveryNoteHTML(order) {
-            let companyName = 'Aether';
+            let companyName = '株式会社JAYCOS';
             const companyLines = [];
             
             if (typeof firebase !== 'undefined' && firebase.firestore) {
@@ -9684,6 +9684,7 @@
                     if (companySnap.exists) {
                         const list = companySnap.data().companyInfo || [];
                         list.forEach(function(item) {
+                            if (item.type === 'email' || item.type === 'hours') return;
                             if (item.value) companyLines.push((item.name ? item.name + ': ' : '') + item.value);
                         });
                     }
@@ -9694,7 +9695,6 @@
             
             const shipping = order.shipping || {};
             const customerName = shipping.name || order.customer?.name || '';
-            const customerEmail = order.customer?.email || '';
             const customerPhone = shipping.phone || order.customer?.phone || '';
             const postal = shipping.postal || '';
             const addressLine = [shipping.prefecture, shipping.city, shipping.address1, shipping.address2].filter(Boolean).join(' ');
@@ -9763,8 +9763,7 @@
                                 <div class="box-title">お届け先（注文先）</div>
                                 <strong>${customerName} 様</strong><br>
                                 〒${postal}<br>${addressLine}<br>
-                                TEL: ${customerPhone}<br>
-                                ${customerEmail ? 'Email: ' + customerEmail : ''}
+                                TEL: ${customerPhone}
                             </div>
                         </div>
                         
