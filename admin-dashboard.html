@@ -3951,13 +3951,16 @@
                                 <div class="customer-email">${order.customer.email}</div>
                             </div>
                             <div class="order-items">
-                                ${order.items.map(item => `
+                                ${order.items.map(item => {
+                                    const cardItemName = item.nameJp || item.nameKr || item.name || item.title || item.productName || 'Unknown Product';
+                                    return `
                                     <div class="item-row">
-                                        <span class="item-name">${item.name}</span>
+                                        <span class="item-name">${cardItemName}</span>
                                         <span class="item-quantity">×${item.quantity}</span>
-                                        <span class="item-price">¥${item.price.toLocaleString()}</span>
+                                        <span class="item-price">¥${(item.price || 0).toLocaleString()}</span>
                                     </div>
-                                `).join('')}
+                                `;
+                                }).join('')}
                             </div>
                             <div class="order-total">
                                 <div class="japanese-text">
@@ -8892,7 +8895,7 @@
                         
                         <div class="order-items">
                             ${(order.items || []).map(item => {
-                                const itemName = item.name || item.title || item.productName || 'Unknown Product';
+                                const itemName = item.nameJp || item.nameKr || item.name || item.title || item.productName || 'Unknown Product';
                                 const itemQuantity = item.quantity || 1;
                                 const itemPrice = item.price || 0;
                                 return `
@@ -9018,14 +9021,35 @@
         }
 
         // 주문 상세 보기 - 모달로 개선
-        function viewOrderDetail(orderId) {
+        async function viewOrderDetail(orderId) {
             const order = window.allOrders.find(o => o.id === orderId);
             if (!order) {
                 console.warn('주문을 찾을 수 없습니다:', orderId);
                 return;
             }
-            
+            await resolveOrderItemNames(order);
             showOrderDetailModal(order);
+        }
+        
+        // 주문 항목에 상품명이 없을 경우 products 컬렉션에서 조회해 채움 (기존 주문 표시 개선)
+        async function resolveOrderItemNames(order) {
+            if (!order.items || !order.items.length || typeof db === 'undefined') return;
+            for (const item of order.items) {
+                const displayName = item.nameJp || item.nameKr || item.name || item.title || item.productName || '';
+                if ((!displayName || displayName === 'Unknown Product') && item.id) {
+                    try {
+                        const doc = await db.collection('products').doc(item.id).get();
+                        if (doc.exists && doc.data()) {
+                            const data = doc.data();
+                            item.nameJp = data.nameJp || item.nameJp;
+                            item.nameKr = data.nameKr || data.nameJp || item.nameKr;
+                            item.name = item.nameJp || item.nameKr || item.name;
+                        }
+                    } catch (e) {
+                        console.warn('주문 항목 상품명 조회 실패:', item.id, e);
+                    }
+                }
+            }
         }
         
         // スライダー管理モーダル
@@ -9455,8 +9479,8 @@
                                 <tbody>
                                     ${order.items.map(item => `
                                         <tr>
-                                            <td>${item.name || item.title || item.productName || 'Unknown Product'}</td>
-                                            <td><small class="text-muted">${item.brand || 'N/A'}</small></td>
+                                            <td>${item.nameJp || item.nameKr || item.name || item.title || item.productName || 'Unknown Product'}</td>
+                                            <td><small class="text-muted">${item.brandName || item.brand || 'N/A'}</small></td>
                                             <td class="text-center">${item.quantity || 1}</td>
                                             <td class="text-end">¥${(item.price || 0).toLocaleString()}</td>
                                             <td class="text-end"><strong>¥${((item.price || 0) * (item.quantity || 1)).toLocaleString()}</strong></td>
@@ -18542,7 +18566,7 @@
             analyticsData.orders.forEach(order => {
                 if (order.items) {
                     order.items.forEach(item => {
-                        const productName = item.name || item.productName || 'Unknown Product';
+                        const productName = item.nameJp || item.nameKr || item.name || item.productName || 'Unknown Product';
                         if (!productSales[productName]) {
                             productSales[productName] = {
                                 name: productName,
