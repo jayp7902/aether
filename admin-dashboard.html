@@ -9649,16 +9649,16 @@
             }
             try {
                 const deliveryNoteHtml = await generateDeliveryNoteHTML(order);
-                const printWindow = window.open('', '_blank', 'noopener,noreferrer');
+                const blob = new Blob([deliveryNoteHtml], { type: 'text/html; charset=utf-8' });
+                const url = URL.createObjectURL(blob);
+                const printWindow = window.open(url, '_blank', 'noopener,noreferrer');
                 if (!printWindow) {
+                    URL.revokeObjectURL(url);
                     showAdminAlert('ポップアップがブロックされました。ブラウザでポップアップを許可してから再度「納品書」をクリックしてください。', 'warning');
                     return;
                 }
-                printWindow.document.write(deliveryNoteHtml);
-                printWindow.document.close();
-                printWindow.focus();
-                printWindow.print();
-                showAdminAlert('納品書を印刷しました', 'success');
+                URL.revokeObjectURL(url);
+                showAdminAlert('納品書を開きました。印刷ダイアログが表示されます。', 'success');
             } catch (e) {
                 console.error('納品書生成エラー:', e);
                 showAdminAlert('納品書の生成に失敗しました: ' + (e.message || ''), 'danger');
@@ -9794,6 +9794,7 @@
                         
                         <div class="issue-date">発行日: ${issueDate.toLocaleDateString('ja-JP')}</div>
                     </div>
+                    <script>window.onload=function(){window.print();}<\/script>
                 </body>
                 </html>`;
         }
