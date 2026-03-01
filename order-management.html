@@ -1975,14 +1975,17 @@
             
             let itemsHTML = '';
             if (order.items && order.items.length > 0) {
-                itemsHTML = order.items.map(item => `
+                itemsHTML = order.items.map(item => {
+                    const displayName = item.nameJp || item.nameKr || item.name || item.productName || item.title || 'Unknown Product';
+                    return `
                     <tr>
-                        <td>${item.name}</td>
+                        <td>${displayName}</td>
                         <td class="text-center">${item.quantity}</td>
                         <td class="text-end">¥${item.price ? item.price.toLocaleString() : '0'}</td>
                         <td class="text-end">¥${(item.price * item.quantity).toLocaleString()}</td>
                     </tr>
-                `).join('');
+                `;
+                }).join('');
             }
             
             return `
