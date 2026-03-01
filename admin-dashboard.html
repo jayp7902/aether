@@ -9335,6 +9335,9 @@
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                                     <i class="fas fa-times me-1"></i>閉じる
                                 </button>
+                                <button type="button" class="btn btn-outline-primary" onclick="printDeliveryNote('${order.id}')">
+                                    <i class="fas fa-file-invoice me-1"></i>納品書
+                                </button>
                                 <button type="button" class="btn btn-outline-secondary" onclick="printShippingLabel('${order.id}')">
                                     <i class="fas fa-print me-1"></i>配送ラベル印刷
                                 </button>
@@ -9634,6 +9637,160 @@
             printWindow.print();
             
             showAdminAlert('配送ラベルを印刷しました', 'success');
+        }
+        
+        // 納品書（납품서）発行・印刷
+        async function printDeliveryNote(orderId) {
+            const order = window.allOrders.find(o => o.id === orderId);
+            if (!order) {
+                showAdminAlert('注文が見つかりません', 'warning');
+                return;
+            }
+            try {
+                const deliveryNoteHtml = await generateDeliveryNoteHTML(order);
+                const printWindow = window.open('', '_blank');
+                printWindow.document.write(deliveryNoteHtml);
+                printWindow.document.close();
+                printWindow.focus();
+                printWindow.print();
+                showAdminAlert('納品書を印刷しました', 'success');
+            } catch (e) {
+                console.error('納品書生成エラー:', e);
+                showAdminAlert('納品書の生成に失敗しました', 'danger');
+            }
+        }
+        
+        // 納品書 HTML 生成（会社情報・注文内容・商品明細）
+        async function generateDeliveryNoteHTML(order) {
+            let companyName = 'Aether';
+            const companyLines = [];
+            
+            if (typeof firebase !== 'undefined' && firebase.firestore) {
+                const db = firebase.firestore();
+                try {
+                    const [footerSnap, companySnap] = await Promise.all([
+                        db.collection('footer_content').limit(1).get(),
+                        db.collection('footerSettings').doc('companyInfo').get()
+                    ]);
+                    if (!footerSnap.empty) {
+                        const footerData = footerSnap.docs[0].data();
+                        companyName = footerData.companyNameFooter || footerData.companyName || companyName;
+                    }
+                    if (companySnap.exists) {
+                        const list = companySnap.data().companyInfo || [];
+                        list.forEach(function(item) {
+                            if (item.value) companyLines.push((item.name ? item.name + ': ' : '') + item.value);
+                        });
+                    }
+                } catch (err) {
+                    console.warn('会社情報の取得に失敗しました:', err);
+                }
+            }
+            
+            const shipping = order.shipping || {};
+            const customerName = shipping.name || order.customer?.name || '';
+            const customerEmail = order.customer?.email || '';
+            const customerPhone = shipping.phone || order.customer?.phone || '';
+            const postal = shipping.postal || '';
+            const addressLine = [shipping.prefecture, shipping.city, shipping.address1, shipping.address2].filter(Boolean).join(' ');
+            
+            let orderDate;
+            if (order.orderDate && order.orderDate.seconds) {
+                orderDate = new Date(order.orderDate.seconds * 1000);
+            } else {
+                orderDate = new Date(order.orderDate || Date.now());
+            }
+            const issueDate = new Date();
+            
+            const itemsRows = (order.items || []).map(item => {
+                const name = item.nameJp || item.nameKr || item.name || item.title || item.productName || 'Unknown Product';
+                const qty = item.quantity || 1;
+                const price = item.price || 0;
+                const subtotal = price * qty;
+                const optionText = (item.colorSummary || item.optionSummary || '').trim();
+                return `<tr>
+                    <td>${name}${optionText ? '<br><small class="text-muted">' + optionText + '</small>' : ''}</td>
+                    <td class="text-center">${qty}</td>
+                    <td class="text-end">¥${price.toLocaleString()}</td>
+                    <td class="text-end">¥${subtotal.toLocaleString()}</td>
+                </tr>`;
+            }).join('');
+            
+            const subtotal = (order.items || []).reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0);
+            const usedPoints = order.usedPoints || order.pointDiscount || 0;
+            const totalAmount = order.totalAmount || subtotal;
+            const paymentMethod = order.payment?.method || 'N/A';
+            
+            return `<!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>納品書 - ${order.id}</title>
+                    <style>
+                        body { font-family: "Noto Sans JP", "Hiragino Kaku Gothic ProN", sans-serif; margin: 24px; color: #333; }
+                        .doc { max-width: 800px; margin: 0 auto; }
+                        h1 { text-align: center; font-size: 24px; margin-bottom: 24px; border-bottom: 2px solid #000; padding-bottom: 12px; }
+                        .two-cols { display: flex; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
+                        .box { flex: 1; border: 1px solid #ddd; padding: 12px; }
+                        .box-title { font-weight: bold; margin-bottom: 8px; font-size: 12px; color: #666; }
+                        table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+                        th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; }
+                        th { background: #f5f5f5; font-size: 12px; }
+                        .text-center { text-align: center; }
+                        .text-end { text-align: right; }
+                        .totals { margin-top: 16px; text-align: right; }
+                        .totals div { margin-bottom: 4px; }
+                        .issue-date { text-align: right; font-size: 12px; color: #666; margin-top: 24px; }
+                        @media print { body { margin: 12px; } }
+                    </style>
+                </head>
+                <body>
+                    <div class="doc">
+                        <h1>納 品 書</h1>
+                        
+                        <div class="two-cols">
+                            <div class="box">
+                                <div class="box-title">発行元（会社情報）</div>
+                                <strong>${companyName}</strong><br>
+                                ${companyLines.map(function(line) { return line + '<br>'; }).join('')}
+                            </div>
+                            <div class="box">
+                                <div class="box-title">お届け先（注文先）</div>
+                                <strong>${customerName} 様</strong><br>
+                                〒${postal}<br>${addressLine}<br>
+                                TEL: ${customerPhone}<br>
+                                ${customerEmail ? 'Email: ' + customerEmail : ''}
+                            </div>
+                        </div>
+                        
+                        <div class="box" style="margin-bottom: 16px;">
+                            <div class="box-title">注文内容</div>
+                            <div>注文番号: <strong>${order.id}</strong></div>
+                            <div>注文日: ${orderDate.toLocaleDateString('ja-JP')} ${orderDate.toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit' })}</div>
+                        </div>
+                        
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>商品名</th>
+                                    <th class="text-center" style="width: 80px;">数量</th>
+                                    <th class="text-end" style="width: 100px;">単価（税込）</th>
+                                    <th class="text-end" style="width: 120px;">小計</th>
+                                </tr>
+                            </thead>
+                            <tbody>${itemsRows}</tbody>
+                        </table>
+                        
+                        <div class="totals">
+                            ${usedPoints > 0 ? '<div>商品小計: ¥' + (order.originalAmount || subtotal).toLocaleString() + '</div><div>ポイント使用: -¥' + usedPoints.toLocaleString() + '</div>' : ''}
+                            <div><strong>合計金額: ¥${totalAmount.toLocaleString()}</strong></div>
+                            <div>支払方法: ${paymentMethod}</div>
+                        </div>
+                        
+                        <div class="issue-date">発行日: ${issueDate.toLocaleDateString('ja-JP')}</div>
+                    </div>
+                </body>
+                </html>`;
         }
         
         // 배송 라벨 HTML 생성
@@ -15955,6 +16112,9 @@
         window.setFooterFormData = function(data) {
             // 회사 정보 필드 설정
             window.setCompanyInfoFields(data.companyInfo || []);
+            // 회사명（納品書・フッター用）
+            const companyNameEl = document.getElementById('company-name-footer');
+            if (companyNameEl) companyNameEl.value = data.companyNameFooter || '';
             
             // 브랜드명 리스트 설정
             window.displayBrandNames(data.brandNames || []);
@@ -16584,11 +16744,13 @@
         // 푸터 내용 저장
         window.saveFooterContent = async function() {
             try {
-                const footerData = {
-                    brandNames: window.getCurrentBrands(),
-                    furtherInfoLinks: window.getCurrentFurtherInfoLinks(),
-                    updatedAt: new Date().toISOString()
-                };
+                const companyNameEl = document.getElementById('company-name-footer');
+                    const footerData = {
+                        brandNames: window.getCurrentBrands(),
+                        furtherInfoLinks: window.getCurrentFurtherInfoLinks(),
+                        companyNameFooter: companyNameEl ? companyNameEl.value.trim() : '',
+                        updatedAt: new Date().toISOString()
+                    };
                 
                 const companyInfo = window.getCompanyInfoFromFields();
                 
