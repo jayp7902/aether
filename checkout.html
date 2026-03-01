@@ -2732,12 +2732,16 @@
             try {
                 console.log('📧 주문 완료 메일 발송 시작:', orderData);
                 
-                // 상품 목록을 문자열로 변환（ブランド・商品名・数量）
+                // 상품 목록을 HTML로 변환（1行1商品・商品名 × 数量　¥小計、undefined 非表示）
                 const itemsList = orderData.items.map(item => {
-                    const brand = item.brandName || item.brand || '';
-                    const name = item.nameJp || item.nameKr || item.name || '';
-                    return (brand ? brand + ' ' : '') + name + ' (' + (item.quantity || 1) + ')';
-                }).join(', ');
+                    const brand = (item.brandName || item.brand || '').trim();
+                    const name = (item.nameJp || item.nameKr || item.name || '商品').trim();
+                    const productLabel = brand ? brand + ' ' + name : name;
+                    const qty = item.quantity || 1;
+                    const unitPrice = item.price || 0;
+                    const lineTotal = unitPrice * qty;
+                    return productLabel + ' × ' + qty + '　¥' + lineTotal.toLocaleString();
+                }).join('<br>');
                 
                 const emailData = {
                     orderId: orderData.id,
