@@ -1168,10 +1168,10 @@
                 }
             });
             
-            // pending과 pending_payment를 합쳐서 표시
+            // pending과 pending_payment를 합쳐서 표시 / 配送中에는 shipping と shipped を含める
             document.getElementById('pending-count').textContent = stats.pending + stats.pending_payment;
             document.getElementById('processing-count').textContent = stats.processing;
-            document.getElementById('shipping-count').textContent = stats.shipping;
+            document.getElementById('shipping-count').textContent = stats.shipping + stats.shipped;
             document.getElementById('completed-count').textContent = stats.completed;
             document.getElementById('cancelled-count').textContent = stats.cancelled;
         }
@@ -1667,7 +1667,7 @@
             const orderRef = window.FirebaseService.db.collection('orders').doc(orderId);
             
             orderRef.update({
-                status: 'shipped',
+                status: 'shipping',
                 trackingNumber: trackingNumber,
                 shippingCompany: shippingCompany,
                 shippedAt: new Date().toISOString(),
@@ -1676,10 +1676,10 @@
             .then(() => {
                 console.log('✅ 배송 정보 업데이트 완료:', orderId);
                 
-                // 로컬 주문 데이터 업데이트
+                // 로컬 주문 데이터 업데이트（配送中 상태로 유지、完了 버튼 누를 때까지）
                 const orderIndex = allOrders.findIndex(o => o.id === orderId);
                 if (orderIndex !== -1) {
-                    allOrders[orderIndex].status = 'shipped';
+                    allOrders[orderIndex].status = 'shipping';
                     allOrders[orderIndex].trackingNumber = trackingNumber;
                     allOrders[orderIndex].shippingCompany = shippingCompany;
                     allOrders[orderIndex].shippedAt = new Date().toISOString();
