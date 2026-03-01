@@ -2405,7 +2405,19 @@
                     if (companySnap.exists) {
                         (companySnap.data().companyInfo || []).forEach(function(item) {
                             if (item.type === 'email' || item.type === 'hours') return;
-                            if (item.value) companyLines.push((item.name ? item.name + ': ' : '') + item.value);
+                            if (!item.value) return;
+                            var prefix = item.name ? item.name + ': ' : '';
+                            if (item.type === 'address') {
+                                var m = item.value.match(/^(〒[0-9]{3}-?[0-9]{4})\s*(.*)$/);
+                                if (m) {
+                                    companyLines.push(prefix + m[1]);
+                                    companyLines.push(m[2]);
+                                } else {
+                                    companyLines.push(prefix + item.value);
+                                }
+                            } else {
+                                companyLines.push(prefix + item.value);
+                            }
                         });
                     }
                 } catch (err) { console.warn('会社情報の取得に失敗:', err); }
