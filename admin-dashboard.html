@@ -9320,7 +9320,7 @@
         function showOrderDetailModal(order) {
             const modalHtml = `
                 <div class="modal fade" id="orderDetailModal" tabindex="-1">
-                    <div class="modal-dialog modal-lg">
+                    <div class="modal-dialog modal-lg modal-dialog-scrollable">
                         <div class="modal-content">
                             <div class="modal-header">
                                 <h5 class="modal-title japanese-heading">
@@ -9328,14 +9328,15 @@
                                 </h5>
                                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                             </div>
-                            <div class="modal-body">
+                            <div class="modal-body" style="max-height: 65vh; overflow-y: auto;">
                                 ${generateOrderDetailContent(order)}
                             </div>
-                            <div class="modal-footer">
+                            <div class="modal-footer flex-shrink-0">
+                                <span class="me-2 align-self-center small text-muted">発行:</span>
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                                     <i class="fas fa-times me-1"></i>閉じる
                                 </button>
-                                <button type="button" class="btn btn-outline-primary" onclick="printDeliveryNote('${order.id}')">
+                                <button type="button" class="btn btn-outline-primary" onclick="printDeliveryNote('${order.id}')" title="納品書を印刷（会社情報・注文内容・商品明細）">
                                     <i class="fas fa-file-invoice me-1"></i>納品書
                                 </button>
                                 <button type="button" class="btn btn-outline-secondary" onclick="printShippingLabel('${order.id}')">
@@ -9648,7 +9649,11 @@
             }
             try {
                 const deliveryNoteHtml = await generateDeliveryNoteHTML(order);
-                const printWindow = window.open('', '_blank');
+                const printWindow = window.open('', '_blank', 'noopener,noreferrer');
+                if (!printWindow) {
+                    showAdminAlert('ポップアップがブロックされました。ブラウザでポップアップを許可してから再度「納品書」をクリックしてください。', 'warning');
+                    return;
+                }
                 printWindow.document.write(deliveryNoteHtml);
                 printWindow.document.close();
                 printWindow.focus();
@@ -9656,7 +9661,7 @@
                 showAdminAlert('納品書を印刷しました', 'success');
             } catch (e) {
                 console.error('納品書生成エラー:', e);
-                showAdminAlert('納品書の生成に失敗しました', 'danger');
+                showAdminAlert('納品書の生成に失敗しました: ' + (e.message || ''), 'danger');
             }
         }
         
