@@ -2727,43 +2727,71 @@
 
         // 이 함수는 메인 DOMContentLoaded 내부로 통합됨
 
-        // 주문 완료 메일 발송 함수
+        // 주문 완료 메일 발송 함수（고객 + 管理者へ通知）
         async function sendOrderCompleteEmail(orderData) {
             try {
                 console.log('📧 주문 완료 메일 발송 시작:', orderData);
                 
-                // 상품 목록을 문자열로 변환
-                const itemsList = orderData.items.map(item => 
-                    `${item.brand} ${item.name} (${item.quantity})`
-                ).join(', ');
+                // 상품 목록을 문자열로 변환（ブランド・商品名・数量）
+                const itemsList = orderData.items.map(item => {
+                    const brand = item.brandName || item.brand || '';
+                    const name = item.nameJp || item.nameKr || item.name || '';
+                    return (brand ? brand + ' ' : '') + name + ' (' + (item.quantity || 1) + ')';
+                }).join(', ');
                 
+                const emailData = {
+                    orderId: orderData.id,
+                    items: itemsList,
+                    paymentMethod: orderData.payment?.method || (orderData.payment && orderData.payment.method) || 'N/A',
+                    subtotal: `¥${(orderData.originalAmount || 0).toLocaleString()}`,
+                    shipping: (orderData.originalAmount || 0) >= 3000 ? '¥0' : '¥500',
+                    pointsUsed: orderData.usedPoints ? `${orderData.usedPoints}ポイント` : '0ポイント',
+                    totalAmount: `¥${(orderData.totalAmount || 0).toLocaleString()}`,
+                    shippingAddress: [orderData.shipping?.prefecture, orderData.shipping?.city, orderData.shipping?.address1, orderData.shipping?.address2 || ''].filter(Boolean).join(' ').trim() || '配送先情報なし'
+                };
+                
+                // 1. お客様へ注文完了メール
                 const response = await fetch('/.netlify/functions/send-email', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         to: orderData.customerEmail,
                         subject: 'ご注文完了のお知らせ - Aether Store',
                         type: 'order-complete',
-                        data: {
-                            orderId: orderData.id,
-                            items: itemsList,
-                            paymentMethod: orderData.payment.method,
-                            subtotal: `¥${orderData.originalAmount.toLocaleString()}`,
-                            shipping: orderData.originalAmount >= 3000 ? '¥0' : '¥500',
-                            pointsUsed: orderData.usedPoints ? `${orderData.usedPoints}ポイント` : '0ポイント',
-                            totalAmount: `¥${orderData.totalAmount.toLocaleString()}`,
-                            shippingAddress: `${orderData.shipping.prefecture} ${orderData.shipping.city} ${orderData.shipping.address1} ${orderData.shipping.address2 || ''}`.trim()
-                        }
+                        data: emailData
                     })
                 });
-                
                 const result = await response.json();
                 if (result.success) {
-                    console.log('✅ 주문 완료 메일 발송 완료');
+                    console.log('✅ お客様への注文完了メール送信完了');
                 } else {
-                    console.error('❌ 주문 완료 메일 발송 실패:', result.error);
+                    console.error('❌ お客様へのメール送信失敗:', result.error);
+                }
+                
+                // 2. 管理者（info@aether-store.jp）へ新規注文通知
+                try {
+                    const adminRes = await fetch('/.netlify/functions/send-email', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            to: 'info@aether-store.jp',
+                            subject: '【管理者】新規注文 - ' + orderData.id,
+                            type: 'order-complete',
+                            data: {
+                                ...emailData,
+                                customerName: orderData.customerName || orderData.shipping?.name || 'ゲスト',
+                                customerEmail: orderData.customerEmail || ''
+                            }
+                        })
+                    });
+                    const adminResult = await adminRes.json();
+                    if (adminResult.success) {
+                        console.log('✅ 管理者への新規注文メール送信完了');
+                    } else {
+                        console.warn('⚠️ 管理者へのメール送信失敗:', adminResult.error);
+                    }
+                } catch (adminErr) {
+                    console.warn('⚠️ 管理者へのメール送信エラー:', adminErr);
                 }
                 
             } catch (error) {
