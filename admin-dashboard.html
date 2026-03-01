@@ -9685,7 +9685,14 @@
                         const list = companySnap.data().companyInfo || [];
                         list.forEach(function(item) {
                             if (item.type === 'email' || item.type === 'hours') return;
-                            if (item.value) companyLines.push((item.name ? item.name + ': ' : '') + item.value);
+                            if (!item.value) return;
+                            var prefix = item.name ? item.name + ': ' : '';
+                            if (item.type === 'address') {
+                                var val = item.value.replace(/^(〒[0-9]{3}-?[0-9]{4})\s*/, '$1<br>');
+                                companyLines.push(prefix + val);
+                            } else {
+                                companyLines.push(prefix + item.value);
+                            }
                         });
                     }
                 } catch (err) {
