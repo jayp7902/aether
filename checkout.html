@@ -2239,18 +2239,19 @@
                     throw new Error('카트가 비어있음');
                 }
                 
-                // 카트 아이템 구조 확인 및 정규화
+                // 카트 아이템 구조 확인 및 정규화 (쇼핑 페이지는 nameJp/nameKr만 저장하므로 포함)
                 const normalizedCart = cart.map(item => {
-                    // 상품 이름이 여러 필드에 있을 수 있으므로 정규화
-                    const itemName = item.name || item.title || item.productName || item.productTitle || 'Unknown Product';
+                    const itemName = item.nameJp || item.nameKr || item.name || item.title || item.productName || item.productTitle || 'Unknown Product';
                     console.log('📦 상품 정보:', {
                         original: item,
                         normalized: itemName
                     });
                     return {
                         ...item,
-                        name: itemName, // 상품 이름 명시적으로 설정
-                        productName: itemName // 백업 필드
+                        name: itemName,
+                        productName: itemName,
+                        nameJp: item.nameJp || itemName,
+                        nameKr: item.nameKr || itemName
                     };
                 });
 
