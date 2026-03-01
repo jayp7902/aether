@@ -477,10 +477,10 @@ const emailTemplates = {
                                 <div style="background-color: #f9f9f9; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: left !important; max-width: 500px; margin-left: auto; margin-right: auto;">
                                     <h3 style="text-align: center !important; margin-bottom: 15px; color: #333;">注文詳細</h3>
                                     
-                                    <!-- 주문 상품 -->
+                                    <!-- 주문 상품（1行1商品・商品名 × 数量　¥小計） -->
                                     <div style="margin-bottom: 15px;">
                                         <strong>注文商品:</strong><br>
-                                        <div style="margin-top: 5px;">{{items}}</div>
+                                        <div style="margin-top: 8px; line-height: 1.8;">{{items}}</div>
                 </div>
                                     
                                     <!-- 결제 정보 -->
